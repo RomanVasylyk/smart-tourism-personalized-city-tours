@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.env
+.pytest_cache/
+.mypy_cache/
+
+# Android / IntelliJ
+.gradle/
+.idea/
+local.properties
+**/build/
+*.iml
+
+# Data
+pipeline/data/raw/
+pipeline/data/processed/
+pipeline/data/temp/
+
+# OS
+.DS_Store
+Thumbs.db

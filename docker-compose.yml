@@ -1,0 +1,29 @@
+services:
+  db:
+    image: postgis/postgis:16-3.4
+    container_name: smart-tourism-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: smart_tourism
+      POSTGRES_USER: smart_tourism
+      POSTGRES_PASSWORD: smart_tourism
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/sql/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+
+  backend:
+    build:
+      context: ./backend
+    container_name: smart-tourism-backend
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://smart_tourism:smart_tourism@db:5432/smart_tourism
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+
+volumes:
+  postgres_data:

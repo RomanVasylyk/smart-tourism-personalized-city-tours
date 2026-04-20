@@ -1,0 +1,42 @@
+allowed_categories:
+  - attraction
+  - museum
+  - gallery
+  - viewpoint
+  - monument
+  - historical_site
+  - park
+  - religious_site
+
+mapping:
+  tourism=attraction: attraction
+  tourism=viewpoint: viewpoint
+  tourism=museum: museum
+  tourism=gallery: gallery
+  historic=monument: monument
+  historic=memorial: monument
+  historic=castle: historical_site
+  historic=ruins: historical_site
+  leisure=park: park
+  leisure=garden: park
+  amenity=place_of_worship: religious_site
+
+visit_duration:
+  attraction: 30
+  museum: 60
+  gallery: 45
+  viewpoint: 20
+  monument: 15
+  historical_site: 30
+  park: 25
+  religious_site: 20
+
+base_score:
+  attraction: 0.8
+  museum: 0.9
+  gallery: 0.75
+  viewpoint: 0.75
+  monument: 0.6
+  historical_site: 0.85
+  park: 0.65
+  religious_site: 0.7

@@ -1,0 +1,9 @@
+cities:
+  - slug: nitra
+    name: Nitra
+    country: Slovakia
+    bbox:
+      south: 48.28
+      west: 18.03
+      north: 48.36
+      east: 18.13
