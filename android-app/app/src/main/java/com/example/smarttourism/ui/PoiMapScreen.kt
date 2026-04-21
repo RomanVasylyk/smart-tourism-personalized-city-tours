@@ -18,12 +18,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.example.smarttourism.R
 import com.example.smarttourism.data.PoiDto
+import com.example.smarttourism.data.RouteItemDto
 import com.example.smarttourism.data.RouteResponse
 import org.maplibre.android.annotations.MarkerOptions
 import org.maplibre.android.annotations.PolylineOptions
@@ -33,10 +36,18 @@ import org.maplibre.android.geometry.LatLng
 import org.maplibre.android.maps.MapLibreMap
 import org.maplibre.android.maps.MapLibreMapOptions
 import org.maplibre.android.maps.MapView
+import java.util.Locale
 
 private const val DefaultZoom = 13.0
 private const val StreetStyleUrl = "https://tiles.openfreemap.org/styles/liberty"
 private const val RouteLineColor = "#0F766E"
+
+private data class MapTextResources(
+    val startPointTitle: String,
+    val routeStopTitleFormat: String,
+    val routeStopSnippetFormat: String,
+    val categoryLabels: Map<String, String>
+)
 
 @Composable
 fun PoiMapScreen(
@@ -53,6 +64,7 @@ fun PoiMapScreen(
     val mapView = rememberMapViewWithLifecycle(context)
     var map by remember(mapView) { mutableStateOf<MapLibreMap?>(null) }
     var isStyleLoaded by remember(mapView) { mutableStateOf(false) }
+    val textResources = mapTextResources()
 
     Box(modifier = modifier) {
         AndroidView(
@@ -91,7 +103,7 @@ fun PoiMapScreen(
             }
         }
 
-        LaunchedEffect(map, isStyleLoaded, pois, routeResponse, startLat, startLon) {
+        LaunchedEffect(map, isStyleLoaded, pois, routeResponse, startLat, startLon, textResources) {
             val mapInstance = map ?: return@LaunchedEffect
             if (!isStyleLoaded) return@LaunchedEffect
 
@@ -100,7 +112,8 @@ fun PoiMapScreen(
                 pois = pois,
                 routeResponse = routeResponse,
                 startLat = startLat,
-                startLon = startLon
+                startLon = startLon,
+                textResources = textResources
             )
         }
 
@@ -115,7 +128,7 @@ fun PoiMapScreen(
                     .padding(12.dp)
             ) {
                 Text(
-                    text = "Tap the map to choose the route start point",
+                    text = stringResource(R.string.map_start_selection_hint),
                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
                 )
             }
@@ -153,12 +166,31 @@ private fun rememberMapViewWithLifecycle(context: Context): MapView {
     return mapView
 }
 
+@Composable
+private fun mapTextResources(): MapTextResources =
+    MapTextResources(
+        startPointTitle = stringResource(R.string.start_point_title),
+        routeStopTitleFormat = stringResource(R.string.route_stop_title),
+        routeStopSnippetFormat = stringResource(R.string.map_route_stop_snippet),
+        categoryLabels = mapOf(
+            "attraction" to stringResource(R.string.category_attraction),
+            "museum" to stringResource(R.string.category_museum),
+            "gallery" to stringResource(R.string.category_gallery),
+            "viewpoint" to stringResource(R.string.category_viewpoint),
+            "monument" to stringResource(R.string.category_monument),
+            "historical_site" to stringResource(R.string.category_historical_site),
+            "park" to stringResource(R.string.category_park),
+            "religious_site" to stringResource(R.string.category_religious_site)
+        )
+    )
+
 private fun renderMapContent(
     map: MapLibreMap,
     pois: List<PoiDto>,
     routeResponse: RouteResponse?,
     startLat: Double,
-    startLon: Double
+    startLon: Double,
+    textResources: MapTextResources
 ) {
     map.clear()
 
@@ -166,22 +198,14 @@ private fun renderMapContent(
     map.addMarker(
         MarkerOptions()
             .position(startPoint)
-            .title("Start point")
+            .title(textResources.startPointTitle)
             .snippet("${formatCoordinate(startLat)}, ${formatCoordinate(startLon)}")
     )
 
     val routeItems = routeResponse?.route.orEmpty()
     when {
         routeItems.isNotEmpty() -> {
-            val polylinePoints = buildList {
-                add(startPoint)
-                routeItems.forEach { item ->
-                    add(LatLng(item.lat, item.lon))
-                }
-                if (routeResponse?.return_to_start == true) {
-                    add(startPoint)
-                }
-            }
+            val polylinePoints = buildRoutePolylinePoints(routeResponse, startPoint, routeItems)
 
             if (polylinePoints.size >= 2) {
                 map.addPolyline(
@@ -197,9 +221,22 @@ private fun renderMapContent(
                 routeItems.map { item ->
                     MarkerOptions()
                         .position(LatLng(item.lat, item.lon))
-                        .title("${item.order}. ${item.name}")
+                        .title(
+                            String.format(
+                                Locale.getDefault(),
+                                textResources.routeStopTitleFormat,
+                                item.order,
+                                item.name
+                            )
+                        )
                         .snippet(
-                            "${item.category} • walk ${item.travel_minutes_from_previous} min • visit ${item.visit_duration_min} min"
+                            String.format(
+                                Locale.getDefault(),
+                                textResources.routeStopSnippetFormat,
+                                item.category.toDisplayLabel(textResources.categoryLabels),
+                                item.travel_minutes_from_previous,
+                                item.visit_duration_min
+                            )
                         )
                 }
             )
@@ -214,7 +251,7 @@ private fun renderMapContent(
                     MarkerOptions()
                         .position(LatLng(poi.lat, poi.lon))
                         .title(poi.name)
-                        .snippet(poi.category)
+                        .snippet(poi.category.toDisplayLabel(textResources.categoryLabels))
                 }
             )
 
@@ -223,6 +260,31 @@ private fun renderMapContent(
 
         else -> {
             moveCamera(map, startLat, startLon)
+        }
+    }
+}
+
+private fun buildRoutePolylinePoints(
+    routeResponse: RouteResponse?,
+    startPoint: LatLng,
+    routeItems: List<RouteItemDto>
+): List<LatLng> {
+    val routedGeometry = routeResponse
+        ?.full_geometry
+        .orEmpty()
+        .map { coordinate -> LatLng(coordinate.lat, coordinate.lon) }
+
+    if (routedGeometry.size >= 2) {
+        return routedGeometry
+    }
+
+    return buildList {
+        add(startPoint)
+        routeItems.forEach { item ->
+            add(LatLng(item.lat, item.lon))
+        }
+        if (routeResponse?.return_to_start == true) {
+            add(startPoint)
         }
     }
 }
@@ -241,6 +303,11 @@ private fun moveCamera(
         )
     )
 }
+
+private fun String.toDisplayLabel(labels: Map<String, String>): String =
+    labels[this] ?: split('_').joinToString(" ") { part ->
+        part.replaceFirstChar { it.uppercase() }
+    }
 
 private fun formatCoordinate(value: Double): String =
     String.format("%.5f", value)

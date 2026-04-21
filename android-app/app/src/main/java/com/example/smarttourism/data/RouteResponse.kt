@@ -15,5 +15,7 @@ data class RouteResponse(
     val total_walk_minutes: Int,
     val return_to_start_minutes: Int,
     val poi_count: Int,
-    val route: List<RouteItemDto>
+    val route: List<RouteItemDto>,
+    val legs: List<RouteLegDto>?,
+    val full_geometry: List<RouteCoordinateDto>?
 )

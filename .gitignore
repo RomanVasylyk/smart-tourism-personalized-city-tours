@@ -17,6 +17,7 @@ local.properties
 pipeline/data/raw/
 pipeline/data/processed/
 pipeline/data/temp/
+routing-data/
 
 # OS
 .DS_Store

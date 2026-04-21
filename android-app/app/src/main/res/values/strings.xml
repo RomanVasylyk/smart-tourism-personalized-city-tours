@@ -1,3 +1,85 @@
 <resources>
     <string name="app_name">Smart Tourism</string>
+
+    <string name="screen_title">Personal route planner</string>
+    <string name="screen_subtitle">Pick a custom start point, use your current location, generate a route, and restore the last saved result.</string>
+
+    <string name="status_location_unavailable">Location unavailable</string>
+    <string name="status_poi_preview_unavailable">POI preview unavailable</string>
+    <string name="status_route_generation_failed">Route generation failed</string>
+    <string name="status_no_stops_title">No stops generated</string>
+    <string name="status_no_stops_body">No route stops match the selected time budget, interests, and opening-hours constraints.</string>
+    <string name="status_no_route_title">No route yet</string>
+    <string name="status_no_route_body">Choose a start point and parameters, then generate a route. The last successful route is restored automatically on app launch.</string>
+
+    <string name="error_location_permission_denied">Location permission denied.</string>
+    <string name="error_location_service_unavailable">Location service is unavailable.</string>
+    <string name="error_location_permission_missing">Location permission is missing.</string>
+    <string name="error_no_location_provider_enabled">No location provider is enabled.</string>
+    <string name="error_current_location_unavailable">Current location is unavailable.</string>
+    <string name="error_poi_preview_failed">Failed to load POI preview.</string>
+    <string name="error_route_generation_failed_default">Failed to generate route.</string>
+
+    <string name="start_point_title">Start point</string>
+    <string name="start_point_coordinates">Lat %1$s, Lon %2$s</string>
+    <string name="start_point_selecting_body">Selection mode is active. Tap the map to move the start point.</string>
+    <string name="start_point_default_body">Use the map or device location to change where the route begins.</string>
+    <string name="action_cancel_map_pick">Cancel map pick</string>
+    <string name="action_pick_on_map">Pick on map</string>
+    <string name="action_locating">Locating...</string>
+    <string name="action_use_my_location">Use my location</string>
+
+    <string name="route_parameters_title">Route parameters</string>
+    <string name="route_start_time_label">Route start time</string>
+    <string name="action_use_now">Use now</string>
+    <string name="respect_opening_hours_label">Respect opening hours</string>
+    <string name="respect_opening_hours_body">Skip POIs that are closed for the planned arrival and visit window.</string>
+    <string name="available_time_label">Available time</string>
+    <string name="available_minutes_option">%1$d minutes</string>
+    <string name="interests_label">Interests</string>
+    <string name="pace_label">Pace</string>
+    <string name="return_to_start_label">Return to start</string>
+    <string name="return_to_start_body">Include the walk back to the selected start point.</string>
+    <string name="action_generating_route">Generating route...</string>
+    <string name="action_generate_route">Generate route</string>
+
+    <string name="route_summary_title">Route summary</string>
+    <string name="route_summary_city">City: %1$s</string>
+    <string name="route_summary_start">Start: %1$s, %2$s</string>
+    <string name="route_summary_start_time">Start time: %1$s</string>
+    <string name="route_summary_pace">Pace: %1$s</string>
+    <string name="route_summary_stops">Stops: %1$d</string>
+    <string name="route_summary_used_time">Used time: %1$d / %2$d min</string>
+    <string name="route_summary_walking">Walking: %1$d min</string>
+    <string name="route_summary_visits">Visits: %1$d min</string>
+    <string name="route_summary_remaining">Remaining: %1$d min</string>
+    <string name="route_summary_return_to_start">Return to start: %1$d min</string>
+    <string name="route_summary_opening_hours_filter">Opening-hours filter: %1$s</string>
+
+    <string name="route_stop_title">%1$d. %2$s</string>
+    <string name="route_stop_walk_from_previous">Walk from previous: %1$d min</string>
+    <string name="route_stop_visit_duration">Visit duration: %1$d min</string>
+    <string name="route_stop_arrival_after_start">Arrival after start: %1$d min</string>
+    <string name="route_stop_departure_after_start">Departure after start: %1$d min</string>
+    <string name="route_stop_opening_hours">Opening hours: %1$s</string>
+
+    <string name="map_start_selection_hint">Tap the map to choose the route start point</string>
+    <string name="map_route_stop_snippet">%1$s &#8226; walk %2$d min &#8226; visit %3$d min</string>
+
+    <string name="category_attraction">Attraction</string>
+    <string name="category_museum">Museum</string>
+    <string name="category_gallery">Gallery</string>
+    <string name="category_viewpoint">Viewpoint</string>
+    <string name="category_monument">Monument</string>
+    <string name="category_historical_site">Historical site</string>
+    <string name="category_park">Park</string>
+    <string name="category_religious_site">Religious site</string>
+
+    <string name="pace_slow">Slow</string>
+    <string name="pace_normal">Normal</string>
+    <string name="pace_fast">Fast</string>
+
+    <string name="state_on">on</string>
+    <string name="state_off">off</string>
+    <string name="common_unknown">Unknown</string>
 </resources>

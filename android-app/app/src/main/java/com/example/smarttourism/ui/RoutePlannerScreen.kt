@@ -49,9 +49,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import com.example.smarttourism.R
 import com.example.smarttourism.data.ApiModule
 import com.example.smarttourism.data.PoiDto
 import com.example.smarttourism.data.RouteRequest
@@ -77,6 +79,9 @@ private val RouteTimeFormatter = DateTimeFormatter.ofPattern("EEE, MMM d HH:mm",
 fun RoutePlannerScreen() {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val locationPermissionDeniedMessage = stringResource(R.string.error_location_permission_denied)
+    val poiPreviewFailedMessage = stringResource(R.string.error_poi_preview_failed)
+    val routeGenerationFailedMessage = stringResource(R.string.error_route_generation_failed_default)
 
     var pois by remember { mutableStateOf<List<PoiDto>>(emptyList()) }
     var isPoiLoading by remember { mutableStateOf(true) }
@@ -134,7 +139,7 @@ fun RoutePlannerScreen() {
             requestCurrentDeviceLocation()
         } else {
             isLocating = false
-            locationError = "Location permission denied."
+            locationError = locationPermissionDeniedMessage
         }
     }
 
@@ -159,7 +164,7 @@ fun RoutePlannerScreen() {
             pois = ApiModule.poiApi.getPois(DefaultCity)
             poiError = null
         } catch (e: Exception) {
-            poiError = e.toUserMessage("Failed to load POI preview.")
+            poiError = e.toUserMessage(poiPreviewFailedMessage)
         } finally {
             isPoiLoading = false
         }
@@ -175,12 +180,12 @@ fun RoutePlannerScreen() {
         item {
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(
-                    text = "Personal route planner",
+                    text = stringResource(R.string.screen_title),
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.SemiBold
                 )
                 Text(
-                    text = "Pick a custom start point, use your current location, generate a route, and restore the last saved result.",
+                    text = stringResource(R.string.screen_subtitle),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -298,7 +303,7 @@ fun RoutePlannerScreen() {
                                 )
                             )
                         } catch (e: Exception) {
-                            routeError = e.toUserMessage("Failed to generate route.")
+                            routeError = e.toUserMessage(routeGenerationFailedMessage)
                         } finally {
                             isRouteLoading = false
                         }
@@ -310,7 +315,7 @@ fun RoutePlannerScreen() {
         if (locationError != null) {
             item {
                 StatusCard(
-                    title = "Location unavailable",
+                    title = stringResource(R.string.status_location_unavailable),
                     body = locationError!!
                 )
             }
@@ -319,7 +324,7 @@ fun RoutePlannerScreen() {
         if (poiError != null) {
             item {
                 StatusCard(
-                    title = "POI preview unavailable",
+                    title = stringResource(R.string.status_poi_preview_unavailable),
                     body = poiError!!
                 )
             }
@@ -328,7 +333,7 @@ fun RoutePlannerScreen() {
         if (routeError != null) {
             item {
                 StatusCard(
-                    title = "Route generation failed",
+                    title = stringResource(R.string.status_route_generation_failed),
                     body = routeError!!
                 )
             }
@@ -343,8 +348,8 @@ fun RoutePlannerScreen() {
                 if (routeItems.isEmpty()) {
                     item {
                         StatusCard(
-                            title = "No stops generated",
-                            body = "No route stops match the selected time budget, interests, and opening-hours constraints."
+                            title = stringResource(R.string.status_no_stops_title),
+                            body = stringResource(R.string.status_no_stops_body)
                         )
                     }
                 } else {
@@ -360,8 +365,8 @@ fun RoutePlannerScreen() {
             routeError == null && !isRouteLoading -> {
                 item {
                     StatusCard(
-                        title = "No route yet",
-                        body = "Choose a start point and parameters, then generate a route. The last successful route is restored automatically on app launch."
+                        title = stringResource(R.string.status_no_route_title),
+                        body = stringResource(R.string.status_no_route_body)
                     )
                 }
             }
@@ -385,19 +390,23 @@ private fun StartPointCard(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Text(
-                text = "Start point",
+                text = stringResource(R.string.start_point_title),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold
             )
             Text(
-                text = "Lat ${formatCoordinate(startPoint.lat)}, Lon ${formatCoordinate(startPoint.lon)}",
+                text = stringResource(
+                    R.string.start_point_coordinates,
+                    formatCoordinate(startPoint.lat),
+                    formatCoordinate(startPoint.lon)
+                ),
                 style = MaterialTheme.typography.bodyMedium
             )
             Text(
                 text = if (isSelectingStart) {
-                    "Selection mode is active. Tap the map to move the start point."
+                    stringResource(R.string.start_point_selecting_body)
                 } else {
-                    "Use the map or device location to change where the route begins."
+                    stringResource(R.string.start_point_default_body)
                 },
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -407,7 +416,13 @@ private fun StartPointCard(
                     onClick = onToggleMapSelection,
                     modifier = Modifier.weight(1f)
                 ) {
-                    Text(if (isSelectingStart) "Cancel map pick" else "Pick on map")
+                    Text(
+                        if (isSelectingStart) {
+                            stringResource(R.string.action_cancel_map_pick)
+                        } else {
+                            stringResource(R.string.action_pick_on_map)
+                        }
+                    )
                 }
                 Button(
                     onClick = onUseCurrentLocation,
@@ -421,7 +436,13 @@ private fun StartPointCard(
                         )
                         Spacer(modifier = Modifier.width(12.dp))
                     }
-                    Text(if (isLocating) "Locating..." else "Use my location")
+                    Text(
+                        if (isLocating) {
+                            stringResource(R.string.action_locating)
+                        } else {
+                            stringResource(R.string.action_use_my_location)
+                        }
+                    )
                 }
             }
         }
@@ -453,7 +474,7 @@ private fun RouteParametersCard(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Text(
-                text = "Route parameters",
+                text = stringResource(R.string.route_parameters_title),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold
             )
@@ -464,7 +485,7 @@ private fun RouteParametersCard(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Route start time",
+                        text = stringResource(R.string.route_start_time_label),
                         style = MaterialTheme.typography.labelLarge
                     )
                     Text(
@@ -474,7 +495,7 @@ private fun RouteParametersCard(
                 }
                 Spacer(modifier = Modifier.width(12.dp))
                 OutlinedButton(onClick = onUseCurrentTime) {
-                    Text("Use now")
+                    Text(stringResource(R.string.action_use_now))
                 }
             }
 
@@ -484,11 +505,11 @@ private fun RouteParametersCard(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Respect opening hours",
+                        text = stringResource(R.string.respect_opening_hours_label),
                         style = MaterialTheme.typography.labelLarge
                     )
                     Text(
-                        text = "Skip POIs that are closed for the planned arrival and visit window.",
+                        text = stringResource(R.string.respect_opening_hours_body),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -503,7 +524,7 @@ private fun RouteParametersCard(
             HorizontalDivider()
 
             Text(
-                text = "Available time",
+                text = stringResource(R.string.available_time_label),
                 style = MaterialTheme.typography.labelLarge
             )
             AvailableMinutesOptions.forEach { option ->
@@ -515,14 +536,14 @@ private fun RouteParametersCard(
                         onClick = null
                     )
                     Spacer(modifier = Modifier.width(12.dp))
-                    Text("$option minutes")
+                    Text(stringResource(R.string.available_minutes_option, option))
                 }
             }
 
             HorizontalDivider()
 
             Text(
-                text = "Interests",
+                text = stringResource(R.string.interests_label),
                 style = MaterialTheme.typography.labelLarge
             )
             InterestOptions.forEach { interest ->
@@ -535,14 +556,14 @@ private fun RouteParametersCard(
                         onCheckedChange = null
                     )
                     Spacer(modifier = Modifier.width(12.dp))
-                    Text(interest.toDisplayLabel())
+                    Text(categoryLabel(interest))
                 }
             }
 
             HorizontalDivider()
 
             Text(
-                text = "Pace",
+                text = stringResource(R.string.pace_label),
                 style = MaterialTheme.typography.labelLarge
             )
             PaceOptions.forEach { option ->
@@ -554,7 +575,7 @@ private fun RouteParametersCard(
                         onClick = null
                     )
                     Spacer(modifier = Modifier.width(12.dp))
-                    Text(option.replaceFirstChar { it.uppercase() })
+                    Text(paceLabel(option))
                 }
             }
 
@@ -566,11 +587,11 @@ private fun RouteParametersCard(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Return to start",
+                        text = stringResource(R.string.return_to_start_label),
                         style = MaterialTheme.typography.labelLarge
                     )
                     Text(
-                        text = "Include the walk back to the selected start point.",
+                        text = stringResource(R.string.return_to_start_body),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -593,9 +614,9 @@ private fun RouteParametersCard(
                         strokeWidth = 2.dp
                     )
                     Spacer(modifier = Modifier.width(12.dp))
-                    Text("Generating route...")
+                    Text(stringResource(R.string.action_generating_route))
                 } else {
-                    Text("Generate route")
+                    Text(stringResource(R.string.action_generate_route))
                 }
             }
         }
@@ -612,24 +633,48 @@ private fun RouteSummaryCard(routeResponse: RouteResponse) {
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Text(
-                text = "Route summary",
+                text = stringResource(R.string.route_summary_title),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold
             )
-            Text("City: ${routeResponse.city}")
             Text(
-                "Start: ${formatCoordinate(routeResponse.start.lat)}, ${formatCoordinate(routeResponse.start.lon)}"
+                stringResource(R.string.route_summary_city, routeResponse.city)
             )
-            Text("Start time: ${routeResponse.start_datetime.toRouteDateTimeLabel()}")
-            Text("Pace: ${routeResponse.pace.replaceFirstChar { it.uppercase() }}")
-            Text("Stops: ${routeResponse.poi_count}")
-            Text("Used time: ${routeResponse.used_minutes} / ${routeResponse.available_minutes} min")
-            Text("Walking: ${routeResponse.total_walk_minutes} min")
-            Text("Visits: ${routeResponse.total_visit_minutes} min")
-            Text("Remaining: ${routeResponse.remaining_minutes} min")
-            Text("Return to start: ${routeResponse.return_to_start_minutes} min")
             Text(
-                "Opening-hours filter: ${if (routeResponse.respect_opening_hours) "on" else "off"}"
+                stringResource(
+                    R.string.route_summary_start,
+                    formatCoordinate(routeResponse.start.lat),
+                    formatCoordinate(routeResponse.start.lon)
+                )
+            )
+            Text(
+                stringResource(
+                    R.string.route_summary_start_time,
+                    routeResponse.start_datetime.toRouteDateTimeLabel(stringResource(R.string.common_unknown))
+                )
+            )
+            Text(stringResource(R.string.route_summary_pace, paceLabel(routeResponse.pace)))
+            Text(stringResource(R.string.route_summary_stops, routeResponse.poi_count))
+            Text(
+                stringResource(
+                    R.string.route_summary_used_time,
+                    routeResponse.used_minutes,
+                    routeResponse.available_minutes
+                )
+            )
+            Text(stringResource(R.string.route_summary_walking, routeResponse.total_walk_minutes))
+            Text(stringResource(R.string.route_summary_visits, routeResponse.total_visit_minutes))
+            Text(stringResource(R.string.route_summary_remaining, routeResponse.remaining_minutes))
+            Text(stringResource(R.string.route_summary_return_to_start, routeResponse.return_to_start_minutes))
+            Text(
+                stringResource(
+                    R.string.route_summary_opening_hours_filter,
+                    if (routeResponse.respect_opening_hours) {
+                        stringResource(R.string.state_on)
+                    } else {
+                        stringResource(R.string.state_off)
+                    }
+                )
             )
         }
     }
@@ -645,22 +690,22 @@ private fun RouteStopCard(item: RouteItemDto) {
             verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
             Text(
-                text = "${item.order}. ${item.name}",
+                text = stringResource(R.string.route_stop_title, item.order, item.name),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold
             )
             Text(
-                text = item.category.toDisplayLabel(),
+                text = categoryLabel(item.category),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            Text("Walk from previous: ${item.travel_minutes_from_previous} min")
-            Text("Visit duration: ${item.visit_duration_min} min")
-            Text("Arrival after start: ${item.arrival_after_min} min")
-            Text("Departure after start: ${item.departure_after_min} min")
+            Text(stringResource(R.string.route_stop_walk_from_previous, item.travel_minutes_from_previous))
+            Text(stringResource(R.string.route_stop_visit_duration, item.visit_duration_min))
+            Text(stringResource(R.string.route_stop_arrival_after_start, item.arrival_after_min))
+            Text(stringResource(R.string.route_stop_departure_after_start, item.departure_after_min))
             if (!item.opening_hours_raw.isNullOrBlank()) {
                 Text(
-                    text = "Opening hours: ${item.opening_hours_raw}",
+                    text = stringResource(R.string.route_stop_opening_hours, item.opening_hours_raw),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -734,6 +779,30 @@ private fun applySavedSnapshot(
     selectedInterests.addAll(snapshot.request.interests)
 }
 
+@Composable
+private fun categoryLabel(category: String): String =
+    when (category) {
+        "attraction" -> stringResource(R.string.category_attraction)
+        "museum" -> stringResource(R.string.category_museum)
+        "gallery" -> stringResource(R.string.category_gallery)
+        "viewpoint" -> stringResource(R.string.category_viewpoint)
+        "monument" -> stringResource(R.string.category_monument)
+        "historical_site" -> stringResource(R.string.category_historical_site)
+        "park" -> stringResource(R.string.category_park)
+        "religious_site" -> stringResource(R.string.category_religious_site)
+        else -> category.toDisplayLabel()
+    }
+
+
+@Composable
+private fun paceLabel(pace: String): String =
+    when (pace) {
+        "slow" -> stringResource(R.string.pace_slow)
+        "normal" -> stringResource(R.string.pace_normal)
+        "fast" -> stringResource(R.string.pace_fast)
+        else -> pace.toDisplayLabel()
+    }
+
 private fun fetchCurrentLocation(
     context: Context,
     onSuccess: (Double, Double) -> Unit,
@@ -742,7 +811,7 @@ private fun fetchCurrentLocation(
     try {
         val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as? LocationManager
         if (locationManager == null) {
-            onError("Location service is unavailable.")
+            onError(context.getString(R.string.error_location_service_unavailable))
             return
         }
 
@@ -756,7 +825,7 @@ private fun fetchCurrentLocation(
         ) == PackageManager.PERMISSION_GRANTED
 
         if (!hasFinePermission && !hasCoarsePermission) {
-            onError("Location permission is missing.")
+            onError(context.getString(R.string.error_location_permission_missing))
             return
         }
 
@@ -790,7 +859,7 @@ private fun fetchCurrentLocation(
             if (lastKnownLocation != null) {
                 onSuccess(lastKnownLocation.latitude, lastKnownLocation.longitude)
             } else {
-                onError("No location provider is enabled.")
+                onError(context.getString(R.string.error_no_location_provider_enabled))
             }
             return
         }
@@ -800,7 +869,7 @@ private fun fetchCurrentLocation(
                 when {
                     location != null -> onSuccess(location.latitude, location.longitude)
                     lastKnownLocation != null -> onSuccess(lastKnownLocation.latitude, lastKnownLocation.longitude)
-                    else -> onError("Current location is unavailable.")
+                    else -> onError(context.getString(R.string.error_current_location_unavailable))
                 }
             }
             return
@@ -819,7 +888,7 @@ private fun fetchCurrentLocation(
                     if (lastKnownLocation != null) {
                         onSuccess(lastKnownLocation.latitude, lastKnownLocation.longitude)
                     } else {
-                        onError("No location provider is enabled.")
+                        onError(context.getString(R.string.error_no_location_provider_enabled))
                     }
                     locationManager.removeUpdates(this)
                 }
@@ -827,7 +896,7 @@ private fun fetchCurrentLocation(
             Looper.getMainLooper()
         )
     } catch (securityException: SecurityException) {
-        onError("Location permission is missing.")
+        onError(context.getString(R.string.error_location_permission_missing))
     }
 }
 
@@ -846,10 +915,10 @@ private fun String.toDisplayLabel(): String =
         part.replaceFirstChar { it.uppercase() }
     }
 
-private fun String?.toRouteDateTimeLabel(): String =
+private fun String?.toRouteDateTimeLabel(unknownLabel: String): String =
     runCatching {
         this?.let(LocalDateTime::parse)?.format(RouteTimeFormatter)
-    }.getOrNull() ?: "Unknown"
+    }.getOrNull() ?: unknownLabel
 
 private fun Throwable.toUserMessage(defaultMessage: String): String {
     val rawMessage = message?.substringBefore('\n')?.trim()

@@ -20,10 +20,24 @@ services:
     restart: unless-stopped
     environment:
       DATABASE_URL: postgresql://smart_tourism:smart_tourism@db:5432/smart_tourism
+      ROUTING_ENABLED: "true"
+      ROUTING_BASE_URL: http://routing:5000
+      ROUTING_PROFILE: foot
+      ROUTING_TIMEOUT_SECONDS: "0.75"
     ports:
       - "8000:8000"
     depends_on:
       - db
+
+  routing:
+    image: osrm/osrm-backend:latest
+    container_name: smart-tourism-routing
+    restart: unless-stopped
+    command: osrm-routed --algorithm mld /data/slovakia-latest.osrm
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./routing-data:/data:ro
 
 volumes:
   postgres_data:
