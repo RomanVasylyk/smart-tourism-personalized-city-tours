@@ -30,6 +30,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.RadioButton
@@ -37,6 +38,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.Checkbox
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -74,6 +76,9 @@ private val AvailableMinutesOptions = listOf(120, 180, 240)
 private val InterestOptions = listOf("museum", "historical_site", "viewpoint", "park")
 private val PaceOptions = listOf("slow", "normal", "fast")
 private val RouteTimeFormatter = DateTimeFormatter.ofPattern("EEE, MMM d HH:mm", Locale.getDefault())
+private const val RouteTrackingMinTimeMs = 5_000L
+private const val RouteTrackingMinDistanceMeters = 5f
+private const val PoiVisitedRadiusMeters = 60f
 
 @Composable
 fun RoutePlannerScreen() {
@@ -100,12 +105,26 @@ fun RoutePlannerScreen() {
     var isSelectingStart by remember { mutableStateOf(false) }
     var isLocating by remember { mutableStateOf(false) }
     var locationError by remember { mutableStateOf<String?>(null) }
+    var isRouteActive by remember { mutableStateOf(false) }
+    var isRouteFinished by remember { mutableStateOf(false) }
+    var currentRouteLocation by remember { mutableStateOf<RouteStartDto?>(null) }
+    var trackingError by remember { mutableStateOf<String?>(null) }
 
     val selectedInterests = remember { mutableStateListOf(*InterestOptions.toTypedArray()) }
+    val visitedPoiIds = remember { mutableStateListOf<Int>() }
+
+    val resetRouteSession = {
+        isRouteActive = false
+        isRouteFinished = false
+        currentRouteLocation = null
+        trackingError = null
+        visitedPoiIds.clear()
+    }
 
     val clearDisplayedRoute = {
         routeResponse = null
         routeError = null
+        resetRouteSession()
     }
 
     val updateStartPoint = { lat: Double, lon: Double ->
@@ -143,6 +162,29 @@ fun RoutePlannerScreen() {
         }
     }
 
+    fun activateRouteTracking() {
+        if (routeResponse?.route.isNullOrEmpty()) {
+            return
+        }
+
+        visitedPoiIds.clear()
+        currentRouteLocation = null
+        trackingError = null
+        isRouteFinished = false
+        isRouteActive = true
+    }
+
+    val trackingPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) {
+            activateRouteTracking()
+        } else {
+            isRouteActive = false
+            trackingError = locationPermissionDeniedMessage
+        }
+    }
+
     LaunchedEffect(Unit) {
         RouteStorage.load(context)?.let { snapshot ->
             applySavedSnapshot(
@@ -172,6 +214,38 @@ fun RoutePlannerScreen() {
 
     val routeItems = routeResponse?.route.orEmpty()
 
+    DisposableEffect(context, routeItems, isRouteActive) {
+        if (!isRouteActive) {
+            onDispose { }
+        } else {
+            val stopTracking = startRouteLocationTracking(
+                context = context,
+                onLocation = { location ->
+                    val routeLocation = RouteStartDto(
+                        lat = location.latitude,
+                        lon = location.longitude
+                    )
+
+                    currentRouteLocation = routeLocation
+                    trackingError = null
+                    markNearbyPoisVisited(
+                        routeItems = routeItems,
+                        currentLocation = routeLocation,
+                        visitedPoiIds = visitedPoiIds
+                    )
+                },
+                onError = { message ->
+                    isRouteActive = false
+                    trackingError = message
+                }
+            )
+
+            onDispose {
+                stopTracking()
+            }
+        }
+    }
+
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(16.dp),
@@ -198,6 +272,9 @@ fun RoutePlannerScreen() {
                 routeResponse = routeResponse,
                 startLat = startPoint.lat,
                 startLon = startPoint.lon,
+                currentLocation = currentRouteLocation,
+                visitedPoiIds = visitedPoiIds.toSet(),
+                isRouteActive = isRouteActive,
                 isLoading = isPoiLoading,
                 isSelectingStart = isSelectingStart,
                 onStartPointSelected = updateStartPoint,
@@ -294,6 +371,7 @@ fun RoutePlannerScreen() {
 
                         try {
                             val generatedRoute = ApiModule.poiApi.generateRoute(request)
+                            resetRouteSession()
                             routeResponse = generatedRoute
                             RouteStorage.save(
                                 context = context,
@@ -339,8 +417,45 @@ fun RoutePlannerScreen() {
             }
         }
 
+        if (trackingError != null) {
+            item {
+                StatusCard(
+                    title = stringResource(R.string.status_gps_tracking_unavailable),
+                    body = trackingError!!
+                )
+            }
+        }
+
         when {
             routeResponse != null -> {
+                item {
+                    RouteTrackingCard(
+                        routeItems = routeItems,
+                        visitedPoiIds = visitedPoiIds,
+                        currentLocation = currentRouteLocation,
+                        isRouteActive = isRouteActive,
+                        isRouteFinished = isRouteFinished,
+                        onStartRoute = {
+                            isSelectingStart = false
+
+                            val hasFineLocationPermission = ContextCompat.checkSelfPermission(
+                                context,
+                                Manifest.permission.ACCESS_FINE_LOCATION
+                            ) == PackageManager.PERMISSION_GRANTED
+
+                            if (hasFineLocationPermission) {
+                                activateRouteTracking()
+                            } else {
+                                trackingPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+                            }
+                        },
+                        onFinishRoute = {
+                            isRouteActive = false
+                            isRouteFinished = true
+                        }
+                    )
+                }
+
                 item {
                     RouteSummaryCard(routeResponse = routeResponse!!)
                 }
@@ -357,7 +472,16 @@ fun RoutePlannerScreen() {
                         items = routeItems,
                         key = { item -> item.poi_id }
                     ) { item ->
-                        RouteStopCard(item = item)
+                        RouteStopCard(
+                            item = item,
+                            isVisited = item.poi_id in visitedPoiIds,
+                            isRouteActive = isRouteActive,
+                            onMarkVisited = {
+                                if (item.poi_id !in visitedPoiIds) {
+                                    visitedPoiIds.add(item.poi_id)
+                                }
+                            }
+                        )
                     }
                 }
             }
@@ -411,7 +535,10 @@ private fun StartPointCard(
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
                 OutlinedButton(
                     onClick = onToggleMapSelection,
                     modifier = Modifier.weight(1f)
@@ -624,6 +751,106 @@ private fun RouteParametersCard(
 }
 
 @Composable
+private fun RouteTrackingCard(
+    routeItems: List<RouteItemDto>,
+    visitedPoiIds: List<Int>,
+    currentLocation: RouteStartDto?,
+    isRouteActive: Boolean,
+    isRouteFinished: Boolean,
+    onStartRoute: () -> Unit,
+    onFinishRoute: () -> Unit
+) {
+    val visitedCount = routeItems.count { item -> item.poi_id in visitedPoiIds }
+    val progress = if (routeItems.isEmpty()) {
+        0f
+    } else {
+        visitedCount.toFloat() / routeItems.size.toFloat()
+    }
+    val trackingState = when {
+        isRouteActive -> stringResource(R.string.route_tracking_state_active)
+        isRouteFinished -> stringResource(R.string.route_tracking_state_finished)
+        else -> stringResource(R.string.route_tracking_state_ready)
+    }
+
+    ElevatedCard {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            Text(
+                text = stringResource(R.string.route_tracking_title),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold
+            )
+            Text(
+                text = trackingState,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            LinearProgressIndicator(
+                progress = { progress },
+                modifier = Modifier.fillMaxWidth()
+            )
+            Text(
+                text = stringResource(
+                    R.string.route_tracking_visited_count,
+                    visitedCount,
+                    routeItems.size
+                )
+            )
+            if (isRouteActive && currentLocation == null) {
+                Text(
+                    text = stringResource(R.string.route_tracking_waiting_for_gps),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            if (currentLocation != null) {
+                Text(
+                    text = stringResource(
+                        R.string.route_tracking_current_location,
+                        formatCoordinate(currentLocation.lat),
+                        formatCoordinate(currentLocation.lon)
+                    ),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            Text(
+                text = if (routeItems.isEmpty()) {
+                    stringResource(R.string.route_tracking_no_stops)
+                } else {
+                    stringResource(R.string.route_tracking_auto_visit_hint, PoiVisitedRadiusMeters.toInt())
+                },
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Button(
+                    onClick = onStartRoute,
+                    modifier = Modifier.weight(1f),
+                    enabled = !isRouteActive && routeItems.isNotEmpty()
+                ) {
+                    Text(stringResource(R.string.action_start_route))
+                }
+                OutlinedButton(
+                    onClick = onFinishRoute,
+                    modifier = Modifier.weight(1f),
+                    enabled = isRouteActive
+                ) {
+                    Text(stringResource(R.string.action_finish_route))
+                }
+            }
+        }
+    }
+}
+
+@Composable
 private fun RouteSummaryCard(routeResponse: RouteResponse) {
     ElevatedCard {
         Column(
@@ -681,7 +908,12 @@ private fun RouteSummaryCard(routeResponse: RouteResponse) {
 }
 
 @Composable
-private fun RouteStopCard(item: RouteItemDto) {
+private fun RouteStopCard(
+    item: RouteItemDto,
+    isVisited: Boolean,
+    isRouteActive: Boolean,
+    onMarkVisited: () -> Unit
+) {
     Card {
         Column(
             modifier = Modifier
@@ -694,11 +926,29 @@ private fun RouteStopCard(item: RouteItemDto) {
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold
             )
-            Text(
-                text = categoryLabel(item.category),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = categoryLabel(item.category),
+                    modifier = Modifier.weight(1f),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                if (isVisited) {
+                    Text(
+                        text = stringResource(R.string.route_stop_visited),
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                } else if (isRouteActive) {
+                    OutlinedButton(onClick = onMarkVisited) {
+                        Text(stringResource(R.string.action_mark_visited))
+                    }
+                }
+            }
             Text(stringResource(R.string.route_stop_walk_from_previous, item.travel_minutes_from_previous))
             Text(stringResource(R.string.route_stop_visit_duration, item.visit_duration_min))
             Text(stringResource(R.string.route_stop_arrival_after_start, item.arrival_after_min))
@@ -898,6 +1148,123 @@ private fun fetchCurrentLocation(
     } catch (securityException: SecurityException) {
         onError(context.getString(R.string.error_location_permission_missing))
     }
+}
+
+private fun startRouteLocationTracking(
+    context: Context,
+    onLocation: (Location) -> Unit,
+    onError: (String) -> Unit
+): () -> Unit {
+    try {
+        val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as? LocationManager
+        if (locationManager == null) {
+            onError(context.getString(R.string.error_location_service_unavailable))
+            return {}
+        }
+
+        val hasFinePermission = ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+        val hasCoarsePermission = ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+
+        if (!hasFinePermission && !hasCoarsePermission) {
+            onError(context.getString(R.string.error_location_permission_missing))
+            return {}
+        }
+
+        val providers = buildList {
+            if (hasFinePermission && locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                add(LocationManager.GPS_PROVIDER)
+            }
+            if (locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
+                add(LocationManager.NETWORK_PROVIDER)
+            }
+        }.distinct()
+
+        if (providers.isEmpty()) {
+            onError(context.getString(R.string.error_no_location_provider_enabled))
+            return {}
+        }
+
+        val listener = object : LocationListener {
+            override fun onLocationChanged(location: Location) {
+                onLocation(location)
+            }
+
+            override fun onProviderDisabled(provider: String) {
+                val hasEnabledProvider = providers.any { enabledProvider ->
+                    runCatching {
+                        locationManager.isProviderEnabled(enabledProvider)
+                    }.getOrDefault(false)
+                }
+
+                if (!hasEnabledProvider) {
+                    onError(context.getString(R.string.error_no_location_provider_enabled))
+                }
+            }
+        }
+
+        providers.forEach { provider ->
+            locationManager.requestLocationUpdates(
+                provider,
+                RouteTrackingMinTimeMs,
+                RouteTrackingMinDistanceMeters,
+                listener,
+                Looper.getMainLooper()
+            )
+        }
+
+        providers
+            .mapNotNull { provider ->
+                runCatching {
+                    locationManager.getLastKnownLocation(provider)
+                }.getOrNull()
+            }
+            .maxByOrNull { location -> location.time }
+            ?.let(onLocation)
+
+        val stopTracking = {
+            locationManager.removeUpdates(listener)
+        }
+
+        return stopTracking
+    } catch (securityException: SecurityException) {
+        onError(context.getString(R.string.error_location_permission_missing))
+        return {}
+    }
+}
+
+private fun markNearbyPoisVisited(
+    routeItems: List<RouteItemDto>,
+    currentLocation: RouteStartDto,
+    visitedPoiIds: MutableList<Int>
+) {
+    routeItems
+        .filter { item -> item.poi_id !in visitedPoiIds }
+        .filter { item ->
+            distanceMeters(
+                startLat = currentLocation.lat,
+                startLon = currentLocation.lon,
+                endLat = item.lat,
+                endLon = item.lon
+            ) <= PoiVisitedRadiusMeters
+        }
+        .forEach { item -> visitedPoiIds.add(item.poi_id) }
+}
+
+private fun distanceMeters(
+    startLat: Double,
+    startLon: Double,
+    endLat: Double,
+    endLon: Double
+): Float {
+    val result = FloatArray(1)
+    Location.distanceBetween(startLat, startLon, endLat, endLon, result)
+    return result[0]
 }
 
 private fun defaultRouteStartDateTime(): LocalDateTime =

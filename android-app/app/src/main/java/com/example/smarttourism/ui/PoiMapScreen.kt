@@ -1,7 +1,11 @@
 package com.example.smarttourism.ui
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.Paint
+import android.graphics.Path
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -28,6 +32,9 @@ import com.example.smarttourism.R
 import com.example.smarttourism.data.PoiDto
 import com.example.smarttourism.data.RouteItemDto
 import com.example.smarttourism.data.RouteResponse
+import com.example.smarttourism.data.RouteStartDto
+import org.maplibre.android.annotations.Icon
+import org.maplibre.android.annotations.IconFactory
 import org.maplibre.android.annotations.MarkerOptions
 import org.maplibre.android.annotations.PolylineOptions
 import org.maplibre.android.camera.CameraPosition
@@ -37,14 +44,35 @@ import org.maplibre.android.maps.MapLibreMap
 import org.maplibre.android.maps.MapLibreMapOptions
 import org.maplibre.android.maps.MapView
 import java.util.Locale
+import kotlin.math.cos
+import kotlin.math.roundToInt
 
 private const val DefaultZoom = 13.0
 private const val StreetStyleUrl = "https://tiles.openfreemap.org/styles/liberty"
 private const val RouteLineColor = "#0F766E"
+private const val RouteTrimMaxSnapDistanceMeters = 200.0
+private const val CurrentLocationIconWidthDp = 42
+private const val CurrentLocationIconHeightDp = 48
+private const val CurrentLocationOuterColor = "#FFFFFF"
+private const val CurrentLocationFillColor = "#2563EB"
+private const val CurrentLocationCenterColor = "#DBEAFE"
+private const val VisitedStopIconWidthDp = 38
+private const val VisitedStopIconHeightDp = 44
+private const val VisitedStopOuterColor = "#FFFFFF"
+private const val VisitedStopFillColor = "#16A34A"
+private const val VisitedStopCheckColor = "#FFFFFF"
+
+private data class RouteProjection(
+    val point: LatLng,
+    val segmentIndex: Int,
+    val distanceMeters: Double
+)
 
 private data class MapTextResources(
     val startPointTitle: String,
+    val currentLocationTitle: String,
     val routeStopTitleFormat: String,
+    val visitedRouteStopTitleFormat: String,
     val routeStopSnippetFormat: String,
     val categoryLabels: Map<String, String>
 )
@@ -55,6 +83,9 @@ fun PoiMapScreen(
     routeResponse: RouteResponse?,
     startLat: Double,
     startLon: Double,
+    currentLocation: RouteStartDto?,
+    visitedPoiIds: Set<Int>,
+    isRouteActive: Boolean,
     isLoading: Boolean,
     isSelectingStart: Boolean,
     onStartPointSelected: (Double, Double) -> Unit,
@@ -65,6 +96,8 @@ fun PoiMapScreen(
     var map by remember(mapView) { mutableStateOf<MapLibreMap?>(null) }
     var isStyleLoaded by remember(mapView) { mutableStateOf(false) }
     val textResources = mapTextResources()
+    val currentLocationIcon = remember(context) { createCurrentLocationIcon(context) }
+    val visitedRouteStopIcon = remember(context) { createVisitedRouteStopIcon(context) }
 
     Box(modifier = modifier) {
         AndroidView(
@@ -103,7 +136,18 @@ fun PoiMapScreen(
             }
         }
 
-        LaunchedEffect(map, isStyleLoaded, pois, routeResponse, startLat, startLon, textResources) {
+        LaunchedEffect(
+            map,
+            isStyleLoaded,
+            pois,
+            routeResponse,
+            startLat,
+            startLon,
+            currentLocation,
+            visitedPoiIds,
+            isRouteActive,
+            textResources
+        ) {
             val mapInstance = map ?: return@LaunchedEffect
             if (!isStyleLoaded) return@LaunchedEffect
 
@@ -113,6 +157,11 @@ fun PoiMapScreen(
                 routeResponse = routeResponse,
                 startLat = startLat,
                 startLon = startLon,
+                currentLocation = currentLocation,
+                visitedPoiIds = visitedPoiIds,
+                isRouteActive = isRouteActive,
+                currentLocationIcon = currentLocationIcon,
+                visitedRouteStopIcon = visitedRouteStopIcon,
                 textResources = textResources
             )
         }
@@ -170,7 +219,9 @@ private fun rememberMapViewWithLifecycle(context: Context): MapView {
 private fun mapTextResources(): MapTextResources =
     MapTextResources(
         startPointTitle = stringResource(R.string.start_point_title),
+        currentLocationTitle = stringResource(R.string.map_current_location_title),
         routeStopTitleFormat = stringResource(R.string.route_stop_title),
+        visitedRouteStopTitleFormat = stringResource(R.string.map_visited_route_stop_title),
         routeStopSnippetFormat = stringResource(R.string.map_route_stop_snippet),
         categoryLabels = mapOf(
             "attraction" to stringResource(R.string.category_attraction),
@@ -190,6 +241,11 @@ private fun renderMapContent(
     routeResponse: RouteResponse?,
     startLat: Double,
     startLon: Double,
+    currentLocation: RouteStartDto?,
+    visitedPoiIds: Set<Int>,
+    isRouteActive: Boolean,
+    currentLocationIcon: Icon,
+    visitedRouteStopIcon: Icon,
     textResources: MapTextResources
 ) {
     map.clear()
@@ -206,11 +262,18 @@ private fun renderMapContent(
     when {
         routeItems.isNotEmpty() -> {
             val polylinePoints = buildRoutePolylinePoints(routeResponse, startPoint, routeItems)
+            val visiblePolylinePoints = buildVisibleRoutePolylinePoints(
+                polylinePoints = polylinePoints,
+                routeItems = routeItems,
+                currentLocation = currentLocation,
+                visitedPoiIds = visitedPoiIds,
+                shouldTrimPassedPath = isRouteActive
+            )
 
-            if (polylinePoints.size >= 2) {
+            if (visiblePolylinePoints.size >= 2) {
                 map.addPolyline(
                     PolylineOptions()
-                        .addAll(polylinePoints)
+                        .addAll(visiblePolylinePoints)
                         .color(Color.parseColor(RouteLineColor))
                         .width(6f)
                         .alpha(0.9f)
@@ -219,16 +282,31 @@ private fun renderMapContent(
 
             map.addMarkers(
                 routeItems.map { item ->
+                    val isVisited = item.poi_id in visitedPoiIds
+                    val routeStopTitle = String.format(
+                        Locale.getDefault(),
+                        textResources.routeStopTitleFormat,
+                        item.order,
+                        item.name
+                    )
+                    val markerTitle = if (isVisited) {
+                        String.format(
+                            Locale.getDefault(),
+                            textResources.visitedRouteStopTitleFormat,
+                            routeStopTitle
+                        )
+                    } else {
+                        routeStopTitle
+                    }
+
                     MarkerOptions()
                         .position(LatLng(item.lat, item.lon))
-                        .title(
-                            String.format(
-                                Locale.getDefault(),
-                                textResources.routeStopTitleFormat,
-                                item.order,
-                                item.name
-                            )
-                        )
+                        .apply {
+                            if (isVisited) {
+                                icon(visitedRouteStopIcon)
+                            }
+                        }
+                        .title(markerTitle)
                         .snippet(
                             String.format(
                                 Locale.getDefault(),
@@ -241,8 +319,12 @@ private fun renderMapContent(
                 }
             )
 
-            val firstStop = routeItems.first()
-            moveCamera(map, firstStop.lat, firstStop.lon)
+            if (currentLocation != null) {
+                moveCamera(map, currentLocation.lat, currentLocation.lon)
+            } else {
+                val firstStop = routeItems.first()
+                moveCamera(map, firstStop.lat, firstStop.lon)
+            }
         }
 
         pois.isNotEmpty() -> {
@@ -262,7 +344,281 @@ private fun renderMapContent(
             moveCamera(map, startLat, startLon)
         }
     }
+
+    if (currentLocation != null) {
+        map.addMarker(
+            MarkerOptions()
+                .position(LatLng(currentLocation.lat, currentLocation.lon))
+                .icon(currentLocationIcon)
+                .title(textResources.currentLocationTitle)
+                .snippet("${formatCoordinate(currentLocation.lat)}, ${formatCoordinate(currentLocation.lon)}")
+        )
+    }
 }
+
+private fun createCurrentLocationIcon(context: Context): Icon {
+    val density = context.resources.displayMetrics.density
+    val width = (CurrentLocationIconWidthDp * density).roundToInt()
+    val height = (CurrentLocationIconHeightDp * density).roundToInt()
+    val centerX = width / 2f
+    val circleY = 17f * density
+
+    val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+    val canvas = Canvas(bitmap)
+    val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        style = Paint.Style.FILL
+    }
+
+    paint.color = Color.parseColor(CurrentLocationOuterColor)
+    canvas.drawPath(
+        locationPinPath(
+            centerX = centerX,
+            circleY = circleY,
+            circleRadius = 18f * density,
+            tipY = height - 2f * density,
+            shoulderY = 31f * density,
+            shoulderHalfWidth = 9f * density
+        ),
+        paint
+    )
+
+    paint.color = Color.parseColor(CurrentLocationFillColor)
+    canvas.drawPath(
+        locationPinPath(
+            centerX = centerX,
+            circleY = circleY,
+            circleRadius = 13f * density,
+            tipY = height - 7f * density,
+            shoulderY = 28f * density,
+            shoulderHalfWidth = 6.5f * density
+        ),
+        paint
+    )
+
+    paint.color = Color.parseColor(CurrentLocationCenterColor)
+    canvas.drawCircle(centerX, circleY, 5f * density, paint)
+
+    return IconFactory.getInstance(context).fromBitmap(bitmap)
+}
+
+private fun createVisitedRouteStopIcon(context: Context): Icon {
+    val density = context.resources.displayMetrics.density
+    val width = (VisitedStopIconWidthDp * density).roundToInt()
+    val height = (VisitedStopIconHeightDp * density).roundToInt()
+    val centerX = width / 2f
+    val circleY = 15f * density
+
+    val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+    val canvas = Canvas(bitmap)
+    val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        style = Paint.Style.FILL
+    }
+
+    paint.color = Color.parseColor(VisitedStopOuterColor)
+    canvas.drawPath(
+        locationPinPath(
+            centerX = centerX,
+            circleY = circleY,
+            circleRadius = 16f * density,
+            tipY = height - 2f * density,
+            shoulderY = 28f * density,
+            shoulderHalfWidth = 8f * density
+        ),
+        paint
+    )
+
+    paint.color = Color.parseColor(VisitedStopFillColor)
+    canvas.drawPath(
+        locationPinPath(
+            centerX = centerX,
+            circleY = circleY,
+            circleRadius = 12f * density,
+            tipY = height - 7f * density,
+            shoulderY = 25f * density,
+            shoulderHalfWidth = 5.8f * density
+        ),
+        paint
+    )
+
+    paint.apply {
+        color = Color.parseColor(VisitedStopCheckColor)
+        style = Paint.Style.STROKE
+        strokeCap = Paint.Cap.ROUND
+        strokeJoin = Paint.Join.ROUND
+        strokeWidth = 3f * density
+    }
+    canvas.drawPath(
+        Path().apply {
+            moveTo(centerX - 5f * density, circleY)
+            lineTo(centerX - 1f * density, circleY + 4f * density)
+            lineTo(centerX + 6f * density, circleY - 5f * density)
+        },
+        paint
+    )
+
+    return IconFactory.getInstance(context).fromBitmap(bitmap)
+}
+
+private fun locationPinPath(
+    centerX: Float,
+    circleY: Float,
+    circleRadius: Float,
+    tipY: Float,
+    shoulderY: Float,
+    shoulderHalfWidth: Float
+): Path =
+    Path().apply {
+        addCircle(centerX, circleY, circleRadius, Path.Direction.CW)
+        moveTo(centerX - shoulderHalfWidth, shoulderY)
+        lineTo(centerX + shoulderHalfWidth, shoulderY)
+        lineTo(centerX, tipY)
+        close()
+    }
+
+private fun buildVisibleRoutePolylinePoints(
+    polylinePoints: List<LatLng>,
+    routeItems: List<RouteItemDto>,
+    currentLocation: RouteStartDto?,
+    visitedPoiIds: Set<Int>,
+    shouldTrimPassedPath: Boolean
+): List<LatLng> {
+    if (!shouldTrimPassedPath || currentLocation == null || polylinePoints.size < 2) {
+        return polylinePoints
+    }
+
+    val firstSearchSegmentIndex = firstRemainingSegmentIndex(
+        polylinePoints = polylinePoints,
+        routeItems = routeItems,
+        visitedPoiIds = visitedPoiIds
+    )
+    val projection = closestProjectionOnRoute(
+        polylinePoints = polylinePoints,
+        currentLocation = currentLocation,
+        firstSearchSegmentIndex = firstSearchSegmentIndex
+    ) ?: return polylinePoints
+
+    if (projection.distanceMeters > RouteTrimMaxSnapDistanceMeters) {
+        return polylinePoints.drop(firstSearchSegmentIndex)
+    }
+
+    return buildList {
+        add(projection.point)
+        addAll(polylinePoints.drop(projection.segmentIndex + 1))
+    }.withoutAdjacentDuplicates()
+}
+
+private fun firstRemainingSegmentIndex(
+    polylinePoints: List<LatLng>,
+    routeItems: List<RouteItemDto>,
+    visitedPoiIds: Set<Int>
+): Int {
+    val lastVisitedItem = routeItems
+        .filter { item -> item.poi_id in visitedPoiIds }
+        .maxByOrNull { item -> item.order }
+        ?: return 0
+
+    val closestStopPointIndex = closestPolylinePointIndex(
+        polylinePoints = polylinePoints,
+        lat = lastVisitedItem.lat,
+        lon = lastVisitedItem.lon
+    )
+
+    return closestStopPointIndex.coerceIn(0, polylinePoints.lastIndex - 1)
+}
+
+private fun closestProjectionOnRoute(
+    polylinePoints: List<LatLng>,
+    currentLocation: RouteStartDto,
+    firstSearchSegmentIndex: Int
+): RouteProjection? {
+    var closestProjection: RouteProjection? = null
+    val startIndex = firstSearchSegmentIndex.coerceIn(0, polylinePoints.lastIndex - 1)
+
+    for (index in startIndex until polylinePoints.lastIndex) {
+        val projection = projectPointToSegment(
+            pointLat = currentLocation.lat,
+            pointLon = currentLocation.lon,
+            segmentStart = polylinePoints[index],
+            segmentEnd = polylinePoints[index + 1],
+            segmentIndex = index
+        )
+
+        if (closestProjection == null || projection.distanceMeters < closestProjection.distanceMeters) {
+            closestProjection = projection
+        }
+    }
+
+    return closestProjection
+}
+
+private fun projectPointToSegment(
+    pointLat: Double,
+    pointLon: Double,
+    segmentStart: LatLng,
+    segmentEnd: LatLng,
+    segmentIndex: Int
+): RouteProjection {
+    val referenceLatRadians = Math.toRadians(pointLat)
+    val pointX = 0.0
+    val pointY = 0.0
+    val startX = longitudeToMeters(segmentStart.longitude - pointLon, referenceLatRadians)
+    val startY = latitudeToMeters(segmentStart.latitude - pointLat)
+    val endX = longitudeToMeters(segmentEnd.longitude - pointLon, referenceLatRadians)
+    val endY = latitudeToMeters(segmentEnd.latitude - pointLat)
+    val segmentX = endX - startX
+    val segmentY = endY - startY
+    val segmentLengthSquared = segmentX * segmentX + segmentY * segmentY
+
+    val projectionRatio = if (segmentLengthSquared == 0.0) {
+        0.0
+    } else {
+        (((pointX - startX) * segmentX + (pointY - startY) * segmentY) / segmentLengthSquared)
+            .coerceIn(0.0, 1.0)
+    }
+    val projectedX = startX + segmentX * projectionRatio
+    val projectedY = startY + segmentY * projectionRatio
+    val projectedLat = segmentStart.latitude + (segmentEnd.latitude - segmentStart.latitude) * projectionRatio
+    val projectedLon = segmentStart.longitude + (segmentEnd.longitude - segmentStart.longitude) * projectionRatio
+    val distanceMeters = kotlin.math.sqrt(projectedX * projectedX + projectedY * projectedY)
+
+    return RouteProjection(
+        point = LatLng(projectedLat, projectedLon),
+        segmentIndex = segmentIndex,
+        distanceMeters = distanceMeters
+    )
+}
+
+private fun closestPolylinePointIndex(
+    polylinePoints: List<LatLng>,
+    lat: Double,
+    lon: Double
+): Int {
+    val referenceLatRadians = Math.toRadians(lat)
+    return polylinePoints.indices.minByOrNull { index ->
+        val point = polylinePoints[index]
+        val x = longitudeToMeters(point.longitude - lon, referenceLatRadians)
+        val y = latitudeToMeters(point.latitude - lat)
+        x * x + y * y
+    } ?: 0
+}
+
+private fun List<LatLng>.withoutAdjacentDuplicates(): List<LatLng> =
+    fold(mutableListOf()) { result, point ->
+        val previous = result.lastOrNull()
+        if (previous == null || previous.latitude != point.latitude || previous.longitude != point.longitude) {
+            result.add(point)
+        }
+        result
+    }
+
+private fun latitudeToMeters(latitudeDelta: Double): Double =
+    latitudeDelta * 111_320.0
+
+private fun longitudeToMeters(
+    longitudeDelta: Double,
+    referenceLatRadians: Double
+): Double =
+    longitudeDelta * 111_320.0 * cos(referenceLatRadians)
 
 private fun buildRoutePolylinePoints(
     routeResponse: RouteResponse?,
