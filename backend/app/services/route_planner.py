@@ -67,6 +67,7 @@ class RouteGenerateRequest(BaseModel):
     return_to_start: bool = True
     start_datetime: str | None = None
     respect_opening_hours: bool = True
+    exclude_poi_ids: list[int] = Field(default_factory=list)
 
 
 def parse_start_datetime(raw_value: str | None) -> datetime:
@@ -223,6 +224,10 @@ def get_route_candidates(request: RouteGenerateRequest) -> list[dict]:
             if request.interests:
                 sql += " AND p.category = ANY(%s)"
                 params.append(request.interests)
+
+            if request.exclude_poi_ids:
+                sql += " AND NOT (p.id = ANY(%s))"
+                params.append(request.exclude_poi_ids)
 
             sql += """
                 ORDER BY p.base_score DESC NULLS LAST, p.name

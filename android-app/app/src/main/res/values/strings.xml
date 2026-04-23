@@ -8,6 +8,8 @@
     <string name="status_poi_preview_unavailable">POI preview unavailable</string>
     <string name="status_route_generation_failed">Route generation failed</string>
     <string name="status_gps_tracking_unavailable">GPS tracking unavailable</string>
+    <string name="status_off_route_title">You are off route</string>
+    <string name="status_off_route_body">Your GPS position is far from the next route segment. Recalculate from your current location to continue cleanly.</string>
     <string name="status_no_stops_title">No stops generated</string>
     <string name="status_no_stops_body">No route stops match the selected time budget, interests, and opening-hours constraints.</string>
     <string name="status_no_route_title">No route yet</string>
@@ -47,14 +49,34 @@
     <string name="route_tracking_title">Route progress</string>
     <string name="route_tracking_state_ready">Ready to start</string>
     <string name="route_tracking_state_active">GPS tracking active</string>
+    <string name="route_tracking_state_paused">Paused</string>
     <string name="route_tracking_state_finished">Route finished</string>
+    <string name="route_tracking_state_cancelled">Route cancelled</string>
+    <string name="route_tracking_route_id">Route ID: %1$s</string>
+    <string name="route_tracking_started_at">Started: %1$s</string>
     <string name="route_tracking_visited_count">Visited POIs: %1$d / %2$d</string>
+    <string name="route_tracking_next_target">Next point: %1$s</string>
+    <string name="route_tracking_no_next_target">No next point</string>
+    <string name="route_tracking_distance_to_next">Distance to next point: %1$s</string>
+    <string name="route_tracking_estimated_remaining">Estimated remaining time: %1$d min</string>
     <string name="route_tracking_waiting_for_gps">Waiting for GPS fix...</string>
     <string name="route_tracking_current_location">GPS: Lat %1$s, Lon %2$s</string>
     <string name="route_tracking_auto_visit_hint">POIs are marked visited automatically within %1$d m, or manually from each stop.</string>
+    <string name="route_tracking_finish_requirement">Finish route is available after at least %1$d / %2$d POIs are visited.</string>
     <string name="route_tracking_no_stops">No POIs are available for this route.</string>
     <string name="action_start_route">Start route</string>
+    <string name="action_pause_route">Pause</string>
+    <string name="action_resume_route">Resume</string>
     <string name="action_finish_route">Finish route</string>
+    <string name="action_cancel_route">Cancel</string>
+    <string name="action_recalculate_route">Recalculate from current location</string>
+    <string name="action_recalculating_route">Recalculating...</string>
+
+    <string name="route_feedback_title">Route feedback</string>
+    <string name="route_feedback_rating_label">Rating</string>
+    <string name="route_feedback_comfortable">Was the route comfortable?</string>
+    <string name="route_feedback_too_much_walking">Was there too much walking?</string>
+    <string name="route_feedback_interesting_pois">Were the POIs interesting?</string>
 
     <string name="route_summary_title">Route summary</string>
     <string name="route_summary_city">City: %1$s</string>

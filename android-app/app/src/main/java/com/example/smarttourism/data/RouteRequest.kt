@@ -9,5 +9,6 @@ data class RouteRequest(
     val pace: String,
     val return_to_start: Boolean,
     val start_datetime: String? = null,
-    val respect_opening_hours: Boolean = true
+    val respect_opening_hours: Boolean = true,
+    val exclude_poi_ids: List<Int> = emptyList()
 )
