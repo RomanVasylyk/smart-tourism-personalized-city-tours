@@ -4,30 +4,14 @@ import json
 import sys
 from pathlib import Path
 
-import yaml
 from psycopg.rows import dict_row
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+from utils.cities import load_city
 from utils.db import get_connection
-
-CONFIG_FILE = ROOT / "config" / "cities.yaml"
-
-
-def load_city() -> dict:
-    config = yaml.safe_load(CONFIG_FILE.read_text(encoding="utf-8")) or {}
-    cities = config.get("cities") or []
-    if not cities:
-        raise ValueError(f"No cities configured in {CONFIG_FILE}")
-
-    for city in cities:
-        if city.get("slug") == "nitra":
-            return city
-
-    raise ValueError("City 'nitra' not found in cities.yaml")
-
 
 def get_center(city: dict) -> tuple[float, float]:
     center = city.get("center") or {}
@@ -81,7 +65,8 @@ def ensure_city(conn, city: dict) -> int:
 
 
 def main() -> None:
-    city = load_city()
+    city_slug = sys.argv[1] if len(sys.argv) > 1 else "nitra"
+    city = load_city(city_slug)
     in_file = ROOT / "data" / "processed" / f"{city['slug']}_pois_normalized.json"
     pois = json.loads(in_file.read_text(encoding="utf-8"))
 

@@ -5,6 +5,7 @@ from fastapi import HTTPException
 from pydantic import BaseModel, Field
 
 from app.db.database import get_connection
+from app.services.city_profiles import city_profile_by_token
 from app.services.routing_service import RoutePoint, RoutingLeg, get_routing_service
 
 DAY_SEQUENCE = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"]
@@ -201,6 +202,10 @@ def is_poi_open_for_visit(raw_value: str | None, arrival_dt: datetime, visit_min
 
 
 def get_route_candidates(request: RouteGenerateRequest) -> list[dict]:
+    city_profile = city_profile_by_token(request.city) or {}
+    routing_limits = city_profile.get("routing_limits") or {}
+    limit = int(routing_limits.get("max_poi_candidates") or 300)
+
     with get_connection() as conn:
         with conn.cursor() as cur:
             sql = """
@@ -231,8 +236,9 @@ def get_route_candidates(request: RouteGenerateRequest) -> list[dict]:
 
             sql += """
                 ORDER BY p.base_score DESC NULLS LAST, p.name
-                LIMIT 300
+                LIMIT %s
             """
+            params.append(limit)
 
             cur.execute(sql, params)
             return cur.fetchall()

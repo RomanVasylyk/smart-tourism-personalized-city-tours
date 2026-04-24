@@ -1,13 +1,20 @@
 from __future__ import annotations
 
 import json
+import re
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from utils.cities import load_city
 
 
-def load_city_slug() -> str:
-    return "nitra"
+def load_city_profile() -> dict:
+    city_slug = sys.argv[1] if len(sys.argv) > 1 else "nitra"
+    return load_city(city_slug)
 
 
 def map_category(tags: dict) -> str | None:
@@ -46,7 +53,7 @@ def visit_duration_for(category: str) -> int:
     return mapping[category]
 
 
-def base_score_for(category: str) -> float:
+def base_score_for(category: str, city: dict) -> float:
     mapping = {
         "attraction": 0.8,
         "museum": 0.9,
@@ -57,7 +64,9 @@ def base_score_for(category: str) -> float:
         "park": 0.65,
         "religious_site": 0.7,
     }
-    return mapping[category]
+    base_score = mapping[category]
+    adjustment = (city.get("default_score_adjustments") or {}).get(category, 0.0)
+    return round(base_score + adjustment, 3)
 
 
 def parse_wikipedia(value: str | None) -> tuple[str | None, str | None]:
@@ -67,7 +76,7 @@ def parse_wikipedia(value: str | None) -> tuple[str | None, str | None]:
     return title, f"https://{lang}.wikipedia.org/wiki/{title.replace(' ', '_')}"
 
 
-def normalize_element(element: dict) -> dict | None:
+def normalize_element(element: dict, city: dict) -> dict | None:
     tags = element.get("tags", {})
     name = tags.get("name")
     category = map_category(tags)
@@ -78,6 +87,9 @@ def normalize_element(element: dict) -> dict | None:
     lat = element.get("lat") or element.get("center", {}).get("lat")
     lon = element.get("lon") or element.get("center", {}).get("lon")
     if lat is None or lon is None:
+        return None
+
+    if is_excluded(name, city):
         return None
 
     wikipedia_title, wikipedia_url = parse_wikipedia(tags.get("wikipedia"))
@@ -93,7 +105,7 @@ def normalize_element(element: dict) -> dict | None:
         "address": None,
         "opening_hours_raw": tags.get("opening_hours"),
         "visit_duration_min": visit_duration_for(category),
-        "base_score": base_score_for(category),
+        "base_score": base_score_for(category, city),
         "wikidata_id": tags.get("wikidata"),
         "wikipedia_title": wikipedia_title,
         "wikipedia_url": wikipedia_url,
@@ -117,13 +129,19 @@ def deduplicate(items: list[dict]) -> list[dict]:
     return result
 
 
+def is_excluded(name: str, city: dict) -> bool:
+    excluded_patterns = ((city.get("city_specific_exclusions") or {}).get("excluded_name_patterns")) or []
+    return any(re.search(pattern, name, flags=re.IGNORECASE) for pattern in excluded_patterns)
+
+
 def main() -> None:
-    slug = load_city_slug()
+    city = load_city_profile()
+    slug = city["slug"]
     raw_file = ROOT / "data" / "raw" / f"{slug}_osm_raw.json"
     out_file = ROOT / "data" / "processed" / f"{slug}_pois_normalized.json"
 
     data = json.loads(raw_file.read_text(encoding="utf-8"))
-    normalized = [item for item in (normalize_element(el) for el in data.get("elements", [])) if item]
+    normalized = [item for item in (normalize_element(el, city) for el in data.get("elements", [])) if item]
     normalized = deduplicate(normalized)
 
     out_file.parent.mkdir(parents=True, exist_ok=True)

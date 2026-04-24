@@ -27,6 +27,9 @@
     <string name="start_point_coordinates">Lat %1$s, Lon %2$s</string>
     <string name="start_point_selecting_body">Selection mode is active. Tap the map to move the start point.</string>
     <string name="start_point_default_body">Use the map or device location to change where the route begins.</string>
+    <string name="city_selector_title">City</string>
+    <string name="city_selector_body">Choose the city for POI preview, route generation, and session restore.</string>
+    <string name="city_selector_empty">City list is unavailable.</string>
     <string name="action_cancel_map_pick">Cancel map pick</string>
     <string name="action_pick_on_map">Pick on map</string>
     <string name="action_locating">Locating...</string>
@@ -40,6 +43,7 @@
     <string name="available_time_label">Available time</string>
     <string name="available_minutes_option">%1$d minutes</string>
     <string name="interests_label">Interests</string>
+    <string name="interests_unavailable">No categories are configured for the selected city.</string>
     <string name="pace_label">Pace</string>
     <string name="return_to_start_label">Return to start</string>
     <string name="return_to_start_body">Include the walk back to the selected start point.</string>

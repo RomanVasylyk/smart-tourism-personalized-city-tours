@@ -1,14 +1,18 @@
 from __future__ import annotations
 
 import json
+import sys
 import time
 from pathlib import Path
 
 import requests
-import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
-CONFIG_FILE = ROOT / "config" / "cities.yaml"
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from utils.cities import load_city
+
 OUTPUT_DIR = ROOT / "data" / "raw"
 OVERPASS_URLS = (
     "https://overpass-api.de/api/interpreter",
@@ -36,15 +40,6 @@ QUERY_TIMEOUT_SECONDS = 90
 HTTP_TIMEOUT_SECONDS = 180
 MAX_ATTEMPTS_PER_URL = 2
 PAUSE_BETWEEN_BATCHES_SECONDS = 1
-
-
-def load_city() -> dict:
-    config = yaml.safe_load(CONFIG_FILE.read_text(encoding="utf-8")) or {}
-    cities = config.get("cities") or []
-    if not cities:
-        raise ValueError(f"No cities configured in {CONFIG_FILE}")
-    return cities[0]
-
 
 def build_query(city: dict, element_type: str) -> str:
     bbox = city.get("bbox") or {}
@@ -127,7 +122,8 @@ def merge_payloads(payloads: list[dict]) -> dict:
 
 
 def main() -> None:
-    city = load_city()
+    city_slug = sys.argv[1] if len(sys.argv) > 1 else "nitra"
+    city = load_city(city_slug)
     session = requests.Session()
     session.headers.update(OVERPASS_HEADERS)
 

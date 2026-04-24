@@ -8,9 +8,12 @@ import retrofit2.http.POST
 import retrofit2.http.Query
 
 interface PoiApi {
+    @GET("cities")
+    suspend fun getCities(): List<CityDto>
+
     @GET("pois")
     suspend fun getPois(
-        @Query("city") city: String = "nitra"
+        @Query("city") city: String
     ): List<PoiDto>
 
     @POST("route/generate")

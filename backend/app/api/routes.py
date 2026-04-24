@@ -3,6 +3,7 @@ from uuid import UUID
 from fastapi import APIRouter
 
 from app.db.database import get_connection
+from app.services.city_profiles import city_profile_by_token, load_city_profiles
 from app.services.route_planner import RouteGenerateRequest, generate_route
 from app.services.route_sessions import (
     RouteFeedbackRequest,
@@ -36,11 +37,36 @@ def get_cities():
                 ORDER BY name
                 """
             )
-            return cur.fetchall()
+            rows = cur.fetchall()
+
+    rows_by_name = {row["name"].strip().lower(): row for row in rows}
+    city_profiles = load_city_profiles()
+    ordered_rows = []
+
+    for profile in city_profiles:
+        row = rows_by_name.get(str(profile.get("name", "")).strip().lower())
+        if row is None:
+            continue
+
+        ordered_rows.append(
+            {
+                **row,
+                "slug": profile.get("slug"),
+                "bbox": profile.get("bbox"),
+                "available_categories": profile.get("available_categories") or [],
+                "default_zoom": profile.get("default_zoom"),
+                "routing_limits": profile.get("routing_limits") or {},
+            }
+        )
+
+    return ordered_rows
 
 
 @router.get("/pois")
 def get_pois(city: str = "nitra"):
+    city_profile = city_profile_by_token(city) or {}
+    city_name = city_profile.get("name") or city
+
     with get_connection() as conn:
         with conn.cursor() as cur:
             cur.execute(
@@ -60,7 +86,7 @@ def get_pois(city: str = "nitra"):
                 WHERE lower(c.name) = lower(%s)
                 ORDER BY p.base_score DESC NULLS LAST, p.name
                 """,
-                (city,),
+                (city_name,),
             )
             return cur.fetchall()
 

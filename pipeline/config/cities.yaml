@@ -2,8 +2,58 @@ cities:
   - slug: nitra
     name: Nitra
     country: Slovakia
+    center:
+      lat: 48.3076
+      lon: 18.0845
     bbox:
       south: 48.28
       west: 18.03
       north: 48.36
       east: 18.13
+    available_categories:
+      - attraction
+      - museum
+      - gallery
+      - viewpoint
+      - monument
+      - historical_site
+      - park
+      - religious_site
+    default_score_adjustments:
+      historical_site: 0.05
+      museum: 0.05
+    default_zoom: 13.0
+    routing_limits:
+      max_available_minutes: 360
+      max_poi_candidates: 300
+    city_specific_exclusions:
+      excluded_name_patterns: []
+  - slug: trnava
+    name: Trnava
+    country: Slovakia
+    center:
+      lat: 48.3767652
+      lon: 17.5858175
+    bbox:
+      south: 48.3185992
+      west: 17.4874416
+      north: 48.4278428
+      east: 17.6595140
+    available_categories:
+      - attraction
+      - museum
+      - gallery
+      - viewpoint
+      - monument
+      - historical_site
+      - park
+      - religious_site
+    default_score_adjustments:
+      historical_site: 0.05
+      religious_site: 0.03
+    default_zoom: 13.2
+    routing_limits:
+      max_available_minutes: 300
+      max_poi_candidates: 250
+    city_specific_exclusions:
+      excluded_name_patterns: []

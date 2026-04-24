@@ -58,6 +58,7 @@ import androidx.core.content.ContextCompat
 import com.example.smarttourism.R
 import com.example.smarttourism.data.ActiveRouteSession
 import com.example.smarttourism.data.ApiModule
+import com.example.smarttourism.data.CityDto
 import com.example.smarttourism.data.PoiDto
 import com.example.smarttourism.data.RouteFeedback
 import com.example.smarttourism.data.RouteFeedbackRequest
@@ -79,10 +80,19 @@ import java.util.Locale
 import java.util.UUID
 import kotlin.math.ceil
 
-private const val DefaultCity = "nitra"
-private val DefaultStartPoint = RouteStartDto(lat = 48.3076, lon = 18.0845)
+private const val DefaultCitySlug = "nitra"
+private val EmptyStartPoint = RouteStartDto(lat = 48.3076, lon = 18.0845)
 private val AvailableMinutesOptions = listOf(120, 180, 240)
-private val InterestOptions = listOf("museum", "historical_site", "viewpoint", "park")
+private val DefaultInterestCategories = listOf(
+    "attraction",
+    "museum",
+    "gallery",
+    "viewpoint",
+    "monument",
+    "historical_site",
+    "park",
+    "religious_site"
+)
 private val PaceOptions = listOf("slow", "normal", "fast")
 private val RouteTimeFormatter = DateTimeFormatter.ofPattern("EEE, MMM d HH:mm", Locale.getDefault())
 private const val RouteTrackingMinTimeMs = 5_000L
@@ -122,6 +132,8 @@ fun RoutePlannerScreen() {
     val poiPreviewFailedMessage = stringResource(R.string.error_poi_preview_failed)
     val routeGenerationFailedMessage = stringResource(R.string.error_route_generation_failed_default)
 
+    var cities by remember { mutableStateOf<List<CityDto>>(emptyList()) }
+    var selectedCity by remember { mutableStateOf<CityDto?>(null) }
     var pois by remember { mutableStateOf<List<PoiDto>>(emptyList()) }
     var isPoiLoading by remember { mutableStateOf(true) }
     var poiError by remember { mutableStateOf<String?>(null) }
@@ -136,7 +148,7 @@ fun RoutePlannerScreen() {
     var pace by remember { mutableStateOf("normal") }
     var returnToStart by remember { mutableStateOf(true) }
     var respectOpeningHours by remember { mutableStateOf(true) }
-    var startPoint by remember { mutableStateOf(DefaultStartPoint) }
+    var startPoint by remember { mutableStateOf(EmptyStartPoint) }
     var startDateTime by remember { mutableStateOf(defaultRouteStartDateTime()) }
     var isSelectingStart by remember { mutableStateOf(false) }
     var isLocating by remember { mutableStateOf(false) }
@@ -149,7 +161,7 @@ fun RoutePlannerScreen() {
     var trackingError by remember { mutableStateOf<String?>(null) }
     var routeFeedback by remember { mutableStateOf<RouteFeedback?>(null) }
 
-    val selectedInterests = remember { mutableStateListOf(*InterestOptions.toTypedArray()) }
+    val selectedInterests = remember { mutableStateListOf<String>() }
     val visitedPoiIds = remember { mutableStateListOf<Int>() }
     val routeItems = routeResponse?.route.orEmpty()
 
@@ -169,10 +181,45 @@ fun RoutePlannerScreen() {
         }
     }
 
-    val clearDisplayedRoute = {
+    fun clearDisplayedRoute(cancelActiveSession: Boolean = true) {
+        val snapshot = if (currentRouteRequest != null && routeResponse != null) {
+            SavedRouteSnapshot(
+                request = currentRouteRequest!!,
+                response = routeResponse!!
+            )
+        } else {
+            null
+        }
+        val activeRouteId = routeId
+        val activeStatus = routeSessionStatus
+
         routeResponse = null
         currentRouteRequest = null
         routeError = null
+
+        if (
+            cancelActiveSession &&
+            activeRouteId != null &&
+            snapshot != null &&
+            (activeStatus == RouteSessionStatus.IN_PROGRESS || activeStatus == RouteSessionStatus.PAUSED)
+        ) {
+            scope.launch {
+                runCatching {
+                    ApiModule.poiApi.updateRouteSession(
+                        sessionId = activeRouteId,
+                        request = RouteSessionUpdateRequest(
+                            status = RouteSessionStatus.CANCELLED.rawValue,
+                            finished_at = defaultRouteStartDateTime().toString(),
+                            used_minutes = snapshot.response.used_minutes,
+                            total_walk_minutes = snapshot.response.total_walk_minutes,
+                            total_visit_minutes = snapshot.response.total_visit_minutes,
+                            route_snapshot_json = snapshot.response
+                        )
+                    )
+                }
+            }
+        }
+
         resetRouteSession()
     }
 
@@ -421,6 +468,7 @@ fun RoutePlannerScreen() {
     LaunchedEffect(Unit) {
         val activeSession = RouteStorage.loadActiveSession(context)
         val savedSnapshot = activeSession?.snapshot ?: RouteStorage.load(context)
+        var restoredCityToken = savedSnapshot?.request?.city
 
         savedSnapshot?.let { snapshot ->
             currentRouteRequest = snapshot.request
@@ -450,13 +498,18 @@ fun RoutePlannerScreen() {
         }
 
         runCatching {
-            val remoteSession = routeId
-                ?.let { savedRouteId -> ApiModule.poiApi.getRouteSession(savedRouteId) }
-                ?: ApiModule.poiApi.getRouteSessions(deviceId)
-                    .firstOrNull { session -> session.status != RouteSessionStatus.CANCELLED.rawValue }
+            val remoteSession = if (routeId != null && routeSessionStatus.isRestorable()) {
+                ApiModule.poiApi.getRouteSession(routeId!!)
+            } else {
+                ApiModule.poiApi.getRouteSessions(deviceId)
+                    .firstOrNull { session ->
+                        RouteSessionStatus.fromRawValue(session.status).isRestorable()
+                    }
+            }
 
             if (remoteSession != null) {
                 remoteSession.toSavedRouteSnapshot()?.let { snapshot ->
+                    restoredCityToken = snapshot.request.city
                     currentRouteRequest = snapshot.request
                     applySavedSnapshot(
                         snapshot = snapshot,
@@ -507,7 +560,40 @@ fun RoutePlannerScreen() {
         }
 
         try {
-            pois = ApiModule.poiApi.getPois(DefaultCity)
+            cities = ApiModule.poiApi.getCities()
+            selectedCity = cities.firstOrNull { city -> city.matchesToken(restoredCityToken) }
+                ?: cities.firstOrNull { city -> city.matchesToken(DefaultCitySlug) }
+                ?: cities.firstOrNull()
+            if (routeResponse == null) {
+                selectedCity?.let { city ->
+                    startPoint = city.toStartPoint()
+                }
+            }
+        } catch (_: Exception) {
+            cities = emptyList()
+            selectedCity = null
+        }
+    }
+
+    LaunchedEffect(selectedCity?.slug) {
+        val city = selectedCity ?: return@LaunchedEffect
+        isPoiLoading = true
+
+        if (selectedInterests.isEmpty()) {
+            selectedInterests.addAll(city.availableCategories())
+        } else {
+            val allowedCategories = city.availableCategories().toSet()
+            val filteredInterests = selectedInterests.filter { interest -> interest in allowedCategories }
+            selectedInterests.clear()
+            selectedInterests.addAll(filteredInterests.ifEmpty { city.availableCategories() })
+        }
+
+        if (routeResponse == null) {
+            startPoint = city.toStartPoint()
+        }
+
+        try {
+            pois = ApiModule.poiApi.getPois(city.slug)
             poiError = null
         } catch (e: Exception) {
             poiError = e.toUserMessage(poiPreviewFailedMessage)
@@ -566,6 +652,7 @@ fun RoutePlannerScreen() {
         currentLocation = currentRouteLocation,
         isTracking = routeSessionStatus == RouteSessionStatus.IN_PROGRESS
     )
+    val selectedCityAvailableCategories = selectedCity?.availableCategories().orEmpty()
 
     fun pauseRoute() {
         if (routeSessionStatus == RouteSessionStatus.IN_PROGRESS) {
@@ -702,11 +789,28 @@ fun RoutePlannerScreen() {
         }
 
         item {
+            CitySelectorCard(
+                cities = cities,
+                selectedCity = selectedCity,
+                onCitySelected = { city ->
+                    if (selectedCity?.slug == city.slug) {
+                        return@CitySelectorCard
+                    }
+                    selectedCity = city
+                    currentRouteRequest = null
+                    clearDisplayedRoute()
+                    startPoint = city.toStartPoint()
+                }
+            )
+        }
+
+        item {
             PoiMapScreen(
                 pois = pois,
                 routeResponse = routeResponse,
                 startLat = startPoint.lat,
                 startLon = startPoint.lon,
+                defaultZoom = selectedCity?.default_zoom,
                 currentLocation = currentRouteLocation,
                 visitedPoiIds = visitedPoiIds.toSet(),
                 isRouteActive = routeSessionStatus == RouteSessionStatus.IN_PROGRESS,
@@ -755,6 +859,7 @@ fun RoutePlannerScreen() {
                     availableMinutes = it
                     clearDisplayedRoute()
                 },
+                availableInterests = selectedCityAvailableCategories,
                 selectedInterests = selectedInterests,
                 onInterestToggle = { interest, checked ->
                     if (checked) {
@@ -791,9 +896,12 @@ fun RoutePlannerScreen() {
                     scope.launch {
                         isRouteLoading = true
                         routeError = null
+                        val existingSnapshot = currentRouteSnapshot()
+                        val existingRouteId = routeId
+                        val existingStatus = routeSessionStatus
 
                         val request = RouteRequest(
-                            city = DefaultCity,
+                            city = selectedCity?.slug ?: DefaultCitySlug,
                             start_lat = startPoint.lat,
                             start_lon = startPoint.lon,
                             available_minutes = availableMinutes,
@@ -806,6 +914,25 @@ fun RoutePlannerScreen() {
 
                         try {
                             val generatedRoute = ApiModule.poiApi.generateRoute(request)
+                            if (
+                                existingRouteId != null &&
+                                existingSnapshot != null &&
+                                existingStatus.isRestorable()
+                            ) {
+                                runCatching {
+                                    ApiModule.poiApi.updateRouteSession(
+                                        sessionId = existingRouteId,
+                                        request = RouteSessionUpdateRequest(
+                                            status = RouteSessionStatus.CANCELLED.rawValue,
+                                            finished_at = defaultRouteStartDateTime().toString(),
+                                            used_minutes = existingSnapshot.response.used_minutes,
+                                            total_walk_minutes = existingSnapshot.response.total_walk_minutes,
+                                            total_visit_minutes = existingSnapshot.response.total_visit_minutes,
+                                            route_snapshot_json = existingSnapshot.response
+                                        )
+                                    )
+                                }
+                            }
                             resetRouteSession()
                             currentRouteRequest = request
                             routeResponse = generatedRoute
@@ -941,6 +1068,58 @@ fun RoutePlannerScreen() {
 }
 
 @Composable
+private fun CitySelectorCard(
+    cities: List<CityDto>,
+    selectedCity: CityDto?,
+    onCitySelected: (CityDto) -> Unit
+) {
+    ElevatedCard {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Text(
+                text = stringResource(R.string.city_selector_title),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold
+            )
+            Text(
+                text = stringResource(R.string.city_selector_body),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
+            if (cities.isEmpty()) {
+                Text(
+                    text = stringResource(R.string.city_selector_empty),
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            } else {
+                cities.forEach { city ->
+                    SelectableRow(onClick = { onCitySelected(city) }) {
+                        RadioButton(
+                            selected = selectedCity?.id == city.id,
+                            onClick = null
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column {
+                            Text(city.name)
+                            Text(
+                                text = city.country,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
 private fun StartPointCard(
     startPoint: RouteStartDto,
     isSelectingStart: Boolean,
@@ -1022,6 +1201,7 @@ private fun StartPointCard(
 private fun RouteParametersCard(
     availableMinutes: Int,
     onAvailableMinutesChange: (Int) -> Unit,
+    availableInterests: List<String>,
     selectedInterests: List<String>,
     onInterestToggle: (String, Boolean) -> Unit,
     pace: String,
@@ -1115,17 +1295,25 @@ private fun RouteParametersCard(
                 text = stringResource(R.string.interests_label),
                 style = MaterialTheme.typography.labelLarge
             )
-            InterestOptions.forEach { interest ->
-                val checked = interest in selectedInterests
-                SelectableRow(
-                    onClick = { onInterestToggle(interest, !checked) }
-                ) {
-                    Checkbox(
-                        checked = checked,
-                        onCheckedChange = null
-                    )
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Text(categoryLabel(interest))
+            if (availableInterests.isEmpty()) {
+                Text(
+                    text = stringResource(R.string.interests_unavailable),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            } else {
+                availableInterests.forEach { interest ->
+                    val checked = interest in selectedInterests
+                    SelectableRow(
+                        onClick = { onInterestToggle(interest, !checked) }
+                    ) {
+                        Checkbox(
+                            checked = checked,
+                            onCheckedChange = null
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Text(categoryLabel(interest))
+                    }
                 }
             }
 
@@ -1720,6 +1908,28 @@ private fun RouteSessionDto.toRouteFeedback(): RouteFeedback? {
         pois_were_interesting = latestFeedback.pois_were_interesting
     )
 }
+
+private fun RouteSessionStatus.isRestorable(): Boolean =
+    this == RouteSessionStatus.NOT_STARTED ||
+        this == RouteSessionStatus.IN_PROGRESS ||
+        this == RouteSessionStatus.PAUSED
+
+private fun CityDto.matchesToken(token: String?): Boolean {
+    val normalizedToken = token?.trim()?.lowercase().orEmpty()
+    return normalizedToken.isNotBlank() &&
+        normalizedToken in setOf(slug.lowercase(), name.lowercase())
+}
+
+private fun CityDto.availableCategories(): List<String> =
+    available_categories
+        ?.map(String::trim)
+        ?.filter(String::isNotBlank)
+        ?.distinct()
+        .orEmpty()
+        .ifEmpty { DefaultInterestCategories }
+
+private fun CityDto.toStartPoint(): RouteStartDto =
+    RouteStartDto(center_lat, center_lon)
 
 @Composable
 private fun categoryLabel(category: String): String =

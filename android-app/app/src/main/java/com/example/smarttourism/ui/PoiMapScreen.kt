@@ -83,6 +83,7 @@ fun PoiMapScreen(
     routeResponse: RouteResponse?,
     startLat: Double,
     startLon: Double,
+    defaultZoom: Double? = null,
     currentLocation: RouteStartDto?,
     visitedPoiIds: Set<Int>,
     isRouteActive: Boolean,
@@ -107,7 +108,7 @@ fun PoiMapScreen(
                         map = mapInstance
                         mapInstance.setStyle(StreetStyleUrl) {
                             isStyleLoaded = true
-                            moveCamera(mapInstance, startLat, startLon)
+                            moveCamera(mapInstance, startLat, startLon, defaultZoom)
                         }
                     }
                 }
@@ -143,6 +144,7 @@ fun PoiMapScreen(
             routeResponse,
             startLat,
             startLon,
+            defaultZoom,
             currentLocation,
             visitedPoiIds,
             isRouteActive,
@@ -157,6 +159,7 @@ fun PoiMapScreen(
                 routeResponse = routeResponse,
                 startLat = startLat,
                 startLon = startLon,
+                defaultZoom = defaultZoom,
                 currentLocation = currentLocation,
                 visitedPoiIds = visitedPoiIds,
                 isRouteActive = isRouteActive,
@@ -241,6 +244,7 @@ private fun renderMapContent(
     routeResponse: RouteResponse?,
     startLat: Double,
     startLon: Double,
+    defaultZoom: Double?,
     currentLocation: RouteStartDto?,
     visitedPoiIds: Set<Int>,
     isRouteActive: Boolean,
@@ -320,10 +324,10 @@ private fun renderMapContent(
             )
 
             if (currentLocation != null) {
-                moveCamera(map, currentLocation.lat, currentLocation.lon)
+                moveCamera(map, currentLocation.lat, currentLocation.lon, defaultZoom)
             } else {
                 val firstStop = routeItems.first()
-                moveCamera(map, firstStop.lat, firstStop.lon)
+                moveCamera(map, firstStop.lat, firstStop.lon, defaultZoom)
             }
         }
 
@@ -337,11 +341,11 @@ private fun renderMapContent(
                 }
             )
 
-            moveCamera(map, startLat, startLon)
+            moveCamera(map, startLat, startLon, defaultZoom)
         }
 
         else -> {
-            moveCamera(map, startLat, startLon)
+            moveCamera(map, startLat, startLon, defaultZoom)
         }
     }
 
@@ -648,13 +652,14 @@ private fun buildRoutePolylinePoints(
 private fun moveCamera(
     map: MapLibreMap,
     lat: Double,
-    lon: Double
+    lon: Double,
+    zoom: Double? = null
 ) {
     map.moveCamera(
         CameraUpdateFactory.newCameraPosition(
             CameraPosition.Builder()
                 .target(LatLng(lat, lon))
-                .zoom(DefaultZoom)
+                .zoom(zoom ?: DefaultZoom)
                 .build()
         )
     )

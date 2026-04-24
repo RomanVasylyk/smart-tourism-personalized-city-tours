@@ -1,0 +1,13 @@
+.git
+.gitignore
+.idea
+.pytest_cache
+.DS_Store
+android-app
+docs
+routing-data
+backend/tests
+backend/sql
+pipeline/data
+__pycache__
+*.pyc
