@@ -2,12 +2,14 @@ package com.example.smarttourism.data
 
 import android.content.Context
 import com.google.gson.Gson
+import java.util.UUID
 
 object RouteStorage {
     private val gson = Gson()
     private const val PreferencesName = "route_storage"
     private const val LastRouteKey = "last_route_snapshot"
     private const val ActiveRouteSessionKey = "active_route_session"
+    private const val DeviceIdKey = "device_id"
 
     suspend fun load(context: Context): SavedRouteSnapshot? {
         val rawJson = context
@@ -63,5 +65,21 @@ object RouteStorage {
             .edit()
             .remove(ActiveRouteSessionKey)
             .apply()
+    }
+
+    fun getOrCreateDeviceId(context: Context): String {
+        val preferences = context.getSharedPreferences(PreferencesName, Context.MODE_PRIVATE)
+        val existingDeviceId = preferences.getString(DeviceIdKey, null)
+        if (!existingDeviceId.isNullOrBlank()) {
+            return existingDeviceId
+        }
+
+        val deviceId = UUID.randomUUID().toString()
+        preferences
+            .edit()
+            .putString(DeviceIdKey, deviceId)
+            .apply()
+
+        return deviceId
     }
 }

@@ -36,6 +36,57 @@ CREATE INDEX IF NOT EXISTS idx_pois_city_id ON pois(city_id);
 CREATE INDEX IF NOT EXISTS idx_pois_category ON pois(category);
 CREATE INDEX IF NOT EXISTS idx_pois_geom ON pois USING GIST (geom);
 
+CREATE TABLE IF NOT EXISTS route_sessions (
+    id UUID PRIMARY KEY,
+    device_id TEXT NOT NULL,
+    city_id INTEGER NOT NULL REFERENCES cities(id),
+    status TEXT NOT NULL CHECK (status IN ('not_started', 'in_progress', 'paused', 'completed', 'cancelled')),
+    start_lat DOUBLE PRECISION NOT NULL,
+    start_lon DOUBLE PRECISION NOT NULL,
+    available_minutes INTEGER NOT NULL,
+    pace TEXT NOT NULL,
+    return_to_start BOOLEAN NOT NULL,
+    opening_hours_enabled BOOLEAN NOT NULL,
+    started_at TIMESTAMPTZ NOT NULL,
+    finished_at TIMESTAMPTZ,
+    used_minutes INTEGER,
+    total_walk_minutes INTEGER,
+    total_visit_minutes INTEGER,
+    route_snapshot_json JSONB NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS route_session_pois (
+    id BIGSERIAL PRIMARY KEY,
+    session_id UUID NOT NULL REFERENCES route_sessions(id) ON DELETE CASCADE,
+    poi_id INTEGER NOT NULL REFERENCES pois(id),
+    visit_order INTEGER NOT NULL,
+    planned_arrival_min INTEGER,
+    planned_departure_min INTEGER,
+    visited BOOLEAN NOT NULL DEFAULT FALSE,
+    visited_at TIMESTAMPTZ,
+    skipped BOOLEAN NOT NULL DEFAULT FALSE,
+    UNIQUE (session_id, poi_id)
+);
+
+CREATE TABLE IF NOT EXISTS route_feedback (
+    id BIGSERIAL PRIMARY KEY,
+    session_id UUID NOT NULL REFERENCES route_sessions(id) ON DELETE CASCADE,
+    rating INTEGER NOT NULL CHECK (rating BETWEEN 1 AND 5),
+    was_convenient BOOLEAN NOT NULL,
+    too_much_walking BOOLEAN NOT NULL,
+    pois_were_interesting BOOLEAN NOT NULL,
+    comment TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_route_sessions_device_id ON route_sessions(device_id);
+CREATE INDEX IF NOT EXISTS idx_route_sessions_city_id ON route_sessions(city_id);
+CREATE INDEX IF NOT EXISTS idx_route_sessions_status ON route_sessions(status);
+CREATE INDEX IF NOT EXISTS idx_route_session_pois_session_id ON route_session_pois(session_id);
+CREATE INDEX IF NOT EXISTS idx_route_feedback_session_id ON route_feedback(session_id);
+
 INSERT INTO cities (name, country, center_lat, center_lon)
 VALUES ('Nitra', 'Slovakia', 48.3076, 18.0845)
 ON CONFLICT DO NOTHING;

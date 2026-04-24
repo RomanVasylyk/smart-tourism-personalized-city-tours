@@ -60,8 +60,13 @@ import com.example.smarttourism.data.ActiveRouteSession
 import com.example.smarttourism.data.ApiModule
 import com.example.smarttourism.data.PoiDto
 import com.example.smarttourism.data.RouteFeedback
+import com.example.smarttourism.data.RouteFeedbackRequest
 import com.example.smarttourism.data.RouteRequest
 import com.example.smarttourism.data.RouteResponse
+import com.example.smarttourism.data.RouteSessionDto
+import com.example.smarttourism.data.RouteSessionCreateRequest
+import com.example.smarttourism.data.RouteSessionPoiVisitRequest
+import com.example.smarttourism.data.RouteSessionUpdateRequest
 import com.example.smarttourism.data.RouteStartDto
 import com.example.smarttourism.data.RouteStorage
 import com.example.smarttourism.data.RouteItemDto
@@ -112,6 +117,7 @@ private data class RouteProgressMetrics(
 fun RoutePlannerScreen() {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val deviceId = remember(context) { RouteStorage.getOrCreateDeviceId(context) }
     val locationPermissionDeniedMessage = stringResource(R.string.error_location_permission_denied)
     val poiPreviewFailedMessage = stringResource(R.string.error_poi_preview_failed)
     val routeGenerationFailedMessage = stringResource(R.string.error_route_generation_failed_default)
@@ -215,6 +221,55 @@ fun RoutePlannerScreen() {
         }
     }
 
+    suspend fun syncRouteSessionToBackend(
+        sessionRouteId: String,
+        status: RouteSessionStatus,
+        startedAtValue: String,
+        snapshot: SavedRouteSnapshot,
+        finishedAt: String? = null
+    ) {
+        val response = snapshot.response
+        ApiModule.poiApi.createRouteSession(
+            RouteSessionCreateRequest(
+                id = sessionRouteId,
+                device_id = deviceId,
+                city = response.city,
+                status = status.rawValue,
+                start_lat = response.start.lat,
+                start_lon = response.start.lon,
+                available_minutes = response.available_minutes,
+                pace = response.pace,
+                return_to_start = response.return_to_start,
+                opening_hours_enabled = response.respect_opening_hours,
+                started_at = startedAtValue,
+                finished_at = finishedAt,
+                used_minutes = response.used_minutes,
+                total_walk_minutes = response.total_walk_minutes,
+                total_visit_minutes = response.total_visit_minutes,
+                route_snapshot_json = response
+            )
+        )
+    }
+
+    suspend fun patchRouteSessionStatusOnBackend(
+        sessionRouteId: String,
+        status: RouteSessionStatus,
+        snapshot: SavedRouteSnapshot,
+        finishedAt: String? = null
+    ) {
+        ApiModule.poiApi.updateRouteSession(
+            sessionId = sessionRouteId,
+            request = RouteSessionUpdateRequest(
+                status = status.rawValue,
+                finished_at = finishedAt,
+                used_minutes = snapshot.response.used_minutes,
+                total_walk_minutes = snapshot.response.total_walk_minutes,
+                total_visit_minutes = snapshot.response.total_visit_minutes,
+                route_snapshot_json = snapshot.response
+            )
+        )
+    }
+
     fun persistRouteSession(
         status: RouteSessionStatus = routeSessionStatus,
         routeIdValue: String? = routeId,
@@ -232,6 +287,12 @@ fun RoutePlannerScreen() {
         currentTargetPoiId = nextTargetId
 
         scope.launch {
+            val finishedAt = if (status == RouteSessionStatus.COMPLETED || status == RouteSessionStatus.CANCELLED) {
+                defaultRouteStartDateTime().toString()
+            } else {
+                null
+            }
+
             RouteStorage.saveActiveSession(
                 context = context,
                 session = ActiveRouteSession(
@@ -246,12 +307,73 @@ fun RoutePlannerScreen() {
                     feedback = feedback
                 )
             )
+
+            runCatching {
+                syncRouteSessionToBackend(
+                    sessionRouteId = savedRouteId,
+                    status = status,
+                    startedAtValue = savedStartedAt,
+                    snapshot = snapshot,
+                    finishedAt = finishedAt
+                )
+            }.recoverCatching {
+                patchRouteSessionStatusOnBackend(
+                    sessionRouteId = savedRouteId,
+                    status = status,
+                    snapshot = snapshot,
+                    finishedAt = finishedAt
+                )
+            }
         }
     }
 
     fun setRouteStatus(status: RouteSessionStatus) {
         routeSessionStatus = status
         persistRouteSession(status = status)
+    }
+
+    fun syncVisitedPoisToBackend(poiIds: List<Int>) {
+        val sessionRouteId = routeId ?: return
+        if (poiIds.isEmpty()) {
+            return
+        }
+
+        scope.launch {
+            poiIds.distinct().forEach { poiId ->
+                runCatching {
+                    ApiModule.poiApi.markRouteSessionPoiVisited(
+                        sessionId = sessionRouteId,
+                        poiId = poiId,
+                        request = RouteSessionPoiVisitRequest(
+                            visited_at = defaultRouteStartDateTime().toString(),
+                            skipped = false
+                        )
+                    )
+                }
+            }
+        }
+    }
+
+    fun syncFeedbackToBackend(feedback: RouteFeedback) {
+        val sessionRouteId = routeId ?: return
+        if (feedback.rating !in 1..5) {
+            return
+        }
+
+        scope.launch {
+            runCatching {
+                ApiModule.poiApi.saveRouteFeedback(
+                    sessionId = sessionRouteId,
+                    request = RouteFeedbackRequest(
+                        rating = feedback.rating,
+                        was_convenient = feedback.route_was_comfortable,
+                        too_much_walking = feedback.too_much_walking,
+                        pois_were_interesting = feedback.pois_were_interesting,
+                        comment = null
+                    )
+                )
+            }
+        }
     }
 
     fun activateRouteTracking() {
@@ -327,6 +449,63 @@ fun RoutePlannerScreen() {
             visitedPoiIds.addAll(activeSession.visited_poi_ids.distinct())
         }
 
+        runCatching {
+            val remoteSession = routeId
+                ?.let { savedRouteId -> ApiModule.poiApi.getRouteSession(savedRouteId) }
+                ?: ApiModule.poiApi.getRouteSessions(deviceId)
+                    .firstOrNull { session -> session.status != RouteSessionStatus.CANCELLED.rawValue }
+
+            if (remoteSession != null) {
+                remoteSession.toSavedRouteSnapshot()?.let { snapshot ->
+                    currentRouteRequest = snapshot.request
+                    applySavedSnapshot(
+                        snapshot = snapshot,
+                        onRouteRestored = { restoredRoute -> routeResponse = restoredRoute },
+                        onStartPointRestored = { restoredStart -> startPoint = restoredStart },
+                        onAvailableMinutesRestored = { restoredMinutes -> availableMinutes = restoredMinutes },
+                        onPaceRestored = { restoredPace -> pace = restoredPace },
+                        onReturnToStartRestored = { restoredReturnToStart -> returnToStart = restoredReturnToStart },
+                        onRespectOpeningHoursRestored = { restoredRespectOpeningHours ->
+                            respectOpeningHours = restoredRespectOpeningHours
+                        },
+                        onStartDateTimeRestored = { restoredStartDateTime -> startDateTime = restoredStartDateTime },
+                        selectedInterests = selectedInterests
+                    )
+                    routeId = remoteSession.id
+                    routeStartedAt = remoteSession.started_at
+                    routeSessionStatus = RouteSessionStatus.fromRawValue(remoteSession.status)
+                    routeFeedback = remoteSession.toRouteFeedback()
+                    visitedPoiIds.clear()
+                    visitedPoiIds.addAll(
+                        remoteSession.pois
+                            .orEmpty()
+                            .filter { poi -> poi.visited }
+                            .map { poi -> poi.poi_id }
+                            .distinct()
+                    )
+                    currentTargetPoiId = nextUnvisitedPoi(snapshot.response.route, visitedPoiIds)?.poi_id
+                    RouteStorage.save(
+                        context = context,
+                        snapshot = snapshot
+                    )
+                    RouteStorage.saveActiveSession(
+                        context = context,
+                        session = ActiveRouteSession(
+                            route_id = remoteSession.id,
+                            status = remoteSession.status,
+                            started_at = remoteSession.started_at,
+                            current_target_poi_id = currentTargetPoiId,
+                            visited_poi_ids = visitedPoiIds.toList(),
+                            progress_visited_count = visitedPoiIds.distinct().size,
+                            progress_total_count = progressTotalCount(snapshot.response.route, visitedPoiIds),
+                            snapshot = snapshot,
+                            feedback = routeFeedback
+                        )
+                    )
+                }
+            }
+        }
+
         try {
             pois = ApiModule.poiApi.getPois(DefaultCity)
             poiError = null
@@ -351,7 +530,7 @@ fun RoutePlannerScreen() {
 
                     currentRouteLocation = routeLocation
                     trackingError = null
-                    val visitedChanged = markNearbyPoisVisited(
+                    val newlyVisitedPoiIds = markNearbyPoisVisited(
                         routeItems = routeItems,
                         currentLocation = routeLocation,
                         visitedPoiIds = visitedPoiIds
@@ -361,8 +540,10 @@ fun RoutePlannerScreen() {
                     if (routeItems.isNotEmpty() && routeItems.all { item -> item.poi_id in visitedPoiIds }) {
                         routeSessionStatus = RouteSessionStatus.COMPLETED
                         persistRouteSession(status = RouteSessionStatus.COMPLETED)
-                    } else if (visitedChanged) {
+                        syncVisitedPoisToBackend(newlyVisitedPoiIds)
+                    } else if (newlyVisitedPoiIds.isNotEmpty()) {
                         persistRouteSession(status = RouteSessionStatus.IN_PROGRESS)
+                        syncVisitedPoisToBackend(newlyVisitedPoiIds)
                     }
                 },
                 onError = { message ->
@@ -452,6 +633,7 @@ fun RoutePlannerScreen() {
             status = RouteSessionStatus.COMPLETED,
             feedback = feedback
         )
+        syncFeedbackToBackend(feedback)
     }
 
     fun recalculateFromCurrentLocation() {
@@ -731,6 +913,7 @@ fun RoutePlannerScreen() {
                             onMarkVisited = {
                                 if (item.poi_id !in visitedPoiIds) {
                                     visitedPoiIds.add(item.poi_id)
+                                    syncVisitedPoisToBackend(listOf(item.poi_id))
                                     currentTargetPoiId = nextUnvisitedPoi(routeItems, visitedPoiIds)?.poi_id
                                     if (routeItems.all { routeItem -> routeItem.poi_id in visitedPoiIds }) {
                                         routeSessionStatus = RouteSessionStatus.COMPLETED
@@ -1508,6 +1691,36 @@ private fun applySavedSnapshot(
     selectedInterests.addAll(snapshot.request.interests)
 }
 
+private fun RouteSessionDto.toSavedRouteSnapshot(): SavedRouteSnapshot? {
+    val response = route_snapshot_json ?: return null
+    val request = RouteRequest(
+        city = city_name ?: response.city,
+        start_lat = start_lat,
+        start_lon = start_lon,
+        available_minutes = available_minutes,
+        interests = response.interests,
+        pace = pace,
+        return_to_start = return_to_start,
+        start_datetime = response.start_datetime,
+        respect_opening_hours = opening_hours_enabled
+    )
+
+    return SavedRouteSnapshot(
+        request = request,
+        response = response
+    )
+}
+
+private fun RouteSessionDto.toRouteFeedback(): RouteFeedback? {
+    val latestFeedback = feedback.orEmpty().firstOrNull() ?: return null
+    return RouteFeedback(
+        rating = latestFeedback.rating,
+        route_was_comfortable = latestFeedback.was_convenient,
+        too_much_walking = latestFeedback.too_much_walking,
+        pois_were_interesting = latestFeedback.pois_were_interesting
+    )
+}
+
 @Composable
 private fun categoryLabel(category: String): String =
     when (category) {
@@ -1917,7 +2130,7 @@ private fun markNearbyPoisVisited(
     routeItems: List<RouteItemDto>,
     currentLocation: RouteStartDto,
     visitedPoiIds: MutableList<Int>
-): Boolean {
+): List<Int> {
     val newlyVisitedIds = routeItems
         .filter { item -> item.poi_id !in visitedPoiIds }
         .filter { item ->
@@ -1931,7 +2144,7 @@ private fun markNearbyPoisVisited(
         .map { item -> item.poi_id }
 
     visitedPoiIds.addAll(newlyVisitedIds)
-    return newlyVisitedIds.isNotEmpty()
+    return newlyVisitedIds
 }
 
 private fun distanceMeters(
