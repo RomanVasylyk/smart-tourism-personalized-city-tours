@@ -6,10 +6,23 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Path
+import android.graphics.Typeface
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -21,6 +34,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -49,7 +65,8 @@ import kotlin.math.roundToInt
 
 private const val DefaultZoom = 13.0
 private const val StreetStyleUrl = "https://tiles.openfreemap.org/styles/liberty"
-private const val RouteLineColor = "#0F766E"
+private const val RoutePrimaryLineColor = "#2563EB"
+private const val RouteSecondaryLineColor = "#94A3B8"
 private const val RouteTrimMaxSnapDistanceMeters = 200.0
 private const val CurrentLocationIconWidthDp = 42
 private const val CurrentLocationIconHeightDp = 48
@@ -61,6 +78,11 @@ private const val VisitedStopIconHeightDp = 44
 private const val VisitedStopOuterColor = "#FFFFFF"
 private const val VisitedStopFillColor = "#16A34A"
 private const val VisitedStopCheckColor = "#FFFFFF"
+private const val StartPointIconWidthDp = 60
+private const val StartPointIconHeightDp = 66
+private const val StartPointOuterColor = "#FFFFFF"
+private const val StartPointFillColor = "#F97316"
+private const val StartPointTextColor = "#FFFFFF"
 
 private data class RouteProjection(
     val point: LatLng,
@@ -68,8 +90,14 @@ private data class RouteProjection(
     val distanceMeters: Double
 )
 
+private data class VisibleRouteSegments(
+    val activeSegment: List<LatLng>,
+    val remainingSegment: List<LatLng>
+)
+
 private data class MapTextResources(
     val startPointTitle: String,
+    val startPointMarkerLabel: String,
     val currentLocationTitle: String,
     val routeStopTitleFormat: String,
     val visitedRouteStopTitleFormat: String,
@@ -88,6 +116,7 @@ fun PoiMapScreen(
     visitedPoiIds: Set<Int>,
     isRouteActive: Boolean,
     isLoading: Boolean,
+    isFullScreen: Boolean = false,
     isSelectingStart: Boolean,
     onStartPointSelected: (Double, Double) -> Unit,
     modifier: Modifier = Modifier
@@ -97,6 +126,9 @@ fun PoiMapScreen(
     var map by remember(mapView) { mutableStateOf<MapLibreMap?>(null) }
     var isStyleLoaded by remember(mapView) { mutableStateOf(false) }
     val textResources = mapTextResources()
+    val startPointIcon = remember(context, textResources.startPointMarkerLabel) {
+        createStartPointIcon(context, textResources.startPointMarkerLabel)
+    }
     val currentLocationIcon = remember(context) { createCurrentLocationIcon(context) }
     val visitedRouteStopIcon = remember(context) { createVisitedRouteStopIcon(context) }
 
@@ -160,6 +192,7 @@ fun PoiMapScreen(
                 startLat = startLat,
                 startLon = startLon,
                 defaultZoom = defaultZoom,
+                startPointIcon = startPointIcon,
                 currentLocation = currentLocation,
                 visitedPoiIds = visitedPoiIds,
                 isRouteActive = isRouteActive,
@@ -185,6 +218,24 @@ fun PoiMapScreen(
                 )
             }
         }
+
+        MapLocationButton(
+            enabled = currentLocation != null,
+            onClick = {
+                val mapInstance = map ?: return@MapLocationButton
+                val location = currentLocation ?: return@MapLocationButton
+                moveCamera(mapInstance, location.lat, location.lon, defaultZoom)
+            },
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .windowInsetsPadding(
+                    WindowInsets.safeDrawing.only(WindowInsetsSides.End)
+                )
+                .padding(
+                    end = if (isFullScreen) 24.dp else 20.dp,
+                    bottom = if (isFullScreen) 104.dp else 20.dp
+                )
+        )
     }
 }
 
@@ -193,6 +244,8 @@ private fun rememberMapViewWithLifecycle(context: Context): MapView {
     val mapView = remember {
         val options = MapLibreMapOptions.createFromAttributes(context)
             .textureMode(true)
+            .logoEnabled(false)
+            .attributionEnabled(true)
 
         MapView(context, options).apply {
             onCreate(null)
@@ -222,6 +275,7 @@ private fun rememberMapViewWithLifecycle(context: Context): MapView {
 private fun mapTextResources(): MapTextResources =
     MapTextResources(
         startPointTitle = stringResource(R.string.start_point_title),
+        startPointMarkerLabel = stringResource(R.string.map_start_marker_label),
         currentLocationTitle = stringResource(R.string.map_current_location_title),
         routeStopTitleFormat = stringResource(R.string.route_stop_title),
         visitedRouteStopTitleFormat = stringResource(R.string.map_visited_route_stop_title),
@@ -245,6 +299,7 @@ private fun renderMapContent(
     startLat: Double,
     startLon: Double,
     defaultZoom: Double?,
+    startPointIcon: Icon,
     currentLocation: RouteStartDto?,
     visitedPoiIds: Set<Int>,
     isRouteActive: Boolean,
@@ -258,6 +313,7 @@ private fun renderMapContent(
     map.addMarker(
         MarkerOptions()
             .position(startPoint)
+            .icon(startPointIcon)
             .title(textResources.startPointTitle)
             .snippet("${formatCoordinate(startLat)}, ${formatCoordinate(startLon)}")
     )
@@ -266,21 +322,31 @@ private fun renderMapContent(
     when {
         routeItems.isNotEmpty() -> {
             val polylinePoints = buildRoutePolylinePoints(routeResponse, startPoint, routeItems)
-            val visiblePolylinePoints = buildVisibleRoutePolylinePoints(
+            val visibleRouteSegments = buildVisibleRouteSegments(
                 polylinePoints = polylinePoints,
                 routeItems = routeItems,
                 currentLocation = currentLocation,
                 visitedPoiIds = visitedPoiIds,
-                shouldTrimPassedPath = isRouteActive
+                shouldHighlightActiveSegment = isRouteActive
             )
 
-            if (visiblePolylinePoints.size >= 2) {
+            if (isRouteActive && visibleRouteSegments.remainingSegment.size >= 2) {
                 map.addPolyline(
                     PolylineOptions()
-                        .addAll(visiblePolylinePoints)
-                        .color(Color.parseColor(RouteLineColor))
+                        .addAll(visibleRouteSegments.remainingSegment)
+                        .color(Color.parseColor(RouteSecondaryLineColor))
                         .width(6f)
-                        .alpha(0.9f)
+                        .alpha(0.75f)
+                )
+            }
+
+            if (visibleRouteSegments.activeSegment.size >= 2) {
+                map.addPolyline(
+                    PolylineOptions()
+                        .addAll(visibleRouteSegments.activeSegment)
+                        .color(Color.parseColor(RoutePrimaryLineColor))
+                        .width(if (isRouteActive) 7f else 6f)
+                        .alpha(0.95f)
                 )
             }
 
@@ -358,6 +424,137 @@ private fun renderMapContent(
                 .snippet("${formatCoordinate(currentLocation.lat)}, ${formatCoordinate(currentLocation.lon)}")
         )
     }
+}
+
+@Composable
+private fun MapLocationButton(
+    enabled: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val containerColor = if (enabled) {
+        MaterialTheme.colorScheme.surface
+    } else {
+        MaterialTheme.colorScheme.surfaceVariant
+    }
+    val contentColor = if (enabled) {
+        MaterialTheme.colorScheme.primary
+    } else {
+        MaterialTheme.colorScheme.onSurfaceVariant
+    }
+
+    Box(
+        modifier = modifier
+            .size(48.dp)
+            .clip(CircleShape)
+            .background(containerColor)
+            .border(
+                width = 1.dp,
+                color = MaterialTheme.colorScheme.outlineVariant,
+                shape = CircleShape
+            )
+            .clickable(enabled = enabled, onClick = onClick),
+        contentAlignment = Alignment.Center
+    ) {
+        Canvas(modifier = Modifier.size(22.dp)) {
+            val strokeWidth = size.minDimension * 0.1f
+            val outerRadius = size.minDimension * 0.38f
+            val innerRadius = size.minDimension * 0.08f
+            val centerX = size.width / 2f
+            val centerY = size.height / 2f
+            val crosshairGap = size.minDimension * 0.2f
+
+            drawCircle(
+                color = contentColor,
+                radius = outerRadius,
+                style = Stroke(width = strokeWidth)
+            )
+            drawCircle(
+                color = contentColor,
+                radius = innerRadius
+            )
+            drawLine(
+                color = contentColor,
+                start = androidx.compose.ui.geometry.Offset(centerX, 0f),
+                end = androidx.compose.ui.geometry.Offset(centerX, centerY - crosshairGap),
+                strokeWidth = strokeWidth,
+                cap = StrokeCap.Round
+            )
+            drawLine(
+                color = contentColor,
+                start = androidx.compose.ui.geometry.Offset(centerX, centerY + crosshairGap),
+                end = androidx.compose.ui.geometry.Offset(centerX, size.height),
+                strokeWidth = strokeWidth,
+                cap = StrokeCap.Round
+            )
+            drawLine(
+                color = contentColor,
+                start = androidx.compose.ui.geometry.Offset(0f, centerY),
+                end = androidx.compose.ui.geometry.Offset(centerX - crosshairGap, centerY),
+                strokeWidth = strokeWidth,
+                cap = StrokeCap.Round
+            )
+            drawLine(
+                color = contentColor,
+                start = androidx.compose.ui.geometry.Offset(centerX + crosshairGap, centerY),
+                end = androidx.compose.ui.geometry.Offset(size.width, centerY),
+                strokeWidth = strokeWidth,
+                cap = StrokeCap.Round
+            )
+        }
+    }
+}
+
+private fun createStartPointIcon(context: Context, label: String): Icon {
+    val density = context.resources.displayMetrics.density
+    val width = (StartPointIconWidthDp * density).roundToInt()
+    val height = (StartPointIconHeightDp * density).roundToInt()
+    val centerX = width / 2f
+    val circleY = 20f * density
+
+    val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+    val canvas = Canvas(bitmap)
+    val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        style = Paint.Style.FILL
+    }
+
+    paint.color = Color.parseColor(StartPointOuterColor)
+    canvas.drawPath(
+        locationPinPath(
+            centerX = centerX,
+            circleY = circleY,
+            circleRadius = 21f * density,
+            tipY = height - 2f * density,
+            shoulderY = 37f * density,
+            shoulderHalfWidth = 10f * density
+        ),
+        paint
+    )
+
+    paint.color = Color.parseColor(StartPointFillColor)
+    canvas.drawPath(
+        locationPinPath(
+            centerX = centerX,
+            circleY = circleY,
+            circleRadius = 17f * density,
+            tipY = height - 8f * density,
+            shoulderY = 33f * density,
+            shoulderHalfWidth = 6.8f * density
+        ),
+        paint
+    )
+
+    paint.apply {
+        color = Color.parseColor(StartPointTextColor)
+        style = Paint.Style.FILL
+        textAlign = Paint.Align.CENTER
+        textSize = 10f * density
+        typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+    }
+    val baseline = circleY - ((paint.descent() + paint.ascent()) / 2f)
+    canvas.drawText(label, centerX, baseline, paint)
+
+    return IconFactory.getInstance(context).fromBitmap(bitmap)
 }
 
 private fun createCurrentLocationIcon(context: Context): Icon {
@@ -509,6 +706,70 @@ private fun buildVisibleRoutePolylinePoints(
         add(projection.point)
         addAll(polylinePoints.drop(projection.segmentIndex + 1))
     }.withoutAdjacentDuplicates()
+}
+
+private fun buildVisibleRouteSegments(
+    polylinePoints: List<LatLng>,
+    routeItems: List<RouteItemDto>,
+    currentLocation: RouteStartDto?,
+    visitedPoiIds: Set<Int>,
+    shouldHighlightActiveSegment: Boolean
+): VisibleRouteSegments {
+    if (!shouldHighlightActiveSegment || currentLocation == null || polylinePoints.size < 2) {
+        return VisibleRouteSegments(
+            activeSegment = polylinePoints,
+            remainingSegment = emptyList()
+        )
+    }
+
+    val nextTarget = routeItems
+        .filter { item -> item.poi_id !in visitedPoiIds }
+        .minByOrNull { item -> item.order }
+        ?: return VisibleRouteSegments(emptyList(), emptyList())
+
+    val firstSearchSegmentIndex = firstRemainingSegmentIndex(
+        polylinePoints = polylinePoints,
+        routeItems = routeItems,
+        visitedPoiIds = visitedPoiIds
+    )
+    val projection = closestProjectionOnRoute(
+        polylinePoints = polylinePoints,
+        currentLocation = currentLocation,
+        firstSearchSegmentIndex = firstSearchSegmentIndex
+    ) ?: return VisibleRouteSegments(
+        activeSegment = polylinePoints.drop(firstSearchSegmentIndex).withoutAdjacentDuplicates(),
+        remainingSegment = emptyList()
+    )
+
+    if (projection.distanceMeters > RouteTrimMaxSnapDistanceMeters) {
+        return VisibleRouteSegments(
+            activeSegment = polylinePoints.drop(firstSearchSegmentIndex).withoutAdjacentDuplicates(),
+            remainingSegment = emptyList()
+        )
+    }
+
+    val nextTargetPointIndex = closestPolylinePointIndex(
+        polylinePoints = polylinePoints,
+        lat = nextTarget.lat,
+        lon = nextTarget.lon
+    )
+    val activeEndIndex = nextTargetPointIndex
+        .coerceAtLeast(projection.segmentIndex + 1)
+        .coerceAtMost(polylinePoints.lastIndex)
+
+    val activeSegment = buildList {
+        add(projection.point)
+        addAll(polylinePoints.subList(projection.segmentIndex + 1, activeEndIndex + 1))
+    }.withoutAdjacentDuplicates()
+
+    val remainingSegment = polylinePoints
+        .drop(activeEndIndex)
+        .withoutAdjacentDuplicates()
+
+    return VisibleRouteSegments(
+        activeSegment = activeSegment,
+        remainingSegment = remainingSegment
+    )
 }
 
 private fun firstRemainingSegmentIndex(

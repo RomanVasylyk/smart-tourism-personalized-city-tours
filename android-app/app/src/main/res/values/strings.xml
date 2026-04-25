@@ -9,7 +9,8 @@
     <string name="status_route_generation_failed">Route generation failed</string>
     <string name="status_gps_tracking_unavailable">GPS tracking unavailable</string>
     <string name="status_off_route_title">You are off route</string>
-    <string name="status_off_route_body">Your GPS position is far from the next route segment. Recalculate from your current location to continue cleanly.</string>
+    <string name="status_off_route_body">Your GPS position is far from the next route segment. The route will update automatically from your current location.</string>
+    <string name="status_off_route_rerouting_body">Updating the route from your current location.</string>
     <string name="status_no_stops_title">No stops generated</string>
     <string name="status_no_stops_body">No route stops match the selected time budget, interests, and opening-hours constraints.</string>
     <string name="status_no_route_title">No route yet</string>
@@ -34,6 +35,8 @@
     <string name="action_pick_on_map">Pick on map</string>
     <string name="action_locating">Locating...</string>
     <string name="action_use_my_location">Use my location</string>
+    <string name="action_open_full_screen_map">Full screen</string>
+    <string name="action_close_map">Close map</string>
 
     <string name="route_parameters_title">Route parameters</string>
     <string name="route_start_time_label">Route start time</string>
@@ -105,6 +108,7 @@
     <string name="action_mark_visited">Mark visited</string>
 
     <string name="map_start_selection_hint">Tap the map to choose the route start point</string>
+    <string name="map_start_marker_label">Старт</string>
     <string name="map_route_stop_snippet">%1$s &#8226; walk %2$d min &#8226; visit %3$d min</string>
     <string name="map_current_location_title">Current GPS location</string>
     <string name="map_visited_route_stop_title">Visited: %1$s</string>
