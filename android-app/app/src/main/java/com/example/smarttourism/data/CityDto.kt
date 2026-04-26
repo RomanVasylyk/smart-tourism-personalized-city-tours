@@ -10,5 +10,6 @@ data class CityDto(
     val bbox: CityBboxDto?,
     val available_categories: List<String>?,
     val default_zoom: Double?,
-    val routing_limits: RoutingLimitsDto?
+    val routing_limits: RoutingLimitsDto?,
+    val transport: TransportProfileDto?
 )

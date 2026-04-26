@@ -1,12 +1,20 @@
 import re
 from datetime import datetime, timedelta
+from typing import Literal
 
 from fastapi import HTTPException
 from pydantic import BaseModel, Field
 
 from app.db.database import get_connection
 from app.services.city_profiles import city_profile_by_token
-from app.services.routing_service import RoutePoint, RoutingLeg, get_routing_service
+from app.services.routing_service import RoutePoint, get_routing_service
+from app.services.transport_planner import (
+    TRANSPORT_MODE_WALK,
+    TravelPlan,
+    TravelSegment,
+    normalized_transport_mode,
+    plan_travel,
+)
 
 DAY_SEQUENCE = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"]
 DAY_INDEX = {day: index for index, day in enumerate(DAY_SEQUENCE)}
@@ -69,6 +77,7 @@ class RouteGenerateRequest(BaseModel):
     start_datetime: str | None = None
     respect_opening_hours: bool = True
     exclude_poi_ids: list[int] = Field(default_factory=list)
+    transport_mode: Literal["walk", "walk_or_mhd"] = TRANSPORT_MODE_WALK
 
 
 def parse_start_datetime(raw_value: str | None) -> datetime:
@@ -258,18 +267,52 @@ def leg_dict(
     order: int,
     from_point: dict,
     to_point: dict,
-    routing_leg: RoutingLeg,
+    travel_plan: TravelPlan,
 ) -> dict:
+    first_segment = travel_plan.segments[0] if travel_plan.segments else None
+    last_segment = travel_plan.segments[-1] if travel_plan.segments else None
     return {
         "order": order,
+        "mode": travel_plan.mode,
         "from": from_point,
         "to": to_point,
-        "duration_seconds": round(routing_leg.duration_seconds, 1),
-        "duration_minutes": routing_leg.duration_minutes,
-        "distance_meters": round(routing_leg.distance_meters, 1),
-        "geometry": routing_leg.geometry,
-        "routing_source": routing_leg.source,
+        "duration_seconds": round(travel_plan.duration_seconds, 1),
+        "duration_minutes": travel_plan.duration_minutes,
+        "distance_meters": round(travel_plan.distance_meters, 1),
+        "geometry": travel_plan.geometry,
+        "routing_source": travel_plan.source,
+        "departure_time": format_optional_datetime(first_segment.departure_time if first_segment else None),
+        "arrival_time": format_optional_datetime(last_segment.arrival_time if last_segment else None),
+        "segments": [
+            segment_dict(index + 1, segment)
+            for index, segment in enumerate(travel_plan.segments)
+        ],
     }
+
+
+def segment_dict(order: int, segment: TravelSegment) -> dict:
+    return {
+        "order": order,
+        "mode": segment.mode,
+        "duration_seconds": round(segment.duration_seconds, 1),
+        "duration_minutes": segment.duration_minutes,
+        "distance_meters": round(segment.distance_meters, 1),
+        "geometry": segment.geometry,
+        "source": segment.source,
+        "line_name": segment.line_name,
+        "from_stop_name": segment.from_stop_name,
+        "to_stop_name": segment.to_stop_name,
+        "departure_time": format_optional_datetime(segment.departure_time),
+        "arrival_time": format_optional_datetime(segment.arrival_time),
+        "wait_minutes_before_departure": segment.wait_minutes_before_departure,
+        "in_vehicle_minutes": segment.in_vehicle_minutes,
+    }
+
+
+def format_optional_datetime(value: datetime | None) -> str | None:
+    if value is None:
+        return None
+    return value.isoformat(timespec="minutes")
 
 
 def append_geometry(full_geometry: list[dict], leg_geometry: list[dict]) -> None:
@@ -285,6 +328,8 @@ def append_geometry(full_geometry: list[dict], leg_geometry: list[dict]) -> None
 
 def generate_route(request: RouteGenerateRequest) -> dict:
     start_dt = parse_start_datetime(request.start_datetime)
+    city_profile = city_profile_by_token(request.city) or {}
+    effective_transport_mode = normalized_transport_mode(request.transport_mode, city_profile)
     candidates = get_route_candidates(request)
 
     if not candidates:
@@ -305,6 +350,7 @@ def generate_route(request: RouteGenerateRequest) -> dict:
     legs: list[dict] = []
     full_geometry: list[dict] = []
     elapsed_minutes = 0
+    elapsed_actual_seconds = 0.0
 
     while True:
         best_poi = None
@@ -317,10 +363,19 @@ def generate_route(request: RouteGenerateRequest) -> dict:
                 continue
 
             poi_point = RoutePoint(lat=poi["lat"], lon=poi["lon"])
-            travel_leg = routing_service.route_between(current_point, poi_point, request.pace)
-            travel_minutes = travel_leg.duration_minutes
+            departure_dt = start_dt + timedelta(seconds=elapsed_actual_seconds)
+            travel_plan = plan_travel(
+                start=current_point,
+                end=poi_point,
+                pace=request.pace,
+                routing_service=routing_service,
+                city_profile=city_profile,
+                transport_mode=effective_transport_mode,
+                departure_dt=departure_dt,
+            )
+            travel_minutes = travel_plan.duration_minutes
             visit_minutes = poi["visit_duration_min"] or 20
-            arrival_dt = start_dt + timedelta(minutes=elapsed_minutes + travel_minutes)
+            arrival_dt = departure_dt + timedelta(seconds=travel_plan.duration_seconds)
 
             if request.respect_opening_hours and not is_poi_open_for_visit(
                 poi.get("opening_hours_raw"),
@@ -331,8 +386,17 @@ def generate_route(request: RouteGenerateRequest) -> dict:
 
             return_minutes = 0
             if request.return_to_start:
-                return_leg = routing_service.route_between(poi_point, start_point, request.pace)
-                return_minutes = return_leg.duration_minutes
+                return_departure_dt = arrival_dt + timedelta(minutes=visit_minutes)
+                return_plan = plan_travel(
+                    start=poi_point,
+                    end=start_point,
+                    pace=request.pace,
+                    routing_service=routing_service,
+                    city_profile=city_profile,
+                    transport_mode=effective_transport_mode,
+                    departure_dt=return_departure_dt,
+                )
+                return_minutes = return_plan.duration_minutes
 
             projected_total = elapsed_minutes + travel_minutes + visit_minutes + return_minutes
             if projected_total > request.available_minutes:
@@ -345,12 +409,13 @@ def generate_route(request: RouteGenerateRequest) -> dict:
             if utility > best_utility:
                 best_utility = utility
                 best_poi = poi
-                best_travel_leg = travel_leg
+                best_travel_leg = travel_plan
                 best_visit_minutes = visit_minutes
 
         if best_poi is None:
             break
 
+        elapsed_actual_seconds += best_travel_leg.duration_seconds + (best_visit_minutes * 60)
         elapsed_minutes += best_travel_leg.duration_minutes + best_visit_minutes
         used_ids.add(best_poi["id"])
         category_counts[best_poi["category"]] = category_counts.get(best_poi["category"], 0) + 1
@@ -367,6 +432,7 @@ def generate_route(request: RouteGenerateRequest) -> dict:
                 "travel_minutes_from_previous": best_travel_leg.duration_minutes,
                 "travel_distance_meters_from_previous": round(best_travel_leg.distance_meters, 1),
                 "routing_source_from_previous": best_travel_leg.source,
+                "travel_mode_from_previous": best_travel_leg.mode,
                 "visit_duration_min": best_visit_minutes,
                 "arrival_after_min": elapsed_minutes - best_visit_minutes,
                 "departure_after_min": elapsed_minutes,
@@ -381,7 +447,7 @@ def generate_route(request: RouteGenerateRequest) -> dict:
                 order=len(legs) + 1,
                 from_point=current_endpoint,
                 to_point=next_endpoint,
-                routing_leg=best_travel_leg,
+                travel_plan=best_travel_leg,
             )
         )
         append_geometry(full_geometry, best_travel_leg.geometry)
@@ -391,18 +457,28 @@ def generate_route(request: RouteGenerateRequest) -> dict:
 
     return_to_start_minutes = 0
     if request.return_to_start and route_items:
-        return_leg = routing_service.route_between(current_point, start_point, request.pace)
-        return_to_start_minutes = return_leg.duration_minutes
+        return_departure_dt = start_dt + timedelta(seconds=elapsed_actual_seconds)
+        return_plan = plan_travel(
+            start=current_point,
+            end=start_point,
+            pace=request.pace,
+            routing_service=routing_service,
+            city_profile=city_profile,
+            transport_mode=effective_transport_mode,
+            departure_dt=return_departure_dt,
+        )
+        return_to_start_minutes = return_plan.duration_minutes
+        elapsed_actual_seconds += return_plan.duration_seconds
         elapsed_minutes += return_to_start_minutes
         legs.append(
             leg_dict(
                 order=len(legs) + 1,
                 from_point=current_endpoint,
                 to_point=start_endpoint,
-                routing_leg=return_leg,
+                travel_plan=return_plan,
             )
         )
-        append_geometry(full_geometry, return_leg.geometry)
+        append_geometry(full_geometry, return_plan.geometry)
 
     total_visit_minutes = sum(item["visit_duration_min"] for item in route_items)
     total_walk_minutes = elapsed_minutes - total_visit_minutes
@@ -413,6 +489,7 @@ def generate_route(request: RouteGenerateRequest) -> dict:
         "start_datetime": start_dt.isoformat(timespec="minutes"),
         "pace": request.pace,
         "interests": request.interests,
+        "transport_mode": effective_transport_mode,
         "return_to_start": request.return_to_start,
         "respect_opening_hours": request.respect_opening_hours,
         "available_minutes": request.available_minutes,

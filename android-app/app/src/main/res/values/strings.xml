@@ -43,6 +43,8 @@
     <string name="action_use_now">Use now</string>
     <string name="respect_opening_hours_label">Respect opening hours</string>
     <string name="respect_opening_hours_body">Skip POIs that are closed for the planned arrival and visit window.</string>
+    <string name="allow_public_transport_label">Allow MHD</string>
+    <string name="allow_public_transport_body">Allow the planner to combine walking with city public transport where the selected city supports it.</string>
     <string name="available_time_label">Available time</string>
     <string name="available_minutes_option">%1$d minutes</string>
     <string name="interests_label">Interests</string>
@@ -99,7 +101,13 @@
     <string name="route_summary_opening_hours_filter">Opening-hours filter: %1$s</string>
 
     <string name="route_stop_title">%1$d. %2$s</string>
-    <string name="route_stop_walk_from_previous">Walk from previous: %1$d min</string>
+    <string name="route_stop_walk_from_previous">Travel from previous: %1$d min</string>
+    <string name="route_stop_segment_walk">Walk %1$d min</string>
+    <string name="route_stop_segment_transit">%1$d min by transit</string>
+    <string name="route_stop_segment_transit_line">%1$s %2$d min</string>
+    <string name="route_stop_segment_stops">%1$s &#8594; %2$s</string>
+    <string name="route_stop_segment_schedule">Departs %1$s &#8226; Arrives %2$s</string>
+    <string name="route_stop_segment_wait_ride">Wait %1$d min &#8226; Ride %2$d min</string>
     <string name="route_stop_visit_duration">Visit duration: %1$d min</string>
     <string name="route_stop_arrival_after_start">Arrival after start: %1$d min</string>
     <string name="route_stop_departure_after_start">Departure after start: %1$d min</string>

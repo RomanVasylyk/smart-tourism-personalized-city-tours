@@ -1,0 +1,5547 @@
+{
+  "version": 0.6,
+  "generator": "Overpass API 0.7.62.11 87bfad18",
+  "osm3s": {
+    "timestamp_osm_base": "2026-04-26T11:03:02Z",
+    "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+  },
+  "elements": [
+    {
+      "type": "node",
+      "id": 309217025,
+      "lat": 48.312787,
+      "lon": 18.0953269,
+      "tags": {
+        "bench": "yes",
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Nábrežie mládeže",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "2;4;16;23",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 312398238,
+      "lat": 48.3040112,
+      "lon": 18.0838989,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Rázcestie Autobusová stanica",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "1;2;4;10;12;14;15;18;19;21;23;24;27;33",
+        "shelter": "no"
+      }
+    },
+    {
+      "type": "node",
+      "id": 312399026,
+      "lat": 48.3100171,
+      "lon": 18.0976053,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Andreja Hlinku, Centro",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "12;13;30"
+      }
+    },
+    {
+      "type": "node",
+      "id": 312399028,
+      "lat": 48.3092548,
+      "lon": 18.0953653,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Andreja Hlinku, Centro",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "2;4;8;12;13;14;19;23;25;32;35"
+      }
+    },
+    {
+      "type": "node",
+      "id": 315343225,
+      "lat": 48.3021119,
+      "lon": 18.0804519,
+      "tags": {
+        "bench": "no",
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Železničná stanica Nitra",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "1;15;18;19;21;23;24;27;33",
+        "shelter": "no",
+        "tactile_paving": "no"
+      }
+    },
+    {
+      "type": "node",
+      "id": 315343265,
+      "lat": 48.3012981,
+      "lon": 18.0797304,
+      "tags": {
+        "bench": "yes",
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Železničná stanica Nitra",
+        "public_transport": "platform",
+        "route_ref": "1;18;19;21;23;24;27;33;99",
+        "shelter": "yes",
+        "tactile_paving": "no"
+      }
+    },
+    {
+      "type": "node",
+      "id": 320605839,
+      "lat": 48.3107096,
+      "lon": 18.0631541,
+      "tags": {
+        "bench": "yes",
+        "bin": "yes",
+        "bus": "yes",
+        "highway": "bus_stop",
+        "lit": "yes",
+        "local_ref": "B",
+        "name": "Rybárska",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "8;12;13;18;21;30;33",
+        "shelter": "yes",
+        "tactile_paving": "no"
+      }
+    },
+    {
+      "type": "node",
+      "id": 430034993,
+      "lat": 48.3313813,
+      "lon": 18.084817,
+      "tags": {
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Šindolka, Dolnohorská",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "2;4"
+      }
+    },
+    {
+      "type": "node",
+      "id": 430035230,
+      "lat": 48.3200696,
+      "lon": 18.0990323,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "D",
+        "name": "Pod Zoborom",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "25"
+      }
+    },
+    {
+      "type": "node",
+      "id": 469730052,
+      "lat": 48.3115837,
+      "lon": 18.1102844,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Sitnianska",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "8;14;16;19;25;30;32"
+      }
+    },
+    {
+      "type": "node",
+      "id": 579403062,
+      "lat": 48.3099858,
+      "lon": 18.1066175,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Poliklinika Chrenová",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "8;14;16;19;25;30;32"
+      }
+    },
+    {
+      "type": "node",
+      "id": 579805025,
+      "lat": 48.3073436,
+      "lon": 18.0908351,
+      "tags": {
+        "bench": "yes",
+        "bin": "yes",
+        "bus": "yes",
+        "highway": "bus_stop",
+        "lit": "yes",
+        "local_ref": "B",
+        "name": "Univerzity",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "2;4;8;12;13;14;19;23;25;32;35",
+        "shelter": "yes",
+        "tactile_paving": "no"
+      }
+    },
+    {
+      "type": "node",
+      "id": 579805031,
+      "lat": 48.3075897,
+      "lon": 18.0905355,
+      "tags": {
+        "bench": "yes",
+        "bin": "yes",
+        "bus": "yes",
+        "highway": "bus_stop",
+        "lit": "yes",
+        "local_ref": "A",
+        "name": "Univerzity",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "2;4;8;12;13;14;19;23;25;32;35",
+        "shelter": "yes",
+        "tactile_paving": "no"
+      }
+    },
+    {
+      "type": "node",
+      "id": 579818786,
+      "lat": 48.3078688,
+      "lon": 18.0865336,
+      "tags": {
+        "bench": "yes",
+        "bin": "yes",
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "D",
+        "name": "CENTRUM, Mlyny",
+        "old_name": "CENTRUM",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "2;4;8;12;13;14;19;23;25;32;35",
+        "shelter": "yes",
+        "wheelchair": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 583291533,
+      "lat": 48.3129835,
+      "lon": 18.091835,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Fraňa Mojtu",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "1;4;6;7;9;10;26;27",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 585134747,
+      "lat": 48.3086156,
+      "lon": 18.086189,
+      "tags": {
+        "bench": "no",
+        "bin": "yes",
+        "bus": "yes",
+        "highway": "bus_stop",
+        "lit": "yes",
+        "local_ref": "B",
+        "name": "CENTRUM, Mlyny",
+        "old_name": "CENTRUM",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "11;15;26",
+        "shelter": "no",
+        "tactile_paving": "no"
+      }
+    },
+    {
+      "type": "node",
+      "id": 610221301,
+      "lat": 48.3094694,
+      "lon": 18.0763771,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Braneckého",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "8;13;18;21;30;33"
+      }
+    },
+    {
+      "type": "node",
+      "id": 670501931,
+      "lat": 48.3104662,
+      "lon": 18.0634746,
+      "tags": {
+        "bench": "yes",
+        "bin": "yes",
+        "bus": "yes",
+        "highway": "bus_stop",
+        "lit": "yes",
+        "local_ref": "A",
+        "name": "Rybárska",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "8;13;18;21;30;33",
+        "shelter": "yes",
+        "tactile_paving": "no"
+      }
+    },
+    {
+      "type": "node",
+      "id": 712557709,
+      "lat": 48.3169846,
+      "lon": 18.0443429,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Správa ciest",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "8;18;21",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 712557712,
+      "lat": 48.3171096,
+      "lon": 18.044167,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Správa ciest",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "8;18;21"
+      }
+    },
+    {
+      "type": "node",
+      "id": 712557715,
+      "lat": 48.3160015,
+      "lon": 18.0486099,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Pekárne",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "8;18;21",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 712557719,
+      "lat": 48.3134967,
+      "lon": 18.0547931,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Bolečkova",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "8;18;21;22",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 712557725,
+      "lat": 48.3345328,
+      "lon": 18.0341881,
+      "tags": {
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Lužianky, Rastislavova",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "21"
+      }
+    },
+    {
+      "type": "node",
+      "id": 712557727,
+      "lat": 48.3395849,
+      "lon": 18.0315353,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Lužianky, Korytovská",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "21"
+      }
+    },
+    {
+      "type": "node",
+      "id": 712557728,
+      "lat": 48.3229312,
+      "lon": 18.0396426,
+      "tags": {
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Rastislavova",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "21"
+      }
+    },
+    {
+      "type": "node",
+      "id": 712557730,
+      "lat": 48.3254652,
+      "lon": 18.0399181,
+      "tags": {
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Ferrenit",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "21"
+      }
+    },
+    {
+      "type": "node",
+      "id": 712557731,
+      "lat": 48.3107283,
+      "lon": 18.0623965,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "C",
+        "name": "Rybárska",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "22",
+        "shelter": "no"
+      }
+    },
+    {
+      "type": "node",
+      "id": 712557734,
+      "lat": 48.3100029,
+      "lon": 18.0695091,
+      "tags": {
+        "bench": "no",
+        "bin": "yes",
+        "bus": "yes",
+        "highway": "bus_stop",
+        "lit": "yes",
+        "local_ref": "A",
+        "name": "Hypermarket TESCO",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "8;13;18;21;30;33",
+        "shelter": "yes",
+        "tactile_paving": "no"
+      }
+    },
+    {
+      "type": "node",
+      "id": 714252896,
+      "lat": 48.2953196,
+      "lon": 18.030479,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Hájnická",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "11",
+        "shelter": "no"
+      }
+    },
+    {
+      "type": "node",
+      "id": 714902466,
+      "lat": 48.3167553,
+      "lon": 18.0962215,
+      "tags": {
+        "bus": "yes",
+        "departures_board": "timetable",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Lomnická",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "2;4;16;23",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 722562728,
+      "lat": 48.3259406,
+      "lon": 18.0902485,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Janského",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "1",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 722562729,
+      "lat": 48.3260082,
+      "lon": 18.0904489,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Janského",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "1"
+      }
+    },
+    {
+      "type": "node",
+      "id": 734656989,
+      "lat": 48.3236146,
+      "lon": 18.1005079,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Rázcestie Panská dolina",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "25;26;27"
+      }
+    },
+    {
+      "type": "node",
+      "id": 734656997,
+      "lat": 48.3298931,
+      "lon": 18.108884,
+      "tags": {
+        "bench": "yes",
+        "bin": "yes",
+        "bus": "yes",
+        "highway": "bus_stop",
+        "lit": "no",
+        "local_ref": "A",
+        "name": "Metodova",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "25",
+        "shelter": "yes",
+        "tactile_paving": "no"
+      }
+    },
+    {
+      "type": "node",
+      "id": 734668347,
+      "lat": 48.3098427,
+      "lon": 18.1136971,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Bohúňova",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "6;8;12;14;16;19;30;32"
+      }
+    },
+    {
+      "type": "node",
+      "id": 734668354,
+      "lat": 48.3071743,
+      "lon": 18.1158796,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Gorazdova",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "6;8;12;14;16;19;30;32"
+      }
+    },
+    {
+      "type": "node",
+      "id": 734668357,
+      "lat": 48.3127742,
+      "lon": 18.109242,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Ďurčanského",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "6;12;25;30"
+      }
+    },
+    {
+      "type": "node",
+      "id": 734668360,
+      "lat": 48.3074262,
+      "lon": 18.1160809,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Gorazdova",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "6;8;12;14;16;19;30;32"
+      }
+    },
+    {
+      "type": "node",
+      "id": 769747577,
+      "lat": 48.3073593,
+      "lon": 18.085373,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "E",
+        "name": "CENTRUM, Mlyny",
+        "old_name": "CENTRUM",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "1;2;4;7;10;15;18;19;21;23;24;25;27;33",
+        "shelter": "yes",
+        "wheelchair": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 769747580,
+      "lat": 48.3083973,
+      "lon": 18.0849688,
+      "tags": {
+        "bench": "yes",
+        "bin": "yes",
+        "bus": "yes",
+        "highway": "bus_stop",
+        "lit": "yes",
+        "local_ref": "C",
+        "name": "CENTRUM, Mlyny",
+        "old_name": "CENTRUM",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "6;8;9;11;12;13;18;21;23;24;25;26;32;33;35",
+        "shelter": "yes",
+        "tactile_paving": "no",
+        "wheelchair": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 773500140,
+      "lat": 48.3134753,
+      "lon": 18.104479,
+      "tags": {
+        "bench": "yes",
+        "bin": "no",
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Atletický štadión",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "12;13;30",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 773500141,
+      "lat": 48.2892083,
+      "lon": 18.0845934,
+      "tags": {
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Rázcestie Priemyselná",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "12;14;22;23;25"
+      }
+    },
+    {
+      "type": "node",
+      "id": 773500144,
+      "lat": 48.303192,
+      "lon": 18.0839018,
+      "tags": {
+        "bench": "yes",
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Rázcestie Autobusová stanica",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "1;2;4;10;12;14;15;18;19;21;23;24;25;27;33",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 773500156,
+      "lat": 48.2834472,
+      "lon": 18.0892316,
+      "tags": {
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Horné Krškany",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "12;14;22;23",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 807794830,
+      "lat": 48.308055,
+      "lon": 18.0996329,
+      "tags": {
+        "bench": "yes",
+        "bin": "yes",
+        "bus": "yes",
+        "highway": "bus_stop",
+        "lit": "yes",
+        "local_ref": "A",
+        "name": "Výstavisko",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "8;14;16;19;25;30;32",
+        "shelter": "yes",
+        "tactile_paving": "no"
+      }
+    },
+    {
+      "type": "node",
+      "id": 807794858,
+      "lat": 48.3081907,
+      "lon": 18.1003958,
+      "tags": {
+        "bench": "yes",
+        "bin": "yes",
+        "bus": "yes",
+        "highway": "bus_stop",
+        "lit": "yes",
+        "local_ref": "B",
+        "name": "Výstavisko",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "8;14;16;19;25;30;32",
+        "shelter": "yes",
+        "tactile_paving": "no"
+      }
+    },
+    {
+      "type": "node",
+      "id": 807794860,
+      "lat": 48.3098181,
+      "lon": 18.1077334,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Poliklinika Chrenová",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "8;14;16;19;25;30;32"
+      }
+    },
+    {
+      "type": "node",
+      "id": 809989186,
+      "lat": 48.2953059,
+      "lon": 18.1280937,
+      "tags": {
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Malé Janíkovce II",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "19",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 921128197,
+      "lat": 48.3374127,
+      "lon": 18.059839,
+      "tags": {
+        "bench": "no",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Priemyselný park II",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "4;16;17;23",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 983399596,
+      "lat": 48.3101041,
+      "lon": 18.1137307,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Bohúňova",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "6;8;12;14;16;19;30;32"
+      }
+    },
+    {
+      "type": "node",
+      "id": 983435615,
+      "lat": 48.3114339,
+      "lon": 18.1095418,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Sitnianska",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "8;14;16;19;25;32;30"
+      }
+    },
+    {
+      "type": "node",
+      "id": 992765940,
+      "lat": 48.3132845,
+      "lon": 18.1035032,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Atletický štadión",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "12;13;30"
+      }
+    },
+    {
+      "type": "node",
+      "id": 992809157,
+      "lat": 48.3128082,
+      "lon": 18.0920124,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Fraňa Mojtu",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "1;6;7;9;10;26;27",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1251052382,
+      "lat": 48.3100146,
+      "lon": 18.0874434,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Palárikova",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "1;4;6;7;9;10;26;27"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1297428662,
+      "lat": 48.3129344,
+      "lon": 18.1094032,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Ďurčanského",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "6;12;25;30"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1297429163,
+      "lat": 48.3153836,
+      "lon": 18.1079347,
+      "tags": {
+        "bench": "yes",
+        "bin": "yes",
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Chrenovský cintorín",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "6;13;25;30",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1446402804,
+      "lat": 48.3024732,
+      "lon": 18.0888426,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Hodžova",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "7",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1503092445,
+      "lat": 48.3094433,
+      "lon": 18.0783718,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Štúrova",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "8;11;12;13;18;21;30;33;99",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1503092548,
+      "lat": 48.3089774,
+      "lon": 18.0797334,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Štúrova",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "6;8;9;11;13;18;21;24;26;32;33;35",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1503094992,
+      "lat": 48.3042648,
+      "lon": 18.0840236,
+      "tags": {
+        "bus": "yes",
+        "fixme": "stoji tu medzimestska doprava?",
+        "highway": "bus_stop",
+        "name": "Rázcestie Autobusová stanica",
+        "public_transport": "platform",
+        "shelter": "no"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1503095693,
+      "lat": 48.3066979,
+      "lon": 18.0852167,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "F",
+        "name": "CENTRUM, Mlyny",
+        "old_name": "CENTRUM",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "12;14;23",
+        "shelter": "yes",
+        "wheelchair": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1503096087,
+      "lat": 48.3089626,
+      "lon": 18.0862641,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "CENTRUM, Mlyny",
+        "old_name": "CENTRUM",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "1;6;7;9;10;26;27",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1503101176,
+      "lat": 48.3166004,
+      "lon": 18.0921775,
+      "tags": {
+        "bench": "yes",
+        "bin": "yes",
+        "bus": "yes",
+        "highway": "bus_stop",
+        "lit": "yes",
+        "local_ref": "A",
+        "name": "Predmostie",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "1;4;6;9;10;17;26;27;30;35",
+        "shelter": "yes",
+        "tactile_paving": "no"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1503101262,
+      "lat": 48.3163619,
+      "lon": 18.0921467,
+      "tags": {
+        "bench": "yes",
+        "bin": "yes",
+        "bus": "yes",
+        "highway": "bus_stop",
+        "lit": "yes",
+        "local_ref": "B",
+        "name": "Predmostie",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "1;6;9;10;17;26;27;30;35",
+        "shelter": "yes",
+        "tactile_paving": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1503102362,
+      "lat": 48.3190767,
+      "lon": 18.0961112,
+      "tags": {
+        "bench": "yes",
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Pod Zoborom",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "1;2;4;6;9;10;16;17;23;26;27;30",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1503102742,
+      "lat": 48.322998,
+      "lon": 18.0981871,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Vinárske závody",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "1;2;4;9"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1503102884,
+      "lat": 48.3230566,
+      "lon": 18.098009,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Vinárske závody",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "1;9"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1503103025,
+      "lat": 48.3229242,
+      "lon": 18.0952668,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Amfiteáter",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "1;2;4;9;25"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1503103226,
+      "lat": 48.3230516,
+      "lon": 18.0956729,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Amfiteáter",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "1;9"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1503103798,
+      "lat": 48.3236649,
+      "lon": 18.0920068,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "ZŠ pod Zoborom",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "1;2;4;9"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1503103859,
+      "lat": 48.3240291,
+      "lon": 18.0913155,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "ZŠ pod Zoborom",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "1;2;4;9;99"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1503104510,
+      "lat": 48.3280154,
+      "lon": 18.091596,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Strmá",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "1"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1503104686,
+      "lat": 48.3282919,
+      "lon": 18.0914876,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Strmá",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "1"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1503104735,
+      "lat": 48.3306059,
+      "lon": 18.0934554,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Chmeľová dolina",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "1",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1503105215,
+      "lat": 48.3307244,
+      "lon": 18.0933105,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Chmeľová dolina",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "1"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1503106011,
+      "lat": 48.3330834,
+      "lon": 18.0919248,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Urbancova",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "1"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1503106269,
+      "lat": 48.3333065,
+      "lon": 18.0913257,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Urbancova",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "1"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1503106723,
+      "lat": 48.3361169,
+      "lon": 18.0903734,
+      "tags": {
+        "highway": "bus_stop",
+        "local_ref": "C",
+        "name": "Hornozoborská",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "25"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1503107117,
+      "lat": 48.3360295,
+      "lon": 18.0898072,
+      "tags": {
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Hornozoborská",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "1;9"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1503107536,
+      "lat": 48.3363032,
+      "lon": 18.089755,
+      "tags": {
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Hornozoborská",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "1;9;25",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1503108380,
+      "lat": 48.3409947,
+      "lon": 18.0867552,
+      "tags": {
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Klinčeková",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "1;9;25"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1503108541,
+      "lat": 48.3413341,
+      "lon": 18.0865962,
+      "tags": {
+        "bench": "yes",
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Klinčeková",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "1;9;25",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1503109702,
+      "lat": 48.3453613,
+      "lon": 18.0909964,
+      "tags": {
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Nemocnica Zobor",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "1;9;25"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1503110114,
+      "lat": 48.3457426,
+      "lon": 18.0902096,
+      "tags": {
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Nemocnica Zobor",
+        "public_transport": "platform",
+        "route_ref": "1;9;25",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1606365714,
+      "lat": 48.3156578,
+      "lon": 18.1067319,
+      "tags": {
+        "bench": "yes",
+        "bus": "yes",
+        "departures_board": "timetable",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Chrenovský cintorín",
+        "network": "MHD Nitra",
+        "network:wikidata": "Q12771415",
+        "operator": "TD Transport s. r. o.",
+        "operator:wikidata": "Q135073012",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "6;13;25;30",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1606365957,
+      "lat": 48.3177623,
+      "lon": 18.1062152,
+      "tags": {
+        "bus": "yes",
+        "departures_board": "timetable",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Chrenovská, MAX",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "6;25;30",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1606366752,
+      "lat": 48.3192774,
+      "lon": 18.0968794,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Pod Zoborom",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "1;2;4;6;9;10;16;17;23;26;27;30;99"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1606366782,
+      "lat": 48.3198635,
+      "lon": 18.0989321,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "C",
+        "name": "Pod Zoborom",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "25"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1645469983,
+      "lat": 48.3090638,
+      "lon": 18.0970286,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "D",
+        "name": "Andreja Hlinku, Centro",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "8;14;16;19;25;30;32"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1755160613,
+      "lat": 48.3402945,
+      "lon": 18.0660243,
+      "tags": {
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Priemyselný park I",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "4;16;17;23",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1755160663,
+      "lat": 48.3326884,
+      "lon": 18.0524516,
+      "tags": {
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Priemyselný park IV",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "2;4;16;17;23",
+        "shelter": "no"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1860932035,
+      "lat": 48.3311752,
+      "lon": 18.0366243,
+      "tags": {
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Lužianky, Rázcestie Vinárska",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "21",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2325165642,
+      "lat": 48.2956377,
+      "lon": 18.0314012,
+      "tags": {
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Hájnická",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "11",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2325165918,
+      "lat": 48.2947749,
+      "lon": 18.0420082,
+      "tags": {
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Lukov dvor",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "11",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2707368405,
+      "lat": 48.310295,
+      "lon": 18.0960859,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "F",
+        "name": "Andreja Hlinku, Centro",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "2;4;16;23;35"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2882430934,
+      "lat": 48.299634,
+      "lon": 18.058336,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Čajkovského",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "7;9;10;11;17;22;24;32;35"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2893774877,
+      "lat": 48.3180821,
+      "lon": 18.1060244,
+      "tags": {
+        "bus": "yes",
+        "departures_board": "timetable",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Chrenovská, MAX",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "6;25;30",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2893774880,
+      "lat": 48.2960057,
+      "lon": 18.0562433,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Edisonova",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "2;4;6",
+        "shelter": "yes",
+        "wheelchair": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2893774882,
+      "lat": 48.2963087,
+      "lon": 18.0562965,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Edisonova",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "2;4;6;26",
+        "shelter": "no",
+        "source": "Mapillary",
+        "wheelchair": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2893774884,
+      "lat": 48.2937397,
+      "lon": 18.0609557,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Golianova",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "2;4;6;26",
+        "wheelchair": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2893774886,
+      "lat": 48.2938088,
+      "lon": 18.0614926,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Golianova",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "2;4;6",
+        "wheelchair": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2893774889,
+      "lat": 48.3078018,
+      "lon": 18.0778332,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Hollého",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "6;7;9;17;24;26;32;35",
+        "wheelchair": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2893774890,
+      "lat": 48.2830706,
+      "lon": 18.0893139,
+      "tags": {
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Horné Krškany",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "12;14;22;23",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2893774893,
+      "lat": 48.2915742,
+      "lon": 18.0826914,
+      "tags": {
+        "bench": "no",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Kasárne Krškany",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "12;14;22;23",
+        "shelter": "no"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2893774895,
+      "lat": 48.2923819,
+      "lon": 18.0825712,
+      "tags": {
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Kasárne Krškany",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "12;14;22;23;25",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2893774897,
+      "lat": 48.3065472,
+      "lon": 18.0749137,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Kavcova",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "6;7;11;17;24;26;32;35",
+        "wheelchair": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2893774898,
+      "lat": 48.3066134,
+      "lon": 18.0752282,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Kavcova",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "6;7;17;24;26;32;35",
+        "wheelchair": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2893774899,
+      "lat": 48.2960357,
+      "lon": 18.0693198,
+      "tags": {
+        "bench": "yes",
+        "bin": "yes",
+        "bus": "yes",
+        "highway": "bus_stop",
+        "lit": "yes",
+        "local_ref": "A",
+        "name": "Mestská hala",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "2;4;22;26",
+        "shelter": "yes",
+        "tactile_paving": "no",
+        "wheelchair": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2893774900,
+      "lat": 48.2961804,
+      "lon": 18.0694599,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Mestská hala",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "2;22"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2893777802,
+      "lat": 48.2964231,
+      "lon": 18.0677462,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "D",
+        "name": "Mestská hala",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "2;4;6;26",
+        "shelter": "yes",
+        "tactile_paving": "no",
+        "wheelchair": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2893777804,
+      "lat": 48.2974376,
+      "lon": 18.0683193,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "C",
+        "name": "Mestská hala",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "6;9;26",
+        "shelter": "yes",
+        "wheelchair": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2893777805,
+      "lat": 48.3014136,
+      "lon": 18.0633206,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "C",
+        "name": "Mikovíniho",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "6;9;10;22;26",
+        "wheelchair": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2893777807,
+      "lat": 48.3019131,
+      "lon": 18.061538,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Mikovíniho",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "7;9;10;11;17;22;24;32;35",
+        "wheelchair": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2893777808,
+      "lat": 48.3025241,
+      "lon": 18.0633545,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Mikovíniho",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "6;7;11;17;24;26;32;35",
+        "wheelchair": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2893777810,
+      "lat": 48.2953346,
+      "lon": 18.0645106,
+      "tags": {
+        "bench": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Nedbalova",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "2;4;6;26",
+        "shelter": "yes",
+        "wheelchair": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2893777812,
+      "lat": 48.2953704,
+      "lon": 18.0649717,
+      "tags": {
+        "bench": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Nedbalova",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "2;4;6",
+        "shelter": "yes",
+        "wheelchair": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2893777819,
+      "lat": 48.3044364,
+      "lon": 18.0670982,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Poliklinika Klokočina",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "6;7;11;17;24;26;32;35",
+        "wheelchair": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2893777820,
+      "lat": 48.3045716,
+      "lon": 18.0665082,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Poliklinika Klokočina",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "6;7;11;17;24;26;32;35",
+        "wheelchair": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2893777824,
+      "lat": 48.2885887,
+      "lon": 18.0844448,
+      "tags": {
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Rázcestie Priemyselná",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "12;14;22;23"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2893777826,
+      "lat": 48.3004555,
+      "lon": 18.0809645,
+      "tags": {
+        "bench": "yes",
+        "bin": "yes",
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Rázcestie Železničná stanica",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "2;4;10;12;14;15;23",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2893777830,
+      "lat": 48.2957027,
+      "lon": 18.0791509,
+      "tags": {
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Stavebná škola",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "2;4;10;15;22"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2893777831,
+      "lat": 48.2957603,
+      "lon": 18.0786594,
+      "tags": {
+        "bench": "yes",
+        "bin": "no",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Stavebná škola",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "2;4;15;22",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2893777833,
+      "lat": 48.2990133,
+      "lon": 18.0663807,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "ZŠ Škultétyho",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "6;9;10;22;26",
+        "wheelchair": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2893777836,
+      "lat": 48.2999064,
+      "lon": 18.0655742,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "ZŠ Škultétyho",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "6;9;10;22;26",
+        "wheelchair": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2893777855,
+      "lat": 48.3098197,
+      "lon": 18.0793096,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "C",
+        "name": "Štúrova",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "7;17;30"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2895973196,
+      "lat": 48.3009911,
+      "lon": 18.1202342,
+      "tags": {
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Janíkovská cesta",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "19"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2895973198,
+      "lat": 48.3010902,
+      "lon": 18.1203474,
+      "tags": {
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Janíkovská cesta",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "19",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2895973200,
+      "lat": 48.2983174,
+      "lon": 18.1252668,
+      "tags": {
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Malé Janíkovce I",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "19"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2895974501,
+      "lat": 48.3040295,
+      "lon": 18.1173357,
+      "tags": {
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Mikov dvor",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "19"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2895974503,
+      "lat": 48.3041264,
+      "lon": 18.1174192,
+      "tags": {
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Mikov dvor",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "19"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2895974504,
+      "lat": 48.29204,
+      "lon": 18.128178,
+      "tags": {
+        "bench": "yes",
+        "bus": "yes",
+        "departures_board": "timetable",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Slamkova",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "19",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2895974507,
+      "lat": 48.2921344,
+      "lon": 18.1283435,
+      "tags": {
+        "bench": "yes",
+        "bus": "yes",
+        "departures_board": "timetable",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Slamkova",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "19",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2896219409,
+      "lat": 48.3227228,
+      "lon": 18.0947411,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "D",
+        "name": "Amfiteáter",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "2;4;99"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2896219454,
+      "lat": 48.3013864,
+      "lon": 18.0890091,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Špitálska",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "25"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2896359205,
+      "lat": 48.2957829,
+      "lon": 18.0869589,
+      "tags": {
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Kalvária",
+        "public_transport": "platform",
+        "route_ref": "7"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2896359206,
+      "lat": 48.2958302,
+      "lon": 18.0867841,
+      "tags": {
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Kalvária",
+        "public_transport": "platform",
+        "route_ref": "7"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2896359207,
+      "lat": 48.3000703,
+      "lon": 18.0919292,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Kasalova",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "25"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2896359208,
+      "lat": 48.298242,
+      "lon": 18.0845064,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Rázusova",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "7"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2896359209,
+      "lat": 48.2982919,
+      "lon": 18.0844313,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Rázusova",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "7"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2896359210,
+      "lat": 48.2972541,
+      "lon": 18.0941766,
+      "tags": {
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Záhradná",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "25"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2896359532,
+      "lat": 48.3011549,
+      "lon": 18.0885635,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "8. mája",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "7"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2896359533,
+      "lat": 48.3011962,
+      "lon": 18.0884893,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "8. mája",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "7"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2899794809,
+      "lat": 48.2934422,
+      "lon": 18.071033,
+      "tags": {
+        "bench": "yes",
+        "bin": "yes",
+        "highway": "bus_stop",
+        "lit": "no",
+        "local_ref": "A",
+        "name": "Kostolná",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "2;4;22;26",
+        "shelter": "yes",
+        "tactile_paving": "no"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2899794811,
+      "lat": 48.2936192,
+      "lon": 18.071215,
+      "tags": {
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Kostolná",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "2;4;22;26"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2901971147,
+      "lat": 48.2868506,
+      "lon": 18.0721833,
+      "tags": {
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Cabajská",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "15;26"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2901971149,
+      "lat": 48.2868099,
+      "lon": 18.0718757,
+      "tags": {
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Cabajská",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "15;26"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2901971151,
+      "lat": 48.2915607,
+      "lon": 18.0766986,
+      "tags": {
+        "bench": "yes",
+        "bin": "yes",
+        "check_date:bench": "2023-08-11",
+        "highway": "bus_stop",
+        "lit": "no",
+        "local_ref": "A",
+        "name": "Murgašova",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "2;4;15;22",
+        "shelter": "yes",
+        "tactile_paving": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2901971153,
+      "lat": 48.2935033,
+      "lon": 18.077408,
+      "tags": {
+        "bench": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Murgašova",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "2;4;15;22",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2901971154,
+      "lat": 48.2809068,
+      "lon": 18.0701263,
+      "tags": {
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "NAD",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "15",
+        "shelter": "no"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2901971156,
+      "lat": 48.2809825,
+      "lon": 18.0702178,
+      "tags": {
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "NAD",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "15;26",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2901971158,
+      "lat": 48.2823626,
+      "lon": 18.0637309,
+      "tags": {
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Nový cintorín",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "15;26",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2901971162,
+      "lat": 48.2888304,
+      "lon": 18.0748074,
+      "tags": {
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Vodohospodárske stavby",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "2;4;15;22"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2904986553,
+      "lat": 48.2983489,
+      "lon": 18.0541916,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Bizetova",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "2;4;7;9;10;17;22;24;32;35",
+        "shelter": "no"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2904986554,
+      "lat": 48.2991856,
+      "lon": 18.0529728,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Bizetova",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "2;4;7;9;10;17;22;24;32;35",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2904986556,
+      "lat": 48.3147798,
+      "lon": 18.0876574,
+      "tags": {
+        "bench": "yes",
+        "bin": "yes",
+        "bus": "yes",
+        "highway": "bus_stop",
+        "lit": "yes",
+        "local_ref": "A",
+        "name": "Divadlo Andreja Bagara",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "7;17;30",
+        "shelter": "yes",
+        "tactile_paving": "no"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2904986559,
+      "lat": 48.3149762,
+      "lon": 18.0882388,
+      "tags": {
+        "bench": "no",
+        "bin": "yes",
+        "bus": "yes",
+        "highway": "bus_stop",
+        "lit": "yes",
+        "local_ref": "B",
+        "name": "Divadlo Andreja Bagara",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "7;17;30",
+        "shelter": "no",
+        "tactile_paving": "no"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2904986563,
+      "lat": 48.3015545,
+      "lon": 18.0514272,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Kmeťova",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "2;4;7;9;10;17;22;24;32;35",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2904986564,
+      "lat": 48.3017285,
+      "lon": 18.0509996,
+      "tags": {
+        "bench": "yes",
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Kmeťova",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "2;4;7;9;10;17;22;24;32;35",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2904986566,
+      "lat": 48.3044772,
+      "lon": 18.0509588,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Murániho",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "7;13;17;22;30;32",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2904986568,
+      "lat": 48.3057412,
+      "lon": 18.0514884,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Murániho",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "13;17;22;30;32",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2904986569,
+      "lat": 48.3037916,
+      "lon": 18.0529651,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Považská",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "7;30"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2904986570,
+      "lat": 48.3108004,
+      "lon": 18.0805228,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Párovská",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "7;17;30",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2904986571,
+      "lat": 48.3112964,
+      "lon": 18.0813317,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Párovská",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "7;17;30",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2904986574,
+      "lat": 48.3041691,
+      "lon": 18.0846731,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "C",
+        "name": "Rázcestie Autobusová stanica",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "7",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2904986575,
+      "lat": 48.2976412,
+      "lon": 18.0535841,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Rázcestie Kmeťova",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "11",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2904986576,
+      "lat": 48.2980606,
+      "lon": 18.0556668,
+      "tags": {
+        "bench": "yes",
+        "bin": "yes",
+        "bus": "yes",
+        "highway": "bus_stop",
+        "lit": "yes",
+        "local_ref": "A",
+        "name": "Rázcestie Kmeťova",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "7;9;10;11;17;22;24;32;35",
+        "shelter": "yes",
+        "tactile_paving": "no"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2904986588,
+      "lat": 48.2998106,
+      "lon": 18.0579345,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Čajkovského",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "7;9;10;11;17;22;24;32;35"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2904986589,
+      "lat": 48.3134945,
+      "lon": 18.0830936,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Ďurková",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "7;17;30",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2904986591,
+      "lat": 48.3138214,
+      "lon": 18.0834047,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Ďurková",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "7;17;30"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2905874524,
+      "lat": 48.2881067,
+      "lon": 18.0726316,
+      "tags": {
+        "bench": "yes",
+        "bin": "yes",
+        "highway": "bus_stop",
+        "lit": "yes",
+        "local_ref": "A",
+        "name": "Dolnočermánska",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "2;4;22;26",
+        "shelter": "yes",
+        "tactile_paving": "no"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2905874525,
+      "lat": 48.2881309,
+      "lon": 18.0728909,
+      "tags": {
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Dolnočermánska",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "2;4;22;26"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2905874526,
+      "lat": 48.3297319,
+      "lon": 18.1092962,
+      "tags": {
+        "bench": "no",
+        "bin": "yes",
+        "bus": "yes",
+        "highway": "bus_stop",
+        "lit": "no",
+        "local_ref": "C",
+        "name": "Metodova",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "26;27",
+        "shelter": "no",
+        "tactile_paving": "no"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2905874529,
+      "lat": 48.3299543,
+      "lon": 18.1090102,
+      "tags": {
+        "bus": "yes",
+        "departures_board": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Metodova",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "25",
+        "shelter": "no"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2905874530,
+      "lat": 48.3296448,
+      "lon": 18.1114462,
+      "tags": {
+        "bench": "yes",
+        "bin": "yes",
+        "bus": "yes",
+        "highway": "bus_stop",
+        "lit": "no",
+        "local_ref": "A",
+        "name": "Moskovská",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "25;26;27",
+        "shelter": "yes",
+        "tactile_paving": "no"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2905874532,
+      "lat": 48.3250835,
+      "lon": 18.1079666,
+      "tags": {
+        "bench": "no",
+        "bin": "no",
+        "highway": "bus_stop",
+        "lit": "no",
+        "local_ref": "B",
+        "name": "Rázcestie Metodova",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "27",
+        "shelter": "no",
+        "tactile_paving": "no"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2905874533,
+      "lat": 48.3250523,
+      "lon": 18.1075509,
+      "tags": {
+        "bench": "yes",
+        "bin": "yes",
+        "bus": "yes",
+        "highway": "bus_stop",
+        "lit": "no",
+        "local_ref": "A",
+        "name": "Rázcestie Metodova",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "25;26;27",
+        "shelter": "yes",
+        "tactile_paving": "no"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2905874536,
+      "lat": 48.3234003,
+      "lon": 18.1008328,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Rázcestie Panská dolina",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "25;26;27"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2905874537,
+      "lat": 48.2913133,
+      "lon": 18.0719095,
+      "tags": {
+        "bench": "yes",
+        "bin": "yes",
+        "highway": "bus_stop",
+        "lit": "no",
+        "local_ref": "A",
+        "name": "Tehelná",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "2;4;22;26",
+        "shelter": "yes",
+        "tactile_paving": "no"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2905874539,
+      "lat": 48.2914937,
+      "lon": 18.0720589,
+      "tags": {
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Tehelná",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "2;4;22;26"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2905899509,
+      "lat": 48.3203819,
+      "lon": 18.0961264,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "name": "Nitra, Zobor",
+        "operator": "ARRIVA Nitra",
+        "public_transport": "platform",
+        "route_ref": "403410",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2909903152,
+      "lat": 48.332056,
+      "lon": 18.0788083,
+      "tags": {
+        "alt_name": "Nitra, Šindolka",
+        "bench": "yes",
+        "bus": "yes",
+        "departures_board": "timetable",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Šindolka",
+        "network": "MHD Nitra;Prímestská autobusová doprava Nitrianskeho samosprávneho kraja",
+        "network:short": "PAD NSK",
+        "network:wikidata": "Q12771415",
+        "operator": "TD Transport s. r. o.;Arriva Nitra",
+        "operator:wikidata": "Q14687188",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "2;4",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2911921441,
+      "lat": 48.2964613,
+      "lon": 18.0792387,
+      "tags": {
+        "bench": "no",
+        "bin": "yes",
+        "highway": "bus_stop",
+        "lit": "yes",
+        "local_ref": "D",
+        "name": "Stavebná škola",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "10",
+        "shelter": "no",
+        "tactile_paving": "no"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2911921442,
+      "lat": 48.2965667,
+      "lon": 18.0783996,
+      "tags": {
+        "highway": "bus_stop",
+        "local_ref": "C",
+        "name": "Stavebná škola",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "10"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2913211876,
+      "lat": 48.3133554,
+      "lon": 18.0551951,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Bolečkova",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "8;18;21;22",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2913211877,
+      "lat": 48.3139141,
+      "lon": 18.0515312,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Cintorín Mlynárce",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "8;18;22",
+        "shelter": "no"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2913211879,
+      "lat": 48.3138356,
+      "lon": 18.0513212,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Cintorín Mlynárce",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "8;18;22",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2913211888,
+      "lat": 48.3121081,
+      "lon": 18.0572964,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Železničná zastávka Mlynárce",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "8;18;21;22"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2913211890,
+      "lat": 48.3123192,
+      "lon": 18.0570555,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Železničná zastávka Mlynárce",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "8;18;21;22"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2913355960,
+      "lat": 48.3281276,
+      "lon": 18.1019352,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Drozdí chodník",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "10"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2913355961,
+      "lat": 48.3285739,
+      "lon": 18.101663,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Drozdí chodník",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "10"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2913355962,
+      "lat": 48.300257,
+      "lon": 18.0771184,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Hanulova",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "9;10"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2913355965,
+      "lat": 48.2993777,
+      "lon": 18.073443,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Hattalova",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "10"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2913355966,
+      "lat": 48.2994833,
+      "lon": 18.0739916,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Hattalova",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "10"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2913355968,
+      "lat": 48.3311507,
+      "lon": 18.0975608,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "name": "Lanovka",
+        "public_transport": "platform",
+        "route_ref": "10"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2913355969,
+      "lat": 48.3312202,
+      "lon": 18.1012595,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Orechová",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "10"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2913355970,
+      "lat": 48.3316736,
+      "lon": 18.1008201,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Orechová",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "10"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2913355971,
+      "lat": 48.3256685,
+      "lon": 18.101367,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Panská dolina",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "10"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2913355972,
+      "lat": 48.3260314,
+      "lon": 18.1011944,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Panská dolina",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "10"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2913355974,
+      "lat": 48.3238144,
+      "lon": 18.1002598,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "C",
+        "name": "Rázcestie Panská dolina",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "10"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2913355975,
+      "lat": 48.3239009,
+      "lon": 18.1005443,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "D",
+        "name": "Rázcestie Panská dolina",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "10"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2913355976,
+      "lat": 48.2989186,
+      "lon": 18.0702741,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Červenova",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "10"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2913355978,
+      "lat": 48.2989831,
+      "lon": 18.0702141,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Červenova",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "10"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2913355979,
+      "lat": 48.2991513,
+      "lon": 18.0777199,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Železničiarska",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "10"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2913355981,
+      "lat": 48.2992053,
+      "lon": 18.0778659,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Železničiarska",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "10",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2916408734,
+      "lat": 48.3087524,
+      "lon": 18.0738492,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Braneckého",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "11"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2916408739,
+      "lat": 48.2946642,
+      "lon": 18.0421786,
+      "tags": {
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Lukov dvor",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "11",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2916527895,
+      "lat": 48.3101719,
+      "lon": 18.0685259,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Hypermarket TESCO",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "8;12;13;18;21;30;33"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2916527897,
+      "lat": 48.3076289,
+      "lon": 18.0616757,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Partizánska",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "13;22;33"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2916527899,
+      "lat": 48.3048753,
+      "lon": 18.0574796,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Popradská",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "13;33"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2916527900,
+      "lat": 48.3090596,
+      "lon": 18.0473296,
+      "tags": {
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Tokajská",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "32;33"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2916543101,
+      "lat": 48.3091109,
+      "lon": 18.0474963,
+      "tags": {
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Tokajská",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "32;33"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2916543103,
+      "lat": 48.3077608,
+      "lon": 18.0494053,
+      "tags": {
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Viničky",
+        "public_transport": "platform",
+        "route_ref": "32;33",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2916543104,
+      "lat": 48.3060862,
+      "lon": 18.0556681,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Zvolenská",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "13;30;33"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2916543107,
+      "lat": 48.3066229,
+      "lon": 18.0538121,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Zvolenská",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "13;30;33"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2916543127,
+      "lat": 48.3073487,
+      "lon": 18.0594873,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Žilinská",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "13;30;33"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2917528105,
+      "lat": 48.3318815,
+      "lon": 18.1078222,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Martinská dolina",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "25"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2917528107,
+      "lat": 48.3320093,
+      "lon": 18.1067475,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Martinská dolina",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "25"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2917528108,
+      "lat": 48.3332264,
+      "lon": 18.1037656,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Podhájska",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "25"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2917528109,
+      "lat": 48.3333574,
+      "lon": 18.1026132,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Podhájska",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "25"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2917528111,
+      "lat": 48.2912112,
+      "lon": 18.0929569,
+      "tags": {
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Priemyselná",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "25",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2917528113,
+      "lat": 48.3336526,
+      "lon": 18.0985733,
+      "tags": {
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Turistická",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "25"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2917528115,
+      "lat": 48.3343806,
+      "lon": 18.0964241,
+      "tags": {
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Turistická",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "25"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2917528116,
+      "lat": 48.2943505,
+      "lon": 18.0949756,
+      "tags": {
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Wilsonovo nábrežie",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "25"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2919360162,
+      "lat": 48.3257624,
+      "lon": 18.0931672,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Zariadenie pre seniorov Zobor",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "1"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2920882215,
+      "lat": 48.3284933,
+      "lon": 18.0894311,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Muškátová",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "9"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2920882217,
+      "lat": 48.3285394,
+      "lon": 18.0892622,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Muškátová",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "9"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2920882218,
+      "lat": 48.3270163,
+      "lon": 18.0890321,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Orgovánová",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "9"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2920882220,
+      "lat": 48.327101,
+      "lon": 18.0888709,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Orgovánová",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "9"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2920882252,
+      "lat": 48.3317104,
+      "lon": 18.0897916,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Úzka",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "9"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2920882253,
+      "lat": 48.3318181,
+      "lon": 18.0896656,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Úzka",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "9"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2922125389,
+      "lat": 48.3158922,
+      "lon": 18.0555642,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Chotárna",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "18"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2922125390,
+      "lat": 48.3157795,
+      "lon": 18.0552731,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Chotárna",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "18"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2922125392,
+      "lat": 48.3171563,
+      "lon": 18.0567896,
+      "tags": {
+        "bench": "no",
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Dubíkova",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "18",
+        "shelter": "no"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2922125394,
+      "lat": 48.3159005,
+      "lon": 18.0320321,
+      "tags": {
+        "bus": "yes",
+        "departures_board": "timetable",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Kynek",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "18",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2922125396,
+      "lat": 48.3162014,
+      "lon": 18.0484051,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Pekárne",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "8;18;21",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2922125397,
+      "lat": 48.3165398,
+      "lon": 18.0383742,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Potočná",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "18"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2922125399,
+      "lat": 48.3166399,
+      "lon": 18.0385092,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Potočná",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "18"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2922252602,
+      "lat": 48.3243206,
+      "lon": 18.0330808,
+      "tags": {
+        "bench": "no",
+        "bin": "no",
+        "bus": "yes",
+        "highway": "bus_stop",
+        "lit": "no",
+        "local_ref": "B",
+        "name": "Lužianky, Hlohovecká",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "8",
+        "shelter": "no",
+        "tactile_paving": "no"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2922252603,
+      "lat": 48.3302064,
+      "lon": 18.0370182,
+      "tags": {
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Lužianky, Rázcestie Vinárska",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "21"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2922252606,
+      "lat": 48.3288123,
+      "lon": 18.0346488,
+      "tags": {
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Lužianky, Vinárska",
+        "public_transport": "platform",
+        "route_ref": "8"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2922252611,
+      "lat": 48.322508,
+      "lon": 18.0355022,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "METRO",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "8;18"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2922356695,
+      "lat": 48.3253932,
+      "lon": 18.0401523,
+      "tags": {
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Ferrenit",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "21"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2922356697,
+      "lat": 48.3400517,
+      "lon": 18.031517,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Lužianky, Korytovská",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "21"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2922356699,
+      "lat": 48.33423,
+      "lon": 18.0345215,
+      "tags": {
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Lužianky, Rastislavova",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "21"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2922357402,
+      "lat": 48.3227618,
+      "lon": 18.0397943,
+      "tags": {
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Rastislavova",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "21"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2926119924,
+      "lat": 48.3149303,
+      "lon": 18.1149795,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Levická",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "13"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2926119925,
+      "lat": 48.3153156,
+      "lon": 18.1138199,
+      "tags": {
+        "bench": "no",
+        "bin": "no",
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Levická",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "13",
+        "shelter": "no"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2926119927,
+      "lat": 48.3111198,
+      "lon": 18.1200734,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Plynárenská",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "13"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2926119929,
+      "lat": 48.3112913,
+      "lon": 18.1200919,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Plynárenská",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "13"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2926119931,
+      "lat": 48.3090875,
+      "lon": 18.1236301,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Vinohrady Chrenová",
+        "public_transport": "platform",
+        "route_ref": "13",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2926258448,
+      "lat": 48.3159777,
+      "lon": 18.0968196,
+      "tags": {
+        "bus": "yes",
+        "departures_board": "timetable",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Lomnická",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "2;4;16;23",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2926258451,
+      "lat": 48.3124962,
+      "lon": 18.0951533,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Nábrežie mládeže",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "2;4;16;23"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2926258457,
+      "lat": 48.3400279,
+      "lon": 18.0650928,
+      "tags": {
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Priemyselný park I",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "2;4;16;17",
+        "shelter": "no"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2926258462,
+      "lat": 48.3351066,
+      "lon": 18.0552576,
+      "tags": {
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Priemyselný park III",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "2;4;16;17"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2926258463,
+      "lat": 48.3355025,
+      "lon": 18.0563752,
+      "tags": {
+        "bench": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Priemyselný park III",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "4;16;17;23",
+        "shelter": "no"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2926258465,
+      "lat": 48.3326839,
+      "lon": 18.0527328,
+      "tags": {
+        "bench": "no",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Priemyselný park IV",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "4;16;17;23",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2926258467,
+      "lat": 48.3287584,
+      "lon": 18.0462948,
+      "tags": {
+        "bench": "no",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Priemyselný park V",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "2;4;16;17;23",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2926258468,
+      "lat": 48.3287295,
+      "lon": 18.0459342,
+      "tags": {
+        "bench": "no",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Priemyselný park V",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "4;16;17;23",
+        "shelter": "no"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2926258470,
+      "lat": 48.3416524,
+      "lon": 18.0666564,
+      "tags": {
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Rázcestie Priemyselný park",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "4"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2926259133,
+      "lat": 48.3300707,
+      "lon": 18.0592409,
+      "tags": {
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Priemyselný park VII",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "2;4;16;17;23"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2926259147,
+      "lat": 48.3305108,
+      "lon": 18.0590195,
+      "tags": {
+        "bench": "no",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Priemyselný park VII",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "4;16;17;23",
+        "shelter": "no"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2926259165,
+      "lat": 48.3329544,
+      "lon": 18.0560097,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Priemyselný park VI",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "2;4;16;17;23"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2926259174,
+      "lat": 48.3333978,
+      "lon": 18.0557789,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Priemyselný park VI",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "4;16;17;23"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2926567481,
+      "lat": 48.3515105,
+      "lon": 18.0549894,
+      "tags": {
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Belopotockého",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "4"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2926567483,
+      "lat": 48.3520656,
+      "lon": 18.0569487,
+      "tags": {
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Dražovce",
+        "public_transport": "platform",
+        "route_ref": "4",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2926567485,
+      "lat": 48.34606,
+      "lon": 18.0623408,
+      "tags": {
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "PD Dražovce",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "4",
+        "shelter": "no"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2926567486,
+      "lat": 48.3461469,
+      "lon": 18.0624513,
+      "tags": {
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "PD Dražovce",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "4",
+        "shelter": "no"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2926567487,
+      "lat": 48.3502242,
+      "lon": 18.0590646,
+      "tags": {
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Pri kríži",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "4",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2926567489,
+      "lat": 48.3503989,
+      "lon": 18.0589645,
+      "tags": {
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Pri kríži",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "4"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2926567490,
+      "lat": 48.3289126,
+      "lon": 18.0857984,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Veterinárska",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "2;4"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2926567491,
+      "lat": 48.3290123,
+      "lon": 18.0858818,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Veterinárska",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "2;4;99"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2926701537,
+      "lat": 48.3080967,
+      "lon": 18.0581033,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Nitrianska",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "30"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2926701539,
+      "lat": 48.3098332,
+      "lon": 18.0599812,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Pražská",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "30"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2926791134,
+      "lat": 48.3191978,
+      "lon": 18.0855943,
+      "tags": {
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Mestský park",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "35"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2927523028,
+      "lat": 48.3344136,
+      "lon": 18.1298605,
+      "tags": {
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Nitrianske Hrnčiarovce",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "27"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2927523029,
+      "lat": 48.3345658,
+      "lon": 18.1294633,
+      "tags": {
+        "highway": "bus_stop",
+        "local_ref": "C",
+        "name": "Nitrianske Hrnčiarovce",
+        "public_transport": "platform",
+        "route_ref": "27",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2927523030,
+      "lat": 48.3295319,
+      "lon": 18.1207956,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Nitrianske Hrnčiarovce, Krajná",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "27"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2927523032,
+      "lat": 48.3296253,
+      "lon": 18.1207328,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Nitrianske Hrnčiarovce, Krajná",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "27"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2927523033,
+      "lat": 48.3282174,
+      "lon": 18.1164376,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Nitrianske Hrnčiarovce, Pod Sokolom",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "27",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2927523034,
+      "lat": 48.3284301,
+      "lon": 18.1166138,
+      "tags": {
+        "bus": "yes",
+        "departures_board": "timetable",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Nitrianske Hrnčiarovce, Pod Sokolom",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "27",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2927523035,
+      "lat": 48.3314059,
+      "lon": 18.1250242,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Nitrianske Hrnčiarovce, ZŠ",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "27",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2927523041,
+      "lat": 48.3266974,
+      "lon": 18.112401,
+      "tags": {
+        "bench": "no",
+        "bin": "no",
+        "bus": "yes",
+        "highway": "bus_stop",
+        "lit": "no",
+        "local_ref": "B",
+        "name": "Rázcestie Moskovská",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "27",
+        "shelter": "no",
+        "tactile_paving": "no"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2949861239,
+      "lat": 48.3044405,
+      "lon": 18.0841055,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "D",
+        "name": "Rázcestie Autobusová stanica",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "7;25",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 3709878056,
+      "lat": 48.3154475,
+      "lon": 18.1065037,
+      "tags": {
+        "bench": "yes",
+        "bus": "yes",
+        "departures_board": "timetable",
+        "highway": "bus_stop",
+        "name": "Nitra,Chrenovský cintorín",
+        "network": "Prímestská autobusová doprava Nitrianskeho samosprávneho kraja",
+        "network:short": "PAD NSK",
+        "network:wikidata": "Q135092517",
+        "operator": "Arriva Nitra;Arriva Nové Zámky",
+        "operator:wikidata": "Q14687188;Q102542886",
+        "public_transport": "platform",
+        "route_ref": "403410",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 3876797140,
+      "lat": 48.3377014,
+      "lon": 18.0600817,
+      "tags": {
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Priemyselný park II",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "2;4;16;17",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 4551863578,
+      "lat": 48.3268404,
+      "lon": 18.1122931,
+      "tags": {
+        "bench": "yes",
+        "bin": "yes",
+        "bus": "yes",
+        "highway": "bus_stop",
+        "lit": "no",
+        "local_ref": "A",
+        "name": "Rázcestie Moskovská",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "25;26;27",
+        "shelter": "yes",
+        "tactile_paving": "no"
+      }
+    },
+    {
+      "type": "node",
+      "id": 5075382494,
+      "lat": 48.2962588,
+      "lon": 18.0488882,
+      "tags": {
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Prameň",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "11"
+      }
+    },
+    {
+      "type": "node",
+      "id": 5210430267,
+      "lat": 48.2981033,
+      "lon": 18.1252809,
+      "tags": {
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Malé Janíkovce I",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "19"
+      }
+    },
+    {
+      "type": "node",
+      "id": 5220509803,
+      "lat": 48.3033545,
+      "lon": 18.0510286,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "C",
+        "name": "Kmeťova",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "13;17;22;30;32",
+        "shelter": "yes",
+        "source": "Mapillary"
+      }
+    },
+    {
+      "type": "node",
+      "id": 5228999121,
+      "lat": 48.3216277,
+      "lon": 18.1145154,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Vašinova",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "6;13"
+      }
+    },
+    {
+      "type": "node",
+      "id": 5247922964,
+      "lat": 48.324903,
+      "lon": 18.1074744,
+      "tags": {
+        "bench": "no",
+        "bin": "no",
+        "highway": "bus_stop",
+        "lit": "no",
+        "local_ref": "D",
+        "name": "Rázcestie Metodova",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "25;26;27",
+        "shelter": "no",
+        "tactile_paving": "no"
+      }
+    },
+    {
+      "type": "node",
+      "id": 5867181076,
+      "lat": 48.3315815,
+      "lon": 18.1249482,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Nitrianske Hrnčiarovce, ZŠ",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "27",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 6343694680,
+      "lat": 48.3389851,
+      "lon": 18.0658904,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Priemyselný park, nadjazd",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "4",
+        "shelter": "yes",
+        "source": "Ortofotomozaika SR"
+      }
+    },
+    {
+      "type": "node",
+      "id": 6365280538,
+      "lat": 48.348496,
+      "lon": 18.0519592,
+      "tags": {
+        "highway": "bus_stop",
+        "name": "Nitra, JLR, rázcestie",
+        "operator": "ARRIVA Nitra",
+        "public_transport": "platform",
+        "route_ref": "403410",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 6365280544,
+      "lat": 48.3487008,
+      "lon": 18.0511827,
+      "tags": {
+        "highway": "bus_stop",
+        "name": "Nitra, JLR, rázcestie",
+        "operator": "ARRIVA Nitra",
+        "public_transport": "platform",
+        "route_ref": "403410",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 6939636548,
+      "lat": 48.3036058,
+      "lon": 18.080361,
+      "tags": {
+        "bench": "yes",
+        "bin": "yes",
+        "lit": "yes",
+        "name": "Autobusová stanica Nitra",
+        "public_transport": "platform",
+        "ref": "16",
+        "shelter": "yes",
+        "tactile_paving": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 6939636549,
+      "lat": 48.3035393,
+      "lon": 18.0805438,
+      "tags": {
+        "bench": "yes",
+        "bin": "yes",
+        "lit": "yes",
+        "name": "Autobusová stanica Nitra",
+        "public_transport": "platform",
+        "ref": "16",
+        "shelter": "yes",
+        "tactile_paving": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 6939636550,
+      "lat": 48.3034738,
+      "lon": 18.0807454,
+      "tags": {
+        "bench": "yes",
+        "bin": "yes",
+        "lit": "yes",
+        "name": "Autobusová stanica Nitra",
+        "public_transport": "platform",
+        "ref": "17",
+        "shelter": "yes",
+        "tactile_paving": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 7040731517,
+      "lat": 48.3036853,
+      "lon": 18.0806897,
+      "tags": {
+        "bench": "yes",
+        "bin": "yes",
+        "covered": "yes",
+        "lit": "yes",
+        "name": "Autobusová stanica Nitra",
+        "passenger_information_display": "yes",
+        "public_transport": "platform",
+        "route_ref": "Flixbus K811(Turancar)",
+        "shelter": "yes",
+        "tactile_paving": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 7617614039,
+      "lat": 48.3580198,
+      "lon": 18.0542065,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "name": "Nitra, Dražovce, rázc. k žel. st.",
+        "public_transport": "platform"
+      }
+    },
+    {
+      "type": "node",
+      "id": 8118962014,
+      "lat": 48.3388078,
+      "lon": 18.0653979,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Priemyselný park, nadjazd",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "4",
+        "shelter": "yes",
+        "source": "Maxar"
+      }
+    },
+    {
+      "type": "node",
+      "id": 8119545383,
+      "lat": 48.3325841,
+      "lon": 18.0465687,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Strategický park IV",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "17;23",
+        "shelter": "yes",
+        "source": "Maxar"
+      }
+    },
+    {
+      "type": "node",
+      "id": 8119548061,
+      "lat": 48.3361565,
+      "lon": 18.0498437,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Strategický park III",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "17;23",
+        "shelter": "yes",
+        "source": "Maxar"
+      }
+    },
+    {
+      "type": "node",
+      "id": 9597936561,
+      "lat": 48.3004261,
+      "lon": 18.081402,
+      "tags": {
+        "bench": "yes",
+        "bin": "yes",
+        "bus": "yes",
+        "highway": "bus_stop",
+        "lit": "yes",
+        "local_ref": "A",
+        "name": "Rázcestie Železničná stanica",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "2;4;10;12;14;15;23;25",
+        "shelter": "yes",
+        "tactile_paving": "no"
+      }
+    },
+    {
+      "type": "node",
+      "id": 9873108548,
+      "lat": 48.2980703,
+      "lon": 18.0732809,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Bottova",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "9"
+      }
+    },
+    {
+      "type": "node",
+      "id": 9873108549,
+      "lat": 48.2984136,
+      "lon": 18.0742821,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Bottova",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "9"
+      }
+    },
+    {
+      "type": "node",
+      "id": 11370606460,
+      "lat": 48.3402496,
+      "lon": 18.0575818,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Strategický park I",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "17;23",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 11370606462,
+      "lat": 48.3379436,
+      "lon": 18.0551738,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Strategický park II",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "17;23",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 11370606464,
+      "lat": 48.3190675,
+      "lon": 18.1174574,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Zlatomoravecká",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "6",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12478065688,
+      "lat": 48.3005643,
+      "lon": 18.0771311,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Hanulova",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "9;10"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12478065689,
+      "lat": 48.3036892,
+      "lon": 18.0760288,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Švecova",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "9"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12478065690,
+      "lat": 48.3041468,
+      "lon": 18.0760971,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Švecova",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "9"
+      }
+    },
+    {
+      "type": "node",
+      "id": 13034463985,
+      "lat": 48.326829,
+      "lon": 18.0594296,
+      "tags": {
+        "bus": "yes",
+        "departures_board": "no",
+        "highway": "bus_stop",
+        "name": "Na pasienkoch",
+        "public_transport": "platform",
+        "shelter": "no",
+        "unused:highway": "bus_stop",
+        "unused:public_transport": "platform"
+      }
+    },
+    {
+      "type": "node",
+      "id": 13034463986,
+      "lat": 48.3272258,
+      "lon": 18.059268,
+      "tags": {
+        "bus": "yes",
+        "departures_board": "no",
+        "highway": "bus_stop",
+        "name": "Na pasienkoch",
+        "public_transport": "platform",
+        "shelter": "no",
+        "unused:highway": "bus_stop",
+        "unused:public_transport": "platform"
+      }
+    },
+    {
+      "type": "node",
+      "id": 13205423008,
+      "lat": 48.3313301,
+      "lon": 18.0845357,
+      "tags": {
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Šindolka, Dolnohorská",
+        "public_transport": "platform",
+        "route_ref": "2;99"
+      }
+    },
+    {
+      "type": "node",
+      "id": 13244773381,
+      "lat": 48.2952528,
+      "lon": 18.128002,
+      "tags": {
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Malé Janíkovce II",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "19",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 13246290932,
+      "lat": 48.3344831,
+      "lon": 18.1297709,
+      "tags": {
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Nitrianske Hrnčiarovce",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "27",
+        "shelter": "no",
+        "source": "Mapillary"
+      }
+    },
+    {
+      "type": "node",
+      "id": 13259807356,
+      "lat": 48.3020766,
+      "lon": 18.0507826,
+      "tags": {
+        "bench": "no",
+        "bin": "no",
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "D",
+        "name": "Kmeťova",
+        "note": "zda sa, ze zastavka nema oznacnik, je to len vystupiste",
+        "passenger_information_display": "no",
+        "public_transport": "platform",
+        "request_stop": "yes",
+        "route_ref": "13;30",
+        "shelter": "no"
+      }
+    },
+    {
+      "type": "node",
+      "id": 13260319458,
+      "lat": 48.3076264,
+      "lon": 18.0497365,
+      "tags": {
+        "highway": "bus_stop",
+        "local_ref": "B",
+        "name": "Viničky",
+        "public_transport": "platform",
+        "route_ref": "32;33",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 13262496622,
+      "lat": 48.3089768,
+      "lon": 18.1234109,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "local_ref": "A",
+        "name": "Vinohrady Chrenová",
+        "public_transport": "platform",
+        "route_ref": "13",
+        "shelter": "no"
+      }
+    },
+    {
+      "type": "node",
+      "id": 13275752670,
+      "lat": 48.3156249,
+      "lon": 18.1082952,
+      "tags": {
+        "bench": "yes",
+        "bus": "yes",
+        "departures_board": "timetable",
+        "highway": "bus_stop",
+        "name": "Nitra,Chrenovský cintorín",
+        "network": "Prímestská autobusová doprava Nitrianskeho samosprávneho kraja",
+        "network:short": "PAD NSK",
+        "network:wikidata": "Q135092517",
+        "operator": "Arriva Nitra;Arriva Nové Zámky",
+        "operator:wikidata": "Q14687188;Q102542886",
+        "public_transport": "platform",
+        "route_ref": "403410",
+        "shelter": "yes",
+        "source": "Mapillary"
+      }
+    },
+    {
+      "type": "way",
+      "id": 28689503,
+      "center": {
+        "lat": 48.3033384,
+        "lon": 18.0799521
+      },
+      "tags": {
+        "area": "yes",
+        "bench": "yes",
+        "bin": "yes",
+        "highway": "platform",
+        "lit": "yes",
+        "name": "Autobusová stanica Nitra",
+        "passenger_information_display": "yes",
+        "public_transport": "platform",
+        "ref": "1",
+        "shelter": "yes",
+        "surface": "paving_stones",
+        "tactile_paving": "yes"
+      }
+    },
+    {
+      "type": "way",
+      "id": 28689504,
+      "center": {
+        "lat": 48.3033319,
+        "lon": 18.0800846
+      },
+      "tags": {
+        "area": "yes",
+        "bench": "yes",
+        "bin": "yes",
+        "covered": "yes",
+        "highway": "platform",
+        "lit": "yes",
+        "name": "Autobusová stanica Nitra",
+        "passenger_information_display": "yes",
+        "public_transport": "platform",
+        "ref": "2",
+        "surface": "paving_stones",
+        "tactile_paving": "yes"
+      }
+    },
+    {
+      "type": "way",
+      "id": 28689505,
+      "center": {
+        "lat": 48.3033016,
+        "lon": 18.0801895
+      },
+      "tags": {
+        "area": "yes",
+        "bench": "yes",
+        "bin": "yes",
+        "covered": "yes",
+        "highway": "platform",
+        "lit": "yes",
+        "name": "Autobusová stanica Nitra",
+        "passenger_information_display": "yes",
+        "public_transport": "platform",
+        "ref": "3",
+        "surface": "paving_stones",
+        "tactile_paving": "yes"
+      }
+    },
+    {
+      "type": "way",
+      "id": 28689506,
+      "center": {
+        "lat": 48.3032664,
+        "lon": 18.0802942
+      },
+      "tags": {
+        "area": "yes",
+        "bench": "yes",
+        "bin": "yes",
+        "covered": "yes",
+        "highway": "platform",
+        "lit": "yes",
+        "name": "Autobusová stanica Nitra",
+        "passenger_information_display": "yes",
+        "public_transport": "platform",
+        "ref": "4",
+        "surface": "paving_stones",
+        "tactile_paving": "yes"
+      }
+    },
+    {
+      "type": "way",
+      "id": 28689507,
+      "center": {
+        "lat": 48.3032306,
+        "lon": 18.080401
+      },
+      "tags": {
+        "area": "yes",
+        "bench": "yes",
+        "bin": "yes",
+        "covered": "yes",
+        "highway": "platform",
+        "lit": "yes",
+        "name": "Autobusová stanica Nitra",
+        "passenger_information_display": "yes",
+        "public_transport": "platform",
+        "ref": "5",
+        "surface": "paving_stones",
+        "tactile_paving": "yes"
+      }
+    },
+    {
+      "type": "way",
+      "id": 28689510,
+      "center": {
+        "lat": 48.3031919,
+        "lon": 18.0805163
+      },
+      "tags": {
+        "area": "yes",
+        "bench": "yes",
+        "bin": "yes",
+        "covered": "yes",
+        "highway": "platform",
+        "lit": "yes",
+        "name": "Autobusová stanica Nitra",
+        "passenger_information_display": "yes",
+        "public_transport": "platform",
+        "ref": "6",
+        "surface": "paving_stones",
+        "tactile_paving": "yes"
+      }
+    },
+    {
+      "type": "way",
+      "id": 84597630,
+      "center": {
+        "lat": 48.3031736,
+        "lon": 18.0807492
+      },
+      "tags": {
+        "area": "yes",
+        "bench": "yes",
+        "bin": "yes",
+        "highway": "platform",
+        "lit": "yes",
+        "name": "Autobusová stanica Nitra",
+        "passenger_information_display": "yes",
+        "public_transport": "platform",
+        "ref": "7",
+        "shelter": "yes",
+        "tactile_paving": "yes"
+      }
+    },
+    {
+      "type": "way",
+      "id": 112467537,
+      "center": {
+        "lat": 48.303548,
+        "lon": 18.0805318
+      },
+      "tags": {
+        "area": "yes",
+        "bus": "yes",
+        "highway": "platform",
+        "public_transport": "platform",
+        "source": "kapor2"
+      }
+    },
+    {
+      "type": "way",
+      "id": 112467540,
+      "center": {
+        "lat": 48.3037001,
+        "lon": 18.0806517
+      },
+      "tags": {
+        "area": "yes",
+        "bench": "yes",
+        "bin": "yes",
+        "highway": "platform",
+        "lit": "yes",
+        "name": "Autobusová stanica Nitra",
+        "public_transport": "platform",
+        "ref": "18-23",
+        "shelter": "yes",
+        "source": "kapor2",
+        "tactile_paving": "yes"
+      }
+    },
+    {
+      "type": "way",
+      "id": 112467542,
+      "center": {
+        "lat": 48.304024,
+        "lon": 18.0809118
+      },
+      "tags": {
+        "area": "yes",
+        "bench": "yes",
+        "bin": "yes",
+        "highway": "platform",
+        "lit": "yes",
+        "name": "Autobusová stanica Nitra",
+        "public_transport": "platform",
+        "ref": "30-35",
+        "shelter": "yes",
+        "source": "kapor2",
+        "tactile_paving": "yes"
+      }
+    },
+    {
+      "type": "way",
+      "id": 112467544,
+      "center": {
+        "lat": 48.3041724,
+        "lon": 18.0810221
+      },
+      "tags": {
+        "area": "yes",
+        "bench": "yes",
+        "bin": "yes",
+        "highway": "platform",
+        "lit": "yes",
+        "name": "Autobusová stanica Nitra",
+        "public_transport": "platform",
+        "ref": "36-37",
+        "shelter": "yes",
+        "source": "kapor2",
+        "tactile_paving": "yes"
+      }
+    },
+    {
+      "type": "way",
+      "id": 112467547,
+      "center": {
+        "lat": 48.303422,
+        "lon": 18.0804313
+      },
+      "tags": {
+        "area": "yes",
+        "bench": "yes",
+        "bin": "yes",
+        "highway": "platform",
+        "lit": "yes",
+        "public_transport": "platform",
+        "shelter": "no",
+        "source": "kapor2",
+        "surface": "paving_stones",
+        "tactile_paving": "yes"
+      }
+    },
+    {
+      "type": "way",
+      "id": 112467549,
+      "center": {
+        "lat": 48.3038624,
+        "lon": 18.0807816
+      },
+      "tags": {
+        "area": "yes",
+        "bench": "yes",
+        "bin": "yes",
+        "highway": "platform",
+        "lit": "yes",
+        "name": "Autobusová stanica Nitra",
+        "public_transport": "platform",
+        "ref": "24-29",
+        "shelter": "yes",
+        "source": "kapor2",
+        "tactile_paving": "yes"
+      }
+    },
+    {
+      "type": "way",
+      "id": 871508898,
+      "center": {
+        "lat": 48.2953998,
+        "lon": 18.0306817
+      },
+      "tags": {
+        "highway": "platform",
+        "public_transport": "platform",
+        "source": "Ortofotomozaika SR"
+      }
+    },
+    {
+      "type": "way",
+      "id": 1122927916,
+      "center": {
+        "lat": 48.3255977,
+        "lon": 18.0393131
+      },
+      "tags": {
+        "name": "Mlynárce",
+        "operator": "ŽSR",
+        "public_transport": "platform",
+        "railway": "platform"
+      }
+    },
+    {
+      "type": "way",
+      "id": 1122927918,
+      "center": {
+        "lat": 48.311522,
+        "lon": 18.057442
+      },
+      "tags": {
+        "name": "Nitra zastávka",
+        "operator": "ŽSR",
+        "public_transport": "platform",
+        "railway": "platform"
+      }
+    },
+    {
+      "type": "way",
+      "id": 1122927919,
+      "center": {
+        "lat": 48.301407,
+        "lon": 18.0791207
+      },
+      "tags": {
+        "bench": "no",
+        "bin": "no",
+        "lit": "yes",
+        "name": "Nitra",
+        "operator": "ŽSR",
+        "public_transport": "platform",
+        "railway": "platform",
+        "shelter": "no"
+      }
+    },
+    {
+      "type": "way",
+      "id": 1122927920,
+      "center": {
+        "lat": 48.3014105,
+        "lon": 18.0791872
+      },
+      "tags": {
+        "bench": "no",
+        "bin": "no",
+        "lit": "yes",
+        "name": "Nitra",
+        "operator": "ŽSR",
+        "public_transport": "platform",
+        "railway": "platform",
+        "shelter": "no"
+      }
+    },
+    {
+      "type": "way",
+      "id": 1122927921,
+      "center": {
+        "lat": 48.3012477,
+        "lon": 18.0793474
+      },
+      "tags": {
+        "bench": "no",
+        "bin": "no",
+        "lit": "yes",
+        "name": "Nitra",
+        "operator": "ŽSR",
+        "public_transport": "platform",
+        "railway": "platform",
+        "shelter": "no"
+      }
+    },
+    {
+      "type": "way",
+      "id": 1122927922,
+      "center": {
+        "lat": 48.3012406,
+        "lon": 18.0792823
+      },
+      "tags": {
+        "bench": "no",
+        "bin": "no",
+        "lit": "yes",
+        "name": "Nitra",
+        "operator": "ŽSR",
+        "public_transport": "platform",
+        "railway": "platform",
+        "shelter": "no"
+      }
+    },
+    {
+      "type": "way",
+      "id": 1126060629,
+      "center": {
+        "lat": 48.3014256,
+        "lon": 18.1117128
+      },
+      "tags": {
+        "public_transport": "platform",
+        "railway": "platform",
+        "train": "yes"
+      }
+    },
+    {
+      "type": "way",
+      "id": 1126060630,
+      "center": {
+        "lat": 48.3015292,
+        "lon": 18.1116808
+      },
+      "tags": {
+        "public_transport": "platform",
+        "railway": "platform",
+        "train": "yes"
+      }
+    },
+    {
+      "type": "way",
+      "id": 1126060631,
+      "center": {
+        "lat": 48.3015389,
+        "lon": 18.1117239
+      },
+      "tags": {
+        "public_transport": "platform",
+        "railway": "platform",
+        "train": "yes"
+      }
+    },
+    {
+      "type": "way",
+      "id": 1126060633,
+      "center": {
+        "lat": 48.307963,
+        "lon": 18.104541
+      },
+      "tags": {
+        "public_transport": "platform",
+        "railway": "platform",
+        "train": "yes"
+      }
+    },
+    {
+      "type": "way",
+      "id": 1449613625,
+      "center": {
+        "lat": 48.2981076,
+        "lon": 18.0733533
+      },
+      "tags": {
+        "highway": "platform",
+        "public_transport": "platform",
+        "source": "Ortofotomozaika SR"
+      }
+    }
+  ]
+}

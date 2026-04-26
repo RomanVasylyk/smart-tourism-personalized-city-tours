@@ -87,6 +87,70 @@ CREATE INDEX IF NOT EXISTS idx_route_sessions_status ON route_sessions(status);
 CREATE INDEX IF NOT EXISTS idx_route_session_pois_session_id ON route_session_pois(session_id);
 CREATE INDEX IF NOT EXISTS idx_route_feedback_session_id ON route_feedback(session_id);
 
+CREATE TABLE IF NOT EXISTS transport_stops (
+    id SERIAL PRIMARY KEY,
+    city_id INTEGER NOT NULL REFERENCES cities(id) ON DELETE CASCADE,
+    provider_stop_code TEXT,
+    name TEXT NOT NULL,
+    normalized_name TEXT NOT NULL,
+    lat DOUBLE PRECISION NOT NULL,
+    lon DOUBLE PRECISION NOT NULL,
+    geom geometry(Point, 4326) NOT NULL,
+    source TEXT NOT NULL,
+    source_reference TEXT,
+    platform_ref TEXT,
+    matched_by TEXT,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE
+);
+
+CREATE TABLE IF NOT EXISTS transport_lines (
+    id SERIAL PRIMARY KEY,
+    city_id INTEGER NOT NULL REFERENCES cities(id) ON DELETE CASCADE,
+    provider TEXT NOT NULL,
+    provider_line_id TEXT NOT NULL,
+    name TEXT NOT NULL,
+    direction_name TEXT,
+    service_bucket TEXT,
+    source_url TEXT,
+    valid_from DATE,
+    valid_to DATE,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE
+);
+
+CREATE TABLE IF NOT EXISTS transport_line_stops (
+    id BIGSERIAL PRIMARY KEY,
+    line_id INTEGER NOT NULL REFERENCES transport_lines(id) ON DELETE CASCADE,
+    stop_id INTEGER NOT NULL REFERENCES transport_stops(id),
+    stop_sequence INTEGER NOT NULL,
+    UNIQUE (line_id, stop_sequence)
+);
+
+CREATE TABLE IF NOT EXISTS transport_connections (
+    id BIGSERIAL PRIMARY KEY,
+    city_id INTEGER NOT NULL REFERENCES cities(id) ON DELETE CASCADE,
+    line_id INTEGER NOT NULL REFERENCES transport_lines(id) ON DELETE CASCADE,
+    from_stop_id INTEGER NOT NULL REFERENCES transport_stops(id),
+    to_stop_id INTEGER NOT NULL REFERENCES transport_stops(id),
+    from_sequence INTEGER NOT NULL,
+    to_sequence INTEGER NOT NULL,
+    avg_travel_seconds DOUBLE PRECISION NOT NULL,
+    distance_meters DOUBLE PRECISION NOT NULL,
+    source_url TEXT,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    UNIQUE (line_id, from_stop_id, to_stop_id, from_sequence, to_sequence)
+);
+
+CREATE INDEX IF NOT EXISTS idx_transport_stops_city_id ON transport_stops(city_id);
+CREATE INDEX IF NOT EXISTS idx_transport_stops_geom ON transport_stops USING GIST (geom);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_transport_stops_city_source_reference_unique
+    ON transport_stops(city_id, source_reference)
+    WHERE source_reference IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_transport_lines_city_id ON transport_lines(city_id);
+CREATE INDEX IF NOT EXISTS idx_transport_connections_city_id ON transport_connections(city_id);
+CREATE INDEX IF NOT EXISTS idx_transport_connections_from_stop_id ON transport_connections(from_stop_id);
+CREATE INDEX IF NOT EXISTS idx_transport_connections_to_stop_id ON transport_connections(to_stop_id);
+CREATE INDEX IF NOT EXISTS idx_transport_connections_line_id ON transport_connections(line_id);
+
 INSERT INTO cities (name, country, center_lat, center_lon)
 VALUES ('Nitra', 'Slovakia', 48.3076, 18.0845)
 ON CONFLICT DO NOTHING;

@@ -6,6 +6,7 @@ data class RouteResponse(
     val start_datetime: String?,
     val pace: String,
     val interests: List<String>,
+    val transport_mode: String?,
     val return_to_start: Boolean,
     val respect_opening_hours: Boolean,
     val available_minutes: Int,

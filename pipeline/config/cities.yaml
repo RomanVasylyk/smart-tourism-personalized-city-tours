@@ -26,6 +26,22 @@ cities:
     routing_limits:
       max_available_minutes: 360
       max_poi_candidates: 300
+    transport:
+      mhd_enabled: true
+      provider: transdev_nitra
+      mode: static
+      datasource: provider_pdf
+      source_index_url: https://nitra.transdev.sk/cp/
+      raw_data_subdir: transport/nitra/raw
+      processed_graph_path: transport/nitra/processed/transport_graph.json
+      stop_source: osm_overpass
+      average_wait_minutes: 4
+      transit_speed_kmh: 24
+      min_direct_distance_meters: 1200
+      max_first_mile_meters: 650
+      max_last_mile_meters: 650
+      max_total_duration_multiplier: 1.15
+      min_walking_distance_savings_meters: 450
     city_specific_exclusions:
       excluded_name_patterns: []
   - slug: trnava
@@ -55,5 +71,9 @@ cities:
     routing_limits:
       max_available_minutes: 300
       max_poi_candidates: 250
+    transport:
+      mhd_enabled: false
+      provider: null
+      mode: offline
     city_specific_exclusions:
       excluded_name_patterns: []

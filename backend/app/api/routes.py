@@ -56,6 +56,7 @@ def get_cities():
                 "available_categories": profile.get("available_categories") or [],
                 "default_zoom": profile.get("default_zoom"),
                 "routing_limits": profile.get("routing_limits") or {},
+                "transport": profile.get("transport") or {},
             }
         )
 

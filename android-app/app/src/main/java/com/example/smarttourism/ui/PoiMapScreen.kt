@@ -6,6 +6,7 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Path
+import android.graphics.RectF
 import android.graphics.Typeface
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -46,8 +47,10 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.example.smarttourism.R
 import com.example.smarttourism.data.PoiDto
+import com.example.smarttourism.data.RouteLegDto
 import com.example.smarttourism.data.RouteItemDto
 import com.example.smarttourism.data.RouteResponse
+import com.example.smarttourism.data.RouteSegmentDto
 import com.example.smarttourism.data.RouteStartDto
 import org.maplibre.android.annotations.Icon
 import org.maplibre.android.annotations.IconFactory
@@ -67,6 +70,9 @@ private const val DefaultZoom = 13.0
 private const val StreetStyleUrl = "https://tiles.openfreemap.org/styles/liberty"
 private const val RoutePrimaryLineColor = "#2563EB"
 private const val RouteSecondaryLineColor = "#94A3B8"
+private const val TransitPrimaryLineColor = "#F97316"
+private const val TransitSecondaryLineColor = "#FDBA74"
+private const val TransitCompletedLineColor = "#FED7AA"
 private const val RouteTrimMaxSnapDistanceMeters = 200.0
 private const val CurrentLocationIconWidthDp = 42
 private const val CurrentLocationIconHeightDp = 48
@@ -93,6 +99,30 @@ private data class RouteProjection(
 private data class VisibleRouteSegments(
     val activeSegment: List<LatLng>,
     val remainingSegment: List<LatLng>
+)
+
+private enum class RoutePathStage {
+    COMPLETED,
+    ACTIVE,
+    UPCOMING
+}
+
+private data class RenderedRoutePath(
+    val points: List<LatLng>,
+    val mode: String,
+    val stage: RoutePathStage
+)
+
+private data class RenderedRouteLabel(
+    val point: LatLng,
+    val text: String,
+    val stage: RoutePathStage
+)
+
+private data class AutoCameraTarget(
+    val key: String,
+    val lat: Double,
+    val lon: Double
 )
 
 private data class MapTextResources(
@@ -125,6 +155,7 @@ fun PoiMapScreen(
     val mapView = rememberMapViewWithLifecycle(context)
     var map by remember(mapView) { mutableStateOf<MapLibreMap?>(null) }
     var isStyleLoaded by remember(mapView) { mutableStateOf(false) }
+    var lastAutoCameraKey by remember(mapView) { mutableStateOf<String?>(null) }
     val textResources = mapTextResources()
     val startPointIcon = remember(context, textResources.startPointMarkerLabel) {
         createStartPointIcon(context, textResources.startPointMarkerLabel)
@@ -186,12 +217,12 @@ fun PoiMapScreen(
             if (!isStyleLoaded) return@LaunchedEffect
 
             renderMapContent(
+                context = context,
                 map = mapInstance,
                 pois = pois,
                 routeResponse = routeResponse,
                 startLat = startLat,
                 startLon = startLon,
-                defaultZoom = defaultZoom,
                 startPointIcon = startPointIcon,
                 currentLocation = currentLocation,
                 visitedPoiIds = visitedPoiIds,
@@ -200,6 +231,62 @@ fun PoiMapScreen(
                 visitedRouteStopIcon = visitedRouteStopIcon,
                 textResources = textResources
             )
+        }
+
+        LaunchedEffect(
+            map,
+            isStyleLoaded,
+            routeResponse,
+            startLat,
+            startLon,
+            defaultZoom,
+            pois,
+            isSelectingStart
+        ) {
+            val mapInstance = map ?: return@LaunchedEffect
+            if (!isStyleLoaded) return@LaunchedEffect
+
+            val cameraTarget = when {
+                isSelectingStart -> AutoCameraTarget(
+                    key = "select:$startLat:$startLon:${defaultZoom ?: DefaultZoom}",
+                    lat = startLat,
+                    lon = startLon,
+                )
+
+                routeResponse?.route.orEmpty().isNotEmpty() -> {
+                    val activeRoute = routeResponse!!
+                    val firstStop = activeRoute.route.first()
+                    AutoCameraTarget(
+                        key = buildString {
+                            append("route:")
+                            append(activeRoute.start.lat)
+                            append(':')
+                            append(activeRoute.start.lon)
+                            append(':')
+                            append(activeRoute.start_datetime.orEmpty())
+                            append(':')
+                            append(activeRoute.poi_count)
+                            append(':')
+                            append(activeRoute.used_minutes)
+                            append(':')
+                            append(firstStop.poi_id)
+                        },
+                        lat = firstStop.lat,
+                        lon = firstStop.lon,
+                    )
+                }
+
+                else -> AutoCameraTarget(
+                    key = "base:$startLat:$startLon:${defaultZoom ?: DefaultZoom}:${pois.size}",
+                    lat = startLat,
+                    lon = startLon,
+                )
+            }
+
+            if (cameraTarget.key != lastAutoCameraKey) {
+                moveCamera(mapInstance, cameraTarget.lat, cameraTarget.lon, defaultZoom)
+                lastAutoCameraKey = cameraTarget.key
+            }
         }
 
         if (isLoading && pois.isEmpty() && routeResponse == null) {
@@ -293,12 +380,12 @@ private fun mapTextResources(): MapTextResources =
     )
 
 private fun renderMapContent(
+    context: Context,
     map: MapLibreMap,
     pois: List<PoiDto>,
     routeResponse: RouteResponse?,
     startLat: Double,
     startLon: Double,
-    defaultZoom: Double?,
     startPointIcon: Icon,
     currentLocation: RouteStartDto?,
     visitedPoiIds: Set<Int>,
@@ -321,33 +408,55 @@ private fun renderMapContent(
     val routeItems = routeResponse?.route.orEmpty()
     when {
         routeItems.isNotEmpty() -> {
-            val polylinePoints = buildRoutePolylinePoints(routeResponse, startPoint, routeItems)
-            val visibleRouteSegments = buildVisibleRouteSegments(
-                polylinePoints = polylinePoints,
+            val renderedPaths = buildRenderedRoutePaths(
+                routeResponse = routeResponse,
                 routeItems = routeItems,
-                currentLocation = currentLocation,
                 visitedPoiIds = visitedPoiIds,
-                shouldHighlightActiveSegment = isRouteActive
+                isRouteActive = isRouteActive
             )
 
-            if (isRouteActive && visibleRouteSegments.remainingSegment.size >= 2) {
-                map.addPolyline(
-                    PolylineOptions()
-                        .addAll(visibleRouteSegments.remainingSegment)
-                        .color(Color.parseColor(RouteSecondaryLineColor))
-                        .width(6f)
-                        .alpha(0.75f)
+            if (renderedPaths.isNotEmpty()) {
+                drawRoutePaths(map, renderedPaths, isRouteActive)
+                drawTransitLineLabels(
+                    context = context,
+                    map = map,
+                    labels = buildTransitLineLabels(
+                        routeResponse = routeResponse,
+                        routeItems = routeItems,
+                        visitedPoiIds = visitedPoiIds,
+                        isRouteActive = isRouteActive
+                    ),
+                    isRouteActive = isRouteActive
                 )
-            }
+            } else {
+                val polylinePoints = buildRoutePolylinePoints(routeResponse, startPoint, routeItems)
+                val visibleRouteSegments = buildVisibleRouteSegments(
+                    polylinePoints = polylinePoints,
+                    routeItems = routeItems,
+                    currentLocation = currentLocation,
+                    visitedPoiIds = visitedPoiIds,
+                    shouldHighlightActiveSegment = isRouteActive
+                )
 
-            if (visibleRouteSegments.activeSegment.size >= 2) {
-                map.addPolyline(
-                    PolylineOptions()
-                        .addAll(visibleRouteSegments.activeSegment)
-                        .color(Color.parseColor(RoutePrimaryLineColor))
-                        .width(if (isRouteActive) 7f else 6f)
-                        .alpha(0.95f)
-                )
+                if (isRouteActive && visibleRouteSegments.remainingSegment.size >= 2) {
+                    map.addPolyline(
+                        PolylineOptions()
+                            .addAll(visibleRouteSegments.remainingSegment)
+                            .color(Color.parseColor(RouteSecondaryLineColor))
+                            .width(6f)
+                            .alpha(0.75f)
+                    )
+                }
+
+                if (visibleRouteSegments.activeSegment.size >= 2) {
+                    map.addPolyline(
+                        PolylineOptions()
+                            .addAll(visibleRouteSegments.activeSegment)
+                            .color(Color.parseColor(RoutePrimaryLineColor))
+                            .width(if (isRouteActive) 7f else 6f)
+                            .alpha(0.95f)
+                    )
+                }
             }
 
             map.addMarkers(
@@ -388,13 +497,6 @@ private fun renderMapContent(
                         )
                 }
             )
-
-            if (currentLocation != null) {
-                moveCamera(map, currentLocation.lat, currentLocation.lon, defaultZoom)
-            } else {
-                val firstStop = routeItems.first()
-                moveCamera(map, firstStop.lat, firstStop.lon, defaultZoom)
-            }
         }
 
         pois.isNotEmpty() -> {
@@ -406,12 +508,6 @@ private fun renderMapContent(
                         .snippet(poi.category.toDisplayLabel(textResources.categoryLabels))
                 }
             )
-
-            moveCamera(map, startLat, startLon, defaultZoom)
-        }
-
-        else -> {
-            moveCamera(map, startLat, startLon, defaultZoom)
         }
     }
 
@@ -425,6 +521,226 @@ private fun renderMapContent(
         )
     }
 }
+
+private fun drawRoutePaths(
+    map: MapLibreMap,
+    renderedPaths: List<RenderedRoutePath>,
+    isRouteActive: Boolean
+) {
+    val stagePriority = mapOf(
+        RoutePathStage.COMPLETED to 0,
+        RoutePathStage.UPCOMING to 1,
+        RoutePathStage.ACTIVE to 2,
+    )
+
+    renderedPaths
+        .withIndex()
+        .sortedWith(compareBy({ stagePriority[it.value.stage] ?: 0 }, { it.index }))
+        .forEach { indexedPath ->
+            val path = indexedPath.value
+            map.addPolyline(
+                PolylineOptions()
+                    .addAll(path.points)
+                    .color(Color.parseColor(routeLineColor(path.mode, path.stage, isRouteActive)))
+                    .width(routeLineWidth(path.stage, isRouteActive))
+                    .alpha(routeLineAlpha(path.stage, isRouteActive))
+            )
+        }
+}
+
+private fun drawTransitLineLabels(
+    context: Context,
+    map: MapLibreMap,
+    labels: List<RenderedRouteLabel>,
+    isRouteActive: Boolean
+) {
+    val stagePriority = mapOf(
+        RoutePathStage.COMPLETED to 0,
+        RoutePathStage.UPCOMING to 1,
+        RoutePathStage.ACTIVE to 2,
+    )
+    val iconFactory = IconFactory.getInstance(context)
+    val iconCache = mutableMapOf<String, Icon>()
+
+    labels
+        .sortedWith(compareBy({ stagePriority[it.stage] ?: 0 }, { it.text }))
+        .forEach { label ->
+            val iconKey = "${label.text}:${label.stage}:${isRouteActive}"
+            val icon = iconCache.getOrPut(iconKey) {
+                createTransitLineLabelIcon(iconFactory, context, label.text, label.stage, isRouteActive)
+            }
+            map.addMarker(
+                MarkerOptions()
+                    .position(label.point)
+                    .icon(icon)
+            )
+        }
+}
+
+private fun buildRenderedRoutePaths(
+    routeResponse: RouteResponse?,
+    routeItems: List<RouteItemDto>,
+    visitedPoiIds: Set<Int>,
+    isRouteActive: Boolean
+): List<RenderedRoutePath> {
+    val legs = routeResponse?.legs.orEmpty()
+    if (legs.isEmpty()) {
+        return emptyList()
+    }
+
+    val allPoisVisited = routeItems.isNotEmpty() && routeItems.all { item -> item.poi_id in visitedPoiIds }
+    val activeLegOrder = if (isRouteActive) {
+        legs.firstOrNull { leg -> leg.to.type == "poi" && leg.to.poi_id !in visitedPoiIds }?.order
+            ?: if (allPoisVisited) {
+                legs.firstOrNull { leg -> leg.to.type == "start" }?.order
+            } else {
+                null
+            }
+    } else {
+        null
+    }
+
+    return legs.flatMap { leg ->
+        val stage = when {
+            !isRouteActive -> RoutePathStage.ACTIVE
+            leg.to.type == "poi" && leg.to.poi_id in visitedPoiIds -> RoutePathStage.COMPLETED
+            activeLegOrder != null && leg.order == activeLegOrder -> RoutePathStage.ACTIVE
+            else -> RoutePathStage.UPCOMING
+        }
+
+        segmentDtosForLeg(leg).mapNotNull { segment ->
+            val points = segment.geometry
+                .orEmpty()
+                .map { coordinate -> LatLng(coordinate.lat, coordinate.lon) }
+                .withoutAdjacentDuplicates()
+            if (points.size < 2) {
+                null
+            } else {
+                RenderedRoutePath(
+                    points = points,
+                    mode = segment.mode ?: leg.mode ?: "walk",
+                    stage = stage
+                )
+            }
+        }
+    }
+}
+
+private fun buildTransitLineLabels(
+    routeResponse: RouteResponse?,
+    routeItems: List<RouteItemDto>,
+    visitedPoiIds: Set<Int>,
+    isRouteActive: Boolean
+): List<RenderedRouteLabel> {
+    val legs = routeResponse?.legs.orEmpty()
+    if (legs.isEmpty()) {
+        return emptyList()
+    }
+
+    val allPoisVisited = routeItems.isNotEmpty() && routeItems.all { item -> item.poi_id in visitedPoiIds }
+    val activeLegOrder = if (isRouteActive) {
+        legs.firstOrNull { leg -> leg.to.type == "poi" && leg.to.poi_id !in visitedPoiIds }?.order
+            ?: if (allPoisVisited) {
+                legs.firstOrNull { leg -> leg.to.type == "start" }?.order
+            } else {
+                null
+            }
+    } else {
+        null
+    }
+
+    return legs.flatMap { leg ->
+        val stage = when {
+            !isRouteActive -> RoutePathStage.ACTIVE
+            leg.to.type == "poi" && leg.to.poi_id in visitedPoiIds -> RoutePathStage.COMPLETED
+            activeLegOrder != null && leg.order == activeLegOrder -> RoutePathStage.ACTIVE
+            else -> RoutePathStage.UPCOMING
+        }
+
+        segmentDtosForLeg(leg).mapNotNull { segment ->
+            if (segment.mode != "transit") {
+                return@mapNotNull null
+            }
+
+            val lineText = transitLineBadgeText(segment.line_name) ?: return@mapNotNull null
+            val points = segment.geometry
+                .orEmpty()
+                .map { coordinate -> LatLng(coordinate.lat, coordinate.lon) }
+                .withoutAdjacentDuplicates()
+            val midpoint = points.polylineMidpoint() ?: return@mapNotNull null
+            RenderedRouteLabel(
+                point = midpoint,
+                text = lineText,
+                stage = stage
+            )
+        }
+    }
+}
+
+private fun segmentDtosForLeg(leg: RouteLegDto): List<RouteSegmentDto> =
+    leg.segments.orEmpty().ifEmpty {
+        listOf(
+            RouteSegmentDto(
+                order = 1,
+                mode = leg.mode,
+                duration_seconds = leg.duration_seconds,
+                duration_minutes = leg.duration_minutes,
+                distance_meters = leg.distance_meters,
+                geometry = leg.geometry,
+                source = leg.routing_source,
+                line_name = null,
+                from_stop_name = null,
+                to_stop_name = null,
+                departure_time = leg.departure_time,
+                arrival_time = leg.arrival_time,
+                wait_minutes_before_departure = null,
+                in_vehicle_minutes = null
+            )
+        )
+    }
+
+private fun routeLineColor(
+    mode: String,
+    stage: RoutePathStage,
+    isRouteActive: Boolean
+): String {
+    val normalizedMode = mode.lowercase(Locale.ROOT)
+    if (normalizedMode == "transit") {
+        return when (stage) {
+            RoutePathStage.COMPLETED -> TransitCompletedLineColor
+            RoutePathStage.ACTIVE -> TransitPrimaryLineColor
+            RoutePathStage.UPCOMING -> if (isRouteActive) TransitSecondaryLineColor else TransitPrimaryLineColor
+        }
+    }
+
+    return when (stage) {
+        RoutePathStage.COMPLETED -> RouteSecondaryLineColor
+        RoutePathStage.ACTIVE -> RoutePrimaryLineColor
+        RoutePathStage.UPCOMING -> if (isRouteActive) RouteSecondaryLineColor else RoutePrimaryLineColor
+    }
+}
+
+private fun routeLineWidth(
+    stage: RoutePathStage,
+    isRouteActive: Boolean
+): Float =
+    when {
+        !isRouteActive -> 6f
+        stage == RoutePathStage.ACTIVE -> 7f
+        stage == RoutePathStage.COMPLETED -> 5f
+        else -> 6f
+    }
+
+private fun routeLineAlpha(
+    stage: RoutePathStage,
+    isRouteActive: Boolean
+): Float =
+    when {
+        !isRouteActive -> 0.95f
+        stage == RoutePathStage.ACTIVE -> 0.95f
+        stage == RoutePathStage.COMPLETED -> 0.58f
+        else -> 0.8f
+    }
 
 @Composable
 private fun MapLocationButton(
@@ -660,6 +976,52 @@ private fun createVisitedRouteStopIcon(context: Context): Icon {
     return IconFactory.getInstance(context).fromBitmap(bitmap)
 }
 
+private fun createTransitLineLabelIcon(
+    iconFactory: IconFactory,
+    context: Context,
+    label: String,
+    stage: RoutePathStage,
+    isRouteActive: Boolean
+): Icon {
+    val density = context.resources.displayMetrics.density
+    val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = Color.WHITE
+        textSize = 13f * density
+        typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+        textAlign = Paint.Align.CENTER
+    }
+    val textBounds = android.graphics.Rect()
+    textPaint.getTextBounds(label, 0, label.length, textBounds)
+
+    val horizontalPadding = 9f * density
+    val verticalPadding = 5f * density
+    val width = (textBounds.width() + (horizontalPadding * 2)).roundToInt().coerceAtLeast((28f * density).roundToInt())
+    val height = (textBounds.height() + (verticalPadding * 2)).roundToInt().coerceAtLeast((22f * density).roundToInt())
+    val cornerRadius = 10f * density
+
+    val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+    val canvas = Canvas(bitmap)
+    val backgroundPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = Color.parseColor(
+            when (stage) {
+                RoutePathStage.COMPLETED -> TransitCompletedLineColor
+                RoutePathStage.ACTIVE -> TransitPrimaryLineColor
+                RoutePathStage.UPCOMING -> if (isRouteActive) TransitSecondaryLineColor else TransitPrimaryLineColor
+            }
+        )
+    }
+    canvas.drawRoundRect(
+        RectF(0f, 0f, width.toFloat(), height.toFloat()),
+        cornerRadius,
+        cornerRadius,
+        backgroundPaint
+    )
+
+    val baseline = (height / 2f) - ((textPaint.descent() + textPaint.ascent()) / 2f)
+    canvas.drawText(label, width / 2f, baseline, textPaint)
+    return iconFactory.fromBitmap(bitmap)
+}
+
 private fun locationPinPath(
     centerX: Float,
     circleY: Float,
@@ -875,6 +1237,30 @@ private fun List<LatLng>.withoutAdjacentDuplicates(): List<LatLng> =
         }
         result
     }
+
+private fun List<LatLng>.polylineMidpoint(): LatLng? {
+    if (size < 2) {
+        return firstOrNull()
+    }
+
+    val targetSegmentIndex = (size - 1) / 2
+    val start = this[targetSegmentIndex]
+    val end = this[targetSegmentIndex + 1]
+    return LatLng(
+        (start.latitude + end.latitude) / 2.0,
+        (start.longitude + end.longitude) / 2.0
+    )
+}
+
+private fun transitLineBadgeText(lineName: String?): String? {
+    val value = lineName?.trim().orEmpty()
+    if (value.isEmpty()) {
+        return null
+    }
+
+    val digits = value.filter(Char::isDigit)
+    return if (digits.isNotEmpty()) digits else value
+}
 
 private fun latitudeToMeters(latitudeDelta: Double): Double =
     latitudeDelta * 111_320.0

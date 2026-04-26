@@ -1,0 +1,182 @@
+{
+  "city": "nitra",
+  "provider": "transdev_nitra",
+  "source_index_url": "https://nitra.transdev.sk/cp/",
+  "downloaded_at": "2026-04-26T11:04:09Z",
+  "documents": [
+    {
+      "line_id": "1",
+      "source_url": "https://nitra.transdev.sk/wp-content/uploads/2025/12/01.pdf",
+      "filename": "01.pdf",
+      "size_bytes": 218885
+    },
+    {
+      "line_id": "2",
+      "source_url": "https://nitra.transdev.sk/wp-content/uploads/2025/12/02.pdf",
+      "filename": "02.pdf",
+      "size_bytes": 340886
+    },
+    {
+      "line_id": "4",
+      "source_url": "https://nitra.transdev.sk/wp-content/uploads/2025/12/04.pdf",
+      "filename": "04.pdf",
+      "size_bytes": 369251
+    },
+    {
+      "line_id": "6",
+      "source_url": "https://nitra.transdev.sk/wp-content/uploads/2026/04/06.pdf",
+      "filename": "06.pdf",
+      "size_bytes": 287399
+    },
+    {
+      "line_id": "7",
+      "source_url": "https://nitra.transdev.sk/wp-content/uploads/2025/12/07.pdf",
+      "filename": "07.pdf",
+      "size_bytes": 270463
+    },
+    {
+      "line_id": "8",
+      "source_url": "https://nitra.transdev.sk/wp-content/uploads/2025/12/08.pdf",
+      "filename": "08.pdf",
+      "size_bytes": 229072
+    },
+    {
+      "line_id": "9",
+      "source_url": "https://nitra.transdev.sk/wp-content/uploads/2026/04/09.pdf",
+      "filename": "09.pdf",
+      "size_bytes": 272267
+    },
+    {
+      "line_id": "10",
+      "source_url": "https://nitra.transdev.sk/wp-content/uploads/2026/04/10.pdf",
+      "filename": "10.pdf",
+      "size_bytes": 260623
+    },
+    {
+      "line_id": "11",
+      "source_url": "https://nitra.transdev.sk/wp-content/uploads/2025/12/11.pdf",
+      "filename": "11.pdf",
+      "size_bytes": 257726
+    },
+    {
+      "line_id": "12",
+      "source_url": "https://nitra.transdev.sk/wp-content/uploads/2025/12/12.pdf",
+      "filename": "12.pdf",
+      "size_bytes": 378254
+    },
+    {
+      "line_id": "13",
+      "source_url": "https://nitra.transdev.sk/wp-content/uploads/2025/12/13.pdf",
+      "filename": "13.pdf",
+      "size_bytes": 242871
+    },
+    {
+      "line_id": "14",
+      "source_url": "https://nitra.transdev.sk/wp-content/uploads/2025/12/14.pdf",
+      "filename": "14.pdf",
+      "size_bytes": 326999
+    },
+    {
+      "line_id": "15",
+      "source_url": "https://nitra.transdev.sk/wp-content/uploads/2025/12/15.pdf",
+      "filename": "15.pdf",
+      "size_bytes": 142575
+    },
+    {
+      "line_id": "16",
+      "source_url": "https://nitra.transdev.sk/wp-content/uploads/2025/12/16.pdf",
+      "filename": "16.pdf",
+      "size_bytes": 137794
+    },
+    {
+      "line_id": "17",
+      "source_url": "https://nitra.transdev.sk/wp-content/uploads/2025/12/17.pdf",
+      "filename": "17.pdf",
+      "size_bytes": 167198
+    },
+    {
+      "line_id": "18",
+      "source_url": "https://nitra.transdev.sk/wp-content/uploads/2025/12/18.pdf",
+      "filename": "18.pdf",
+      "size_bytes": 302110
+    },
+    {
+      "line_id": "19",
+      "source_url": "https://nitra.transdev.sk/wp-content/uploads/2025/12/19.pdf",
+      "filename": "19.pdf",
+      "size_bytes": 325915
+    },
+    {
+      "line_id": "21",
+      "source_url": "https://nitra.transdev.sk/wp-content/uploads/2025/12/21.pdf",
+      "filename": "21.pdf",
+      "size_bytes": 247187
+    },
+    {
+      "line_id": "22",
+      "source_url": "https://nitra.transdev.sk/wp-content/uploads/2026/04/22.pdf",
+      "filename": "22.pdf",
+      "size_bytes": 317353
+    },
+    {
+      "line_id": "23",
+      "source_url": "https://nitra.transdev.sk/wp-content/uploads/2025/12/23.pdf",
+      "filename": "23.pdf",
+      "size_bytes": 195655
+    },
+    {
+      "line_id": "24",
+      "source_url": "https://nitra.transdev.sk/wp-content/uploads/2025/12/24.pdf",
+      "filename": "24.pdf",
+      "size_bytes": 364120
+    },
+    {
+      "line_id": "25",
+      "source_url": "https://nitra.transdev.sk/wp-content/uploads/2025/12/25.pdf",
+      "filename": "25.pdf",
+      "size_bytes": 329132
+    },
+    {
+      "line_id": "26",
+      "source_url": "https://nitra.transdev.sk/wp-content/uploads/2026/04/26.pdf",
+      "filename": "26.pdf",
+      "size_bytes": 323182
+    },
+    {
+      "line_id": "27",
+      "source_url": "https://nitra.transdev.sk/wp-content/uploads/2025/12/27.pdf",
+      "filename": "27.pdf",
+      "size_bytes": 251950
+    },
+    {
+      "line_id": "30",
+      "source_url": "https://nitra.transdev.sk/wp-content/uploads/2025/12/30.pdf",
+      "filename": "30.pdf",
+      "size_bytes": 271795
+    },
+    {
+      "line_id": "32",
+      "source_url": "https://nitra.transdev.sk/wp-content/uploads/2025/12/32.pdf",
+      "filename": "32.pdf",
+      "size_bytes": 430069
+    },
+    {
+      "line_id": "33",
+      "source_url": "https://nitra.transdev.sk/wp-content/uploads/2025/12/33.pdf",
+      "filename": "33.pdf",
+      "size_bytes": 164057
+    },
+    {
+      "line_id": "35",
+      "source_url": "https://nitra.transdev.sk/wp-content/uploads/2025/12/35.pdf",
+      "filename": "35.pdf",
+      "size_bytes": 152159
+    },
+    {
+      "line_id": "99",
+      "source_url": "https://nitra.transdev.sk/wp-content/uploads/2026/02/99.pdf",
+      "filename": "99.pdf",
+      "size_bytes": 126639
+    }
+  ]
+}

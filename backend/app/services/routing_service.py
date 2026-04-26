@@ -35,16 +35,34 @@ class RoutingService:
         self.profile = profile or os.getenv("ROUTING_PROFILE", "foot")
         self.timeout_seconds = timeout_seconds or float(os.getenv("ROUTING_TIMEOUT_SECONDS", "0.75"))
         self.enabled = enabled if enabled is not None else os.getenv("ROUTING_ENABLED", "true").lower() == "true"
-        self._cache: dict[tuple[float, float, float, float, str], RoutingLeg] = {}
+        self._cache: dict[tuple[float, float, float, float, str, str, bool], RoutingLeg] = {}
         self._external_routing_failed = False
 
     def route_between(self, start: RoutePoint, end: RoutePoint, pace: str) -> RoutingLeg:
+        return self.route_between_profile(
+            start=start,
+            end=end,
+            pace=pace,
+            profile=self.profile,
+            apply_pace_multiplier=True,
+        )
+
+    def route_between_profile(
+        self,
+        start: RoutePoint,
+        end: RoutePoint,
+        pace: str,
+        profile: str,
+        apply_pace_multiplier: bool,
+    ) -> RoutingLeg:
         cache_key = (
             round(start.lat, 6),
             round(start.lon, 6),
             round(end.lat, 6),
             round(end.lon, 6),
             (pace or "normal").lower(),
+            (profile or self.profile or "foot").lower(),
+            bool(apply_pace_multiplier),
         )
         cached_leg = self._cache.get(cache_key)
         if cached_leg is not None:
@@ -52,19 +70,41 @@ class RoutingService:
 
         leg = None
         if not self._external_routing_failed:
-            leg = self._fetch_osrm_route(start, end, pace)
+            leg = self._fetch_osrm_route(
+                start=start,
+                end=end,
+                pace=pace,
+                profile=profile,
+                apply_pace_multiplier=apply_pace_multiplier,
+            )
         if leg is None:
             leg = self._fallback_route(start, end, pace)
 
         self._cache[cache_key] = leg
         return leg
 
-    def _fetch_osrm_route(self, start: RoutePoint, end: RoutePoint, pace: str) -> RoutingLeg | None:
+    def route_geometry_between(self, start: RoutePoint, end: RoutePoint, profile: str = "driving") -> RoutingLeg:
+        return self.route_between_profile(
+            start=start,
+            end=end,
+            pace="normal",
+            profile=profile,
+            apply_pace_multiplier=False,
+        )
+
+    def _fetch_osrm_route(
+        self,
+        start: RoutePoint,
+        end: RoutePoint,
+        pace: str,
+        profile: str,
+        apply_pace_multiplier: bool,
+    ) -> RoutingLeg | None:
         if not self.enabled or not self.base_url:
             return None
 
         coordinates = f"{start.lon},{start.lat};{end.lon},{end.lat}"
-        url = f"{self.base_url}/route/v1/{self.profile}/{coordinates}"
+        url = f"{self.base_url}/route/v1/{profile}/{coordinates}"
         params = {
             "overview": "full",
             "geometries": "geojson",
@@ -98,7 +138,7 @@ class RoutingService:
                 return None
 
             return RoutingLeg(
-                duration_seconds=duration_seconds * pace_duration_multiplier(pace),
+                duration_seconds=duration_seconds * pace_duration_multiplier(pace) if apply_pace_multiplier else duration_seconds,
                 distance_meters=distance_meters,
                 geometry=route_coordinates,
                 source="osrm",

@@ -63,8 +63,10 @@ import com.example.smarttourism.data.CityDto
 import com.example.smarttourism.data.PoiDto
 import com.example.smarttourism.data.RouteFeedback
 import com.example.smarttourism.data.RouteFeedbackRequest
+import com.example.smarttourism.data.RouteLegDto
 import com.example.smarttourism.data.RouteRequest
 import com.example.smarttourism.data.RouteResponse
+import com.example.smarttourism.data.RouteSegmentDto
 import com.example.smarttourism.data.RouteSessionDto
 import com.example.smarttourism.data.RouteSessionCreateRequest
 import com.example.smarttourism.data.RouteSessionPoiVisitRequest
@@ -98,6 +100,7 @@ private val DefaultInterestCategories = listOf(
 )
 private val PaceOptions = listOf("slow", "normal", "fast")
 private val RouteTimeFormatter = DateTimeFormatter.ofPattern("EEE, MMM d HH:mm", Locale.getDefault())
+private val RouteClockFormatter = DateTimeFormatter.ofPattern("HH:mm", Locale.getDefault())
 private const val RouteTrackingMinTimeMs = 5_000L
 private const val RouteTrackingMinDistanceMeters = 5f
 private const val PoiVisitedRadiusMeters = 60f
@@ -153,6 +156,7 @@ fun RoutePlannerScreen() {
     var pace by remember { mutableStateOf("normal") }
     var returnToStart by remember { mutableStateOf(true) }
     var respectOpeningHours by remember { mutableStateOf(true) }
+    var allowPublicTransport by remember { mutableStateOf(false) }
     var startPoint by remember { mutableStateOf(EmptyStartPoint) }
     var startDateTime by remember { mutableStateOf(defaultRouteStartDateTime()) }
     var isSelectingStart by remember { mutableStateOf(false) }
@@ -484,7 +488,9 @@ fun RoutePlannerScreen() {
         var restoredCityToken = savedSnapshot?.request?.city
 
         savedSnapshot?.let { snapshot ->
-            currentRouteRequest = snapshot.request
+            currentRouteRequest = snapshot.request.copy(
+                transport_mode = snapshot.request.transport_mode ?: "walk"
+            )
             applySavedSnapshot(
                 snapshot = snapshot,
                 onRouteRestored = { restoredRoute -> routeResponse = restoredRoute },
@@ -494,6 +500,9 @@ fun RoutePlannerScreen() {
                 onReturnToStartRestored = { restoredReturnToStart -> returnToStart = restoredReturnToStart },
                 onRespectOpeningHoursRestored = { restoredRespectOpeningHours ->
                     respectOpeningHours = restoredRespectOpeningHours
+                },
+                onAllowPublicTransportRestored = { restoredAllowPublicTransport ->
+                    allowPublicTransport = restoredAllowPublicTransport
                 },
                 onStartDateTimeRestored = { restoredStartDateTime -> startDateTime = restoredStartDateTime },
                 selectedInterests = selectedInterests
@@ -523,7 +532,9 @@ fun RoutePlannerScreen() {
             if (remoteSession != null) {
                 remoteSession.toSavedRouteSnapshot()?.let { snapshot ->
                     restoredCityToken = snapshot.request.city
-                    currentRouteRequest = snapshot.request
+                    currentRouteRequest = snapshot.request.copy(
+                        transport_mode = snapshot.request.transport_mode ?: "walk"
+                    )
                     applySavedSnapshot(
                         snapshot = snapshot,
                         onRouteRestored = { restoredRoute -> routeResponse = restoredRoute },
@@ -533,6 +544,9 @@ fun RoutePlannerScreen() {
                         onReturnToStartRestored = { restoredReturnToStart -> returnToStart = restoredReturnToStart },
                         onRespectOpeningHoursRestored = { restoredRespectOpeningHours ->
                             respectOpeningHours = restoredRespectOpeningHours
+                        },
+                        onAllowPublicTransportRestored = { restoredAllowPublicTransport ->
+                            allowPublicTransport = restoredAllowPublicTransport
                         },
                         onStartDateTimeRestored = { restoredStartDateTime -> startDateTime = restoredStartDateTime },
                         selectedInterests = selectedInterests
@@ -605,6 +619,10 @@ fun RoutePlannerScreen() {
             startPoint = city.toStartPoint()
         }
 
+        if (!city.supportsPublicTransport()) {
+            allowPublicTransport = false
+        }
+
         try {
             pois = ApiModule.poiApi.getPois(city.slug)
             poiError = null
@@ -637,7 +655,8 @@ fun RoutePlannerScreen() {
                 start_lon = currentLocation.lon,
                 available_minutes = remainingMinutes,
                 start_datetime = defaultRouteStartDateTime().toString(),
-                exclude_poi_ids = visitedPoiIds.distinct()
+                exclude_poi_ids = visitedPoiIds.distinct(),
+                transport_mode = baseRequest.transport_mode ?: "walk"
             )
 
             try {
@@ -740,6 +759,7 @@ fun RoutePlannerScreen() {
         isTracking = routeSessionStatus == RouteSessionStatus.IN_PROGRESS
     )
     val selectedCityAvailableCategories = selectedCity?.availableCategories().orEmpty()
+    val isPublicTransportAvailable = selectedCity?.supportsPublicTransport() == true
 
     fun pauseRoute() {
         if (routeSessionStatus == RouteSessionStatus.IN_PROGRESS) {
@@ -952,6 +972,12 @@ fun RoutePlannerScreen() {
                     respectOpeningHours = it
                     clearDisplayedRoute()
                 },
+                isPublicTransportAvailable = isPublicTransportAvailable,
+                allowPublicTransport = allowPublicTransport,
+                onAllowPublicTransportChange = {
+                    allowPublicTransport = it
+                    clearDisplayedRoute()
+                },
                 startDateTime = startDateTime,
                 onUseCurrentTime = {
                     startDateTime = defaultRouteStartDateTime()
@@ -975,7 +1001,12 @@ fun RoutePlannerScreen() {
                             pace = pace,
                             return_to_start = returnToStart,
                             start_datetime = startDateTime.truncatedTo(ChronoUnit.MINUTES).toString(),
-                            respect_opening_hours = respectOpeningHours
+                            respect_opening_hours = respectOpeningHours,
+                            transport_mode = if (allowPublicTransport && isPublicTransportAvailable) {
+                                "walk_or_mhd"
+                            } else {
+                                "walk"
+                            }
                         )
 
                         try {
@@ -1100,6 +1131,7 @@ fun RoutePlannerScreen() {
                     ) { item ->
                         RouteStopCard(
                             item = item,
+                            incomingLeg = routeResponse?.legs.orEmpty().firstOrNull { leg -> leg.to.poi_id == item.poi_id },
                             isVisited = item.poi_id in visitedPoiIds,
                             isRouteActive = routeSessionStatus == RouteSessionStatus.IN_PROGRESS,
                             onMarkVisited = {
@@ -1321,6 +1353,9 @@ private fun RouteParametersCard(
     onReturnToStartChange: (Boolean) -> Unit,
     respectOpeningHours: Boolean,
     onRespectOpeningHoursChange: (Boolean) -> Unit,
+    isPublicTransportAvailable: Boolean,
+    allowPublicTransport: Boolean,
+    onAllowPublicTransportChange: (Boolean) -> Unit,
     startDateTime: LocalDateTime,
     onUseCurrentTime: () -> Unit,
     isGenerating: Boolean,
@@ -1469,6 +1504,32 @@ private fun RouteParametersCard(
                     checked = returnToStart,
                     onCheckedChange = onReturnToStartChange
                 )
+            }
+
+            if (isPublicTransportAvailable) {
+                HorizontalDivider()
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = stringResource(R.string.allow_public_transport_label),
+                            style = MaterialTheme.typography.labelLarge
+                        )
+                        Text(
+                            text = stringResource(R.string.allow_public_transport_body),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Switch(
+                        checked = allowPublicTransport,
+                        onCheckedChange = onAllowPublicTransportChange
+                    )
+                }
             }
 
             Button(
@@ -1870,6 +1931,7 @@ private fun RouteSummaryCard(routeResponse: RouteResponse) {
 @Composable
 private fun RouteStopCard(
     item: RouteItemDto,
+    incomingLeg: RouteLegDto?,
     isVisited: Boolean,
     isRouteActive: Boolean,
     onMarkVisited: () -> Unit
@@ -1910,6 +1972,49 @@ private fun RouteStopCard(
                 }
             }
             Text(stringResource(R.string.route_stop_walk_from_previous, item.travel_minutes_from_previous))
+            incomingLeg?.segments
+                .orEmpty()
+                .filter { segment ->
+                    val mode = segment.mode.orEmpty()
+                    mode == "transit" || (segment.duration_minutes ?: 0) > 0
+                }
+                .forEach { segment ->
+                    Text(
+                        text = routeSegmentLabel(segment),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    val fromStopName = segment.from_stop_name
+                    val toStopName = segment.to_stop_name
+                    if (segment.mode == "transit" && !fromStopName.isNullOrBlank() && !toStopName.isNullOrBlank()) {
+                        Text(
+                            text = stringResource(R.string.route_stop_segment_stops, fromStopName, toStopName),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    val departureLabel = segment.departure_time.toRouteTimeOfDayLabel()
+                    val arrivalLabel = segment.arrival_time.toRouteTimeOfDayLabel()
+                    if (segment.mode == "transit" && departureLabel != null && arrivalLabel != null) {
+                        Text(
+                            text = stringResource(R.string.route_stop_segment_schedule, departureLabel, arrivalLabel),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    val waitMinutes = segment.wait_minutes_before_departure ?: 0
+                    val inVehicleMinutes = segment.in_vehicle_minutes ?: 0
+                    if (segment.mode == "transit" && (waitMinutes > 0 || inVehicleMinutes > 0)) {
+                        Text(
+                            text = stringResource(
+                                R.string.route_stop_segment_wait_ride,
+                                waitMinutes,
+                                inVehicleMinutes
+                            ),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
             Text(stringResource(R.string.route_stop_visit_duration, item.visit_duration_min))
             Text(stringResource(R.string.route_stop_arrival_after_start, item.arrival_after_min))
             Text(stringResource(R.string.route_stop_departure_after_start, item.departure_after_min))
@@ -1974,6 +2079,7 @@ private fun applySavedSnapshot(
     onPaceRestored: (String) -> Unit,
     onReturnToStartRestored: (Boolean) -> Unit,
     onRespectOpeningHoursRestored: (Boolean) -> Unit,
+    onAllowPublicTransportRestored: (Boolean) -> Unit,
     onStartDateTimeRestored: (LocalDateTime) -> Unit,
     selectedInterests: MutableList<String>
 ) {
@@ -1983,6 +2089,7 @@ private fun applySavedSnapshot(
     onPaceRestored(snapshot.request.pace)
     onReturnToStartRestored(snapshot.request.return_to_start)
     onRespectOpeningHoursRestored(snapshot.request.respect_opening_hours)
+    onAllowPublicTransportRestored(snapshot.request.transport_mode == "walk_or_mhd")
     onStartDateTimeRestored(parseRouteStartDateTime(snapshot.request.start_datetime))
 
     selectedInterests.clear()
@@ -2000,7 +2107,8 @@ private fun RouteSessionDto.toSavedRouteSnapshot(): SavedRouteSnapshot? {
         pace = pace,
         return_to_start = return_to_start,
         start_datetime = response.start_datetime,
-        respect_opening_hours = opening_hours_enabled
+        respect_opening_hours = opening_hours_enabled,
+        transport_mode = response.transport_mode ?: "walk"
     )
 
     return SavedRouteSnapshot(
@@ -2038,8 +2146,33 @@ private fun CityDto.availableCategories(): List<String> =
         .orEmpty()
         .ifEmpty { DefaultInterestCategories }
 
+private fun CityDto.supportsPublicTransport(): Boolean =
+    transport?.mhd_enabled == true
+
 private fun CityDto.toStartPoint(): RouteStartDto =
     RouteStartDto(center_lat, center_lon)
+
+@Composable
+private fun routeSegmentLabel(segment: RouteSegmentDto): String {
+    val durationMinutes = segment.duration_minutes ?: 0
+    return when (segment.mode) {
+        "transit" -> {
+            val lineName = segment.line_name
+            if (!lineName.isNullOrBlank()) {
+                stringResource(R.string.route_stop_segment_transit_line, lineName, durationMinutes)
+            } else {
+                stringResource(R.string.route_stop_segment_transit, durationMinutes)
+            }
+        }
+
+        else -> stringResource(R.string.route_stop_segment_walk, durationMinutes)
+    }
+}
+
+private fun String?.toRouteTimeOfDayLabel(): String? =
+    runCatching {
+        this?.let(LocalDateTime::parse)?.format(RouteClockFormatter)
+    }.getOrNull()
 
 @Composable
 private fun categoryLabel(category: String): String =
