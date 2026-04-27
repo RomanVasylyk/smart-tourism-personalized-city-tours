@@ -39,6 +39,7 @@ class VariantAccumulator:
     valid_to: str | None = None
     stop_names: list[str] = field(default_factory=list)
     edge_samples: list[list[float]] = field(default_factory=list)
+    trip_columns: list[list[int | None]] = field(default_factory=list)
 
 
 def strip_accents(value: str) -> str:
@@ -170,6 +171,7 @@ def parse_pdf_variants(pdf_path: Path, source_url: str, fallback_line_number: st
         ]
 
         edge_samples: list[list[float]] = [[] for _ in range(len(stop_names) - 1)]
+        trip_columns: list[list[int | None]] = []
         for index in range(len(padded_rows) - 1):
             current_row = padded_rows[index]
             next_row = padded_rows[index + 1]
@@ -181,6 +183,18 @@ def parse_pdf_variants(pdf_path: Path, source_url: str, fallback_line_number: st
                 delta_minutes = next_minutes - current_minutes
                 if 0 < delta_minutes <= 90:
                     edge_samples[index].append(delta_minutes * 60.0)
+
+        for column in range(max_columns):
+            column_times = [row.times[column] for row in padded_rows]
+            non_empty_times = [minutes for minutes in column_times if minutes is not None]
+            if len(non_empty_times) < 2:
+                continue
+            if any(
+                later < earlier
+                for earlier, later in zip(non_empty_times, non_empty_times[1:])
+            ):
+                continue
+            trip_columns.append(column_times)
 
         if not any(samples for samples in edge_samples):
             continue
@@ -194,6 +208,7 @@ def parse_pdf_variants(pdf_path: Path, source_url: str, fallback_line_number: st
                 service_bucket=service_bucket,
                 stop_names=stop_names,
                 edge_samples=[list(samples) for samples in edge_samples],
+                trip_columns=[list(column) for column in trip_columns],
                 valid_from=valid_from,
                 valid_to=valid_to,
             )
@@ -201,6 +216,7 @@ def parse_pdf_variants(pdf_path: Path, source_url: str, fallback_line_number: st
         else:
             for index, samples in enumerate(edge_samples):
                 accumulator.edge_samples[index].extend(samples)
+            accumulator.trip_columns.extend(list(column) for column in trip_columns)
             accumulator.valid_from = min(filter(None, [accumulator.valid_from, valid_from]), default=None)
             accumulator.valid_to = max(filter(None, [accumulator.valid_to, valid_to]), default=None)
 
@@ -386,7 +402,9 @@ def build_processed_graph(
     unmatched_stops: set[str] = set()
     lines: list[dict] = []
     connections: list[dict] = []
+    trips: list[dict] = []
     line_counter = 0
+    trip_counter = 0
 
     for variant in sorted(variants, key=lambda item: (int(item.line_number), item.service_bucket, tuple(item.stop_names))):
         matched_stops_with_indices: list[tuple[int, dict, str]] = []
@@ -472,6 +490,45 @@ def build_processed_graph(
             }
         )
 
+        for trip_column in variant.trip_columns:
+            trip_stop_times: list[dict] = []
+            for sequence, (original_index, stop_record, provider_stop_name) in enumerate(matched_stops_with_indices, start=1):
+                if original_index >= len(trip_column):
+                    continue
+                time_minutes = trip_column[original_index]
+                if time_minutes is None:
+                    continue
+                trip_stop_times.append(
+                    {
+                        "sequence": sequence,
+                        "graph_stop_key": stop_record["graph_stop_key"],
+                        "provider_stop_name": provider_stop_name,
+                        "time_minutes": time_minutes,
+                    }
+                )
+
+            if len(trip_stop_times) < 2:
+                continue
+
+            if any(
+                later["time_minutes"] < earlier["time_minutes"]
+                for earlier, later in zip(trip_stop_times, trip_stop_times[1:])
+            ):
+                continue
+
+            trip_counter += 1
+            trips.append(
+                {
+                    "trip_id": f"{line_id}:trip:{trip_counter}",
+                    "line_id": line_id,
+                    "service_bucket": variant.service_bucket,
+                    "source_url": source_url,
+                    "valid_from": variant.valid_from,
+                    "valid_to": variant.valid_to,
+                    "stop_times": trip_stop_times,
+                }
+            )
+
         for connection in line_connections:
             connections.append(
                 {
@@ -488,6 +545,7 @@ def build_processed_graph(
         "stops": sorted(stops_by_graph_key.values(), key=lambda item: (item["name"], item["source_reference"])),
         "lines": lines,
         "connections": connections,
+        "trips": trips,
         "unmatched_stops": sorted(unmatched_stops),
     }
 
@@ -527,8 +585,8 @@ def main() -> None:
         encoding="utf-8",
     )
     print(
-        f"Saved {len(graph['stops'])} matched stops, {len(graph['lines'])} lines and "
-        f"{len(graph['connections'])} connections to {processed_file}"
+        f"Saved {len(graph['stops'])} matched stops, {len(graph['lines'])} lines, "
+        f"{len(graph['trips'])} trips and {len(graph['connections'])} connections to {processed_file}"
     )
     if graph["unmatched_stops"]:
         print(f"Unmatched stops: {len(graph['unmatched_stops'])}")

@@ -661,15 +661,20 @@ fun RoutePlannerScreen() {
 
             try {
                 val generatedRoute = ApiModule.poiApi.generateRoute(request)
+                val mergedRoute = mergeReroutedRouteResponse(
+                    previousResponse = response,
+                    reroutedResponse = generatedRoute,
+                    visitedPoiIds = visitedPoiIds
+                )
                 val snapshot = SavedRouteSnapshot(
                     request = request,
-                    response = generatedRoute
+                    response = mergedRoute
                 )
 
                 currentRouteRequest = request
-                routeResponse = generatedRoute
+                routeResponse = mergedRoute
                 startPoint = RouteStartDto(currentLocation.lat, currentLocation.lon)
-                currentTargetPoiId = nextUnvisitedPoi(generatedRoute.route, visitedPoiIds)?.poi_id
+                currentTargetPoiId = nextUnvisitedPoi(mergedRoute.route, visitedPoiIds)?.poi_id
                 routeSessionStatus = RouteSessionStatus.IN_PROGRESS
                 RouteStorage.save(context = context, snapshot = snapshot)
                 persistRouteSession(
@@ -2265,6 +2270,91 @@ private fun nextUnvisitedPoi(
     visitedPoiIds: List<Int>
 ): RouteItemDto? =
     routeItems.firstOrNull { item -> item.poi_id !in visitedPoiIds }
+
+private fun mergeReroutedRouteResponse(
+    previousResponse: RouteResponse,
+    reroutedResponse: RouteResponse,
+    visitedPoiIds: List<Int>
+): RouteResponse {
+    val visitedIds = visitedPoiIds.distinct()
+    if (visitedIds.isEmpty()) {
+        return reroutedResponse
+    }
+
+    val visitedItems = previousResponse.route
+        .filter { item -> item.poi_id in visitedIds }
+        .sortedBy { item -> item.order }
+    if (visitedItems.isEmpty()) {
+        return reroutedResponse
+    }
+
+    val visitedElapsedMinutes = visitedItems.maxOfOrNull { item -> item.departure_after_min } ?: 0
+    val renumberedVisitedItems = visitedItems.mapIndexed { index, item ->
+        item.copy(order = index + 1)
+    }
+    val renumberedRemainingItems = reroutedResponse.route.mapIndexed { index, item ->
+        item.copy(
+            order = renumberedVisitedItems.size + index + 1,
+            arrival_after_min = visitedElapsedMinutes + item.arrival_after_min,
+            departure_after_min = visitedElapsedMinutes + item.departure_after_min
+        )
+    }
+
+    val visitedLegs = previousResponse.legs
+        .orEmpty()
+        .filter { leg -> leg.to.poi_id in visitedIds }
+        .sortedBy { leg -> leg.order }
+    val renumberedVisitedLegs = visitedLegs.mapIndexed { index, leg ->
+        leg.copy(order = index + 1)
+    }
+    val renumberedRemainingLegs = reroutedResponse.legs
+        .orEmpty()
+        .mapIndexed { index, leg ->
+            leg.copy(order = renumberedVisitedLegs.size + index + 1)
+        }
+
+    val mergedRouteItems = renumberedVisitedItems + renumberedRemainingItems
+    val mergedLegs = (renumberedVisitedLegs + renumberedRemainingLegs).ifEmpty { null }
+    val mergedVisitMinutes = mergedRouteItems.sumOf { item -> item.visit_duration_min }
+    val mergedUsedMinutes = visitedElapsedMinutes + reroutedResponse.used_minutes
+    val mergedAvailableMinutes = maxOf(previousResponse.available_minutes, mergedUsedMinutes)
+    val mergedRemainingMinutes = maxOf(0, mergedAvailableMinutes - mergedUsedMinutes)
+
+    return reroutedResponse.copy(
+        start = previousResponse.start,
+        start_datetime = previousResponse.start_datetime,
+        available_minutes = mergedAvailableMinutes,
+        used_minutes = mergedUsedMinutes,
+        remaining_minutes = mergedRemainingMinutes,
+        total_visit_minutes = mergedVisitMinutes,
+        total_walk_minutes = maxOf(0, mergedUsedMinutes - mergedVisitMinutes),
+        poi_count = mergedRouteItems.size,
+        route = mergedRouteItems,
+        legs = mergedLegs,
+        full_geometry = mergeLegGeometries(mergedLegs.orEmpty())
+    )
+}
+
+private fun mergeLegGeometries(legs: List<RouteLegDto>): List<com.example.smarttourism.data.RouteCoordinateDto> {
+    if (legs.isEmpty()) {
+        return emptyList()
+    }
+
+    val mergedGeometry = mutableListOf<com.example.smarttourism.data.RouteCoordinateDto>()
+    legs.forEach { leg ->
+        val geometry = leg.geometry
+        if (geometry.isEmpty()) {
+            return@forEach
+        }
+
+        if (mergedGeometry.isEmpty()) {
+            mergedGeometry.addAll(geometry)
+        } else {
+            mergedGeometry.addAll(geometry.drop(1))
+        }
+    }
+    return mergedGeometry
+}
 
 private fun estimateRemainingMinutes(
     routeResponse: RouteResponse?,

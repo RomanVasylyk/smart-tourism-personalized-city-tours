@@ -4,9 +4,15 @@ from typing import Literal
 
 from fastapi import HTTPException
 from pydantic import BaseModel, Field
+from psycopg import Error as PsycopgError
 
 from app.db.database import get_connection
 from app.services.city_profiles import city_profile_by_token
+from app.services.feedback_stats import (
+    PlannerFeedbackProfile,
+    PlannerFeedbackStats,
+    load_planner_feedback_profile,
+)
 from app.services.routing_service import RoutePoint, get_routing_service
 from app.services.transport_planner import (
     TRANSPORT_MODE_WALK,
@@ -64,6 +70,9 @@ DAY_TOKEN_PATTERN = re.compile(
     re.IGNORECASE,
 )
 TIME_RANGE_PATTERN = re.compile(r"(\d{1,2})(?::(\d{2}))?\s*-\s*(\d{1,2})(?::(\d{2}))?")
+BASE_SCORE_MULTIPLIER = 10.0
+TRAVEL_MINUTE_PENALTY = 0.35
+REPEAT_CATEGORY_PENALTY = 0.8
 
 
 class RouteGenerateRequest(BaseModel):
@@ -78,6 +87,134 @@ class RouteGenerateRequest(BaseModel):
     respect_opening_hours: bool = True
     exclude_poi_ids: list[int] = Field(default_factory=list)
     transport_mode: Literal["walk", "walk_or_mhd"] = TRANSPORT_MODE_WALK
+
+
+def clamp(value: float, minimum: float, maximum: float) -> float:
+    return max(minimum, min(maximum, value))
+
+
+def rating_signal(value: float | None) -> float:
+    if value is None:
+        return 0.0
+    return clamp((value - 3.0) / 2.0, -1.0, 1.0)
+
+
+def rate_signal(value: float | None, neutral: float = 0.5) -> float:
+    if value is None:
+        return 0.0
+    return clamp(value - neutral, -1.0, 1.0)
+
+
+def stats_confidence(stats: PlannerFeedbackStats, full_weight_after: int) -> float:
+    if full_weight_after <= 0:
+        return 1.0
+    return clamp(stats.sample_size / full_weight_after, 0.0, 1.0)
+
+
+def walking_discomfort_signal(
+    feedback_profile: PlannerFeedbackProfile,
+    effective_transport_mode: str,
+) -> float:
+    city_confidence = stats_confidence(feedback_profile.city_stats, 6)
+    discomfort = city_confidence * max(0.0, (feedback_profile.city_stats.too_much_walking_rate or 0.0) - 0.35)
+
+    if effective_transport_mode != TRANSPORT_MODE_WALK:
+        transport_confidence = stats_confidence(feedback_profile.transport_mode_stats, 4)
+        discomfort += transport_confidence * max(
+            0.0,
+            (feedback_profile.transport_mode_stats.too_much_walking_rate or 0.0) - 0.30,
+        )
+
+    return discomfort
+
+
+def score_candidate(
+    poi: dict,
+    travel_plan: TravelPlan,
+    category_counts: dict[str, int],
+    feedback_profile: PlannerFeedbackProfile,
+    effective_transport_mode: str,
+) -> tuple[float, dict[str, float]]:
+    poi_stats = PlannerFeedbackStats.from_row(poi, "poi_feedback_")
+    category_stats = PlannerFeedbackStats.from_row(poi, "category_feedback_")
+    city_stats = feedback_profile.city_stats
+    transport_stats = feedback_profile.transport_mode_stats
+
+    poi_confidence = stats_confidence(poi_stats, 4)
+    category_confidence = stats_confidence(category_stats, 10)
+    city_confidence = stats_confidence(city_stats, 6)
+    transport_confidence = stats_confidence(transport_stats, 4)
+
+    base_component = float(poi["base_score"] or 0.0) * BASE_SCORE_MULTIPLIER
+    travel_penalty = travel_plan.duration_minutes * TRAVEL_MINUTE_PENALTY
+    repeat_penalty = REPEAT_CATEGORY_PENALTY * category_counts.get(poi["category"], 0)
+
+    poi_bonus = poi_confidence * (
+        (rating_signal(poi_stats.average_rating) * 1.8)
+        + (rate_signal(poi_stats.interesting_pois_rate) * 1.3)
+    )
+    category_bonus = category_confidence * (
+        (rating_signal(category_stats.average_rating) * 0.9)
+        + (rate_signal(category_stats.interesting_pois_rate) * 0.8)
+    )
+    completion_bonus = (
+        (poi_confidence * rate_signal(poi_stats.completion_rate) * 2.0)
+        + (category_confidence * rate_signal(category_stats.completion_rate) * 1.0)
+        + (city_confidence * rate_signal(city_stats.completion_rate) * 0.7)
+    )
+    skip_penalty = (
+        (poi_confidence * max(0.0, (poi_stats.skip_rate or 0.0) - 0.15) * 4.0)
+        + (category_confidence * max(0.0, (category_stats.skip_rate or 0.0) - 0.18) * 2.2)
+        + (city_confidence * max(0.0, (city_stats.skip_rate or 0.0) - 0.20) * 1.2)
+    )
+
+    walking_penalty = 0.0
+    if travel_plan.mode == "walk":
+        long_walk_factor = clamp((travel_plan.duration_minutes - 12) / 16, 0.0, 1.5)
+        walking_penalty = (
+            walking_discomfort_signal(feedback_profile, effective_transport_mode)
+            * long_walk_factor
+            * travel_plan.duration_minutes
+            * 0.55
+        )
+
+    transport_bonus = 0.0
+    if effective_transport_mode != TRANSPORT_MODE_WALK and travel_plan.mode == "transit":
+        transport_bonus = transport_confidence * (
+            (rating_signal(transport_stats.average_rating) * 1.2)
+            + (rate_signal(transport_stats.convenient_rate) * 1.7)
+            + (rate_signal(transport_stats.completion_rate) * 0.7)
+            + (rate_signal(transport_stats.interesting_pois_rate) * 0.6)
+        )
+
+    final_score = (
+        base_component
+        + poi_bonus
+        + category_bonus
+        + completion_bonus
+        + transport_bonus
+        - travel_penalty
+        - walking_penalty
+        - skip_penalty
+        - repeat_penalty
+    )
+
+    return final_score, {
+        "base_score": base_component,
+        "poi_bonus": poi_bonus,
+        "category_bonus": category_bonus,
+        "completion_bonus": completion_bonus,
+        "transport_bonus": transport_bonus,
+        "travel_penalty": travel_penalty,
+        "walking_penalty": walking_penalty,
+        "skip_penalty": skip_penalty,
+        "repeat_penalty": repeat_penalty,
+        "final_score": final_score,
+    }
+
+
+def rounded_score_breakdown(score_breakdown: dict[str, float]) -> dict[str, float]:
+    return {key: round(value, 3) for key, value in score_breakdown.items()}
 
 
 def parse_start_datetime(raw_value: str | None) -> datetime:
@@ -212,44 +349,93 @@ def is_poi_open_for_visit(raw_value: str | None, arrival_dt: datetime, visit_min
 
 def get_route_candidates(request: RouteGenerateRequest) -> list[dict]:
     city_profile = city_profile_by_token(request.city) or {}
+    city_name = city_profile.get("name") or request.city
     routing_limits = city_profile.get("routing_limits") or {}
     limit = int(routing_limits.get("max_poi_candidates") or 300)
 
+    base_select = """
+        SELECT
+            p.id,
+            p.name,
+            p.category,
+            p.lat,
+            p.lon,
+            p.opening_hours_raw,
+            p.visit_duration_min,
+            p.base_score,
+            p.wikipedia_url
+        FROM pois p
+        JOIN cities c ON c.id = p.city_id
+    """
+    feedback_joins = """
+        LEFT JOIN poi_feedback_stats pfs ON pfs.poi_id = p.id
+        LEFT JOIN category_feedback_stats cfs
+            ON cfs.city_id = c.id
+           AND cfs.category = p.category
+    """
+    feedback_columns = """
+        ,
+        pfs.average_rating AS poi_feedback_average_rating,
+        pfs.completion_rate AS poi_feedback_completion_rate,
+        pfs.skip_rate AS poi_feedback_skip_rate,
+        pfs.too_much_walking_rate AS poi_feedback_too_much_walking_rate,
+        pfs.interesting_pois_rate AS poi_feedback_interesting_pois_rate,
+        pfs.convenient_rate AS poi_feedback_convenient_rate,
+        pfs.session_count AS poi_feedback_session_count,
+        pfs.feedback_count AS poi_feedback_feedback_count,
+        pfs.planned_count AS poi_feedback_planned_count,
+        pfs.visited_count AS poi_feedback_visited_count,
+        pfs.skipped_count AS poi_feedback_skipped_count,
+        pfs.completed_session_count AS poi_feedback_completed_session_count,
+        cfs.average_rating AS category_feedback_average_rating,
+        cfs.completion_rate AS category_feedback_completion_rate,
+        cfs.skip_rate AS category_feedback_skip_rate,
+        cfs.too_much_walking_rate AS category_feedback_too_much_walking_rate,
+        cfs.interesting_pois_rate AS category_feedback_interesting_pois_rate,
+        cfs.convenient_rate AS category_feedback_convenient_rate,
+        cfs.session_count AS category_feedback_session_count,
+        cfs.feedback_count AS category_feedback_feedback_count,
+        cfs.planned_count AS category_feedback_planned_count,
+        cfs.visited_count AS category_feedback_visited_count,
+        cfs.skipped_count AS category_feedback_skipped_count,
+        cfs.completed_session_count AS category_feedback_completed_session_count
+    """
+
+    def build_sql(include_feedback: bool) -> tuple[str, list]:
+        sql = base_select
+        if include_feedback:
+            sql = sql.replace("p.wikipedia_url", f"p.wikipedia_url{feedback_columns}")
+            sql += feedback_joins
+
+        sql += """
+            WHERE lower(c.name) = lower(%s)
+              AND p.is_active = TRUE
+        """
+        params: list = [city_name]
+
+        if request.interests:
+            sql += " AND p.category = ANY(%s)"
+            params.append(request.interests)
+
+        if request.exclude_poi_ids:
+            sql += " AND NOT (p.id = ANY(%s))"
+            params.append(request.exclude_poi_ids)
+
+        sql += """
+            ORDER BY p.base_score DESC NULLS LAST, p.name
+            LIMIT %s
+        """
+        params.append(limit)
+        return sql, params
+
     with get_connection() as conn:
         with conn.cursor() as cur:
-            sql = """
-                SELECT
-                    p.id,
-                    p.name,
-                    p.category,
-                    p.lat,
-                    p.lon,
-                    p.opening_hours_raw,
-                    p.visit_duration_min,
-                    p.base_score,
-                    p.wikipedia_url
-                FROM pois p
-                         JOIN cities c ON c.id = p.city_id
-                WHERE lower(c.name) = lower(%s)
-                  AND p.is_active = TRUE
-            """
-            params: list = [request.city]
-
-            if request.interests:
-                sql += " AND p.category = ANY(%s)"
-                params.append(request.interests)
-
-            if request.exclude_poi_ids:
-                sql += " AND NOT (p.id = ANY(%s))"
-                params.append(request.exclude_poi_ids)
-
-            sql += """
-                ORDER BY p.base_score DESC NULLS LAST, p.name
-                LIMIT %s
-            """
-            params.append(limit)
-
-            cur.execute(sql, params)
+            sql, params = build_sql(include_feedback=True)
+            try:
+                cur.execute(sql, params)
+            except PsycopgError:
+                fallback_sql, fallback_params = build_sql(include_feedback=False)
+                cur.execute(fallback_sql, fallback_params)
             return cur.fetchall()
 
 
@@ -330,6 +516,7 @@ def generate_route(request: RouteGenerateRequest) -> dict:
     start_dt = parse_start_datetime(request.start_datetime)
     city_profile = city_profile_by_token(request.city) or {}
     effective_transport_mode = normalized_transport_mode(request.transport_mode, city_profile)
+    feedback_profile = load_planner_feedback_profile(request.city, effective_transport_mode)
     candidates = get_route_candidates(request)
 
     if not candidates:
@@ -356,6 +543,7 @@ def generate_route(request: RouteGenerateRequest) -> dict:
         best_poi = None
         best_travel_leg = None
         best_visit_minutes = None
+        best_score_breakdown = None
         best_utility = -10**9
 
         for poi in candidates:
@@ -402,15 +590,20 @@ def generate_route(request: RouteGenerateRequest) -> dict:
             if projected_total > request.available_minutes:
                 continue
 
-            score = float(poi["base_score"] or 0.0)
-            repeat_penalty = 0.8 * category_counts.get(poi["category"], 0)
-            utility = (score * 10) - (travel_minutes * 0.35) - repeat_penalty
+            utility, score_breakdown = score_candidate(
+                poi=poi,
+                travel_plan=travel_plan,
+                category_counts=category_counts,
+                feedback_profile=feedback_profile,
+                effective_transport_mode=effective_transport_mode,
+            )
 
             if utility > best_utility:
                 best_utility = utility
                 best_poi = poi
                 best_travel_leg = travel_plan
                 best_visit_minutes = visit_minutes
+                best_score_breakdown = score_breakdown
 
         if best_poi is None:
             break
@@ -437,6 +630,8 @@ def generate_route(request: RouteGenerateRequest) -> dict:
                 "arrival_after_min": elapsed_minutes - best_visit_minutes,
                 "departure_after_min": elapsed_minutes,
                 "base_score": best_poi["base_score"],
+                "planner_score": round(best_utility, 3),
+                "planner_score_breakdown": rounded_score_breakdown(best_score_breakdown or {}),
                 "wikipedia_url": best_poi["wikipedia_url"],
                 "opening_hours_raw": best_poi["opening_hours_raw"],
             }

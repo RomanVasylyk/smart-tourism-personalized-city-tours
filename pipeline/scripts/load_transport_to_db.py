@@ -54,6 +54,27 @@ CREATE TABLE IF NOT EXISTS transport_line_stops (
     UNIQUE (line_id, stop_sequence)
 );
 
+CREATE TABLE IF NOT EXISTS transport_trips (
+    id BIGSERIAL PRIMARY KEY,
+    line_id INTEGER NOT NULL REFERENCES transport_lines(id) ON DELETE CASCADE,
+    trip_code TEXT NOT NULL,
+    service_bucket TEXT NOT NULL,
+    source_url TEXT,
+    valid_from DATE,
+    valid_to DATE,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    UNIQUE (line_id, trip_code)
+);
+
+CREATE TABLE IF NOT EXISTS transport_trip_stop_times (
+    id BIGSERIAL PRIMARY KEY,
+    trip_id BIGINT NOT NULL REFERENCES transport_trips(id) ON DELETE CASCADE,
+    stop_id INTEGER NOT NULL REFERENCES transport_stops(id),
+    stop_sequence INTEGER NOT NULL,
+    time_minutes INTEGER NOT NULL,
+    UNIQUE (trip_id, stop_sequence)
+);
+
 CREATE TABLE IF NOT EXISTS transport_connections (
     id BIGSERIAL PRIMARY KEY,
     city_id INTEGER NOT NULL REFERENCES cities(id) ON DELETE CASCADE,
@@ -72,6 +93,9 @@ CREATE TABLE IF NOT EXISTS transport_connections (
 CREATE INDEX IF NOT EXISTS idx_transport_stops_city_id ON transport_stops(city_id);
 CREATE INDEX IF NOT EXISTS idx_transport_stops_geom ON transport_stops USING GIST (geom);
 CREATE INDEX IF NOT EXISTS idx_transport_lines_city_id ON transport_lines(city_id);
+CREATE INDEX IF NOT EXISTS idx_transport_trips_line_id ON transport_trips(line_id);
+CREATE INDEX IF NOT EXISTS idx_transport_trip_stop_times_trip_id ON transport_trip_stop_times(trip_id);
+CREATE INDEX IF NOT EXISTS idx_transport_trip_stop_times_stop_id ON transport_trip_stop_times(stop_id);
 CREATE INDEX IF NOT EXISTS idx_transport_connections_city_id ON transport_connections(city_id);
 CREATE INDEX IF NOT EXISTS idx_transport_connections_from_stop_id ON transport_connections(from_stop_id);
 CREATE INDEX IF NOT EXISTS idx_transport_connections_to_stop_id ON transport_connections(to_stop_id);
@@ -164,6 +188,25 @@ def ensure_transport_unique_indexes(conn) -> None:
 def delete_existing_transport(conn, city_id: int) -> None:
     with conn.cursor() as cur:
         cur.execute("DELETE FROM transport_connections WHERE city_id = %s;", (city_id,))
+        cur.execute(
+            """
+            DELETE FROM transport_trip_stop_times
+            WHERE trip_id IN (
+                SELECT tt.id
+                FROM transport_trips tt
+                JOIN transport_lines tl ON tl.id = tt.line_id
+                WHERE tl.city_id = %s
+            );
+            """,
+            (city_id,),
+        )
+        cur.execute(
+            """
+            DELETE FROM transport_trips
+            WHERE line_id IN (SELECT id FROM transport_lines WHERE city_id = %s);
+            """,
+            (city_id,),
+        )
         cur.execute("DELETE FROM transport_line_stops WHERE line_id IN (SELECT id FROM transport_lines WHERE city_id = %s);", (city_id,))
         cur.execute("DELETE FROM transport_lines WHERE city_id = %s;", (city_id,))
         cur.execute("DELETE FROM transport_stops WHERE city_id = %s;", (city_id,))
@@ -181,6 +224,8 @@ def main() -> None:
 
     inserted_stops = 0
     inserted_lines = 0
+    inserted_trips = 0
+    inserted_stop_times = 0
     inserted_connections = 0
 
     with get_connection() as conn:
@@ -282,6 +327,61 @@ def main() -> None:
                         (db_line_id, stop_id, stop["sequence"]),
                     )
 
+            for trip in graph.get("trips", []):
+                line_id = line_ids_by_graph_id.get(trip["line_id"])
+                if line_id is None:
+                    continue
+
+                cur.execute(
+                    """
+                    INSERT INTO transport_trips (
+                        line_id,
+                        trip_code,
+                        service_bucket,
+                        source_url,
+                        valid_from,
+                        valid_to,
+                        is_active
+                    )
+                    VALUES (%s, %s, %s, %s, %s, %s, TRUE)
+                    RETURNING id;
+                    """,
+                    (
+                        line_id,
+                        trip["trip_id"],
+                        trip["service_bucket"],
+                        trip.get("source_url"),
+                        trip.get("valid_from"),
+                        trip.get("valid_to"),
+                    ),
+                )
+                row = cur.fetchone()
+                db_trip_id = row["id"]
+                inserted_trips += 1
+
+                for stop_time in trip.get("stop_times", []):
+                    stop_id = stop_ids_by_graph_key.get(stop_time["graph_stop_key"])
+                    if stop_id is None:
+                        continue
+                    cur.execute(
+                        """
+                        INSERT INTO transport_trip_stop_times (
+                            trip_id,
+                            stop_id,
+                            stop_sequence,
+                            time_minutes
+                        )
+                        VALUES (%s, %s, %s, %s);
+                        """,
+                        (
+                            db_trip_id,
+                            stop_id,
+                            stop_time["sequence"],
+                            stop_time["time_minutes"],
+                        ),
+                    )
+                    inserted_stop_times += 1
+
             for connection in graph.get("connections", []):
                 line_id = line_ids_by_graph_id.get(connection["line_id"])
                 from_stop_id = stop_ids_by_graph_key.get(connection["from_stop_key"])
@@ -322,8 +422,8 @@ def main() -> None:
         conn.commit()
 
     print(
-        f"Loaded {inserted_stops} stops, {inserted_lines} lines and "
-        f"{inserted_connections} connections into transport tables"
+        f"Loaded {inserted_stops} stops, {inserted_lines} lines, {inserted_trips} trips, "
+        f"{inserted_stop_times} stop-times and {inserted_connections} connections into transport tables"
     )
 
 

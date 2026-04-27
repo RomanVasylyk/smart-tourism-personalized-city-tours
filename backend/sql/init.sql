@@ -81,6 +81,76 @@ CREATE TABLE IF NOT EXISTS route_feedback (
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+CREATE TABLE IF NOT EXISTS poi_feedback_stats (
+    poi_id INTEGER PRIMARY KEY REFERENCES pois(id) ON DELETE CASCADE,
+    session_count INTEGER NOT NULL DEFAULT 0,
+    feedback_count INTEGER NOT NULL DEFAULT 0,
+    planned_count INTEGER NOT NULL DEFAULT 0,
+    visited_count INTEGER NOT NULL DEFAULT 0,
+    skipped_count INTEGER NOT NULL DEFAULT 0,
+    completed_session_count INTEGER NOT NULL DEFAULT 0,
+    average_rating DOUBLE PRECISION,
+    completion_rate DOUBLE PRECISION,
+    skip_rate DOUBLE PRECISION,
+    too_much_walking_rate DOUBLE PRECISION,
+    interesting_pois_rate DOUBLE PRECISION,
+    convenient_rate DOUBLE PRECISION,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS category_feedback_stats (
+    city_id INTEGER NOT NULL REFERENCES cities(id) ON DELETE CASCADE,
+    category TEXT NOT NULL,
+    session_count INTEGER NOT NULL DEFAULT 0,
+    feedback_count INTEGER NOT NULL DEFAULT 0,
+    planned_count INTEGER NOT NULL DEFAULT 0,
+    visited_count INTEGER NOT NULL DEFAULT 0,
+    skipped_count INTEGER NOT NULL DEFAULT 0,
+    completed_session_count INTEGER NOT NULL DEFAULT 0,
+    average_rating DOUBLE PRECISION,
+    completion_rate DOUBLE PRECISION,
+    skip_rate DOUBLE PRECISION,
+    too_much_walking_rate DOUBLE PRECISION,
+    interesting_pois_rate DOUBLE PRECISION,
+    convenient_rate DOUBLE PRECISION,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (city_id, category)
+);
+
+CREATE TABLE IF NOT EXISTS city_feedback_stats (
+    city_id INTEGER PRIMARY KEY REFERENCES cities(id) ON DELETE CASCADE,
+    session_count INTEGER NOT NULL DEFAULT 0,
+    feedback_count INTEGER NOT NULL DEFAULT 0,
+    planned_count INTEGER NOT NULL DEFAULT 0,
+    skipped_count INTEGER NOT NULL DEFAULT 0,
+    completed_session_count INTEGER NOT NULL DEFAULT 0,
+    average_rating DOUBLE PRECISION,
+    completion_rate DOUBLE PRECISION,
+    skip_rate DOUBLE PRECISION,
+    too_much_walking_rate DOUBLE PRECISION,
+    interesting_pois_rate DOUBLE PRECISION,
+    convenient_rate DOUBLE PRECISION,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS transport_mode_feedback_stats (
+    city_id INTEGER NOT NULL REFERENCES cities(id) ON DELETE CASCADE,
+    transport_mode TEXT NOT NULL,
+    session_count INTEGER NOT NULL DEFAULT 0,
+    feedback_count INTEGER NOT NULL DEFAULT 0,
+    planned_count INTEGER NOT NULL DEFAULT 0,
+    skipped_count INTEGER NOT NULL DEFAULT 0,
+    completed_session_count INTEGER NOT NULL DEFAULT 0,
+    average_rating DOUBLE PRECISION,
+    completion_rate DOUBLE PRECISION,
+    skip_rate DOUBLE PRECISION,
+    too_much_walking_rate DOUBLE PRECISION,
+    interesting_pois_rate DOUBLE PRECISION,
+    convenient_rate DOUBLE PRECISION,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (city_id, transport_mode)
+);
+
 CREATE INDEX IF NOT EXISTS idx_route_sessions_device_id ON route_sessions(device_id);
 CREATE INDEX IF NOT EXISTS idx_route_sessions_city_id ON route_sessions(city_id);
 CREATE INDEX IF NOT EXISTS idx_route_sessions_status ON route_sessions(status);
@@ -125,6 +195,27 @@ CREATE TABLE IF NOT EXISTS transport_line_stops (
     UNIQUE (line_id, stop_sequence)
 );
 
+CREATE TABLE IF NOT EXISTS transport_trips (
+    id BIGSERIAL PRIMARY KEY,
+    line_id INTEGER NOT NULL REFERENCES transport_lines(id) ON DELETE CASCADE,
+    trip_code TEXT NOT NULL,
+    service_bucket TEXT NOT NULL,
+    source_url TEXT,
+    valid_from DATE,
+    valid_to DATE,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    UNIQUE (line_id, trip_code)
+);
+
+CREATE TABLE IF NOT EXISTS transport_trip_stop_times (
+    id BIGSERIAL PRIMARY KEY,
+    trip_id BIGINT NOT NULL REFERENCES transport_trips(id) ON DELETE CASCADE,
+    stop_id INTEGER NOT NULL REFERENCES transport_stops(id),
+    stop_sequence INTEGER NOT NULL,
+    time_minutes INTEGER NOT NULL,
+    UNIQUE (trip_id, stop_sequence)
+);
+
 CREATE TABLE IF NOT EXISTS transport_connections (
     id BIGSERIAL PRIMARY KEY,
     city_id INTEGER NOT NULL REFERENCES cities(id) ON DELETE CASCADE,
@@ -146,6 +237,9 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_transport_stops_city_source_reference_uniq
     ON transport_stops(city_id, source_reference)
     WHERE source_reference IS NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_transport_lines_city_id ON transport_lines(city_id);
+CREATE INDEX IF NOT EXISTS idx_transport_trips_line_id ON transport_trips(line_id);
+CREATE INDEX IF NOT EXISTS idx_transport_trip_stop_times_trip_id ON transport_trip_stop_times(trip_id);
+CREATE INDEX IF NOT EXISTS idx_transport_trip_stop_times_stop_id ON transport_trip_stop_times(stop_id);
 CREATE INDEX IF NOT EXISTS idx_transport_connections_city_id ON transport_connections(city_id);
 CREATE INDEX IF NOT EXISTS idx_transport_connections_from_stop_id ON transport_connections(from_stop_id);
 CREATE INDEX IF NOT EXISTS idx_transport_connections_to_stop_id ON transport_connections(to_stop_id);
