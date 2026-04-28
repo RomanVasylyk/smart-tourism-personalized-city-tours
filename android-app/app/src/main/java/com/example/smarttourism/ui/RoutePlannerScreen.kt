@@ -60,6 +60,8 @@ import com.example.smarttourism.R
 import com.example.smarttourism.data.ActiveRouteSession
 import com.example.smarttourism.data.ApiModule
 import com.example.smarttourism.data.CityDto
+import com.example.smarttourism.data.NetworkMonitor
+import com.example.smarttourism.data.OfflineCacheRepository
 import com.example.smarttourism.data.PoiDto
 import com.example.smarttourism.data.RouteFeedback
 import com.example.smarttourism.data.RouteFeedbackRequest
@@ -70,11 +72,14 @@ import com.example.smarttourism.data.RouteSegmentDto
 import com.example.smarttourism.data.RouteSessionDto
 import com.example.smarttourism.data.RouteSessionCreateRequest
 import com.example.smarttourism.data.RouteSessionPoiVisitRequest
-import com.example.smarttourism.data.RouteSessionUpdateRequest
 import com.example.smarttourism.data.RouteStartDto
 import com.example.smarttourism.data.RouteStorage
 import com.example.smarttourism.data.RouteItemDto
 import com.example.smarttourism.data.SavedRouteSnapshot
+import com.example.smarttourism.data.sync.OfflineSyncScheduler
+import com.example.smarttourism.offline.OfflineCityRegion
+import com.example.smarttourism.offline.OfflineMapManager
+import com.example.smarttourism.offline.OfflineStoredRegion
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -131,20 +136,41 @@ private data class RouteProgressMetrics(
     val canComplete: Boolean
 )
 
+private data class OfflineDownloadProgress(
+    val completed: Long,
+    val required: Long,
+    val percent: Double
+)
+
 @Composable
 fun RoutePlannerScreen() {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val deviceId = remember(context) { RouteStorage.getOrCreateDeviceId(context) }
+    val offlineMapManager = remember(context) { OfflineMapManager(context.applicationContext) }
     val locationPermissionDeniedMessage = stringResource(R.string.error_location_permission_denied)
     val poiPreviewFailedMessage = stringResource(R.string.error_poi_preview_failed)
     val routeGenerationFailedMessage = stringResource(R.string.error_route_generation_failed_default)
+    val offlineCitiesFallbackMessage = stringResource(R.string.offline_cities_cache_used)
+    val offlinePoisFallbackMessage = stringResource(R.string.offline_pois_cache_used)
+    val offlineRouteGenerationMessage = stringResource(R.string.offline_route_generation_unavailable)
+    val offlineMapDownloadFailedMessage = stringResource(R.string.offline_map_download_failed)
+    val offlineMapDeleteFailedMessage = stringResource(R.string.offline_map_delete_failed)
+    val offlineMapDownloadedMessage = stringResource(R.string.offline_map_download_complete)
+    val offlineMapDeletedMessage = stringResource(R.string.offline_map_delete_complete)
+    val pendingSyncQueuedMessage = stringResource(R.string.pending_sync_queued)
 
     var cities by remember { mutableStateOf<List<CityDto>>(emptyList()) }
     var selectedCity by remember { mutableStateOf<CityDto?>(null) }
     var pois by remember { mutableStateOf<List<PoiDto>>(emptyList()) }
     var isPoiLoading by remember { mutableStateOf(true) }
     var poiError by remember { mutableStateOf<String?>(null) }
+    var offlineStatusMessage by remember { mutableStateOf<String?>(null) }
+    var pendingSyncOperationCount by remember { mutableIntStateOf(0) }
+    var offlineStoredRegion by remember { mutableStateOf<OfflineStoredRegion?>(null) }
+    var isOfflineMapBusy by remember { mutableStateOf(false) }
+    var offlineMapProgress by remember { mutableStateOf<OfflineDownloadProgress?>(null) }
+    var offlineMapMessage by remember { mutableStateOf<String?>(null) }
 
     var routeResponse by remember { mutableStateOf<RouteResponse?>(null) }
     var currentRouteRequest by remember { mutableStateOf<RouteRequest?>(null) }
@@ -177,6 +203,12 @@ fun RoutePlannerScreen() {
     val visitedPoiIds = remember { mutableStateListOf<Int>() }
     val routeItems = routeResponse?.route.orEmpty()
 
+    fun refreshPendingSyncOperationCount() {
+        scope.launch {
+            pendingSyncOperationCount = OfflineCacheRepository.getPendingSyncOperationCount(context)
+        }
+    }
+
     fun resetRouteSession(clearStoredSession: Boolean = true) {
         routeSessionStatus = RouteSessionStatus.NOT_STARTED
         routeId = null
@@ -206,6 +238,7 @@ fun RoutePlannerScreen() {
         }
         val activeRouteId = routeId
         val activeStatus = routeSessionStatus
+        val activeStartedAt = routeStartedAt ?: defaultRouteStartDateTime().toString()
 
         routeResponse = null
         currentRouteRequest = null
@@ -218,19 +251,30 @@ fun RoutePlannerScreen() {
             (activeStatus == RouteSessionStatus.IN_PROGRESS || activeStatus == RouteSessionStatus.PAUSED)
         ) {
             scope.launch {
-                runCatching {
-                    ApiModule.poiApi.updateRouteSession(
-                        sessionId = activeRouteId,
-                        request = RouteSessionUpdateRequest(
-                            status = RouteSessionStatus.CANCELLED.rawValue,
-                            finished_at = defaultRouteStartDateTime().toString(),
-                            used_minutes = snapshot.response.used_minutes,
-                            total_walk_minutes = snapshot.response.total_walk_minutes,
-                            total_visit_minutes = snapshot.response.total_visit_minutes,
-                            route_snapshot_json = snapshot.response
-                        )
+                val response = snapshot.response
+                OfflineCacheRepository.enqueuePendingRouteSession(
+                    context = context,
+                    request = RouteSessionCreateRequest(
+                        id = activeRouteId,
+                        device_id = deviceId,
+                        city = response.city,
+                        status = RouteSessionStatus.CANCELLED.rawValue,
+                        start_lat = response.start.lat,
+                        start_lon = response.start.lon,
+                        available_minutes = response.available_minutes,
+                        pace = response.pace,
+                        return_to_start = response.return_to_start,
+                        opening_hours_enabled = response.respect_opening_hours,
+                        started_at = activeStartedAt,
+                        finished_at = defaultRouteStartDateTime().toString(),
+                        used_minutes = response.used_minutes,
+                        total_walk_minutes = response.total_walk_minutes,
+                        total_visit_minutes = response.total_visit_minutes,
+                        route_snapshot_json = response
                     )
-                }
+                )
+                pendingSyncOperationCount = OfflineCacheRepository.getPendingSyncOperationCount(context)
+                OfflineSyncScheduler.scheduleImmediate(context)
             }
         }
 
@@ -283,53 +327,53 @@ fun RoutePlannerScreen() {
         }
     }
 
-    suspend fun syncRouteSessionToBackend(
+    fun buildRouteSessionSyncRequest(
+        sessionRouteId: String,
+        status: RouteSessionStatus,
+        startedAtValue: String,
+        snapshot: SavedRouteSnapshot,
+        finishedAt: String? = null
+    ): RouteSessionCreateRequest {
+        val response = snapshot.response
+        return RouteSessionCreateRequest(
+            id = sessionRouteId,
+            device_id = deviceId,
+            city = response.city,
+            status = status.rawValue,
+            start_lat = response.start.lat,
+            start_lon = response.start.lon,
+            available_minutes = response.available_minutes,
+            pace = response.pace,
+            return_to_start = response.return_to_start,
+            opening_hours_enabled = response.respect_opening_hours,
+            started_at = startedAtValue,
+            finished_at = finishedAt,
+            used_minutes = response.used_minutes,
+            total_walk_minutes = response.total_walk_minutes,
+            total_visit_minutes = response.total_visit_minutes,
+            route_snapshot_json = response
+        )
+    }
+
+    suspend fun enqueueRouteSessionSync(
         sessionRouteId: String,
         status: RouteSessionStatus,
         startedAtValue: String,
         snapshot: SavedRouteSnapshot,
         finishedAt: String? = null
     ) {
-        val response = snapshot.response
-        ApiModule.poiApi.createRouteSession(
-            RouteSessionCreateRequest(
-                id = sessionRouteId,
-                device_id = deviceId,
-                city = response.city,
-                status = status.rawValue,
-                start_lat = response.start.lat,
-                start_lon = response.start.lon,
-                available_minutes = response.available_minutes,
-                pace = response.pace,
-                return_to_start = response.return_to_start,
-                opening_hours_enabled = response.respect_opening_hours,
-                started_at = startedAtValue,
-                finished_at = finishedAt,
-                used_minutes = response.used_minutes,
-                total_walk_minutes = response.total_walk_minutes,
-                total_visit_minutes = response.total_visit_minutes,
-                route_snapshot_json = response
+        OfflineCacheRepository.enqueuePendingRouteSession(
+            context = context,
+            request = buildRouteSessionSyncRequest(
+                sessionRouteId = sessionRouteId,
+                status = status,
+                startedAtValue = startedAtValue,
+                snapshot = snapshot,
+                finishedAt = finishedAt
             )
         )
-    }
-
-    suspend fun patchRouteSessionStatusOnBackend(
-        sessionRouteId: String,
-        status: RouteSessionStatus,
-        snapshot: SavedRouteSnapshot,
-        finishedAt: String? = null
-    ) {
-        ApiModule.poiApi.updateRouteSession(
-            sessionId = sessionRouteId,
-            request = RouteSessionUpdateRequest(
-                status = status.rawValue,
-                finished_at = finishedAt,
-                used_minutes = snapshot.response.used_minutes,
-                total_walk_minutes = snapshot.response.total_walk_minutes,
-                total_visit_minutes = snapshot.response.total_visit_minutes,
-                route_snapshot_json = snapshot.response
-            )
-        )
+        pendingSyncOperationCount = OfflineCacheRepository.getPendingSyncOperationCount(context)
+        OfflineSyncScheduler.scheduleImmediate(context)
     }
 
     fun persistRouteSession(
@@ -369,23 +413,13 @@ fun RoutePlannerScreen() {
                     feedback = feedback
                 )
             )
-
-            runCatching {
-                syncRouteSessionToBackend(
-                    sessionRouteId = savedRouteId,
-                    status = status,
-                    startedAtValue = savedStartedAt,
-                    snapshot = snapshot,
-                    finishedAt = finishedAt
-                )
-            }.recoverCatching {
-                patchRouteSessionStatusOnBackend(
-                    sessionRouteId = savedRouteId,
-                    status = status,
-                    snapshot = snapshot,
-                    finishedAt = finishedAt
-                )
-            }
+            enqueueRouteSessionSync(
+                sessionRouteId = savedRouteId,
+                status = status,
+                startedAtValue = savedStartedAt,
+                snapshot = snapshot,
+                finishedAt = finishedAt
+            )
         }
     }
 
@@ -402,17 +436,18 @@ fun RoutePlannerScreen() {
 
         scope.launch {
             poiIds.distinct().forEach { poiId ->
-                runCatching {
-                    ApiModule.poiApi.markRouteSessionPoiVisited(
-                        sessionId = sessionRouteId,
-                        poiId = poiId,
-                        request = RouteSessionPoiVisitRequest(
-                            visited_at = defaultRouteStartDateTime().toString(),
-                            skipped = false
-                        )
+                OfflineCacheRepository.enqueuePendingPoiVisit(
+                    context = context,
+                    sessionId = sessionRouteId,
+                    poiId = poiId,
+                    request = RouteSessionPoiVisitRequest(
+                        visited_at = defaultRouteStartDateTime().toString(),
+                        skipped = false
                     )
-                }
+                )
             }
+            pendingSyncOperationCount = OfflineCacheRepository.getPendingSyncOperationCount(context)
+            OfflineSyncScheduler.scheduleImmediate(context)
         }
     }
 
@@ -422,18 +457,26 @@ fun RoutePlannerScreen() {
             return
         }
 
+        val feedbackRequest = RouteFeedbackRequest(
+            rating = feedback.rating,
+            was_convenient = feedback.route_was_comfortable,
+            too_much_walking = feedback.too_much_walking,
+            pois_were_interesting = feedback.pois_were_interesting,
+            comment = null
+        )
+
         scope.launch {
-            runCatching {
-                ApiModule.poiApi.saveRouteFeedback(
-                    sessionId = sessionRouteId,
-                    request = RouteFeedbackRequest(
-                        rating = feedback.rating,
-                        was_convenient = feedback.route_was_comfortable,
-                        too_much_walking = feedback.too_much_walking,
-                        pois_were_interesting = feedback.pois_were_interesting,
-                        comment = null
-                    )
-                )
+            OfflineCacheRepository.enqueuePendingFeedback(
+                context = context,
+                sessionId = sessionRouteId,
+                request = feedbackRequest
+            )
+            pendingSyncOperationCount = OfflineCacheRepository.getPendingSyncOperationCount(context)
+            OfflineSyncScheduler.scheduleImmediate(context)
+            offlineStatusMessage = if (NetworkMonitor.isNetworkAvailable(context)) {
+                null
+            } else {
+                pendingSyncQueuedMessage
             }
         }
     }
@@ -486,6 +529,7 @@ fun RoutePlannerScreen() {
         val activeSession = RouteStorage.loadActiveSession(context)
         val savedSnapshot = activeSession?.snapshot ?: RouteStorage.load(context)
         var restoredCityToken = savedSnapshot?.request?.city
+        pendingSyncOperationCount = OfflineCacheRepository.getPendingSyncOperationCount(context)
 
         savedSnapshot?.let { snapshot ->
             currentRouteRequest = snapshot.request.copy(
@@ -518,6 +562,7 @@ fun RoutePlannerScreen() {
             visitedPoiIds.clear()
             visitedPoiIds.addAll(activeSession.visited_poi_ids.distinct())
         }
+        OfflineSyncScheduler.scheduleImmediate(context)
 
         runCatching {
             val remoteSession = if (routeId != null && routeSessionStatus.isRestorable()) {
@@ -587,7 +632,11 @@ fun RoutePlannerScreen() {
         }
 
         try {
-            cities = ApiModule.poiApi.getCities()
+            val remoteCities = ApiModule.poiApi.getCities()
+            OfflineCacheRepository.cacheCities(context, remoteCities)
+            cities = remoteCities
+            offlineStatusMessage = null
+            refreshPendingSyncOperationCount()
             selectedCity = cities.firstOrNull { city -> city.matchesToken(restoredCityToken) }
                 ?: cities.firstOrNull { city -> city.matchesToken(DefaultCitySlug) }
                 ?: cities.firstOrNull()
@@ -597,14 +646,23 @@ fun RoutePlannerScreen() {
                 }
             }
         } catch (_: Exception) {
-            cities = emptyList()
-            selectedCity = null
+            cities = OfflineCacheRepository.getCachedCities(context)
+            selectedCity = cities.firstOrNull { city -> city.matchesToken(restoredCityToken) }
+                ?: cities.firstOrNull { city -> city.matchesToken(DefaultCitySlug) }
+                ?: cities.firstOrNull()
+            if (routeResponse == null) {
+                selectedCity?.let { city ->
+                    startPoint = city.toStartPoint()
+                }
+            }
+            offlineStatusMessage = if (cities.isNotEmpty()) offlineCitiesFallbackMessage else null
         }
     }
 
     LaunchedEffect(selectedCity?.slug) {
         val city = selectedCity ?: return@LaunchedEffect
         isPoiLoading = true
+        offlineMapProgress = null
 
         if (selectedInterests.isEmpty()) {
             selectedInterests.addAll(city.availableCategories())
@@ -624,13 +682,30 @@ fun RoutePlannerScreen() {
         }
 
         try {
-            pois = ApiModule.poiApi.getPois(city.slug)
+            val remotePois = ApiModule.poiApi.getPois(city.slug)
+            OfflineCacheRepository.cachePois(context, city.slug, remotePois)
+            pois = remotePois
             poiError = null
+            offlineStatusMessage = null
+            refreshPendingSyncOperationCount()
         } catch (e: Exception) {
-            poiError = e.toUserMessage(poiPreviewFailedMessage)
+            val cachedPois = OfflineCacheRepository.getCachedPois(context, city.slug)
+            pois = cachedPois
+            poiError = if (cachedPois.isEmpty()) {
+                e.toUserMessage(poiPreviewFailedMessage)
+            } else {
+                null
+            }
+            offlineStatusMessage = if (cachedPois.isNotEmpty()) {
+                String.format(Locale.getDefault(), offlinePoisFallbackMessage, city.name)
+            } else {
+                offlineStatusMessage
+            }
         } finally {
             isPoiLoading = false
         }
+
+        offlineStoredRegion = offlineMapManager.findRegionBySlug(city.slug)
     }
 
     val recalculateRouteFromLocation: (RouteStartDto, Boolean) -> Unit = reroute@ { currentLocation, autoTriggered ->
@@ -879,6 +954,75 @@ fun RoutePlannerScreen() {
         }
 
         item {
+            OfflineSupportCard(
+                selectedCity = selectedCity,
+                offlineStatusMessage = offlineStatusMessage,
+                pendingSyncOperationCount = pendingSyncOperationCount,
+                offlineRegionAvailable = offlineStoredRegion != null,
+                isOfflineMapBusy = isOfflineMapBusy,
+                offlineMapProgress = offlineMapProgress,
+                offlineMapMessage = offlineMapMessage,
+                onDownloadOfflineMap = {
+                    val city = selectedCity ?: return@OfflineSupportCard
+                    val offlineRegion = city.toOfflineCityRegion() ?: run {
+                        offlineMapMessage = null
+                        return@OfflineSupportCard
+                    }
+                    isOfflineMapBusy = true
+                    offlineMapProgress = OfflineDownloadProgress(0, 0, 0.0)
+                    offlineMapMessage = null
+                    offlineMapManager.downloadCityRegion(
+                        city = offlineRegion,
+                        onProgress = { completed, required, percent ->
+                            offlineMapProgress = OfflineDownloadProgress(
+                                completed = completed,
+                                required = required,
+                                percent = percent
+                            )
+                        },
+                        onComplete = {
+                            isOfflineMapBusy = false
+                            offlineMapMessage = String.format(
+                                Locale.getDefault(),
+                                offlineMapDownloadedMessage,
+                                city.name
+                            )
+                            scope.launch {
+                                offlineStoredRegion = offlineMapManager.findRegionBySlug(city.slug)
+                            }
+                        },
+                        onError = { error ->
+                            isOfflineMapBusy = false
+                            offlineMapMessage = "$offlineMapDownloadFailedMessage $error"
+                        }
+                    )
+                },
+                onDeleteOfflineMap = {
+                    val city = selectedCity ?: return@OfflineSupportCard
+                    val storedRegion = offlineStoredRegion ?: return@OfflineSupportCard
+                    isOfflineMapBusy = true
+                    offlineMapManager.deleteRegion(
+                        region = storedRegion.region,
+                        onComplete = {
+                            isOfflineMapBusy = false
+                            offlineMapProgress = null
+                            offlineStoredRegion = null
+                            offlineMapMessage = String.format(
+                                Locale.getDefault(),
+                                offlineMapDeletedMessage,
+                                city.name
+                            )
+                        },
+                        onError = { error ->
+                            isOfflineMapBusy = false
+                            offlineMapMessage = "$offlineMapDeleteFailedMessage $error"
+                        }
+                    )
+                }
+            )
+        }
+
+        item {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -991,11 +1135,16 @@ fun RoutePlannerScreen() {
                 isGenerating = isRouteLoading,
                 onGenerateRoute = {
                     scope.launch {
+                        if (!NetworkMonitor.isNetworkAvailable(context)) {
+                            routeError = offlineRouteGenerationMessage
+                            return@launch
+                        }
                         isRouteLoading = true
                         routeError = null
                         val existingSnapshot = currentRouteSnapshot()
                         val existingRouteId = routeId
                         val existingStatus = routeSessionStatus
+                        val existingStartedAt = routeStartedAt ?: defaultRouteStartDateTime().toString()
 
                         val request = RouteRequest(
                             city = selectedCity?.slug ?: DefaultCitySlug,
@@ -1021,19 +1170,17 @@ fun RoutePlannerScreen() {
                                 existingSnapshot != null &&
                                 existingStatus.isRestorable()
                             ) {
-                                runCatching {
-                                    ApiModule.poiApi.updateRouteSession(
-                                        sessionId = existingRouteId,
-                                        request = RouteSessionUpdateRequest(
-                                            status = RouteSessionStatus.CANCELLED.rawValue,
-                                            finished_at = defaultRouteStartDateTime().toString(),
-                                            used_minutes = existingSnapshot.response.used_minutes,
-                                            total_walk_minutes = existingSnapshot.response.total_walk_minutes,
-                                            total_visit_minutes = existingSnapshot.response.total_visit_minutes,
-                                            route_snapshot_json = existingSnapshot.response
-                                        )
+                                OfflineCacheRepository.enqueuePendingRouteSession(
+                                    context = context,
+                                    request = buildRouteSessionSyncRequest(
+                                        sessionRouteId = existingRouteId,
+                                        status = RouteSessionStatus.CANCELLED,
+                                        startedAtValue = existingStartedAt,
+                                        snapshot = existingSnapshot,
+                                        finishedAt = defaultRouteStartDateTime().toString()
                                     )
-                                }
+                                )
+                                OfflineSyncScheduler.scheduleImmediate(context)
                             }
                             resetRouteSession()
                             currentRouteRequest = request
@@ -1045,6 +1192,8 @@ fun RoutePlannerScreen() {
                                     response = generatedRoute
                                 )
                             )
+                            offlineStatusMessage = null
+                            refreshPendingSyncOperationCount()
                         } catch (e: Exception) {
                             routeError = e.toUserMessage(routeGenerationFailedMessage)
                         } finally {
@@ -1210,6 +1359,128 @@ fun RoutePlannerScreen() {
                 ) {
                     Text(stringResource(R.string.action_close_map))
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun OfflineSupportCard(
+    selectedCity: CityDto?,
+    offlineStatusMessage: String?,
+    pendingSyncOperationCount: Int,
+    offlineRegionAvailable: Boolean,
+    isOfflineMapBusy: Boolean,
+    offlineMapProgress: OfflineDownloadProgress?,
+    offlineMapMessage: String?,
+    onDownloadOfflineMap: () -> Unit,
+    onDeleteOfflineMap: () -> Unit
+) {
+    ElevatedCard {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Text(
+                text = stringResource(R.string.offline_support_title),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold
+            )
+            Text(
+                text = stringResource(R.string.offline_support_body),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
+            if (!offlineStatusMessage.isNullOrBlank()) {
+                Text(
+                    text = offlineStatusMessage,
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
+
+            if (pendingSyncOperationCount > 0) {
+                Text(
+                    text = stringResource(R.string.pending_sync_status, pendingSyncOperationCount),
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
+
+            val city = selectedCity
+            if (city == null) {
+                Text(
+                    text = stringResource(R.string.offline_map_city_unavailable),
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                return@Column
+            }
+
+            Text(
+                text = if (offlineRegionAvailable) {
+                    stringResource(R.string.offline_map_available, city.name)
+                } else {
+                    stringResource(R.string.offline_map_not_downloaded, city.name)
+                },
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Medium
+            )
+
+            if (city.bbox == null) {
+                Text(
+                    text = stringResource(R.string.offline_map_bbox_missing),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            } else {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    if (offlineRegionAvailable) {
+                        OutlinedButton(
+                            onClick = onDeleteOfflineMap,
+                            enabled = !isOfflineMapBusy,
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text(stringResource(R.string.action_delete_offline_map))
+                        }
+                    } else {
+                        Button(
+                            onClick = onDownloadOfflineMap,
+                            enabled = !isOfflineMapBusy,
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text(stringResource(R.string.action_download_offline_map))
+                        }
+                    }
+                }
+            }
+
+            if (offlineMapProgress != null) {
+                LinearProgressIndicator(
+                    progress = { (offlineMapProgress.percent / 100.0).toFloat().coerceIn(0f, 1f) },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Text(
+                    text = stringResource(
+                        R.string.offline_map_progress,
+                        offlineMapProgress.percent.toInt(),
+                        offlineMapProgress.completed,
+                        offlineMapProgress.required
+                    ),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            if (!offlineMapMessage.isNullOrBlank()) {
+                Text(
+                    text = offlineMapMessage,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
         }
     }
@@ -2156,6 +2427,19 @@ private fun CityDto.supportsPublicTransport(): Boolean =
 
 private fun CityDto.toStartPoint(): RouteStartDto =
     RouteStartDto(center_lat, center_lon)
+
+private fun CityDto.toOfflineCityRegion(): OfflineCityRegion? {
+    val cityBbox = bbox ?: return null
+    return OfflineCityRegion(
+        slug = slug,
+        name = name,
+        styleUrl = StreetStyleUrl,
+        south = cityBbox.south,
+        west = cityBbox.west,
+        north = cityBbox.north,
+        east = cityBbox.east
+    )
+}
 
 @Composable
 private fun routeSegmentLabel(segment: RouteSegmentDto): String {

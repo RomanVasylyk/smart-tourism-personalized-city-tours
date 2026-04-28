@@ -67,7 +67,6 @@ import kotlin.math.cos
 import kotlin.math.roundToInt
 
 private const val DefaultZoom = 13.0
-private const val StreetStyleUrl = "https://tiles.openfreemap.org/styles/liberty"
 private const val RoutePrimaryLineColor = "#2563EB"
 private const val RouteSecondaryLineColor = "#94A3B8"
 private const val TransitPrimaryLineColor = "#F97316"

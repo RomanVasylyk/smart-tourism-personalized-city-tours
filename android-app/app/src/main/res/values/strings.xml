@@ -23,6 +23,25 @@
     <string name="error_current_location_unavailable">Current location is unavailable.</string>
     <string name="error_poi_preview_failed">Failed to load POI preview.</string>
     <string name="error_route_generation_failed_default">Failed to generate route.</string>
+    <string name="offline_route_generation_unavailable">Route generation requires internet. Showing cached data only.</string>
+
+    <string name="offline_support_title">Offline access</string>
+    <string name="offline_support_body">Cities, POIs, the last route, the active route session, and pending sync operations are cached locally. Download the city map in advance to open it offline.</string>
+    <string name="offline_cities_cache_used">Network is unavailable. Showing cached cities.</string>
+    <string name="offline_pois_cache_used">Network is unavailable. Showing cached POIs for %1$s.</string>
+    <string name="pending_sync_queued">Data was saved locally and will sync when internet returns.</string>
+    <string name="pending_sync_status">Pending sync operations: %1$d</string>
+    <string name="offline_map_city_unavailable">Choose a city to manage offline map download.</string>
+    <string name="offline_map_available">Offline map available for %1$s.</string>
+    <string name="offline_map_not_downloaded">Offline map not downloaded for %1$s.</string>
+    <string name="offline_map_bbox_missing">Offline map download is not available for this city yet.</string>
+    <string name="offline_map_progress">%1$d%% downloaded • %2$d / %3$d resources</string>
+    <string name="offline_map_download_complete">Offline map downloaded for %1$s.</string>
+    <string name="offline_map_delete_complete">Offline map deleted for %1$s.</string>
+    <string name="offline_map_download_failed">Offline map download failed:</string>
+    <string name="offline_map_delete_failed">Offline map delete failed:</string>
+    <string name="action_download_offline_map">Download offline map</string>
+    <string name="action_delete_offline_map">Delete offline map</string>
 
     <string name="start_point_title">Start point</string>
     <string name="start_point_coordinates">Lat %1$s, Lon %2$s</string>
