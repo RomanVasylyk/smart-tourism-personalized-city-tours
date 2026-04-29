@@ -132,7 +132,9 @@
     <string name="route_stop_departure_after_start">Departure after start: %1$d min</string>
     <string name="route_stop_opening_hours">Opening hours: %1$s</string>
     <string name="route_stop_visited">Visited</string>
+    <string name="route_stop_skipped">Skipped</string>
     <string name="action_mark_visited">Mark visited</string>
+    <string name="action_skip_stop">Skip</string>
 
     <string name="map_start_selection_hint">Tap the map to choose the route start point</string>
     <string name="map_start_marker_label">Старт</string>

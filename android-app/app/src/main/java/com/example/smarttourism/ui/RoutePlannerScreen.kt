@@ -201,6 +201,7 @@ fun RoutePlannerScreen() {
 
     val selectedInterests = remember { mutableStateListOf<String>() }
     val visitedPoiIds = remember { mutableStateListOf<Int>() }
+    val skippedPoiIds = remember { mutableStateListOf<Int>() }
     val routeItems = routeResponse?.route.orEmpty()
 
     fun refreshPendingSyncOperationCount() {
@@ -220,6 +221,7 @@ fun RoutePlannerScreen() {
         offRouteDetectedAtMs = null
         lastAutoRerouteAtMs = null
         visitedPoiIds.clear()
+        skippedPoiIds.clear()
         if (clearStoredSession) {
             scope.launch {
                 RouteStorage.clearActiveSession(context)
@@ -381,14 +383,15 @@ fun RoutePlannerScreen() {
         routeIdValue: String? = routeId,
         startedAtValue: String? = routeStartedAt,
         visitedIds: List<Int> = visitedPoiIds.toList(),
+        skippedIds: List<Int> = skippedPoiIds.toList(),
         feedback: RouteFeedback? = routeFeedback,
         snapshotOverride: SavedRouteSnapshot? = null
     ) {
         val snapshot = snapshotOverride ?: currentRouteSnapshot() ?: return
         val savedRouteId = routeIdValue ?: return
         val savedStartedAt = startedAtValue ?: defaultRouteStartDateTime().toString()
-        val nextTargetId = nextUnvisitedPoi(snapshot.response.route, visitedIds)?.poi_id
-        val totalCount = progressTotalCount(snapshot.response.route, visitedIds)
+        val nextTargetId = nextPendingPoi(snapshot.response.route, visitedIds, skippedIds)?.poi_id
+        val totalCount = progressTotalCount(snapshot.response.route, skippedIds)
 
         currentTargetPoiId = nextTargetId
 
@@ -402,15 +405,16 @@ fun RoutePlannerScreen() {
             RouteStorage.saveActiveSession(
                 context = context,
                 session = ActiveRouteSession(
-                    route_id = savedRouteId,
-                    status = status.rawValue,
-                    started_at = savedStartedAt,
-                    current_target_poi_id = nextTargetId,
-                    visited_poi_ids = visitedIds,
-                    progress_visited_count = visitedIds.distinct().size,
-                    progress_total_count = totalCount,
-                    snapshot = snapshot,
-                    feedback = feedback
+                        route_id = savedRouteId,
+                        status = status.rawValue,
+                        started_at = savedStartedAt,
+                        current_target_poi_id = nextTargetId,
+                        visited_poi_ids = visitedIds,
+                        skipped_poi_ids = skippedIds,
+                        progress_visited_count = visitedIds.distinct().size,
+                        progress_total_count = totalCount,
+                        snapshot = snapshot,
+                        feedback = feedback
                 )
             )
             enqueueRouteSessionSync(
@@ -443,6 +447,29 @@ fun RoutePlannerScreen() {
                     request = RouteSessionPoiVisitRequest(
                         visited_at = defaultRouteStartDateTime().toString(),
                         skipped = false
+                    )
+                )
+            }
+            pendingSyncOperationCount = OfflineCacheRepository.getPendingSyncOperationCount(context)
+            OfflineSyncScheduler.scheduleImmediate(context)
+        }
+    }
+
+    fun syncSkippedPoisToBackend(poiIds: List<Int>) {
+        val sessionRouteId = routeId ?: return
+        if (poiIds.isEmpty()) {
+            return
+        }
+
+        scope.launch {
+            poiIds.distinct().forEach { poiId ->
+                OfflineCacheRepository.enqueuePendingPoiVisit(
+                    context = context,
+                    sessionId = sessionRouteId,
+                    poiId = poiId,
+                    request = RouteSessionPoiVisitRequest(
+                        visited_at = defaultRouteStartDateTime().toString(),
+                        skipped = true
                     )
                 )
             }
@@ -492,6 +519,7 @@ fun RoutePlannerScreen() {
             routeSessionStatus == RouteSessionStatus.CANCELLED
         ) {
             visitedPoiIds.clear()
+            skippedPoiIds.clear()
             routeFeedback = null
         }
 
@@ -500,7 +528,7 @@ fun RoutePlannerScreen() {
 
         routeId = activeRouteId
         routeStartedAt = activeStartedAt
-        currentTargetPoiId = nextUnvisitedPoi(response!!.route, visitedPoiIds)?.poi_id
+        currentTargetPoiId = nextPendingPoi(response!!.route, visitedPoiIds, skippedPoiIds)?.poi_id
         trackingError = null
         offRouteDetectedAtMs = null
         lastAutoRerouteAtMs = null
@@ -557,10 +585,16 @@ fun RoutePlannerScreen() {
             routeId = activeSession.route_id
             routeStartedAt = activeSession.started_at
             routeSessionStatus = RouteSessionStatus.fromRawValue(activeSession.status)
-            currentTargetPoiId = activeSession.current_target_poi_id
             routeFeedback = activeSession.feedback
             visitedPoiIds.clear()
             visitedPoiIds.addAll(activeSession.visited_poi_ids.distinct())
+            skippedPoiIds.clear()
+            skippedPoiIds.addAll(activeSession.skipped_poi_ids.orEmpty().distinct())
+            currentTargetPoiId = nextPendingPoi(
+                activeSession.snapshot.response.route,
+                visitedPoiIds,
+                skippedPoiIds
+            )?.poi_id ?: activeSession.current_target_poi_id
         }
         OfflineSyncScheduler.scheduleImmediate(context)
 
@@ -604,11 +638,19 @@ fun RoutePlannerScreen() {
                     visitedPoiIds.addAll(
                         remoteSession.pois
                             .orEmpty()
-                            .filter { poi -> poi.visited }
+                            .filter { poi -> poi.visited && !poi.skipped }
                             .map { poi -> poi.poi_id }
                             .distinct()
                     )
-                    currentTargetPoiId = nextUnvisitedPoi(snapshot.response.route, visitedPoiIds)?.poi_id
+                    skippedPoiIds.clear()
+                    skippedPoiIds.addAll(
+                        remoteSession.pois
+                            .orEmpty()
+                            .filter { poi -> poi.skipped }
+                            .map { poi -> poi.poi_id }
+                            .distinct()
+                    )
+                    currentTargetPoiId = nextPendingPoi(snapshot.response.route, visitedPoiIds, skippedPoiIds)?.poi_id
                     RouteStorage.save(
                         context = context,
                         snapshot = snapshot
@@ -621,8 +663,9 @@ fun RoutePlannerScreen() {
                             started_at = remoteSession.started_at,
                             current_target_poi_id = currentTargetPoiId,
                             visited_poi_ids = visitedPoiIds.toList(),
+                            skipped_poi_ids = skippedPoiIds.toList(),
                             progress_visited_count = visitedPoiIds.distinct().size,
-                            progress_total_count = progressTotalCount(snapshot.response.route, visitedPoiIds),
+                            progress_total_count = progressTotalCount(snapshot.response.route, skippedPoiIds),
                             snapshot = snapshot,
                             feedback = routeFeedback
                         )
@@ -708,7 +751,7 @@ fun RoutePlannerScreen() {
         offlineStoredRegion = offlineMapManager.findRegionBySlug(city.slug)
     }
 
-    val recalculateRouteFromLocation: (RouteStartDto, Boolean) -> Unit = reroute@ { currentLocation, autoTriggered ->
+    val recalculateRouteFromPoint: (RouteStartDto, Boolean, List<Int>) -> Unit = reroute@ { currentLocation, autoTriggered, additionalExcludedPoiIds ->
         val baseRequest = currentRouteRequest ?: return@reroute
         val response = routeResponse ?: return@reroute
 
@@ -717,12 +760,15 @@ fun RoutePlannerScreen() {
             routeError = null
             offRouteDetectedAtMs = null
 
+            val effectiveSkippedPoiIds = (skippedPoiIds + additionalExcludedPoiIds).distinct()
+            val nextTarget = nextPendingPoi(routeItems, visitedPoiIds, effectiveSkippedPoiIds)
             val remainingMinutes = estimateRemainingMinutes(
                 routeResponse = response,
                 routeItems = routeItems,
                 visitedPoiIds = visitedPoiIds,
+                skippedPoiIds = effectiveSkippedPoiIds,
                 currentLocation = currentLocation,
-                nextTarget = nextUnvisitedPoi(routeItems, visitedPoiIds)
+                nextTarget = nextTarget
             )
                 .coerceIn(30, maxOf(30, baseRequest.available_minutes))
             val request = baseRequest.copy(
@@ -730,7 +776,7 @@ fun RoutePlannerScreen() {
                 start_lon = currentLocation.lon,
                 available_minutes = remainingMinutes,
                 start_datetime = defaultRouteStartDateTime().toString(),
-                exclude_poi_ids = visitedPoiIds.distinct(),
+                exclude_poi_ids = (visitedPoiIds + effectiveSkippedPoiIds).distinct(),
                 transport_mode = baseRequest.transport_mode ?: "walk"
             )
 
@@ -749,11 +795,16 @@ fun RoutePlannerScreen() {
                 currentRouteRequest = request
                 routeResponse = mergedRoute
                 startPoint = RouteStartDto(currentLocation.lat, currentLocation.lon)
-                currentTargetPoiId = nextUnvisitedPoi(mergedRoute.route, visitedPoiIds)?.poi_id
-                routeSessionStatus = RouteSessionStatus.IN_PROGRESS
+                currentTargetPoiId = nextPendingPoi(mergedRoute.route, visitedPoiIds, effectiveSkippedPoiIds)?.poi_id
+                val updatedStatus = if (routeSessionStatus == RouteSessionStatus.IN_PROGRESS) {
+                    RouteSessionStatus.IN_PROGRESS
+                } else {
+                    routeSessionStatus
+                }
+                routeSessionStatus = updatedStatus
                 RouteStorage.save(context = context, snapshot = snapshot)
                 persistRouteSession(
-                    status = RouteSessionStatus.IN_PROGRESS,
+                    status = updatedStatus,
                     snapshotOverride = snapshot
                 )
             } catch (e: Exception) {
@@ -766,6 +817,37 @@ fun RoutePlannerScreen() {
                 isRerouting = false
             }
         }
+    }
+
+    fun skipRouteStop(poiId: Int) {
+        if (poiId in visitedPoiIds || poiId in skippedPoiIds) {
+            return
+        }
+
+        skippedPoiIds.add(poiId)
+        currentRouteRequest = currentRouteRequest?.copy(
+            exclude_poi_ids = ((currentRouteRequest?.exclude_poi_ids).orEmpty() + poiId).distinct()
+        )
+        currentTargetPoiId = nextPendingPoi(routeItems, visitedPoiIds, skippedPoiIds)?.poi_id
+        currentRouteSnapshot()?.let { snapshot ->
+            scope.launch {
+                RouteStorage.save(context = context, snapshot = snapshot)
+            }
+        }
+        persistRouteSession(status = routeSessionStatus)
+        syncSkippedPoisToBackend(listOf(poiId))
+
+        if (routeResponse == null || currentRouteRequest == null || !NetworkMonitor.isNetworkAvailable(context)) {
+            return
+        }
+
+        val rerouteStart = rerouteStartPoint(
+            routeItems = routeItems,
+            visitedPoiIds = visitedPoiIds,
+            currentLocation = currentRouteLocation,
+            fallbackStart = startPoint
+        )
+        recalculateRouteFromPoint(rerouteStart, false, listOf(poiId))
     }
 
     DisposableEffect(context, routeItems, routeSessionStatus) {
@@ -785,9 +867,10 @@ fun RoutePlannerScreen() {
                     val newlyVisitedPoiIds = markNearbyPoisVisited(
                         routeItems = routeItems,
                         currentLocation = routeLocation,
-                        visitedPoiIds = visitedPoiIds
+                        visitedPoiIds = visitedPoiIds,
+                        skippedPoiIds = skippedPoiIds
                     )
-                    val nextTarget = nextUnvisitedPoi(routeItems, visitedPoiIds)
+                    val nextTarget = nextPendingPoi(routeItems, visitedPoiIds, skippedPoiIds)
                     currentTargetPoiId = nextTarget?.poi_id
 
                     val isCurrentlyOffRoute = routeResponse != null &&
@@ -802,7 +885,7 @@ fun RoutePlannerScreen() {
                         val rerouteSustained = now - detectedAt >= OffRouteSustainDurationMs
 
                         if (!isRerouting && rerouteCooldownReady && rerouteSustained) {
-                            recalculateRouteFromLocation(routeLocation, true)
+                            recalculateRouteFromPoint(routeLocation, true, emptyList())
                         }
                     } else {
                         offRouteDetectedAtMs = null
@@ -835,6 +918,7 @@ fun RoutePlannerScreen() {
         routeResponse = routeResponse,
         routeItems = routeItems,
         visitedPoiIds = visitedPoiIds,
+        skippedPoiIds = skippedPoiIds,
         currentLocation = currentRouteLocation,
         isTracking = routeSessionStatus == RouteSessionStatus.IN_PROGRESS
     )
@@ -914,7 +998,7 @@ fun RoutePlannerScreen() {
 
     fun recalculateFromCurrentLocation() {
         val currentLocation = currentRouteLocation ?: return
-        recalculateRouteFromLocation(currentLocation, false)
+        recalculateRouteFromPoint(currentLocation, false, emptyList())
     }
 
     LazyColumn(
@@ -1287,12 +1371,16 @@ fun RoutePlannerScreen() {
                             item = item,
                             incomingLeg = routeResponse?.legs.orEmpty().firstOrNull { leg -> leg.to.poi_id == item.poi_id },
                             isVisited = item.poi_id in visitedPoiIds,
+                            isSkipped = item.poi_id in skippedPoiIds,
                             isRouteActive = routeSessionStatus == RouteSessionStatus.IN_PROGRESS,
+                            canSkip = routeSessionStatus != RouteSessionStatus.COMPLETED &&
+                                routeSessionStatus != RouteSessionStatus.CANCELLED,
+                            isActionInProgress = isRerouting,
                             onMarkVisited = {
-                                if (item.poi_id !in visitedPoiIds) {
+                                if (item.poi_id !in visitedPoiIds && item.poi_id !in skippedPoiIds) {
                                     visitedPoiIds.add(item.poi_id)
                                     syncVisitedPoisToBackend(listOf(item.poi_id))
-                                    currentTargetPoiId = nextUnvisitedPoi(routeItems, visitedPoiIds)?.poi_id
+                                    currentTargetPoiId = nextPendingPoi(routeItems, visitedPoiIds, skippedPoiIds)?.poi_id
                                     if (routeItems.all { routeItem -> routeItem.poi_id in visitedPoiIds }) {
                                         routeSessionStatus = RouteSessionStatus.COMPLETED
                                         persistRouteSession(status = RouteSessionStatus.COMPLETED)
@@ -1300,7 +1388,8 @@ fun RoutePlannerScreen() {
                                         persistRouteSession()
                                     }
                                 }
-                            }
+                            },
+                            onSkip = { skipRouteStop(item.poi_id) }
                         )
                     }
                 }
@@ -2209,8 +2298,12 @@ private fun RouteStopCard(
     item: RouteItemDto,
     incomingLeg: RouteLegDto?,
     isVisited: Boolean,
+    isSkipped: Boolean,
     isRouteActive: Boolean,
-    onMarkVisited: () -> Unit
+    canSkip: Boolean,
+    isActionInProgress: Boolean,
+    onMarkVisited: () -> Unit,
+    onSkip: () -> Unit
 ) {
     Card {
         Column(
@@ -2241,9 +2334,31 @@ private fun RouteStopCard(
                         fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.primary
                     )
-                } else if (isRouteActive) {
-                    OutlinedButton(onClick = onMarkVisited) {
-                        Text(stringResource(R.string.action_mark_visited))
+                } else if (isSkipped) {
+                    Text(
+                        text = stringResource(R.string.route_stop_skipped),
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.tertiary
+                    )
+                } else if (canSkip || isRouteActive) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        if (canSkip) {
+                            OutlinedButton(
+                                onClick = onSkip,
+                                enabled = !isActionInProgress
+                            ) {
+                                Text(stringResource(R.string.action_skip_stop))
+                            }
+                        }
+                        if (isRouteActive) {
+                            OutlinedButton(
+                                onClick = onMarkVisited,
+                                enabled = !isActionInProgress
+                            ) {
+                                Text(stringResource(R.string.action_mark_visited))
+                            }
+                        }
                     }
                 }
             }
@@ -2374,6 +2489,11 @@ private fun applySavedSnapshot(
 
 private fun RouteSessionDto.toSavedRouteSnapshot(): SavedRouteSnapshot? {
     val response = route_snapshot_json ?: return null
+    val skippedPoiIds = pois
+        .orEmpty()
+        .filter { poi -> poi.skipped }
+        .map { poi -> poi.poi_id }
+        .distinct()
     val request = RouteRequest(
         city = city_name ?: response.city,
         start_lat = start_lat,
@@ -2384,6 +2504,7 @@ private fun RouteSessionDto.toSavedRouteSnapshot(): SavedRouteSnapshot? {
         return_to_start = return_to_start,
         start_datetime = response.start_datetime,
         respect_opening_hours = opening_hours_enabled,
+        exclude_poi_ids = skippedPoiIds,
         transport_mode = response.transport_mode ?: "walk"
     )
 
@@ -2501,11 +2622,13 @@ private fun routeProgressMetrics(
     routeResponse: RouteResponse?,
     routeItems: List<RouteItemDto>,
     visitedPoiIds: List<Int>,
+    skippedPoiIds: List<Int>,
     currentLocation: RouteStartDto?,
     isTracking: Boolean
 ): RouteProgressMetrics {
     val visitedIds = visitedPoiIds.distinct()
-    val nextTarget = nextUnvisitedPoi(routeItems, visitedIds)
+    val skippedIds = skippedPoiIds.distinct()
+    val nextTarget = nextPendingPoi(routeItems, visitedIds, skippedIds)
     val distanceToNextTargetMeters = if (currentLocation != null && nextTarget != null) {
         distanceMeters(
             startLat = currentLocation.lat,
@@ -2516,7 +2639,7 @@ private fun routeProgressMetrics(
     } else {
         null
     }
-    val totalCount = progressTotalCount(routeItems, visitedIds)
+    val totalCount = progressTotalCount(routeItems, skippedIds)
     val visitedCount = visitedIds.size.coerceAtMost(totalCount)
     val isOffRoute = isTracking &&
         currentLocation != null &&
@@ -2532,6 +2655,7 @@ private fun routeProgressMetrics(
             routeResponse = routeResponse,
             routeItems = routeItems,
             visitedPoiIds = visitedIds,
+            skippedPoiIds = skippedIds,
             currentLocation = currentLocation,
             nextTarget = nextTarget
         ),
@@ -2542,18 +2666,19 @@ private fun routeProgressMetrics(
 
 private fun progressTotalCount(
     routeItems: List<RouteItemDto>,
-    visitedPoiIds: List<Int>
+    skippedPoiIds: List<Int>
 ): Int =
-    visitedPoiIds.distinct().size + routeItems.count { item -> item.poi_id !in visitedPoiIds }
+    routeItems.count { item -> item.poi_id !in skippedPoiIds }
 
 private fun requiredCompletionCount(totalCount: Int): Int =
     ceil(totalCount / 2.0).toInt().coerceAtLeast(1)
 
-private fun nextUnvisitedPoi(
+private fun nextPendingPoi(
     routeItems: List<RouteItemDto>,
-    visitedPoiIds: List<Int>
+    visitedPoiIds: List<Int>,
+    skippedPoiIds: List<Int>
 ): RouteItemDto? =
-    routeItems.firstOrNull { item -> item.poi_id !in visitedPoiIds }
+    routeItems.firstOrNull { item -> item.poi_id !in visitedPoiIds && item.poi_id !in skippedPoiIds }
 
 private fun mergeReroutedRouteResponse(
     previousResponse: RouteResponse,
@@ -2644,10 +2769,13 @@ private fun estimateRemainingMinutes(
     routeResponse: RouteResponse?,
     routeItems: List<RouteItemDto>,
     visitedPoiIds: List<Int>,
+    skippedPoiIds: List<Int>,
     currentLocation: RouteStartDto?,
     nextTarget: RouteItemDto?
 ): Int {
-    val remainingItems = routeItems.filter { item -> item.poi_id !in visitedPoiIds }
+    val remainingItems = routeItems.filter { item ->
+        item.poi_id !in visitedPoiIds && item.poi_id !in skippedPoiIds
+    }
     if (remainingItems.isEmpty()) {
         return 0
     }
@@ -2674,6 +2802,23 @@ private fun estimateRemainingMinutes(
     }
 
     return firstWalkMinutes + remainingVisits + remainingWalksAfterTarget + returnToStartMinutes
+}
+
+private fun rerouteStartPoint(
+    routeItems: List<RouteItemDto>,
+    visitedPoiIds: List<Int>,
+    currentLocation: RouteStartDto?,
+    fallbackStart: RouteStartDto
+): RouteStartDto {
+    currentLocation?.let { return it }
+
+    val lastVisitedStop = routeItems
+        .filter { item -> item.poi_id in visitedPoiIds }
+        .maxByOrNull { item -> item.order }
+
+    return lastVisitedStop?.let { stop ->
+        RouteStartDto(lat = stop.lat, lon = stop.lon)
+    } ?: fallbackStart
 }
 
 private fun estimateWalkingMinutes(
@@ -2956,10 +3101,11 @@ private fun startRouteLocationTracking(
 private fun markNearbyPoisVisited(
     routeItems: List<RouteItemDto>,
     currentLocation: RouteStartDto,
-    visitedPoiIds: MutableList<Int>
+    visitedPoiIds: MutableList<Int>,
+    skippedPoiIds: List<Int>
 ): List<Int> {
     val newlyVisitedIds = routeItems
-        .filter { item -> item.poi_id !in visitedPoiIds }
+        .filter { item -> item.poi_id !in visitedPoiIds && item.poi_id !in skippedPoiIds }
         .filter { item ->
             distanceMeters(
                 startLat = currentLocation.lat,

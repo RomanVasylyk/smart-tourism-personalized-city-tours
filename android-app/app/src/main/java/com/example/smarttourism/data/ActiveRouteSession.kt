@@ -6,6 +6,7 @@ data class ActiveRouteSession(
     val started_at: String,
     val current_target_poi_id: Int?,
     val visited_poi_ids: List<Int>,
+    val skipped_poi_ids: List<Int>? = null,
     val progress_visited_count: Int,
     val progress_total_count: Int,
     val snapshot: SavedRouteSnapshot,
