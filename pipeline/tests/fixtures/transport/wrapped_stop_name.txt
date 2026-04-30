@@ -1,0 +1,6 @@
+Zoznam zastávok PRACOVNÉ DNI
+D Dlhý názov zastávky,
+pokračovanie 05 10 05 40
+D Druhá zastávka 05 12 05 42
+D Tretia prích 05 18 05 48
+

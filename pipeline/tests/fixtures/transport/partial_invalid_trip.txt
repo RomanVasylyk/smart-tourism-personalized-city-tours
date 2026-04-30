@@ -1,0 +1,5 @@
+Zoznam zastávok PRACOVNÉ DNI
+D Stanica 05 10 05 50
+D Centrum 05 12 05 30
+D Nemocnica 05 18 05 58
+

@@ -1,0 +1,167 @@
+[
+  {
+    "stop_name": "Jarocká",
+    "normalized_name": "jarocka",
+    "occurrences": 4,
+    "line_numbers": [
+      "11"
+    ],
+    "source_urls": [
+      "https://nitra.transdev.sk/wp-content/uploads/2025/12/11.pdf"
+    ]
+  },
+  {
+    "stop_name": "Jurský dvor",
+    "normalized_name": "jursky dvor",
+    "occurrences": 4,
+    "line_numbers": [
+      "11"
+    ],
+    "source_urls": [
+      "https://nitra.transdev.sk/wp-content/uploads/2025/12/11.pdf"
+    ]
+  },
+  {
+    "stop_name": "Liaharenský podnik",
+    "normalized_name": "liaharensky podnik",
+    "occurrences": 4,
+    "line_numbers": [
+      "11"
+    ],
+    "source_urls": [
+      "https://nitra.transdev.sk/wp-content/uploads/2025/12/11.pdf"
+    ]
+  },
+  {
+    "stop_name": "Lužianky , ZŠ",
+    "normalized_name": "luzianky zs",
+    "occurrences": 4,
+    "line_numbers": [
+      "21"
+    ],
+    "source_urls": [
+      "https://nitra.transdev.sk/wp-content/uploads/2025/12/21.pdf"
+    ]
+  },
+  {
+    "stop_name": "Nitra , Dvorčianska",
+    "normalized_name": "nitra dvorcianska",
+    "occurrences": 4,
+    "line_numbers": [
+      "12"
+    ],
+    "source_urls": [
+      "https://nitra.transdev.sk/wp-content/uploads/2025/12/12.pdf"
+    ]
+  },
+  {
+    "stop_name": "Nitra , Idea",
+    "normalized_name": "nitra idea",
+    "occurrences": 4,
+    "line_numbers": [
+      "12"
+    ],
+    "source_urls": [
+      "https://nitra.transdev.sk/wp-content/uploads/2025/12/12.pdf"
+    ]
+  },
+  {
+    "stop_name": "Nitra , Mevak",
+    "normalized_name": "nitra mevak",
+    "occurrences": 4,
+    "line_numbers": [
+      "12"
+    ],
+    "source_urls": [
+      "https://nitra.transdev.sk/wp-content/uploads/2025/12/12.pdf"
+    ]
+  },
+  {
+    "stop_name": "Nitra , Nitrafrost",
+    "normalized_name": "nitra nitrafrost",
+    "occurrences": 4,
+    "line_numbers": [
+      "12"
+    ],
+    "source_urls": [
+      "https://nitra.transdev.sk/wp-content/uploads/2025/12/12.pdf"
+    ]
+  },
+  {
+    "stop_name": "Nitra , Záborského",
+    "normalized_name": "nitra zaborskeho",
+    "occurrences": 4,
+    "line_numbers": [
+      "12"
+    ],
+    "source_urls": [
+      "https://nitra.transdev.sk/wp-content/uploads/2025/12/12.pdf"
+    ]
+  },
+  {
+    "stop_name": "Párovské Háje",
+    "normalized_name": "parovske haje",
+    "occurrences": 4,
+    "line_numbers": [
+      "11"
+    ],
+    "source_urls": [
+      "https://nitra.transdev.sk/wp-content/uploads/2025/12/11.pdf"
+    ]
+  },
+  {
+    "stop_name": "Stromová",
+    "normalized_name": "stromova",
+    "occurrences": 4,
+    "line_numbers": [
+      "11"
+    ],
+    "source_urls": [
+      "https://nitra.transdev.sk/wp-content/uploads/2025/12/11.pdf"
+    ]
+  },
+  {
+    "stop_name": "Lužianky , VÚŽV",
+    "normalized_name": "luzianky vuzv",
+    "occurrences": 2,
+    "line_numbers": [
+      "8"
+    ],
+    "source_urls": [
+      "https://nitra.transdev.sk/wp-content/uploads/2025/12/08.pdf"
+    ]
+  },
+  {
+    "stop_name": "Partizánska + premáva v nedeľu a v štátom uznaný deň pracovného pokoja 6 premáva v sobotu",
+    "normalized_name": "partizanska premava v nedelu a v statom uznany den pracovneho pokoja 6 premava v sobotu",
+    "occurrences": 1,
+    "line_numbers": [
+      "22"
+    ],
+    "source_urls": [
+      "https://nitra.transdev.sk/wp-content/uploads/2026/04/22.pdf"
+    ]
+  },
+  {
+    "stop_name": "SEC + premáva v nedeľu a v štátom uznaný deň pracovného pokoja 6 premáva v sobotu",
+    "normalized_name": "sec premava v nedelu a v statom uznany den pracovneho pokoja 6 premava v sobotu",
+    "occurrences": 1,
+    "line_numbers": [
+      "26"
+    ],
+    "source_urls": [
+      "https://nitra.transdev.sk/wp-content/uploads/2026/04/26.pdf"
+    ]
+  },
+  {
+    "stop_name": "Štúrova A",
+    "normalized_name": "sturova a",
+    "occurrences": 1,
+    "line_numbers": [
+      "26"
+    ],
+    "source_urls": [
+      "https://nitra.transdev.sk/wp-content/uploads/2026/04/26.pdf"
+    ]
+  }
+]

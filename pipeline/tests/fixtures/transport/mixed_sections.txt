@@ -1,0 +1,14 @@
+Zoznam zastávok PRACOVNÉ DNI
+1 3 5
+X X X
+D Stanica 05 10 05 40 06 10
+D Centrum 05 12 05 42 06 12
+D Nemocnica prích 05 18 05 48 06 18
+pokračovanie
+Zoznam zastávok SOBOTY, NEDELE, SVIATKY
+301 303
+6 + 6 +
+D Stanica 07 10 09 10
+D Centrum 07 12 09 12
+D Nemocnica prích 07 18 09 18
+

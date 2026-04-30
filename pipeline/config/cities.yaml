@@ -35,6 +35,22 @@ cities:
       raw_data_subdir: transport/nitra/raw
       processed_graph_path: transport/nitra/processed/transport_graph.json
       stop_source: osm_overpass
+      stop_query_areas:
+        - name: urban_core
+          south: 48.28
+          west: 18.03
+          north: 48.36
+          east: 18.13
+        - name: south_southeast_corridor
+          south: 48.19
+          west: 18.07
+          north: 48.31
+          east: 18.18
+        - name: east_periphery
+          south: 48.30
+          west: 18.10
+          north: 48.36
+          east: 18.17
       average_wait_minutes: 4
       transit_speed_kmh: 24
       min_direct_distance_meters: 1200

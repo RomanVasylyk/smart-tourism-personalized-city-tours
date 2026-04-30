@@ -79,27 +79,43 @@ def fetch_overpass_query(session: requests.Session, label: str, query: str) -> d
     raise RuntimeError(f"Overpass request failed for {label}.\n{joined_errors}")
 
 
-def build_stop_query(city: dict) -> str:
-    bbox = city.get("bbox") or {}
-    south = bbox.get("south")
-    west = bbox.get("west")
-    north = bbox.get("north")
-    east = bbox.get("east")
-    if None in {south, west, north, east}:
-        raise ValueError(f"City {city.get('slug', '<unknown>')} is missing bbox coordinates")
+def stop_query_areas(city: dict) -> list[dict]:
+    transport = city.get("transport") or {}
+    configured_areas = transport.get("stop_query_areas")
+    if configured_areas:
+        return list(configured_areas)
 
-    return "\n".join(
-        (
-            f"[out:json][timeout:{QUERY_TIMEOUT_SECONDS}];",
-            "(",
-            f'  node["highway"="bus_stop"]({south},{west},{north},{east});',
-            f'  node["public_transport"="platform"]({south},{west},{north},{east});',
-            f'  way["highway"="bus_stop"]({south},{west},{north},{east});',
-            f'  way["public_transport"="platform"]({south},{west},{north},{east});',
-            ");",
-            "out center tags;",
+    transport_bbox = transport.get("stop_bbox")
+    if transport_bbox:
+        return [transport_bbox]
+    return [city.get("bbox") or {}]
+
+
+def validate_query_area(city_slug: str, area: dict, index: int) -> tuple[float, float, float, float]:
+    south = area.get("south")
+    west = area.get("west")
+    north = area.get("north")
+    east = area.get("east")
+    if None in {south, west, north, east}:
+        raise ValueError(f"Transport stop query area #{index} for city '{city_slug}' is missing bbox coordinates")
+    return float(south), float(west), float(north), float(east)
+
+
+def build_stop_query(city: dict) -> str:
+    city_slug = str(city.get("slug") or "<unknown>")
+    query_lines = [f"[out:json][timeout:{QUERY_TIMEOUT_SECONDS}];", "("]
+    for index, area in enumerate(stop_query_areas(city), start=1):
+        south, west, north, east = validate_query_area(city_slug, area, index)
+        query_lines.extend(
+            (
+                f'  node["highway"="bus_stop"]({south},{west},{north},{east});',
+                f'  node["public_transport"="platform"]({south},{west},{north},{east});',
+                f'  way["highway"="bus_stop"]({south},{west},{north},{east});',
+                f'  way["public_transport"="platform"]({south},{west},{north},{east});',
+            )
         )
-    )
+    query_lines.extend((");", "out center tags;"))
+    return "\n".join(query_lines)
 
 
 def transport_raw_dir(city: dict) -> Path:
@@ -198,6 +214,7 @@ def main() -> None:
                 "city": city_slug,
                 "provider": transport.get("provider"),
                 "source_index_url": index_url,
+                "stop_query_areas": stop_query_areas(city),
                 "downloaded_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
                 "documents": downloaded_documents,
             },

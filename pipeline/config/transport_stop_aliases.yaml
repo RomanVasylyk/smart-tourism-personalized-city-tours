@@ -1,0 +1,36 @@
+# Optional manual aliases for provider stop names that do not match OSM names directly.
+# Add only validated mappings here; the parser already strips accents and normalizes spacing.
+#
+# Example:
+# stop_aliases:
+#   "Kalvaria": "Kalvária"
+# cities:
+#   nitra:
+#     stop_aliases:
+#       "Centrum A": "Centrum (A)"
+
+stop_aliases: {}
+
+cities:
+  nitra:
+    stop_aliases:
+      "Nitra , Bohúňova": "Bohúňova"
+      "Nitra , Bolečkova": "Bolečkova"
+      "Nitra , Braneckého": "Braneckého"
+      "Nitra , Ferrenit": "Ferrenit"
+      "Nitra , Gorazdova": "Gorazdova"
+      "Nitra , Metro": "METRO"
+      "Nitra , Metodova": "Metodova"
+      "Nitra , Moskovská": "Moskovská"
+      "Nitra , Palárikova": "Palárikova"
+      "Nitra , Pekárne": "Pekárne"
+      "Nitra , Predmostie": "Predmostie"
+      "Nitra , Rastislavova": "Rastislavova"
+      "Nitra , Rybárska": "Rybárska"
+      "Nitra , Sitnianska": "Sitnianska"
+      "Nitra , Štúrova": "Štúrova"
+      "Nitra , Univerzity": "Univerzity"
+      "Nitra , Výstavisko": "Výstavisko"
+      "Nitra , Ďurčanského": "Ďurčanského"
+  trnava:
+    stop_aliases: {}

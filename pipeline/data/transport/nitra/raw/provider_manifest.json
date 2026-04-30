@@ -2,7 +2,30 @@
   "city": "nitra",
   "provider": "transdev_nitra",
   "source_index_url": "https://nitra.transdev.sk/cp/",
-  "downloaded_at": "2026-04-26T11:04:09Z",
+  "stop_query_areas": [
+    {
+      "name": "urban_core",
+      "south": 48.28,
+      "west": 18.03,
+      "north": 48.36,
+      "east": 18.13
+    },
+    {
+      "name": "south_southeast_corridor",
+      "south": 48.19,
+      "west": 18.07,
+      "north": 48.31,
+      "east": 18.18
+    },
+    {
+      "name": "east_periphery",
+      "south": 48.3,
+      "west": 18.1,
+      "north": 48.36,
+      "east": 18.17
+    }
+  ],
+  "downloaded_at": "2026-04-29T12:25:13Z",
   "documents": [
     {
       "line_id": "1",
