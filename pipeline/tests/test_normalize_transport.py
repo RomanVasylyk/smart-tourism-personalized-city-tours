@@ -13,6 +13,7 @@ from scripts.normalize_transport import (
     build_osm_stop_index,
     build_processed_graph,
     build_stop_match_keys,
+    collapse_zero_delta_duplicate_name_rows,
     match_provider_stop_candidates,
     normalize_stop_name,
     parse_stop_rows,
@@ -65,6 +66,7 @@ def test_parse_stop_rows_handles_wrapped_stop_name():
 def test_normalize_stop_name_does_not_turn_regular_suffix_into_platform():
     assert normalize_stop_name("Lužianky, ZŠ") == "luzianky zs"
     assert normalize_stop_name("Centrum (A)") == "centrum platform a"
+    assert normalize_stop_name("Štúrova A") == "sturova platform a"
 
 
 def test_match_provider_stop_candidates_uses_alt_keys_and_alias_map():
@@ -128,6 +130,128 @@ def test_build_processed_graph_drops_invalid_trip_but_keeps_valid_line():
     assert graph["trips"][0]["stop_times"][-1]["time_minutes"] == 318
 
 
+def test_build_processed_graph_estimates_adjacent_zero_delta_connection():
+    city = {"slug": "test-city", "transport": {"provider": "test_provider", "transit_speed_kmh": 24}}
+    variant = VariantAccumulator(
+        line_number="2",
+        service_bucket="workdays",
+        source_urls={"https://example.invalid/2.pdf"},
+        stop_names=["Kmeťova", "Bizetova", "Centrum"],
+        edge_samples=[[], [120.0]],
+        trip_columns=[
+            [310, 310, 312],
+            [370, 370, 372],
+        ],
+        valid_from="2026-01-01",
+        valid_to="2026-12-31",
+    )
+    osm_index = build_osm_stop_index(
+        [
+            make_stop("node/20", "Kmeťova", 48.30, 18.08),
+            make_stop("node/21", "Bizetova", 48.3004, 18.0805),
+            make_stop("node/22", "Centrum", 48.301, 18.081),
+        ]
+    )
+
+    graph, metrics, unmatched = build_processed_graph(
+        city,
+        [variant],
+        osm_index,
+        {},
+        [],
+    )
+
+    assert unmatched == []
+    assert metrics["dropped_trip_count"] == 0
+    assert len(graph["connections"]) == 2
+    first_connection = graph["connections"][0]
+    assert first_connection["from_stop_key"] == "node/20"
+    assert first_connection["to_stop_key"] == "node/21"
+    assert first_connection["avg_travel_seconds"] > 0
+
+
+def test_build_processed_graph_estimates_same_station_zero_delta_connection():
+    city = {"slug": "test-city", "transport": {"provider": "test_provider", "transit_speed_kmh": 24}}
+    variant = VariantAccumulator(
+        line_number="2A",
+        service_bucket="workdays",
+        source_urls={"https://example.invalid/2a.pdf"},
+        stop_names=["ZŠ Krškany A", "ZŠ Krškany D", "Centrum"],
+        edge_samples=[[], [180.0]],
+        trip_columns=[
+            [310, 310, 314],
+            [370, 370, 374],
+        ],
+        valid_from="2026-01-01",
+        valid_to="2026-12-31",
+    )
+    osm_index = build_osm_stop_index(
+        [
+            make_stop("node/30", "ZŠ Krškany", 48.273539, 18.0990411, ref="A"),
+            make_stop("node/31", "ZŠ Krškany", 48.2727715, 18.0988376, ref="D"),
+            make_stop("node/32", "Centrum", 48.301, 18.081),
+        ]
+    )
+    issues: list[TransportIssue] = []
+
+    graph, metrics, unmatched = build_processed_graph(
+        city,
+        [variant],
+        osm_index,
+        {},
+        issues,
+    )
+
+    assert unmatched == []
+    assert metrics["dropped_trip_count"] == 0
+    assert len(graph["connections"]) == 2
+    assert graph["connections"][0]["from_stop_key"] == "node/30"
+    assert graph["connections"][0]["to_stop_key"] == "node/31"
+    assert graph["connections"][0]["avg_travel_seconds"] > 0
+    assert not any(issue.code == "connection_without_edge_samples" for issue in issues)
+
+
+def test_build_processed_graph_estimates_same_station_connection_without_trip_overlap():
+    city = {"slug": "test-city", "transport": {"provider": "test_provider", "transit_speed_kmh": 24}}
+    variant = VariantAccumulator(
+        line_number="2B",
+        service_bucket="workdays",
+        source_urls={"https://example.invalid/2b.pdf"},
+        stop_names=["ZŠ Krškany A", "ZŠ Krškany D", "Centrum"],
+        edge_samples=[[], [180.0]],
+        trip_columns=[
+            [310, None, 314],
+            [None, 370, 374],
+        ],
+        valid_from="2026-01-01",
+        valid_to="2026-12-31",
+    )
+    osm_index = build_osm_stop_index(
+        [
+            make_stop("node/40", "ZŠ Krškany", 48.273539, 18.0990411, ref="A"),
+            make_stop("node/41", "ZŠ Krškany", 48.2727715, 18.0988376, ref="D"),
+            make_stop("node/42", "Centrum", 48.301, 18.081),
+        ]
+    )
+    issues: list[TransportIssue] = []
+
+    graph, metrics, unmatched = build_processed_graph(
+        city,
+        [variant],
+        osm_index,
+        {},
+        issues,
+    )
+
+    assert unmatched == []
+    assert metrics["dropped_trip_count"] == 0
+    assert len(graph["connections"]) == 2
+    assert graph["connections"][0]["from_stop_key"] == "node/40"
+    assert graph["connections"][0]["to_stop_key"] == "node/41"
+    assert graph["connections"][0]["avg_travel_seconds"] > 0
+    assert not any(issue.code == "connection_without_edge_samples" for issue in issues)
+
+
 def test_partial_invalid_trip_fixture_produces_one_descending_warning():
     text = fixture_text("partial_invalid_trip.txt")
     rows = parse_stop_rows(text)
@@ -141,6 +265,21 @@ def test_partial_invalid_trip_fixture_produces_one_descending_warning():
     assert column_2 == [350, 330, 358]
     assert any(later < earlier for earlier, later in zip(column_2, column_2[1:]))
     assert issues == []
+
+
+def test_parse_stop_rows_ignores_footnote_tail_without_real_times():
+    text = "\n".join(
+        [
+            "D Partizánska prích",
+            "+ premáva v nedeľu a v štátom uznaný deň pracovného pokoja 6 premáva v sobotu",
+            "D SEC prích",
+            "p spoj 2,6,34,52,56 zo zast. Jakuba Haška pokračuje na zast. SEC",
+        ]
+    )
+
+    rows = parse_stop_rows(text)
+
+    assert rows == []
 
 
 def test_split_stop_row_blocks_breaks_on_strong_time_regression():
@@ -160,4 +299,23 @@ def test_split_stop_row_blocks_breaks_on_strong_time_regression():
     assert [[row.name for row in block] for block in blocks] == [
         ["Stop A", "Stop B", "Stop C"],
         ["Delta", "Echo", "Foxtrot"],
+    ]
+
+
+def test_collapse_zero_delta_duplicate_name_rows_removes_arrival_departure_duplicate():
+    rows = parse_stop_rows(
+        "\n".join(
+            [
+                "D Rázcestie Autobusová stanica prích 05 46 06 16",
+                "D Rázcestie Autobusová stanica odch 05 46 06 16",
+                "D CENTRUM, Mlyny 05 49 06 19",
+            ]
+        )
+    )
+
+    collapsed_rows = collapse_zero_delta_duplicate_name_rows(rows)
+
+    assert [row.name for row in collapsed_rows] == [
+        "Rázcestie Autobusová stanica",
+        "CENTRUM , Mlyny",
     ]

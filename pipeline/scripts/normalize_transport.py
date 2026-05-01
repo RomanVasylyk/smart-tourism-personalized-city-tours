@@ -31,6 +31,7 @@ PLATFORM_SUFFIX_PATTERNS = (
     re.compile(r"\(\s*(?P<token>[A-Z]|\d{1,2}|[A-Z]\d|\d[A-Z])\s*\)\s*$"),
     re.compile(r"[,/-]\s*(?P<token>[A-Z]|\d{1,2}|[A-Z]\d|\d[A-Z])\s*$"),
     re.compile(r"\b(?:NAST|NASTUPISTE|NASTUPISTE|PLATF|PLATFORM|STANOVISTE)\.?\s*(?P<token>[A-Z0-9]{1,4})\s*$"),
+    re.compile(r"\s+(?P<token>[A-Z])\s*$"),
 )
 METADATA_CONTAINS_MARKERS = (
     "PLATI OD",
@@ -46,6 +47,14 @@ METADATA_EXACT_MARKERS = {
     "OPACNY SMER",
     "OPACNY SMER - POKRACOVANIE",
 }
+FOOTNOTE_LINE_PATTERN = re.compile(
+    r"^(?:\+|[a-z]{1,3}\s+(?:premava|nepremava|spoj)|[HDJpwx]\s+zastavka|p\s+spoj)\b",
+    re.IGNORECASE,
+)
+STOP_NOTE_TAIL_PATTERN = re.compile(
+    r"\s+\+\s+premava\b.*$|\s+[a-z]{1,3}\s+(?:premava|nepremava)\b.*$|\s+p\s+spoj\b.*$",
+    re.IGNORECASE,
+)
 SERVICE_BUCKETS = {"workdays", "weekends_holidays", "all_days"}
 FULL_KEY_FUZZY_CUTOFF = 0.88
 BASE_KEY_FUZZY_CUTOFF = 0.92
@@ -335,6 +344,8 @@ def is_metadata_line(value: str) -> bool:
     normalized_value = strip_accents(normalize_display_text(value)).upper()
     if normalized_value in METADATA_EXACT_MARKERS:
         return True
+    if FOOTNOTE_LINE_PATTERN.match(normalize_display_text(value)):
+        return True
     if any(marker in normalized_value for marker in METADATA_CONTAINS_MARKERS):
         return True
     if re.fullmatch(r"[0-9+\s]+", normalized_value):
@@ -388,9 +399,9 @@ def parse_stop_row_text(row_text: str) -> StopRow | None:
     if first_time_match is None:
         return None
 
-    stop_name = stripped_row_text[: first_time_match.start()].strip(" ,;/:-")
+    stop_name = STOP_NOTE_TAIL_PATTERN.sub("", stripped_row_text[: first_time_match.start()]).strip(" ,;/:-")
     times = extract_time_columns(stripped_row_text[first_time_match.start() :])
-    if not stop_name or not times:
+    if not stop_name or not times or not any(time_value is not None for time_value in times):
         return None
 
     return StopRow(name=normalize_display_text(stop_name), times=times)
@@ -427,6 +438,31 @@ def collapse_identical_consecutive_rows(rows: list[StopRow]) -> list[StopRow]:
         if collapsed_rows and row.name == collapsed_rows[-1].name and row.times == collapsed_rows[-1].times:
             continue
         collapsed_rows.append(row)
+    return collapsed_rows
+
+
+def collapse_zero_delta_duplicate_name_rows(rows: list[StopRow]) -> list[StopRow]:
+    collapsed_rows: list[StopRow] = []
+    for row in rows:
+        if not collapsed_rows:
+            collapsed_rows.append(row)
+            continue
+
+        previous_row = collapsed_rows[-1]
+        if normalize_stop_base_name(previous_row.name) != normalize_stop_base_name(row.name):
+            collapsed_rows.append(row)
+            continue
+
+        comparable_deltas = [
+            current_time - previous_time
+            for previous_time, current_time in zip(previous_row.times, row.times)
+            if previous_time is not None and current_time is not None
+        ]
+        if comparable_deltas and all(delta == 0 for delta in comparable_deltas):
+            continue
+
+        collapsed_rows.append(row)
+
     return collapsed_rows
 
 
@@ -541,7 +577,9 @@ def parse_pdf_variants(
 
         section_count = 0
         for service_bucket, section_text in split_page_sections(page_text):
-            parsed_rows = collapse_identical_consecutive_rows(compact_repeated_stop_rows(parse_stop_rows(section_text)))
+            parsed_rows = collapse_zero_delta_duplicate_name_rows(
+                collapse_identical_consecutive_rows(compact_repeated_stop_rows(parse_stop_rows(section_text)))
+            )
             stop_row_blocks = split_stop_row_blocks(parsed_rows)
             if not stop_row_blocks:
                 continue
@@ -1003,6 +1041,55 @@ def sanitize_trip_stop_times(
     return deduplicated_stop_times
 
 
+def direct_connection_duration_samples(
+    variant: VariantAccumulator,
+    original_from_index: int,
+    original_to_index: int,
+) -> tuple[list[float], int, int]:
+    positive_samples: list[float] = []
+    comparable_count = 0
+    zero_delta_count = 0
+
+    for trip_column in variant.trip_columns:
+        if original_from_index >= len(trip_column) or original_to_index >= len(trip_column):
+            continue
+        from_time = trip_column[original_from_index]
+        to_time = trip_column[original_to_index]
+        if from_time is None or to_time is None:
+            continue
+
+        comparable_count += 1
+        delta_minutes = to_time - from_time
+        if 0 < delta_minutes <= 120:
+            positive_samples.append(delta_minutes * 60.0)
+        elif delta_minutes == 0:
+            zero_delta_count += 1
+
+    return positive_samples, comparable_count, zero_delta_count
+
+
+def estimated_zero_delta_connection_seconds(from_stop: dict[str, Any], to_stop: dict[str, Any], city: dict) -> float:
+    transport = city.get("transport") or {}
+    speed_kmh = float(transport.get("transit_speed_kmh") or 24.0)
+    if speed_kmh <= 0:
+        speed_kmh = 24.0
+
+    distance_meters = haversine_km(from_stop["lat"], from_stop["lon"], to_stop["lat"], to_stop["lon"]) * 1_000
+    seconds = distance_meters / max(speed_kmh * (1_000 / 3_600), 0.1)
+    return round(min(180.0, max(20.0, seconds)), 1)
+
+
+def is_same_station_transfer_candidate(from_stop: dict[str, Any], to_stop: dict[str, Any]) -> bool:
+    if from_stop["graph_stop_key"] == to_stop["graph_stop_key"]:
+        return False
+
+    if normalize_stop_base_name(from_stop["name"]) != normalize_stop_base_name(to_stop["name"]):
+        return False
+
+    distance_meters = haversine_km(from_stop["lat"], from_stop["lon"], to_stop["lat"], to_stop["lon"]) * 1_000
+    return distance_meters <= 250.0
+
+
 def build_processed_graph(
     city: dict,
     variants: list[VariantAccumulator],
@@ -1144,6 +1231,32 @@ def build_processed_graph(
             edge_duration_samples: list[float] = []
             for edge_index in range(original_from_index, original_to_index):
                 edge_duration_samples.extend(variant.edge_samples[edge_index])
+            if not edge_duration_samples:
+                is_adjacent_pair = original_to_index == original_from_index + 1
+                same_station_transfer = is_adjacent_pair and is_same_station_transfer_candidate(from_stop, to_stop)
+                direct_samples, comparable_count, zero_delta_count = direct_connection_duration_samples(
+                    variant,
+                    original_from_index,
+                    original_to_index,
+                )
+                if direct_samples:
+                    edge_duration_samples = direct_samples
+                elif (
+                    zero_delta_count > 0
+                    and comparable_count == zero_delta_count
+                    and is_adjacent_pair
+                    and (
+                        normalize_stop_base_name(from_stop["name"]) != normalize_stop_base_name(to_stop["name"])
+                        or same_station_transfer
+                    )
+                ):
+                    edge_duration_samples = [
+                        estimated_zero_delta_connection_seconds(from_stop, to_stop, city)
+                        for _ in range(zero_delta_count)
+                    ]
+                elif comparable_count == 0 and same_station_transfer:
+                    edge_duration_samples = [estimated_zero_delta_connection_seconds(from_stop, to_stop, city)]
+
             if not edge_duration_samples:
                 add_issue(
                     issues,
