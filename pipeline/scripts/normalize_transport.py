@@ -66,6 +66,41 @@ STOP_NAME_ABBREVIATIONS: tuple[tuple[re.Pattern[str], str], ...] = (
     (re.compile(r"\bZEL\.\s*ST\.\b", re.IGNORECASE), "ZELEZNICNA STANICA"),
     (re.compile(r"\bAUT\.\s*ST\.\b", re.IGNORECASE), "AUTOBUSOVA STANICA"),
 )
+LOCAL_CONNECTION_RULES: dict[str, tuple[dict[str, Any], ...]] = {
+    "nitra": (
+        {
+            "from": "Šindolka , Dolnohorská",
+            "to": "Šindolka",
+            "action": "ignore_missing_edge",
+        },
+        {
+            "from": "Priemyselný park , nadjazd",
+            "to": "Priemyselný park VII",
+            "action": "ignore_missing_edge",
+        },
+        {
+            "from": "Priemyselný park VII",
+            "to": "Priemyselný park , nadjazd",
+            "action": "ignore_missing_edge",
+        },
+        {
+            "from": "Kmeťova",
+            "to": "Považská",
+            "action": "estimated_edge_seconds",
+            "seconds": 120.0,
+        },
+        {
+            "from": "Rybárska",
+            "to": "Hollého",
+            "action": "ignore_missing_edge",
+        },
+        {
+            "from": "Rázcestie Železničná stanica",
+            "to": "Železničná stanica Nitra",
+            "action": "ignore_missing_edge",
+        },
+    ),
+}
 
 
 @dataclass
@@ -133,6 +168,10 @@ def normalize_display_text(value: str) -> str:
     value = re.sub(r"\s*([(),/;-])\s*", r" \1 ", value)
     value = re.sub(r"\s+", " ", value)
     return value.strip(" ,;/")
+
+
+def normalize_connection_rule_key(value: str) -> str:
+    return normalize_display_text(value).casefold()
 
 
 def alias_lookup_key(value: str) -> str:
@@ -207,6 +246,22 @@ def normalize_stop_name(value: str, stop_aliases: dict[str, str] | None = None) 
     if platform_token:
         return f"{normalized_base_name} platform {platform_token.lower()}"
     return normalized_base_name
+
+
+def lookup_local_connection_rule(city: dict[str, Any], from_stop_name: str, to_stop_name: str) -> dict[str, Any] | None:
+    city_slug = str(city.get("slug") or "").strip().casefold()
+    if not city_slug:
+        return None
+
+    from_key = normalize_connection_rule_key(from_stop_name)
+    to_key = normalize_connection_rule_key(to_stop_name)
+    for rule in LOCAL_CONNECTION_RULES.get(city_slug, ()):
+        if (
+            normalize_connection_rule_key(str(rule.get("from") or "")) == from_key
+            and normalize_connection_rule_key(str(rule.get("to") or "")) == to_key
+        ):
+            return rule
+    return None
 
 
 def build_stop_match_keys(
@@ -1229,6 +1284,7 @@ def build_processed_graph(
             original_from_index, from_stop, _ = matched_stops_with_indices[index]
             original_to_index, to_stop, _ = matched_stops_with_indices[index + 1]
             edge_duration_samples: list[float] = []
+            local_connection_rule = lookup_local_connection_rule(city, from_stop["name"], to_stop["name"])
             for edge_index in range(original_from_index, original_to_index):
                 edge_duration_samples.extend(variant.edge_samples[edge_index])
             if not edge_duration_samples:
@@ -1256,6 +1312,15 @@ def build_processed_graph(
                     ]
                 elif comparable_count == 0 and same_station_transfer:
                     edge_duration_samples = [estimated_zero_delta_connection_seconds(from_stop, to_stop, city)]
+
+            if not edge_duration_samples and local_connection_rule is not None:
+                action = str(local_connection_rule.get("action") or "")
+                if action == "estimated_edge_seconds":
+                    seconds = float(local_connection_rule.get("seconds") or 0.0)
+                    if seconds > 0:
+                        edge_duration_samples = [seconds]
+                elif action == "ignore_missing_edge":
+                    continue
 
             if not edge_duration_samples:
                 add_issue(

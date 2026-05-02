@@ -252,6 +252,84 @@ def test_build_processed_graph_estimates_same_station_connection_without_trip_ov
     assert not any(issue.code == "connection_without_edge_samples" for issue in issues)
 
 
+def test_build_processed_graph_uses_local_estimated_connection_rule():
+    city = {"slug": "nitra", "transport": {"provider": "test_provider", "transit_speed_kmh": 24}}
+    variant = VariantAccumulator(
+        line_number="7",
+        service_bucket="workdays",
+        source_urls={"https://example.invalid/7.pdf"},
+        stop_names=["Kmeťova", "Považská"],
+        edge_samples=[[]],
+        trip_columns=[
+            [331, 516],
+            [393, 636],
+        ],
+        valid_from="2026-01-01",
+        valid_to="2026-12-31",
+    )
+    osm_index = build_osm_stop_index(
+        [
+            make_stop("node/50", "Kmeťova", 48.3015545, 18.0514272, ref="B"),
+            make_stop("node/51", "Považská", 48.3037916, 18.0529651, ref="A"),
+        ]
+    )
+    issues: list[TransportIssue] = []
+
+    graph, metrics, unmatched = build_processed_graph(
+        city,
+        [variant],
+        osm_index,
+        {},
+        issues,
+    )
+
+    assert unmatched == []
+    assert metrics["dropped_trip_count"] == 0
+    assert len(graph["connections"]) == 1
+    assert graph["connections"][0]["avg_travel_seconds"] == 120.0
+    assert not any(issue.code == "connection_without_edge_samples" for issue in issues)
+
+
+def test_build_processed_graph_uses_local_ignore_missing_connection_rule():
+    city = {"slug": "nitra", "transport": {"provider": "test_provider", "transit_speed_kmh": 24}}
+    variant = VariantAccumulator(
+        line_number="4",
+        service_bucket="workdays",
+        source_urls={"https://example.invalid/4.pdf"},
+        stop_names=["Šindolka , Dolnohorská", "Šindolka", "PD Dražovce"],
+        edge_samples=[[], [120.0]],
+        trip_columns=[
+            [294, None, 297],
+            [None, 284, 287],
+        ],
+        valid_from="2026-01-01",
+        valid_to="2026-12-31",
+    )
+    osm_index = build_osm_stop_index(
+        [
+            make_stop("node/60", "Šindolka , Dolnohorská", 48.3313301, 18.0845357, ref="B"),
+            make_stop("node/61", "Šindolka", 48.3320560, 18.0788083, ref="B"),
+            make_stop("node/62", "PD Dražovce", 48.339, 18.059, ref="A"),
+        ]
+    )
+    issues: list[TransportIssue] = []
+
+    graph, metrics, unmatched = build_processed_graph(
+        city,
+        [variant],
+        osm_index,
+        {},
+        issues,
+    )
+
+    assert unmatched == []
+    assert metrics["dropped_trip_count"] == 0
+    assert len(graph["connections"]) == 1
+    assert graph["connections"][0]["from_stop_key"] == "node/61"
+    assert graph["connections"][0]["to_stop_key"] == "node/62"
+    assert not any(issue.code == "connection_without_edge_samples" for issue in issues)
+
+
 def test_partial_invalid_trip_fixture_produces_one_descending_warning():
     text = fixture_text("partial_invalid_trip.txt")
     rows = parse_stop_rows(text)
