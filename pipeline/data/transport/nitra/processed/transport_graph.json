@@ -1,7 +1,7 @@
 {
   "city": "nitra",
   "provider": "transdev_nitra",
-  "generated_at": "2026-05-01T12:32:29Z",
+  "generated_at": "2026-05-02T09:23:00Z",
   "stops": [
     {
       "graph_stop_key": "node/2896359533",
@@ -299369,7 +299369,7 @@
   "quality_report": {
     "city": "nitra",
     "provider": "transdev_nitra",
-    "generated_at": "2026-05-01T12:32:29Z",
+    "generated_at": "2026-05-02T09:23:00Z",
     "source_document_count": 29,
     "parsed_document_count": 29,
     "variant_count": 151,

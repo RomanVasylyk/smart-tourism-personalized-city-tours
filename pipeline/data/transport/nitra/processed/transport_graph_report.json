@@ -1,7 +1,7 @@
 {
   "city": "nitra",
   "provider": "transdev_nitra",
-  "generated_at": "2026-05-01T12:32:29Z",
+  "generated_at": "2026-05-02T09:23:00Z",
   "source_document_count": 29,
   "parsed_document_count": 29,
   "variant_count": 151,
@@ -21,7 +21,5 @@
   "empty_service_bucket_count": 0,
   "line_without_trip_count": 0,
   "warnings_count": 49,
-  "coverage_ratio": 0.9568,
-  "validation_warning_count": 0,
-  "validation_warnings": []
+  "coverage_ratio": 0.9568
 }
