@@ -216,6 +216,7 @@ internal fun OfflineSupportCard(
 internal fun CitySelectorCard(
     cities: List<CityDto>,
     selectedCity: CityDto?,
+    enabled: Boolean = true,
     onCitySelected: (CityDto) -> Unit
 ) {
     ElevatedCard {
@@ -243,10 +244,14 @@ internal fun CitySelectorCard(
                 )
             } else {
                 cities.forEach { city ->
-                    SelectableRow(onClick = { onCitySelected(city) }) {
+                    SelectableRow(
+                        enabled = enabled,
+                        onClick = { onCitySelected(city) }
+                    ) {
                         RadioButton(
                             selected = selectedCity?.id == city.id,
-                            onClick = null
+                            onClick = null,
+                            enabled = enabled
                         )
                         Spacer(modifier = Modifier.width(12.dp))
                         Column {
@@ -269,6 +274,7 @@ internal fun StartPointCard(
     startPoint: RouteStartDto,
     isSelectingStart: Boolean,
     isLocating: Boolean,
+    enabled: Boolean,
     onToggleMapSelection: () -> Unit,
     onUseCurrentLocation: () -> Unit
 ) {
@@ -307,7 +313,8 @@ internal fun StartPointCard(
             ) {
                 OutlinedButton(
                     onClick = onToggleMapSelection,
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
+                    enabled = enabled
                 ) {
                     Text(
                         if (isSelectingStart) {
@@ -320,7 +327,7 @@ internal fun StartPointCard(
                 Button(
                     onClick = onUseCurrentLocation,
                     modifier = Modifier.weight(1f),
-                    enabled = !isLocating
+                    enabled = enabled && !isLocating
                 ) {
                     if (isLocating) {
                         CircularProgressIndicator(
@@ -360,6 +367,7 @@ internal fun RouteParametersCard(
     onAllowPublicTransportChange: (Boolean) -> Unit,
     startDateTime: LocalDateTime,
     onUseCurrentTime: () -> Unit,
+    isEditingEnabled: Boolean,
     isGenerating: Boolean,
     onGenerateRoute: () -> Unit
 ) {
@@ -391,7 +399,10 @@ internal fun RouteParametersCard(
                     )
                 }
                 Spacer(modifier = Modifier.width(12.dp))
-                OutlinedButton(onClick = onUseCurrentTime) {
+                OutlinedButton(
+                    onClick = onUseCurrentTime,
+                    enabled = isEditingEnabled
+                ) {
                     Text(stringResource(R.string.action_use_now))
                 }
             }
@@ -414,7 +425,8 @@ internal fun RouteParametersCard(
                 Spacer(modifier = Modifier.width(12.dp))
                 Switch(
                     checked = respectOpeningHours,
-                    onCheckedChange = onRespectOpeningHoursChange
+                    onCheckedChange = if (isEditingEnabled) onRespectOpeningHoursChange else null,
+                    enabled = isEditingEnabled
                 )
             }
 
@@ -426,11 +438,13 @@ internal fun RouteParametersCard(
             )
             AvailableMinutesOptions.forEach { option ->
                 SelectableRow(
+                    enabled = isEditingEnabled,
                     onClick = { onAvailableMinutesChange(option) }
                 ) {
                     RadioButton(
                         selected = availableMinutes == option,
-                        onClick = null
+                        onClick = null,
+                        enabled = isEditingEnabled
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Text(stringResource(R.string.available_minutes_option, option))
@@ -453,11 +467,13 @@ internal fun RouteParametersCard(
                 availableInterests.forEach { interest ->
                     val checked = interest in selectedInterests
                     SelectableRow(
+                        enabled = isEditingEnabled,
                         onClick = { onInterestToggle(interest, !checked) }
                     ) {
                         Checkbox(
                             checked = checked,
-                            onCheckedChange = null
+                            onCheckedChange = null,
+                            enabled = isEditingEnabled
                         )
                         Spacer(modifier = Modifier.width(12.dp))
                         Text(categoryLabel(interest))
@@ -473,11 +489,13 @@ internal fun RouteParametersCard(
             )
             PaceOptions.forEach { option ->
                 SelectableRow(
+                    enabled = isEditingEnabled,
                     onClick = { onPaceChange(option) }
                 ) {
                     RadioButton(
                         selected = pace == option,
-                        onClick = null
+                        onClick = null,
+                        enabled = isEditingEnabled
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Text(paceLabel(option))
@@ -504,7 +522,8 @@ internal fun RouteParametersCard(
                 Spacer(modifier = Modifier.width(12.dp))
                 Switch(
                     checked = returnToStart,
-                    onCheckedChange = onReturnToStartChange
+                    onCheckedChange = if (isEditingEnabled) onReturnToStartChange else null,
+                    enabled = isEditingEnabled
                 )
             }
 
@@ -529,14 +548,15 @@ internal fun RouteParametersCard(
                     Spacer(modifier = Modifier.width(12.dp))
                     Switch(
                         checked = allowPublicTransport,
-                        onCheckedChange = onAllowPublicTransportChange
+                        onCheckedChange = if (isEditingEnabled) onAllowPublicTransportChange else null,
+                        enabled = isEditingEnabled
                     )
                 }
             }
 
             Button(
                 onClick = onGenerateRoute,
-                enabled = !isGenerating,
+                enabled = isEditingEnabled && !isGenerating,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 if (isGenerating) {
@@ -562,6 +582,7 @@ internal fun RouteTrackingCard(
     metrics: RouteProgressMetrics,
     currentLocation: RouteStartDto?,
     isRerouting: Boolean,
+    canStartCurrentRoute: Boolean,
     onStartRoute: () -> Unit,
     onPauseRoute: () -> Unit,
     onResumeRoute: () -> Unit,
@@ -711,7 +732,7 @@ internal fun RouteTrackingCard(
                     canStart -> Button(
                         onClick = onStartRoute,
                         modifier = Modifier.weight(1f),
-                        enabled = metrics.totalCount > 0
+                        enabled = metrics.totalCount > 0 && canStartCurrentRoute
                     ) {
                         Text(stringResource(R.string.action_start_route))
                     }
@@ -1084,6 +1105,7 @@ internal fun StatusCard(
 
 @Composable
 internal fun SelectableRow(
+    enabled: Boolean = true,
     onClick: () -> Unit,
     content: @Composable RowScope.() -> Unit
 ) {
@@ -1091,7 +1113,7 @@ internal fun SelectableRow(
         modifier = Modifier
             .fillMaxWidth()
             .clip(MaterialTheme.shapes.medium)
-            .clickable(onClick = onClick)
+            .clickable(enabled = enabled, onClick = onClick)
             .padding(horizontal = 4.dp, vertical = 2.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Start,

@@ -77,6 +77,8 @@ internal class RoutePlannerViewModel(
         private set
     var currentRouteRequest by mutableStateOf<RouteRequest?>(null)
         private set
+    var hasPendingRouteChanges by mutableStateOf(false)
+        private set
     var isRouteLoading by mutableStateOf(false)
         private set
     var routeError by mutableStateOf<String?>(null)
@@ -168,12 +170,12 @@ internal class RoutePlannerViewModel(
 
     fun updateStartPoint(lat: Double, lon: Double) {
         startPoint = RouteStartDto(lat = lat, lon = lon)
-        clearDisplayedRoute()
+        invalidateRoutePreviewIfAllowed()
     }
 
     fun updateAvailableMinutes(value: Int) {
         availableMinutes = value
-        clearDisplayedRoute()
+        invalidateRoutePreviewIfAllowed()
     }
 
     fun toggleInterest(interest: String, checked: Boolean) {
@@ -182,32 +184,32 @@ internal class RoutePlannerViewModel(
         } else {
             selectedInterests.filterNot { selected -> selected == interest }
         }
-        clearDisplayedRoute()
+        invalidateRoutePreviewIfAllowed()
     }
 
     fun updatePace(value: String) {
         pace = value
-        clearDisplayedRoute()
+        invalidateRoutePreviewIfAllowed()
     }
 
     fun updateReturnToStart(value: Boolean) {
         returnToStart = value
-        clearDisplayedRoute()
+        invalidateRoutePreviewIfAllowed()
     }
 
     fun updateRespectOpeningHours(value: Boolean) {
         respectOpeningHours = value
-        clearDisplayedRoute()
+        invalidateRoutePreviewIfAllowed()
     }
 
     fun updateAllowPublicTransport(value: Boolean) {
         allowPublicTransport = value
-        clearDisplayedRoute()
+        invalidateRoutePreviewIfAllowed()
     }
 
     fun useCurrentTime() {
         startDateTime = defaultRouteStartDateTime()
-        clearDisplayedRoute()
+        invalidateRoutePreviewIfAllowed()
     }
 
     fun generateRoute() {
@@ -262,6 +264,7 @@ internal class RoutePlannerViewModel(
                 resetRouteSession()
                 currentRouteRequest = request
                 routeResponse = generatedRoute
+                hasPendingRouteChanges = false
                 repository.saveSnapshot(
                     SavedRouteSnapshot(
                         request = request,
@@ -279,6 +282,9 @@ internal class RoutePlannerViewModel(
     }
 
     fun activateRouteTracking() {
+        if (hasPendingRouteChanges) {
+            return
+        }
         val response = routeResponse
         if (response?.route.isNullOrEmpty() || currentRouteRequest == null) {
             return
@@ -528,6 +534,7 @@ internal class RoutePlannerViewModel(
         val activeStatus = routeSessionStatus
         val activeStartedAt = routeStartedAt ?: defaultRouteStartDateTime().toString()
 
+        hasPendingRouteChanges = false
         routeResponse = null
         currentRouteRequest = null
         routeError = null
@@ -636,6 +643,7 @@ internal class RoutePlannerViewModel(
     }
 
     private fun restoreSnapshot(snapshot: SavedRouteSnapshot) {
+        hasPendingRouteChanges = false
         currentRouteRequest = snapshot.request.copy(
             transport_mode = snapshot.request.transport_mode ?: "walk"
         )
@@ -742,6 +750,16 @@ internal class RoutePlannerViewModel(
     private fun refreshPendingSyncOperationCount() {
         viewModelScope.launch {
             pendingSyncOperationCount = repository.getPendingSyncOperationCount()
+        }
+    }
+
+    private fun invalidateRoutePreviewIfAllowed() {
+        if (routeSessionStatus == RouteSessionStatus.IN_PROGRESS || routeSessionStatus == RouteSessionStatus.PAUSED) {
+            return
+        }
+        if (routeResponse != null) {
+            hasPendingRouteChanges = true
+            routeError = null
         }
     }
 

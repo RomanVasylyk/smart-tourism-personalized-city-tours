@@ -92,6 +92,8 @@
     <string name="route_tracking_auto_visit_hint">POIs are marked visited automatically within %1$d m, or manually from each stop.</string>
     <string name="route_tracking_finish_requirement">Finish route is available after at least %1$d / %2$d POIs are visited.</string>
     <string name="route_tracking_no_stops">No POIs are available for this route.</string>
+    <string name="route_preview_outdated_title">Route preview needs refresh</string>
+    <string name="route_preview_outdated_body">Parameters changed. Generate route again to apply them.</string>
     <string name="action_start_route">Start route</string>
     <string name="action_pause_route">Pause</string>
     <string name="action_resume_route">Resume</string>
@@ -137,7 +139,7 @@
     <string name="action_skip_stop">Skip</string>
 
     <string name="map_start_selection_hint">Tap the map to choose the route start point</string>
-    <string name="map_start_marker_label">Старт</string>
+    <string name="map_start_marker_label">Start</string>
     <string name="map_route_stop_snippet">%1$s &#8226; walk %2$d min &#8226; visit %3$d min</string>
     <string name="map_current_location_title">Current GPS location</string>
     <string name="map_visited_route_stop_title">Visited: %1$s</string>

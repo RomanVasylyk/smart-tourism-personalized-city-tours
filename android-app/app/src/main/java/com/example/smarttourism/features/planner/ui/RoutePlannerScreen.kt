@@ -99,9 +99,13 @@ fun RoutePlannerScreen() {
     val visitedPoiIds = plannerViewModel.visitedPoiIds
     val skippedPoiIds = plannerViewModel.skippedPoiIds
     val routeItems = plannerViewModel.routeItems
+    val hasPendingRouteChanges = plannerViewModel.hasPendingRouteChanges
     val progressMetrics = plannerViewModel.progressMetrics
     val selectedCityAvailableCategories = plannerViewModel.selectedCityAvailableCategories
     val isPublicTransportAvailable = plannerViewModel.isPublicTransportAvailable
+    val isPlannerEditingLocked =
+        routeSessionStatus == RouteSessionStatus.IN_PROGRESS ||
+            routeSessionStatus == RouteSessionStatus.PAUSED
 
     var isSelectingStart by remember { mutableStateOf(false) }
     var isLocating by remember { mutableStateOf(false) }
@@ -240,6 +244,7 @@ fun RoutePlannerScreen() {
             CitySelectorCard(
                 cities = cities,
                 selectedCity = selectedCity,
+                enabled = !isPlannerEditingLocked,
                 onCitySelected = { city ->
                     if (selectedCity?.slug == city.slug) {
                         return@CitySelectorCard
@@ -301,6 +306,7 @@ fun RoutePlannerScreen() {
                 startPoint = startPoint,
                 isSelectingStart = isSelectingStart,
                 isLocating = isLocating,
+                enabled = !isPlannerEditingLocked,
                 onToggleMapSelection = {
                     val isEnteringSelection = !isSelectingStart
                     isSelectingStart = isEnteringSelection
@@ -308,11 +314,9 @@ fun RoutePlannerScreen() {
                         isMapFullScreen = true
                     }
                     locationError = null
-                    plannerViewModel.clearDisplayedRoute()
                 },
                 onUseCurrentLocation = {
                     isSelectingStart = false
-                    plannerViewModel.clearDisplayedRoute()
 
                     val hasFineLocationPermission = ContextCompat.checkSelfPermission(
                         context,
@@ -346,6 +350,7 @@ fun RoutePlannerScreen() {
                 onAllowPublicTransportChange = { plannerViewModel.updateAllowPublicTransport(it) },
                 startDateTime = startDateTime,
                 onUseCurrentTime = { plannerViewModel.useCurrentTime() },
+                isEditingEnabled = !isPlannerEditingLocked,
                 isGenerating = isRouteLoading,
                 onGenerateRoute = { plannerViewModel.generateRoute() }
             )
@@ -378,6 +383,15 @@ fun RoutePlannerScreen() {
             }
         }
 
+        if (routeResponse != null && hasPendingRouteChanges) {
+            item {
+                StatusCard(
+                    title = stringResource(R.string.route_preview_outdated_title),
+                    body = stringResource(R.string.route_preview_outdated_body)
+                )
+            }
+        }
+
         if (trackingError != null) {
             item {
                 StatusCard(
@@ -397,6 +411,7 @@ fun RoutePlannerScreen() {
                         metrics = progressMetrics,
                         currentLocation = currentRouteLocation,
                         isRerouting = isRerouting,
+                        canStartCurrentRoute = !hasPendingRouteChanges,
                         onStartRoute = { startRoute() },
                         onPauseRoute = { plannerViewModel.pauseRoute() },
                         onResumeRoute = { resumeRoute() },
