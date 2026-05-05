@@ -46,6 +46,13 @@ internal enum class TrackingPermissionAction {
     RESUME
 }
 
+internal enum class PlannerMode {
+    PLANNING,
+    PREVIEW,
+    ACTIVE,
+    COMPLETED
+}
+
 internal data class RouteProgressMetrics(
     val visitedCount: Int,
     val totalCount: Int,

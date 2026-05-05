@@ -3,6 +3,14 @@
 
     <string name="screen_title">Personal route planner</string>
     <string name="screen_subtitle">Pick a custom start point, use your current location, generate a route, and restore the last saved result.</string>
+    <string name="planner_mode_planning_title">Plan a route</string>
+    <string name="planner_mode_planning_body">Choose the city, start point, and route constraints before generating a route.</string>
+    <string name="planner_mode_preview_title">Route preview</string>
+    <string name="planner_mode_preview_body">Review the route, then start navigation when the plan looks right.</string>
+    <string name="planner_mode_active_title">Active route</string>
+    <string name="planner_mode_active_body">Keep the map in view and manage progress from the next stop.</string>
+    <string name="planner_mode_completed_title">Route complete</string>
+    <string name="planner_mode_completed_body">Review the completed route and leave feedback.</string>
 
     <string name="status_location_unavailable">Location unavailable</string>
     <string name="status_poi_preview_unavailable">POI preview unavailable</string>
@@ -56,6 +64,11 @@
     <string name="action_use_my_location">Use my location</string>
     <string name="action_open_full_screen_map">Full screen</string>
     <string name="action_close_map">Close map</string>
+    <string name="action_edit_parameters">Edit parameters</string>
+    <string name="action_plan_another_route">Plan another route</string>
+    <string name="action_leave_feedback">Leave feedback</string>
+    <string name="action_edit_feedback">Edit feedback</string>
+    <string name="action_done">Done</string>
 
     <string name="route_parameters_title">Route parameters</string>
     <string name="route_start_time_label">Route start time</string>
@@ -94,6 +107,8 @@
     <string name="route_tracking_no_stops">No POIs are available for this route.</string>
     <string name="route_preview_outdated_title">Route preview needs refresh</string>
     <string name="route_preview_outdated_body">Parameters changed. Generate route again to apply them.</string>
+    <string name="route_preview_edit_title">Edit route</string>
+    <string name="route_preview_edit_body">Update the start point or route constraints, then generate a refreshed route.</string>
     <string name="action_start_route">Start route</string>
     <string name="action_pause_route">Pause</string>
     <string name="action_resume_route">Resume</string>
@@ -103,7 +118,9 @@
     <string name="action_recalculating_route">Recalculating...</string>
 
     <string name="route_feedback_title">Route feedback</string>
-    <string name="route_feedback_rating_label">Rating</string>
+    <string name="route_feedback_rating_label">Rating (1-5)</string>
+    <string name="route_feedback_rating_body">1 = low, 5 = high</string>
+    <string name="route_feedback_rating_selected">Selected: %1$d / 5</string>
     <string name="route_feedback_comfortable">Was the route comfortable?</string>
     <string name="route_feedback_too_much_walking">Was there too much walking?</string>
     <string name="route_feedback_interesting_pois">Were the POIs interesting?</string>
@@ -120,6 +137,9 @@
     <string name="route_summary_remaining">Remaining: %1$d min</string>
     <string name="route_summary_return_to_start">Return to start: %1$d min</string>
     <string name="route_summary_opening_hours_filter">Opening-hours filter: %1$s</string>
+    <string name="route_section_next_stop">Next stop</string>
+    <string name="route_section_remaining_stops">Remaining stops</string>
+    <string name="route_section_all_stops">Route stops</string>
 
     <string name="route_stop_title">%1$d. %2$s</string>
     <string name="route_stop_walk_from_previous">Travel from previous: %1$d min</string>

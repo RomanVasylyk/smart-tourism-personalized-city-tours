@@ -793,7 +793,8 @@ internal fun RouteTrackingCard(
 @Composable
 internal fun RouteFeedbackCard(
     feedback: RouteFeedback?,
-    onFeedbackChange: (RouteFeedback) -> Unit
+    onFeedbackChange: (RouteFeedback) -> Unit,
+    framed: Boolean = true
 ) {
     val currentFeedback = feedback ?: RouteFeedback(
         rating = 0,
@@ -802,72 +803,105 @@ internal fun RouteFeedbackCard(
         pois_were_interesting = false
     )
 
-    ElevatedCard {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+    if (framed) {
+        ElevatedCard {
+            RouteFeedbackContent(
+                currentFeedback = currentFeedback,
+                onFeedbackChange = onFeedbackChange
+            )
+        }
+    } else {
+        RouteFeedbackContent(
+            currentFeedback = currentFeedback,
+            onFeedbackChange = onFeedbackChange
+        )
+    }
+}
+
+@Composable
+private fun RouteFeedbackContent(
+    currentFeedback: RouteFeedback,
+    onFeedbackChange: (RouteFeedback) -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Text(
+            text = stringResource(R.string.route_feedback_title),
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold
+        )
+        Text(
+            text = stringResource(R.string.route_feedback_rating_label),
+            style = MaterialTheme.typography.labelLarge
+        )
+        Text(
+            text = stringResource(R.string.route_feedback_rating_body),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text(
-                text = stringResource(R.string.route_feedback_title),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold
-            )
-            Text(
-                text = stringResource(R.string.route_feedback_rating_label),
-                style = MaterialTheme.typography.labelLarge
-            )
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                (1..5).forEach { rating ->
-                    val selected = currentFeedback.rating == rating
-                    if (selected) {
-                        Button(
-                            onClick = {
-                                onFeedbackChange(currentFeedback.copy(rating = rating))
-                            },
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Text(rating.toString())
-                        }
-                    } else {
-                        OutlinedButton(
-                            onClick = {
-                                onFeedbackChange(currentFeedback.copy(rating = rating))
-                            },
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Text(rating.toString())
-                        }
+            (1..5).forEach { rating ->
+                val selected = currentFeedback.rating == rating
+                if (selected) {
+                    Button(
+                        onClick = {
+                            onFeedbackChange(currentFeedback.copy(rating = rating))
+                        },
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text(rating.toString())
+                    }
+                } else {
+                    OutlinedButton(
+                        onClick = {
+                            onFeedbackChange(currentFeedback.copy(rating = rating))
+                        },
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text(rating.toString())
                     }
                 }
             }
-
-            FeedbackSwitchRow(
-                title = stringResource(R.string.route_feedback_comfortable),
-                checked = currentFeedback.route_was_comfortable,
-                onCheckedChange = { checked ->
-                    onFeedbackChange(currentFeedback.copy(route_was_comfortable = checked))
-                }
-            )
-            FeedbackSwitchRow(
-                title = stringResource(R.string.route_feedback_too_much_walking),
-                checked = currentFeedback.too_much_walking,
-                onCheckedChange = { checked ->
-                    onFeedbackChange(currentFeedback.copy(too_much_walking = checked))
-                }
-            )
-            FeedbackSwitchRow(
-                title = stringResource(R.string.route_feedback_interesting_pois),
-                checked = currentFeedback.pois_were_interesting,
-                onCheckedChange = { checked ->
-                    onFeedbackChange(currentFeedback.copy(pois_were_interesting = checked))
-                }
+        }
+        if (currentFeedback.rating > 0) {
+            Text(
+                text = stringResource(
+                    R.string.route_feedback_rating_selected,
+                    currentFeedback.rating
+                ),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
+
+        FeedbackSwitchRow(
+            title = stringResource(R.string.route_feedback_comfortable),
+            checked = currentFeedback.route_was_comfortable,
+            onCheckedChange = { checked ->
+                onFeedbackChange(currentFeedback.copy(route_was_comfortable = checked))
+            }
+        )
+        FeedbackSwitchRow(
+            title = stringResource(R.string.route_feedback_too_much_walking),
+            checked = currentFeedback.too_much_walking,
+            onCheckedChange = { checked ->
+                onFeedbackChange(currentFeedback.copy(too_much_walking = checked))
+            }
+        )
+        FeedbackSwitchRow(
+            title = stringResource(R.string.route_feedback_interesting_pois),
+            checked = currentFeedback.pois_were_interesting,
+            onCheckedChange = { checked ->
+                onFeedbackChange(currentFeedback.copy(pois_were_interesting = checked))
+            }
+        )
     }
 }
 
