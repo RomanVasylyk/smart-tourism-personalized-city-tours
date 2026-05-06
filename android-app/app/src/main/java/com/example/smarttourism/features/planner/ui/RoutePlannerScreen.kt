@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.ElevatedCard
@@ -98,18 +99,12 @@ fun RoutePlannerScreen() {
     val canSkipStops =
         routeSessionStatus != RouteSessionStatus.COMPLETED &&
             routeSessionStatus != RouteSessionStatus.CANCELLED
-    val nextTargetPoiId = progressMetrics.nextTarget?.poi_id
-    val remainingRouteItems = routeItems.filterNot { item ->
-        item.poi_id in visitedPoiIds || item.poi_id in skippedPoiIds
-    }
-    val queuedRouteItems = remainingRouteItems.filterNot { item ->
-        item.poi_id == nextTargetPoiId
-    }
 
     var isSelectingStart by remember { mutableStateOf(false) }
     var isLocating by remember { mutableStateOf(false) }
     var isMapFullScreen by remember { mutableStateOf(false) }
     var isParameterSheetOpen by remember { mutableStateOf(false) }
+    var isStopsSheetOpen by remember { mutableStateOf(false) }
     var isFeedbackDialogOpen by remember { mutableStateOf(false) }
     var locationError by remember { mutableStateOf<String?>(null) }
     var trackingPermissionAction by remember { mutableStateOf(TrackingPermissionAction.START) }
@@ -125,6 +120,9 @@ fun RoutePlannerScreen() {
         }
         if (plannerMode == PlannerMode.ACTIVE || plannerMode == PlannerMode.COMPLETED) {
             isSelectingStart = false
+        }
+        if (plannerMode != PlannerMode.ACTIVE) {
+            isStopsSheetOpen = false
         }
         if (plannerMode != PlannerMode.COMPLETED) {
             isFeedbackDialogOpen = false
@@ -265,320 +263,306 @@ fun RoutePlannerScreen() {
         hasPendingRouteChanges = hasPendingRouteChanges && routeResponse != null
     )
 
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .statusBarsPadding(),
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        item {
-            PlannerModeHeader(mode = plannerMode)
+    if (plannerMode == PlannerMode.ACTIVE) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .statusBarsPadding()
+        ) {
+            PlannerMapPanel(
+                pois = pois,
+                routeResponse = routeResponse,
+                startPoint = startPoint,
+                defaultZoom = selectedCity?.default_zoom,
+                currentRouteLocation = currentRouteLocation,
+                visitedPoiIds = visitedPoiIds,
+                isRouteActive = routeSessionStatus == RouteSessionStatus.IN_PROGRESS,
+                isPoiLoading = isPoiLoading,
+                isSelectingStart = false,
+                onStartPointSelected = ::updateStartPoint,
+                onOpenFullScreenMap = ::openFullScreenMap,
+                modifier = Modifier.fillMaxSize()
+            )
+
+            if (plannerAlerts.hasVisibleAlerts()) {
+                Column(
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    PlannerAlertColumn(alerts = plannerAlerts)
+                }
+            }
+
+            ActiveRouteBottomPanel(
+                status = routeSessionStatus,
+                metrics = progressMetrics,
+                currentLocation = currentRouteLocation,
+                isRerouting = isRerouting,
+                canSkip = canSkipStops,
+                isActionInProgress = isRerouting,
+                nextTarget = progressMetrics.nextTarget,
+                nextTargetIncomingLeg = routeResponse?.legs.orEmpty()
+                    .firstOrNull { leg -> leg.to.poi_id == progressMetrics.nextTarget?.poi_id },
+                onMarkVisited = {
+                    progressMetrics.nextTarget?.let { target ->
+                        plannerViewModel.markRouteStopVisited(target.poi_id)
+                    }
+                },
+                onSkip = {
+                    progressMetrics.nextTarget?.let { target ->
+                        plannerViewModel.skipRouteStop(target.poi_id)
+                    }
+                },
+                onPauseRoute = { plannerViewModel.pauseRoute() },
+                onResumeRoute = ::resumeRoute,
+                onFinishRoute = { plannerViewModel.finishRoute() },
+                onCancelRoute = { plannerViewModel.cancelRoute() },
+                onShowAllStops = { isStopsSheetOpen = true },
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(16.dp)
+            )
         }
-
-        when (plannerMode) {
-            PlannerMode.PLANNING -> {
-                item {
-                    CitySelectorCard(
-                        cities = cities,
-                        selectedCity = selectedCity,
-                        enabled = !isPlannerEditingLocked,
-                        onCitySelected = { city ->
-                            if (selectedCity?.slug == city.slug) {
-                                return@CitySelectorCard
-                            }
-                            plannerViewModel.selectCity(city)
-                        }
-                    )
-                }
-
-                item {
-                    PlannerMapPanel(
-                        pois = pois,
-                        routeResponse = routeResponse,
-                        startPoint = startPoint,
-                        defaultZoom = selectedCity?.default_zoom,
-                        currentRouteLocation = currentRouteLocation,
-                        visitedPoiIds = visitedPoiIds,
-                        isRouteActive = false,
-                        isPoiLoading = isPoiLoading,
-                        isSelectingStart = isSelectingStart,
-                        onStartPointSelected = ::updateStartPoint,
-                        onOpenFullScreenMap = ::openFullScreenMap,
-                        fixedHeight = 280.dp
-                    )
-                }
-
-                item {
-                    StartPointCard(
-                        startPoint = startPoint,
-                        isSelectingStart = isSelectingStart,
-                        isLocating = isLocating,
-                        enabled = !isPlannerEditingLocked,
-                        onToggleMapSelection = {
-                            val isEnteringSelection = !isSelectingStart
-                            isSelectingStart = isEnteringSelection
-                            if (isEnteringSelection) {
-                                openFullScreenMap()
-                            }
-                            locationError = null
-                        },
-                        onUseCurrentLocation = {
-                            isSelectingStart = false
-
-                            val hasFineLocationPermission = ContextCompat.checkSelfPermission(
-                                context,
-                                Manifest.permission.ACCESS_FINE_LOCATION
-                            ) == PackageManager.PERMISSION_GRANTED
-
-                            if (hasFineLocationPermission) {
-                                requestCurrentDeviceLocation()
-                            } else {
-                                locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
-                            }
-                        }
-                    )
-                }
-
-                item {
-                    RouteParametersCard(
-                        availableMinutes = availableMinutes,
-                        onAvailableMinutesChange = { plannerViewModel.updateAvailableMinutes(it) },
-                        availableInterests = selectedCityAvailableCategories,
-                        selectedInterests = selectedInterests,
-                        onInterestToggle = { interest, checked ->
-                            plannerViewModel.toggleInterest(interest, checked)
-                        },
-                        pace = pace,
-                        onPaceChange = { plannerViewModel.updatePace(it) },
-                        returnToStart = returnToStart,
-                        onReturnToStartChange = { plannerViewModel.updateReturnToStart(it) },
-                        respectOpeningHours = respectOpeningHours,
-                        onRespectOpeningHoursChange = { plannerViewModel.updateRespectOpeningHours(it) },
-                        isPublicTransportAvailable = isPublicTransportAvailable,
-                        allowPublicTransport = allowPublicTransport,
-                        onAllowPublicTransportChange = { plannerViewModel.updateAllowPublicTransport(it) },
-                        startDateTime = startDateTime,
-                        onUseCurrentTime = { plannerViewModel.useCurrentTime() },
-                        isEditingEnabled = !isPlannerEditingLocked,
-                        isGenerating = isRouteLoading,
-                        onGenerateRoute = { plannerViewModel.generateRoute() }
-                    )
-                }
-
-                plannerAlertItems(plannerAlerts)
-
-                item {
-                    OfflineSupportCard(
-                        selectedCity = selectedCity,
-                        offlineStatusMessage = offlineStatusMessage,
-                        pendingSyncOperationCount = pendingSyncOperationCount,
-                        offlineRegionAvailable = offlineStoredRegion != null,
-                        isOfflineMapBusy = isOfflineMapBusy,
-                        offlineMapProgress = offlineMapProgress,
-                        offlineMapMessage = offlineMapMessage,
-                        onDownloadOfflineMap = { plannerViewModel.downloadOfflineMap() },
-                        onDeleteOfflineMap = { plannerViewModel.deleteOfflineMap() }
-                    )
-                }
+    } else {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .statusBarsPadding(),
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            item {
+                PlannerModeHeader(mode = plannerMode)
             }
 
-            PlannerMode.PREVIEW -> {
-                item {
-                    PlannerMapPanel(
-                        pois = pois,
-                        routeResponse = routeResponse,
-                        startPoint = startPoint,
-                        defaultZoom = selectedCity?.default_zoom,
-                        currentRouteLocation = currentRouteLocation,
-                        visitedPoiIds = visitedPoiIds,
-                        isRouteActive = false,
-                        isPoiLoading = isPoiLoading,
-                        isSelectingStart = false,
-                        onStartPointSelected = ::updateStartPoint,
-                        onOpenFullScreenMap = ::openFullScreenMap,
-                        fixedHeight = 340.dp
-                    )
-                }
-
-                item {
-                    PreviewActionRow(
-                        onEditParameters = { isParameterSheetOpen = true },
-                        onPlanAnotherRoute = ::resetToPlanning
-                    )
-                }
-
-                plannerAlertItems(plannerAlerts)
-
-                item {
-                    RouteTrackingCard(
-                        status = routeSessionStatus,
-                        routeId = routeId,
-                        startedAt = routeStartedAt,
-                        metrics = progressMetrics,
-                        currentLocation = currentRouteLocation,
-                        isRerouting = isRerouting,
-                        canStartCurrentRoute = !hasPendingRouteChanges,
-                        onStartRoute = ::startRoute,
-                        onPauseRoute = { plannerViewModel.pauseRoute() },
-                        onResumeRoute = ::resumeRoute,
-                        onFinishRoute = { plannerViewModel.finishRoute() },
-                        onCancelRoute = { plannerViewModel.cancelRoute() }
-                    )
-                }
-
-                routeResponse?.let { response ->
+            when (plannerMode) {
+                PlannerMode.PLANNING -> {
                     item {
-                        RouteSummaryCard(routeResponse = response)
-                    }
-                }
-
-                routeStopItems(
-                    titleRes = R.string.route_section_all_stops,
-                    routeStops = routeItems,
-                    routeResponse = routeResponse,
-                    visitedPoiIds = visitedPoiIds,
-                    skippedPoiIds = skippedPoiIds,
-                    isRouteActive = false,
-                    canSkip = canSkipStops,
-                    isActionInProgress = isRerouting,
-                    onMarkVisited = { poiId -> plannerViewModel.markRouteStopVisited(poiId) },
-                    onSkip = { poiId -> plannerViewModel.skipRouteStop(poiId) }
-                )
-            }
-
-            PlannerMode.ACTIVE -> {
-                item {
-                    PlannerMapPanel(
-                        pois = pois,
-                        routeResponse = routeResponse,
-                        startPoint = startPoint,
-                        defaultZoom = selectedCity?.default_zoom,
-                        currentRouteLocation = currentRouteLocation,
-                        visitedPoiIds = visitedPoiIds,
-                        isRouteActive = routeSessionStatus == RouteSessionStatus.IN_PROGRESS,
-                        isPoiLoading = isPoiLoading,
-                        isSelectingStart = false,
-                        onStartPointSelected = ::updateStartPoint,
-                        onOpenFullScreenMap = ::openFullScreenMap,
-                        fixedHeight = 360.dp
-                    )
-                }
-
-                plannerAlertItems(plannerAlerts)
-
-                item {
-                    RouteTrackingCard(
-                        status = routeSessionStatus,
-                        routeId = routeId,
-                        startedAt = routeStartedAt,
-                        metrics = progressMetrics,
-                        currentLocation = currentRouteLocation,
-                        isRerouting = isRerouting,
-                        canStartCurrentRoute = !hasPendingRouteChanges,
-                        onStartRoute = ::startRoute,
-                        onPauseRoute = { plannerViewModel.pauseRoute() },
-                        onResumeRoute = ::resumeRoute,
-                        onFinishRoute = { plannerViewModel.finishRoute() },
-                        onCancelRoute = { plannerViewModel.cancelRoute() }
-                    )
-                }
-
-                progressMetrics.nextTarget?.let { nextTarget ->
-                    routeStopItems(
-                        titleRes = R.string.route_section_next_stop,
-                        routeStops = listOf(nextTarget),
-                        routeResponse = routeResponse,
-                        visitedPoiIds = visitedPoiIds,
-                        skippedPoiIds = skippedPoiIds,
-                        isRouteActive = routeSessionStatus == RouteSessionStatus.IN_PROGRESS,
-                        canSkip = canSkipStops,
-                        isActionInProgress = isRerouting,
-                        onMarkVisited = { poiId -> plannerViewModel.markRouteStopVisited(poiId) },
-                        onSkip = { poiId -> plannerViewModel.skipRouteStop(poiId) }
-                    )
-                }
-
-                if (queuedRouteItems.isNotEmpty()) {
-                    routeStopItems(
-                        titleRes = R.string.route_section_remaining_stops,
-                        routeStops = queuedRouteItems,
-                        routeResponse = routeResponse,
-                        visitedPoiIds = visitedPoiIds,
-                        skippedPoiIds = skippedPoiIds,
-                        isRouteActive = routeSessionStatus == RouteSessionStatus.IN_PROGRESS,
-                        canSkip = canSkipStops,
-                        isActionInProgress = isRerouting,
-                        onMarkVisited = { poiId -> plannerViewModel.markRouteStopVisited(poiId) },
-                        onSkip = { poiId -> plannerViewModel.skipRouteStop(poiId) }
-                    )
-                }
-            }
-
-            PlannerMode.COMPLETED -> {
-                item {
-                    PlannerMapPanel(
-                        pois = pois,
-                        routeResponse = routeResponse,
-                        startPoint = startPoint,
-                        defaultZoom = selectedCity?.default_zoom,
-                        currentRouteLocation = currentRouteLocation,
-                        visitedPoiIds = visitedPoiIds,
-                        isRouteActive = false,
-                        isPoiLoading = isPoiLoading,
-                        isSelectingStart = false,
-                        onStartPointSelected = ::updateStartPoint,
-                        onOpenFullScreenMap = ::openFullScreenMap,
-                        fixedHeight = 320.dp
-                    )
-                }
-
-                item {
-                    Button(
-                        onClick = ::resetToPlanning,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(stringResource(R.string.action_plan_another_route))
-                    }
-                }
-
-                item {
-                    OutlinedButton(
-                        onClick = { isFeedbackDialogOpen = true },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(
-                            stringResource(
-                                if (routeFeedback == null) {
-                                    R.string.action_leave_feedback
-                                } else {
-                                    R.string.action_edit_feedback
+                        CitySelectorCard(
+                            cities = cities,
+                            selectedCity = selectedCity,
+                            enabled = !isPlannerEditingLocked,
+                            onCitySelected = { city ->
+                                if (selectedCity?.slug == city.slug) {
+                                    return@CitySelectorCard
                                 }
-                            )
+                                plannerViewModel.selectCity(city)
+                            }
+                        )
+                    }
+
+                    item {
+                        PlannerMapPanel(
+                            pois = pois,
+                            routeResponse = routeResponse,
+                            startPoint = startPoint,
+                            defaultZoom = selectedCity?.default_zoom,
+                            currentRouteLocation = currentRouteLocation,
+                            visitedPoiIds = visitedPoiIds,
+                            isRouteActive = false,
+                            isPoiLoading = isPoiLoading,
+                            isSelectingStart = isSelectingStart,
+                            onStartPointSelected = ::updateStartPoint,
+                            onOpenFullScreenMap = ::openFullScreenMap,
+                            fixedHeight = 280.dp
+                        )
+                    }
+
+                    item {
+                        StartPointCard(
+                            startPoint = startPoint,
+                            isSelectingStart = isSelectingStart,
+                            isLocating = isLocating,
+                            enabled = !isPlannerEditingLocked,
+                            onToggleMapSelection = {
+                                val isEnteringSelection = !isSelectingStart
+                                isSelectingStart = isEnteringSelection
+                                if (isEnteringSelection) {
+                                    openFullScreenMap()
+                                }
+                                locationError = null
+                            },
+                            onUseCurrentLocation = {
+                                isSelectingStart = false
+
+                                val hasFineLocationPermission = ContextCompat.checkSelfPermission(
+                                    context,
+                                    Manifest.permission.ACCESS_FINE_LOCATION
+                                ) == PackageManager.PERMISSION_GRANTED
+
+                                if (hasFineLocationPermission) {
+                                    requestCurrentDeviceLocation()
+                                } else {
+                                    locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+                                }
+                            }
+                        )
+                    }
+
+                    item {
+                        RouteParametersCard(
+                            availableMinutes = availableMinutes,
+                            onAvailableMinutesChange = { plannerViewModel.updateAvailableMinutes(it) },
+                            availableInterests = selectedCityAvailableCategories,
+                            selectedInterests = selectedInterests,
+                            onInterestToggle = { interest, checked ->
+                                plannerViewModel.toggleInterest(interest, checked)
+                            },
+                            pace = pace,
+                            onPaceChange = { plannerViewModel.updatePace(it) },
+                            returnToStart = returnToStart,
+                            onReturnToStartChange = { plannerViewModel.updateReturnToStart(it) },
+                            respectOpeningHours = respectOpeningHours,
+                            onRespectOpeningHoursChange = { plannerViewModel.updateRespectOpeningHours(it) },
+                            isPublicTransportAvailable = isPublicTransportAvailable,
+                            allowPublicTransport = allowPublicTransport,
+                            onAllowPublicTransportChange = { plannerViewModel.updateAllowPublicTransport(it) },
+                            startDateTime = startDateTime,
+                            onUseCurrentTime = { plannerViewModel.useCurrentTime() },
+                            isEditingEnabled = !isPlannerEditingLocked,
+                            isGenerating = isRouteLoading,
+                            onGenerateRoute = { plannerViewModel.generateRoute() }
+                        )
+                    }
+
+                    plannerAlertItems(plannerAlerts)
+
+                    item {
+                        OfflineSupportCard(
+                            selectedCity = selectedCity,
+                            offlineStatusMessage = offlineStatusMessage,
+                            pendingSyncOperationCount = pendingSyncOperationCount,
+                            offlineRegionAvailable = offlineStoredRegion != null,
+                            isOfflineMapBusy = isOfflineMapBusy,
+                            offlineMapProgress = offlineMapProgress,
+                            offlineMapMessage = offlineMapMessage,
+                            onDownloadOfflineMap = { plannerViewModel.downloadOfflineMap() },
+                            onDeleteOfflineMap = { plannerViewModel.deleteOfflineMap() }
                         )
                     }
                 }
 
-                plannerAlertItems(plannerAlerts)
-
-                routeResponse?.let { response ->
+                PlannerMode.PREVIEW -> {
                     item {
-                        RouteSummaryCard(routeResponse = response)
+                        PlannerMapPanel(
+                            pois = pois,
+                            routeResponse = routeResponse,
+                            startPoint = startPoint,
+                            defaultZoom = selectedCity?.default_zoom,
+                            currentRouteLocation = currentRouteLocation,
+                            visitedPoiIds = visitedPoiIds,
+                            isRouteActive = false,
+                            isPoiLoading = isPoiLoading,
+                            isSelectingStart = false,
+                            onStartPointSelected = ::updateStartPoint,
+                            onOpenFullScreenMap = ::openFullScreenMap,
+                            fixedHeight = 360.dp
+                        )
                     }
+
+                    plannerAlertItems(plannerAlerts)
+
+                    routeResponse?.let { response ->
+                        item {
+                            RoutePreviewSummaryPanel(routeResponse = response)
+                        }
+                    }
+
+                    item {
+                        PreviewActionRow(
+                            canStart = !hasPendingRouteChanges && routeItems.isNotEmpty(),
+                            onStartRoute = ::startRoute,
+                            onEditParameters = { isParameterSheetOpen = true },
+                            onPlanAnotherRoute = ::resetToPlanning
+                        )
+                    }
+
+                    routeStopItems(
+                        titleRes = R.string.route_section_all_stops,
+                        routeStops = routeItems,
+                        routeResponse = routeResponse,
+                        visitedPoiIds = visitedPoiIds,
+                        skippedPoiIds = skippedPoiIds,
+                        isRouteActive = false,
+                        canSkip = canSkipStops,
+                        isActionInProgress = isRerouting,
+                        highlightedPoiId = progressMetrics.nextTarget?.poi_id,
+                        onMarkVisited = { poiId -> plannerViewModel.markRouteStopVisited(poiId) },
+                        onSkip = { poiId -> plannerViewModel.skipRouteStop(poiId) }
+                    )
                 }
 
-                routeStopItems(
-                    titleRes = R.string.route_section_all_stops,
-                    routeStops = routeItems,
-                    routeResponse = routeResponse,
-                    visitedPoiIds = visitedPoiIds,
-                    skippedPoiIds = skippedPoiIds,
-                    isRouteActive = false,
-                    canSkip = false,
-                    isActionInProgress = false,
-                    onMarkVisited = {},
-                    onSkip = {}
-                )
+                PlannerMode.COMPLETED -> {
+                    item {
+                        PlannerMapPanel(
+                            pois = pois,
+                            routeResponse = routeResponse,
+                            startPoint = startPoint,
+                            defaultZoom = selectedCity?.default_zoom,
+                            currentRouteLocation = currentRouteLocation,
+                            visitedPoiIds = visitedPoiIds,
+                            isRouteActive = false,
+                            isPoiLoading = isPoiLoading,
+                            isSelectingStart = false,
+                            onStartPointSelected = ::updateStartPoint,
+                            onOpenFullScreenMap = ::openFullScreenMap,
+                            fixedHeight = 320.dp
+                        )
+                    }
+
+                    routeResponse?.let { response ->
+                        item {
+                            RoutePreviewSummaryPanel(routeResponse = response)
+                        }
+                    }
+
+                    item {
+                        Button(
+                            onClick = ::resetToPlanning,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(stringResource(R.string.action_plan_another_route))
+                        }
+                    }
+
+                    item {
+                        OutlinedButton(
+                            onClick = { isFeedbackDialogOpen = true },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                stringResource(
+                                    if (routeFeedback == null) {
+                                        R.string.action_leave_feedback
+                                    } else {
+                                        R.string.action_edit_feedback
+                                    }
+                                )
+                            )
+                        }
+                    }
+
+                    plannerAlertItems(plannerAlerts)
+
+                    routeStopItems(
+                        titleRes = R.string.route_section_all_stops,
+                        routeStops = routeItems,
+                        routeResponse = routeResponse,
+                        visitedPoiIds = visitedPoiIds,
+                        skippedPoiIds = skippedPoiIds,
+                        isRouteActive = false,
+                        canSkip = false,
+                        isActionInProgress = false,
+                        highlightedPoiId = null,
+                        onMarkVisited = {},
+                        onSkip = {}
+                    )
+                }
+
+                PlannerMode.ACTIVE -> Unit
             }
         }
     }
@@ -666,6 +650,32 @@ fun RoutePlannerScreen() {
                         }
                     )
                 }
+            }
+        }
+    }
+
+    if (isStopsSheetOpen) {
+        ModalBottomSheet(
+            onDismissRequest = { isStopsSheetOpen = false }
+        ) {
+            LazyColumn(
+                modifier = Modifier.fillMaxWidth(),
+                contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 32.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                routeStopItems(
+                    titleRes = R.string.route_section_all_stops,
+                    routeStops = routeItems,
+                    routeResponse = routeResponse,
+                    visitedPoiIds = visitedPoiIds,
+                    skippedPoiIds = skippedPoiIds,
+                    isRouteActive = routeSessionStatus == RouteSessionStatus.IN_PROGRESS,
+                    canSkip = canSkipStops,
+                    isActionInProgress = isRerouting,
+                    highlightedPoiId = progressMetrics.nextTarget?.poi_id,
+                    onMarkVisited = { poiId -> plannerViewModel.markRouteStopVisited(poiId) },
+                    onSkip = { poiId -> plannerViewModel.skipRouteStop(poiId) }
+                )
             }
         }
     }
@@ -837,16 +847,30 @@ private fun PlannerMapPanel(
 
 @Composable
 private fun PreviewActionRow(
+    canStart: Boolean,
+    onStartRoute: () -> Unit,
     onEditParameters: () -> Unit,
     onPlanAnotherRoute: () -> Unit
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Button(
+            onClick = onStartRoute,
+            enabled = canStart,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(stringResource(R.string.action_start_route))
+        }
+        OutlinedButton(
             onClick = onEditParameters,
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(stringResource(R.string.action_edit_parameters))
         }
+        Text(
+            text = stringResource(R.string.route_preview_edit_body),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
         OutlinedButton(
             onClick = onPlanAnotherRoute,
             modifier = Modifier.fillMaxWidth()
@@ -864,53 +888,59 @@ private data class PlannerAlerts(
     val hasPendingRouteChanges: Boolean
 )
 
+private fun PlannerAlerts.hasVisibleAlerts(): Boolean =
+    locationError != null ||
+        poiError != null ||
+        routeError != null ||
+        trackingError != null ||
+        hasPendingRouteChanges
+
+@Composable
+private fun PlannerAlertColumn(alerts: PlannerAlerts) {
+    alerts.locationError?.let { message ->
+        StatusCard(
+            title = stringResource(R.string.status_location_unavailable),
+            body = message
+        )
+    }
+
+    alerts.poiError?.let { message ->
+        StatusCard(
+            title = stringResource(R.string.status_poi_preview_unavailable),
+            body = message
+        )
+    }
+
+    alerts.routeError?.let { message ->
+        StatusCard(
+            title = stringResource(R.string.status_route_generation_failed),
+            body = message
+        )
+    }
+
+    if (alerts.hasPendingRouteChanges) {
+        StatusCard(
+            title = stringResource(R.string.route_preview_outdated_title),
+            body = stringResource(R.string.route_preview_outdated_body)
+        )
+    }
+
+    alerts.trackingError?.let { message ->
+        StatusCard(
+            title = stringResource(R.string.status_gps_tracking_unavailable),
+            body = message
+        )
+    }
+}
+
 private fun LazyListScope.plannerAlertItems(alerts: PlannerAlerts) {
-    if (
-        alerts.locationError == null &&
-        alerts.poiError == null &&
-        alerts.routeError == null &&
-        alerts.trackingError == null &&
-        !alerts.hasPendingRouteChanges
-    ) {
+    if (!alerts.hasVisibleAlerts()) {
         return
     }
 
     item {
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            alerts.locationError?.let { message ->
-                StatusCard(
-                    title = stringResource(R.string.status_location_unavailable),
-                    body = message
-                )
-            }
-
-            alerts.poiError?.let { message ->
-                StatusCard(
-                    title = stringResource(R.string.status_poi_preview_unavailable),
-                    body = message
-                )
-            }
-
-            alerts.routeError?.let { message ->
-                StatusCard(
-                    title = stringResource(R.string.status_route_generation_failed),
-                    body = message
-                )
-            }
-
-            if (alerts.hasPendingRouteChanges) {
-                StatusCard(
-                    title = stringResource(R.string.route_preview_outdated_title),
-                    body = stringResource(R.string.route_preview_outdated_body)
-                )
-            }
-
-            alerts.trackingError?.let { message ->
-                StatusCard(
-                    title = stringResource(R.string.status_gps_tracking_unavailable),
-                    body = message
-                )
-            }
+            PlannerAlertColumn(alerts = alerts)
         }
     }
 }
@@ -924,6 +954,7 @@ private fun LazyListScope.routeStopItems(
     isRouteActive: Boolean,
     canSkip: Boolean,
     isActionInProgress: Boolean,
+    highlightedPoiId: Int?,
     onMarkVisited: (Int) -> Unit,
     onSkip: (Int) -> Unit
 ) {
@@ -945,15 +976,17 @@ private fun LazyListScope.routeStopItems(
         )
     }
 
-    items(
+    itemsIndexed(
         items = routeStops,
-        key = { item -> item.poi_id }
-    ) { item ->
-        RouteStopCard(
+        key = { _, item -> item.poi_id }
+    ) { index, item ->
+        RouteStopTimelineItem(
             item = item,
             incomingLeg = routeResponse?.legs.orEmpty().firstOrNull { leg -> leg.to.poi_id == item.poi_id },
             isVisited = item.poi_id in visitedPoiIds,
             isSkipped = item.poi_id in skippedPoiIds,
+            isNext = highlightedPoiId == item.poi_id,
+            isLast = index == routeStops.lastIndex,
             isRouteActive = isRouteActive,
             canSkip = canSkip,
             isActionInProgress = isActionInProgress,

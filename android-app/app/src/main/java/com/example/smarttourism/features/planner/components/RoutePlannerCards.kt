@@ -10,10 +10,18 @@ import android.os.Build
 import android.os.Looper
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
@@ -26,17 +34,22 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.Checkbox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -51,6 +64,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -350,6 +364,7 @@ internal fun StartPointCard(
 }
 
 @Composable
+@OptIn(ExperimentalLayoutApi::class)
 internal fun RouteParametersCard(
     availableMinutes: Int,
     onAvailableMinutesChange: (Int) -> Unit,
@@ -376,7 +391,7 @@ internal fun RouteParametersCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(
                 text = stringResource(R.string.route_parameters_title),
@@ -407,51 +422,29 @@ internal fun RouteParametersCard(
                 }
             }
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = stringResource(R.string.respect_opening_hours_label),
-                        style = MaterialTheme.typography.labelLarge
-                    )
-                    Text(
-                        text = stringResource(R.string.respect_opening_hours_body),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-                Spacer(modifier = Modifier.width(12.dp))
-                Switch(
-                    checked = respectOpeningHours,
-                    onCheckedChange = if (isEditingEnabled) onRespectOpeningHoursChange else null,
-                    enabled = isEditingEnabled
-                )
-            }
-
-            HorizontalDivider()
-
             Text(
                 text = stringResource(R.string.available_time_label),
                 style = MaterialTheme.typography.labelLarge
             )
-            AvailableMinutesOptions.forEach { option ->
-                SelectableRow(
-                    enabled = isEditingEnabled,
-                    onClick = { onAvailableMinutesChange(option) }
-                ) {
-                    RadioButton(
-                        selected = availableMinutes == option,
-                        onClick = null,
-                        enabled = isEditingEnabled
-                    )
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Text(stringResource(R.string.available_minutes_option, option))
-                }
-            }
+            SingleChoiceChipRow(
+                options = AvailableMinutesOptions,
+                selectedOption = availableMinutes,
+                enabled = isEditingEnabled,
+                label = { option -> Text(stringResource(R.string.available_minutes_option, option)) },
+                onOptionSelected = onAvailableMinutesChange
+            )
 
-            HorizontalDivider()
+            Text(
+                text = stringResource(R.string.pace_label),
+                style = MaterialTheme.typography.labelLarge
+            )
+            SingleChoiceChipRow(
+                options = PaceOptions,
+                selectedOption = pace,
+                enabled = isEditingEnabled,
+                label = { option -> Text(paceLabel(option)) },
+                onOptionSelected = onPaceChange
+            )
 
             Text(
                 text = stringResource(R.string.interests_label),
@@ -464,94 +457,48 @@ internal fun RouteParametersCard(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             } else {
-                availableInterests.forEach { interest ->
-                    val checked = interest in selectedInterests
-                    SelectableRow(
-                        enabled = isEditingEnabled,
-                        onClick = { onInterestToggle(interest, !checked) }
-                    ) {
-                        Checkbox(
-                            checked = checked,
-                            onCheckedChange = null,
-                            enabled = isEditingEnabled
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    availableInterests.forEach { interest ->
+                        val checked = interest in selectedInterests
+                        FilterChip(
+                            selected = checked,
+                            onClick = { onInterestToggle(interest, !checked) },
+                            enabled = isEditingEnabled,
+                            label = { Text(categoryLabel(interest)) }
                         )
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Text(categoryLabel(interest))
                     }
                 }
             }
 
             HorizontalDivider()
 
-            Text(
-                text = stringResource(R.string.pace_label),
-                style = MaterialTheme.typography.labelLarge
+            CompactToggleRow(
+                title = stringResource(R.string.respect_opening_hours_label),
+                body = stringResource(R.string.respect_opening_hours_body),
+                checked = respectOpeningHours,
+                enabled = isEditingEnabled,
+                onCheckedChange = onRespectOpeningHoursChange
             )
-            PaceOptions.forEach { option ->
-                SelectableRow(
-                    enabled = isEditingEnabled,
-                    onClick = { onPaceChange(option) }
-                ) {
-                    RadioButton(
-                        selected = pace == option,
-                        onClick = null,
-                        enabled = isEditingEnabled
-                    )
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Text(paceLabel(option))
-                }
-            }
 
-            HorizontalDivider()
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = stringResource(R.string.return_to_start_label),
-                        style = MaterialTheme.typography.labelLarge
-                    )
-                    Text(
-                        text = stringResource(R.string.return_to_start_body),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-                Spacer(modifier = Modifier.width(12.dp))
-                Switch(
-                    checked = returnToStart,
-                    onCheckedChange = if (isEditingEnabled) onReturnToStartChange else null,
-                    enabled = isEditingEnabled
-                )
-            }
+            CompactToggleRow(
+                title = stringResource(R.string.return_to_start_label),
+                body = stringResource(R.string.return_to_start_body),
+                checked = returnToStart,
+                enabled = isEditingEnabled,
+                onCheckedChange = onReturnToStartChange
+            )
 
             if (isPublicTransportAvailable) {
-                HorizontalDivider()
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = stringResource(R.string.allow_public_transport_label),
-                            style = MaterialTheme.typography.labelLarge
-                        )
-                        Text(
-                            text = stringResource(R.string.allow_public_transport_body),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Switch(
-                        checked = allowPublicTransport,
-                        onCheckedChange = if (isEditingEnabled) onAllowPublicTransportChange else null,
-                        enabled = isEditingEnabled
-                    )
-                }
+                CompactToggleRow(
+                    title = stringResource(R.string.allow_public_transport_label),
+                    body = stringResource(R.string.allow_public_transport_body),
+                    checked = allowPublicTransport,
+                    enabled = isEditingEnabled,
+                    onCheckedChange = onAllowPublicTransportChange
+                )
             }
 
             Button(
@@ -570,6 +517,70 @@ internal fun RouteParametersCard(
                     Text(stringResource(R.string.action_generate_route))
                 }
             }
+        }
+    }
+}
+
+@Composable
+@OptIn(ExperimentalLayoutApi::class)
+private fun <T> SingleChoiceChipRow(
+    options: List<T>,
+    selectedOption: T,
+    enabled: Boolean,
+    label: @Composable (T) -> Unit,
+    onOptionSelected: (T) -> Unit
+) {
+    FlowRow(
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        options.forEach { option ->
+            FilterChip(
+                selected = selectedOption == option,
+                onClick = { onOptionSelected(option) },
+                enabled = enabled,
+                label = { label(option) }
+            )
+        }
+    }
+}
+
+@Composable
+private fun CompactToggleRow(
+    title: String,
+    body: String,
+    checked: Boolean,
+    enabled: Boolean,
+    onCheckedChange: (Boolean) -> Unit
+) {
+    Surface(
+        shape = RoundedCornerShape(12.dp),
+        tonalElevation = 2.dp,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 14.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.labelLarge
+                )
+                Text(
+                    text = body,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            Spacer(modifier = Modifier.width(12.dp))
+            Switch(
+                checked = checked,
+                onCheckedChange = if (enabled) onCheckedChange else null,
+                enabled = enabled
+            )
         }
     }
 }
@@ -791,6 +802,278 @@ internal fun RouteTrackingCard(
 }
 
 @Composable
+internal fun RoutePreviewSummaryPanel(routeResponse: RouteResponse) {
+    val transportLabel = routeTransportLabel(routeResponse)
+
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        tonalElevation = 3.dp
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp)
+        ) {
+            Text(
+                text = stringResource(R.string.route_summary_title),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                SummaryMetric(
+                    label = stringResource(R.string.route_summary_metric_stops),
+                    value = routeResponse.poi_count.toString(),
+                    modifier = Modifier.weight(1f)
+                )
+                SummaryMetric(
+                    label = stringResource(R.string.route_summary_metric_total_time),
+                    value = "${routeResponse.used_minutes} min",
+                    modifier = Modifier.weight(1f)
+                )
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                SummaryMetric(
+                    label = stringResource(R.string.route_summary_metric_walking),
+                    value = "${routeResponse.total_walk_minutes} min",
+                    modifier = Modifier.weight(1f)
+                )
+                SummaryMetric(
+                    label = stringResource(R.string.route_summary_metric_mode),
+                    value = transportLabel,
+                    modifier = Modifier.weight(1f)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun SummaryMetric(
+    label: String,
+    value: String,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        modifier = modifier,
+        shape = RoundedCornerShape(16.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.65f)
+    ) {
+        Column(
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Text(
+                text = value,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold
+            )
+        }
+    }
+}
+
+@Composable
+internal fun ActiveRouteBottomPanel(
+    status: RouteSessionStatus,
+    metrics: RouteProgressMetrics,
+    currentLocation: RouteStartDto?,
+    isRerouting: Boolean,
+    canSkip: Boolean,
+    isActionInProgress: Boolean,
+    nextTarget: RouteItemDto?,
+    nextTargetIncomingLeg: RouteLegDto?,
+    onMarkVisited: () -> Unit,
+    onSkip: () -> Unit,
+    onPauseRoute: () -> Unit,
+    onResumeRoute: () -> Unit,
+    onFinishRoute: () -> Unit,
+    onCancelRoute: () -> Unit,
+    onShowAllStops: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val progress = if (metrics.totalCount == 0) 0f else metrics.visitedCount.toFloat() / metrics.totalCount.toFloat()
+    val canPause = status == RouteSessionStatus.IN_PROGRESS
+    val canResume = status == RouteSessionStatus.PAUSED
+
+    ElevatedCard(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(24.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.Top
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = stringResource(R.string.route_section_next_stop),
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Text(
+                        text = nextTarget?.name ?: stringResource(R.string.route_tracking_no_next_target),
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    if (nextTarget != null) {
+                        Text(
+                            text = categoryLabel(nextTarget.category),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+                Surface(
+                    shape = RoundedCornerShape(999.dp),
+                    color = MaterialTheme.colorScheme.surfaceVariant
+                ) {
+                    Text(
+                        text = routeSessionStatusLabel(status),
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                        style = MaterialTheme.typography.labelLarge
+                    )
+                }
+            }
+
+            LinearProgressIndicator(
+                progress = { progress },
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                SummaryMetric(
+                    label = stringResource(R.string.route_active_progress),
+                    value = "${metrics.visitedCount}/${metrics.totalCount}",
+                    modifier = Modifier.weight(1f)
+                )
+                SummaryMetric(
+                    label = stringResource(R.string.route_active_distance),
+                    value = metrics.distanceToNextTargetMeters?.let(::formatDistanceMeters)
+                        ?: stringResource(R.string.common_unknown),
+                    modifier = Modifier.weight(1f)
+                )
+                SummaryMetric(
+                    label = stringResource(R.string.route_active_remaining),
+                    value = "${metrics.estimatedRemainingMinutes} min",
+                    modifier = Modifier.weight(1f)
+                )
+            }
+
+            if (currentLocation == null && status == RouteSessionStatus.IN_PROGRESS) {
+                Text(
+                    text = stringResource(R.string.route_tracking_waiting_for_gps),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            if (metrics.isOffRoute || isRerouting) {
+                Text(
+                    text = if (isRerouting) {
+                        stringResource(R.string.status_off_route_rerouting_body)
+                    } else {
+                        stringResource(R.string.status_off_route_body)
+                    },
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
+
+            if (nextTarget != null) {
+                Text(
+                    text = routeStopCompactSummary(nextTarget, nextTargetIncomingLeg),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Button(
+                    onClick = onMarkVisited,
+                    enabled = nextTarget != null && !isActionInProgress && status == RouteSessionStatus.IN_PROGRESS,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(stringResource(R.string.action_mark_visited))
+                }
+                OutlinedButton(
+                    onClick = onSkip,
+                    enabled = nextTarget != null && canSkip && !isActionInProgress,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(stringResource(R.string.action_skip_stop))
+                }
+                when {
+                    canPause -> OutlinedButton(
+                        onClick = onPauseRoute,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text(stringResource(R.string.action_pause_route))
+                    }
+
+                    canResume -> OutlinedButton(
+                        onClick = onResumeRoute,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text(stringResource(R.string.action_resume_route))
+                    }
+
+                    else -> OutlinedButton(
+                        onClick = onShowAllStops,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text(stringResource(R.string.action_view_all_stops))
+                    }
+                }
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                TextButton(onClick = onShowAllStops) {
+                    Text(stringResource(R.string.action_view_all_stops))
+                }
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OutlinedButton(
+                        onClick = onFinishRoute,
+                        enabled = metrics.canComplete
+                    ) {
+                        Text(stringResource(R.string.action_finish_route))
+                    }
+                    TextButton(onClick = onCancelRoute) {
+                        Text(stringResource(R.string.action_cancel_route))
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
 internal fun RouteFeedbackCard(
     feedback: RouteFeedback?,
     onFeedbackChange: (RouteFeedback) -> Unit,
@@ -982,6 +1265,246 @@ internal fun RouteSummaryCard(routeResponse: RouteResponse) {
                 )
             )
         }
+    }
+}
+
+@Composable
+internal fun RouteStopTimelineItem(
+    item: RouteItemDto,
+    incomingLeg: RouteLegDto?,
+    isVisited: Boolean,
+    isSkipped: Boolean,
+    isNext: Boolean,
+    isLast: Boolean,
+    isRouteActive: Boolean,
+    canSkip: Boolean,
+    isActionInProgress: Boolean,
+    onMarkVisited: () -> Unit,
+    onSkip: () -> Unit
+) {
+    var expanded by remember(item.poi_id) { mutableStateOf(isNext) }
+    val statusColor = when {
+        isVisited -> MaterialTheme.colorScheme.primary
+        isSkipped -> MaterialTheme.colorScheme.tertiary
+        isNext -> MaterialTheme.colorScheme.secondary
+        else -> MaterialTheme.colorScheme.outline
+    }
+    val statusLabel = when {
+        isVisited -> stringResource(R.string.route_stop_visited)
+        isSkipped -> stringResource(R.string.route_stop_skipped)
+        isNext -> stringResource(R.string.route_stop_status_next)
+        else -> stringResource(R.string.route_stop_status_pending)
+    }
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(IntrinsicSize.Min),
+        verticalAlignment = Alignment.Top
+    ) {
+        TimelineMarker(
+            color = statusColor,
+            isLast = isLast
+        )
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .clip(RoundedCornerShape(18.dp))
+                .clickable { expanded = !expanded }
+                .animateContentSize()
+                .padding(start = 4.dp, bottom = 12.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.Top
+            ) {
+                Surface(
+                    shape = CircleShape,
+                    color = statusColor.copy(alpha = 0.14f),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, statusColor)
+                ) {
+                    Text(
+                        text = item.order.toString(),
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                        style = MaterialTheme.typography.labelLarge,
+                        color = statusColor,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+                Spacer(modifier = Modifier.width(12.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = item.name,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Text(
+                        text = categoryLabel(item.category),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                Spacer(modifier = Modifier.width(12.dp))
+                Surface(
+                    shape = RoundedCornerShape(999.dp),
+                    color = statusColor.copy(alpha = 0.12f)
+                ) {
+                    Text(
+                        text = statusLabel,
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = statusColor,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = routeStopCompactSummary(item, incomingLeg),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
+            if (expanded) {
+                Spacer(modifier = Modifier.height(10.dp))
+                Text(
+                    text = stringResource(
+                        R.string.route_stop_arrival_departure,
+                        item.arrival_after_min,
+                        item.departure_after_min
+                    ),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                incomingLeg?.segments
+                    .orEmpty()
+                    .filter { segment ->
+                        val mode = segment.mode.orEmpty()
+                        mode == "transit" || (segment.duration_minutes ?: 0) > 0
+                    }
+                    .forEach { segment ->
+                        Text(
+                            text = routeSegmentLabel(segment),
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                        val fromStopName = segment.from_stop_name
+                        val toStopName = segment.to_stop_name
+                        if (segment.mode == "transit" && !fromStopName.isNullOrBlank() && !toStopName.isNullOrBlank()) {
+                            Text(
+                                text = stringResource(R.string.route_stop_segment_stops, fromStopName, toStopName),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                if (!item.opening_hours_raw.isNullOrBlank()) {
+                    Text(
+                        text = stringResource(R.string.route_stop_opening_hours, item.opening_hours_raw),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                if (!isVisited && !isSkipped && (canSkip || isRouteActive)) {
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        if (canSkip) {
+                            OutlinedButton(
+                                onClick = onSkip,
+                                enabled = !isActionInProgress,
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Text(stringResource(R.string.action_skip_stop))
+                            }
+                        }
+                        if (isRouteActive) {
+                            Button(
+                                onClick = onMarkVisited,
+                                enabled = !isActionInProgress,
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Text(stringResource(R.string.action_mark_visited))
+                            }
+                        }
+                    }
+                }
+                TextButton(
+                    onClick = { expanded = false }
+                ) {
+                    Text(stringResource(R.string.action_hide_stop_details))
+                }
+            } else {
+                TextButton(
+                    onClick = { expanded = true }
+                ) {
+                    Text(stringResource(R.string.action_view_stop_details))
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun TimelineMarker(
+    color: Color,
+    isLast: Boolean
+) {
+    Canvas(
+        modifier = Modifier
+            .width(28.dp)
+            .fillMaxHeight()
+    ) {
+        val centerX = size.width / 2f
+        val centerY = 18.dp.toPx()
+        if (!isLast) {
+            drawLine(
+                color = color.copy(alpha = 0.32f),
+                start = androidx.compose.ui.geometry.Offset(centerX, centerY),
+                end = androidx.compose.ui.geometry.Offset(centerX, size.height),
+                strokeWidth = 3.dp.toPx()
+            )
+        }
+        drawCircle(
+            color = color,
+            radius = 6.dp.toPx(),
+            center = androidx.compose.ui.geometry.Offset(centerX, centerY)
+        )
+    }
+}
+
+@Composable
+private fun routeStopCompactSummary(
+    item: RouteItemDto,
+    incomingLeg: RouteLegDto?
+): String {
+    val transitUsed = incomingLeg?.segments.orEmpty().any { segment ->
+        segment.mode == "transit"
+    }
+    val travelMinutes = incomingLeg?.duration_minutes ?: item.travel_minutes_from_previous
+    val baseLabel = stringResource(
+        R.string.route_stop_summary_compact,
+        travelMinutes,
+        item.visit_duration_min
+    )
+    return if (transitUsed) {
+        "$baseLabel • ${stringResource(R.string.route_transport_walk_mhd)}"
+    } else {
+        baseLabel
+    }
+}
+
+@Composable
+private fun routeTransportLabel(routeResponse: RouteResponse): String {
+    val transitUsed = routeResponse.legs.orEmpty().any { leg ->
+        leg.segments.orEmpty().any { segment -> segment.mode == "transit" }
+    }
+    return if (transitUsed) {
+        stringResource(R.string.route_transport_walk_mhd)
+    } else {
+        stringResource(R.string.route_transport_walk)
     }
 }
 
