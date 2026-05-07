@@ -11,13 +11,23 @@ from app.services.city_profiles import city_profile_by_token
 from app.services.feedback_stats import load_planner_feedback_profile
 from app.services.route_planning.opening_hours import is_poi_open_for_visit
 from app.services.route_planning.response import append_geometry, leg_dict, point_dict
-from app.services.route_planning.scoring import rounded_score_breakdown, score_candidate
-from app.services.routing_service import RoutePoint, get_routing_service
+from app.services.route_planning.scoring import (
+    BASE_SCORE_MULTIPLIER,
+    REPEAT_CATEGORY_PENALTY,
+    TRAVEL_MINUTE_PENALTY,
+    rounded_score_breakdown,
+    score_candidate,
+)
+from app.services.routing_service import RoutePoint, get_routing_service, haversine_km, walking_speed_kmh
 from app.services.transport_planner import (
     TRANSPORT_MODE_WALK,
     normalized_transport_mode,
     plan_travel,
 )
+
+DEFAULT_MAX_EXACT_POI_EVALUATIONS_PER_STEP = 60
+DEFAULT_MAX_EXACT_POI_EVALUATIONS_PER_STEP_TRANSIT = 28
+APPROXIMATE_DISTANCE_INFLATION_FACTOR = 1.2
 
 
 class RouteGenerateRequest(BaseModel):
@@ -33,6 +43,7 @@ class RouteGenerateRequest(BaseModel):
     exclude_poi_ids: list[int] = Field(default_factory=list)
     transport_mode: Literal["walk", "walk_or_mhd"] = TRANSPORT_MODE_WALK
 
+
 def parse_start_datetime(raw_value: str | None) -> datetime:
     if raw_value is None:
         return datetime.now().replace(second=0, microsecond=0)
@@ -44,6 +55,7 @@ def parse_start_datetime(raw_value: str | None) -> datetime:
             status_code=400,
             detail="Invalid start_datetime. Use ISO local datetime, for example 2026-04-19T14:30.",
         ) from exc
+
 
 def get_route_candidates(request: RouteGenerateRequest) -> list[dict]:
     city_profile = city_profile_by_token(request.city) or {}
@@ -136,6 +148,136 @@ def get_route_candidates(request: RouteGenerateRequest) -> list[dict]:
                 cur.execute(fallback_sql, fallback_params)
             return cur.fetchall()
 
+
+def max_exact_poi_evaluations_per_step(
+    city_profile: dict,
+    effective_transport_mode: str,
+) -> int:
+    routing_limits = city_profile.get("routing_limits") or {}
+    if effective_transport_mode != TRANSPORT_MODE_WALK:
+        transit_override = routing_limits.get("max_exact_poi_evaluations_per_step_transit")
+        if transit_override is not None:
+            return max(1, int(transit_override))
+
+    configured_limit = routing_limits.get("max_exact_poi_evaluations_per_step")
+    if configured_limit is not None:
+        return max(1, int(configured_limit))
+
+    if effective_transport_mode != TRANSPORT_MODE_WALK:
+        return DEFAULT_MAX_EXACT_POI_EVALUATIONS_PER_STEP_TRANSIT
+    return DEFAULT_MAX_EXACT_POI_EVALUATIONS_PER_STEP
+
+
+def estimated_minutes_for_distance(distance_meters: float, speed_kmh: float) -> int:
+    if distance_meters <= 0:
+        return 1
+    if speed_kmh <= 0:
+        return 10**9
+    return max(1, round((distance_meters / 1000.0) / speed_kmh * 60))
+
+
+def approximate_travel_minutes(
+    start: RoutePoint,
+    end: RoutePoint,
+    pace: str,
+    city_profile: dict,
+    effective_transport_mode: str,
+) -> int:
+    direct_distance_meters = haversine_km(start.lat, start.lon, end.lat, end.lon) * 1000.0
+    inflated_distance_meters = direct_distance_meters * APPROXIMATE_DISTANCE_INFLATION_FACTOR
+    walking_minutes = estimated_minutes_for_distance(inflated_distance_meters, walking_speed_kmh(pace))
+
+    if effective_transport_mode == TRANSPORT_MODE_WALK:
+        return walking_minutes
+
+    transport_profile = city_profile.get("transport") or {}
+    if not transport_profile.get("mhd_enabled"):
+        return walking_minutes
+
+    min_direct_distance = float(transport_profile.get("min_direct_distance_meters") or 1200)
+    if direct_distance_meters < min_direct_distance:
+        return walking_minutes
+
+    average_wait_minutes = float(transport_profile.get("average_wait_minutes") or 4.0)
+    transit_speed_kmh = float(transport_profile.get("transit_speed_kmh") or 24.0)
+    max_first_mile = float(transport_profile.get("max_first_mile_meters") or 650.0)
+    max_last_mile = float(transport_profile.get("max_last_mile_meters") or 650.0)
+    max_transfer_distance = max_first_mile + max_last_mile
+    transfer_distance_meters = min(max_transfer_distance, inflated_distance_meters * 0.45)
+    transit_distance_meters = max(0.0, inflated_distance_meters - transfer_distance_meters)
+    transfer_minutes = estimated_minutes_for_distance(transfer_distance_meters, walking_speed_kmh(pace))
+    transit_minutes = estimated_minutes_for_distance(transit_distance_meters, transit_speed_kmh)
+    optimistic_transit_minutes = average_wait_minutes + transfer_minutes + transit_minutes
+    return max(1, min(walking_minutes, optimistic_transit_minutes))
+
+
+def approximate_candidate_priority(
+    poi: dict,
+    approx_travel_minutes: int,
+    category_counts: dict[str, int],
+) -> float:
+    base_component = float(poi["base_score"] or 0.0) * BASE_SCORE_MULTIPLIER
+    repeat_penalty = REPEAT_CATEGORY_PENALTY * category_counts.get(poi["category"], 0)
+    travel_penalty = approx_travel_minutes * TRAVEL_MINUTE_PENALTY
+    return base_component - repeat_penalty - travel_penalty
+
+
+def shortlist_route_candidates(
+    *,
+    candidates: list[dict],
+    used_ids: set[int],
+    current_point: RoutePoint,
+    start_point: RoutePoint,
+    pace: str,
+    return_to_start: bool,
+    category_counts: dict[str, int],
+    city_profile: dict,
+    effective_transport_mode: str,
+    exact_limit: int,
+) -> list[dict]:
+    remaining_candidates = [poi for poi in candidates if poi["id"] not in used_ids]
+    if len(remaining_candidates) <= exact_limit:
+        return remaining_candidates
+
+    scored_candidates: list[tuple[float, float, dict]] = []
+    for poi in remaining_candidates:
+        poi_point = RoutePoint(lat=poi["lat"], lon=poi["lon"])
+        approx_travel = approximate_travel_minutes(
+            start=current_point,
+            end=poi_point,
+            pace=pace,
+            city_profile=city_profile,
+            effective_transport_mode=effective_transport_mode,
+        )
+        approx_return = 0
+        if return_to_start:
+            approx_return = approximate_travel_minutes(
+                start=poi_point,
+                end=start_point,
+                pace=pace,
+                city_profile=city_profile,
+                effective_transport_mode=effective_transport_mode,
+            )
+
+        scored_candidates.append(
+            (
+                approximate_candidate_priority(
+                    poi,
+                    approx_travel_minutes=approx_travel + approx_return,
+                    category_counts=category_counts,
+                ),
+                float(poi["base_score"] or 0.0),
+                poi,
+            )
+        )
+
+    if not scored_candidates:
+        return []
+
+    scored_candidates.sort(key=lambda item: (item[0], item[1], -item[2]["id"]), reverse=True)
+    return [poi for _, _, poi in scored_candidates[:exact_limit]]
+
+
 def generate_route(request: RouteGenerateRequest) -> dict:
     start_dt = parse_start_datetime(request.start_datetime)
     city_profile = city_profile_by_token(request.city) or {}
@@ -162,6 +304,7 @@ def generate_route(request: RouteGenerateRequest) -> dict:
     full_geometry: list[dict] = []
     elapsed_minutes = 0
     elapsed_actual_seconds = 0.0
+    exact_candidate_limit = max_exact_poi_evaluations_per_step(city_profile, effective_transport_mode)
 
     while True:
         best_poi = None
@@ -169,13 +312,25 @@ def generate_route(request: RouteGenerateRequest) -> dict:
         best_visit_minutes = None
         best_score_breakdown = None
         best_utility = -10**9
+        departure_dt = start_dt + timedelta(seconds=elapsed_actual_seconds)
+        evaluation_candidates = shortlist_route_candidates(
+            candidates=candidates,
+            used_ids=used_ids,
+            current_point=current_point,
+            start_point=start_point,
+            pace=request.pace,
+            return_to_start=request.return_to_start,
+            category_counts=category_counts,
+            city_profile=city_profile,
+            effective_transport_mode=effective_transport_mode,
+            exact_limit=exact_candidate_limit,
+        )
 
-        for poi in candidates:
-            if poi["id"] in used_ids:
-                continue
+        if not evaluation_candidates:
+            break
 
+        for poi in evaluation_candidates:
             poi_point = RoutePoint(lat=poi["lat"], lon=poi["lon"])
-            departure_dt = start_dt + timedelta(seconds=elapsed_actual_seconds)
             travel_plan = plan_travel(
                 start=current_point,
                 end=poi_point,

@@ -89,6 +89,7 @@ fun RoutePlannerScreen() {
     val skippedPoiIds = plannerViewModel.skippedPoiIds
     val routeItems = plannerViewModel.routeItems
     val hasPendingRouteChanges = plannerViewModel.hasPendingRouteChanges
+    val hasNoGeneratedStops = plannerViewModel.hasNoGeneratedStops
     val progressMetrics = plannerViewModel.progressMetrics
     val selectedCityAvailableCategories = plannerViewModel.selectedCityAvailableCategories
     val isPublicTransportAvailable = plannerViewModel.isPublicTransportAvailable
@@ -260,6 +261,7 @@ fun RoutePlannerScreen() {
         poiError = poiError,
         routeError = routeError,
         trackingError = trackingError,
+        hasNoGeneratedStops = hasNoGeneratedStops,
         hasPendingRouteChanges = hasPendingRouteChanges && routeResponse != null
     )
 
@@ -885,6 +887,7 @@ private data class PlannerAlerts(
     val poiError: String?,
     val routeError: String?,
     val trackingError: String?,
+    val hasNoGeneratedStops: Boolean,
     val hasPendingRouteChanges: Boolean
 )
 
@@ -893,6 +896,7 @@ private fun PlannerAlerts.hasVisibleAlerts(): Boolean =
         poiError != null ||
         routeError != null ||
         trackingError != null ||
+        hasNoGeneratedStops ||
         hasPendingRouteChanges
 
 @Composable
@@ -915,6 +919,13 @@ private fun PlannerAlertColumn(alerts: PlannerAlerts) {
         StatusCard(
             title = stringResource(R.string.status_route_generation_failed),
             body = message
+        )
+    }
+
+    if (alerts.hasNoGeneratedStops) {
+        StatusCard(
+            title = stringResource(R.string.status_no_stops_title),
+            body = stringResource(R.string.status_no_stops_body)
         )
     }
 

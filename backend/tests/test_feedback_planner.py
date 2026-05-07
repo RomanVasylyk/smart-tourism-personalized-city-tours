@@ -222,3 +222,57 @@ def test_feedback_recompute_can_make_walk_or_mhd_more_transit_friendly(monkeypat
     assert after["route"][0]["poi_id"] == 302
     assert before["legs"][0]["mode"] == "walk"
     assert after["legs"][0]["mode"] == "transit"
+
+
+def test_generate_route_limits_exact_candidate_evaluations(monkeypatch):
+    candidates = [
+        make_candidate(
+            poi_id=poi_id,
+            name=f"POI {poi_id}",
+            category="attraction" if poi_id % 2 == 0 else "museum",
+            lat=48.3076 + (poi_id * 0.0001),
+            lon=18.0845 + (poi_id * 0.0001),
+            base_score=1.2 - (poi_id * 0.002),
+            visit_duration_min=20,
+        )
+        for poi_id in range(1, 121)
+    ]
+    neutral_profile = PlannerFeedbackProfile()
+    plan_travel_calls = 0
+
+    monkeypatch.setattr("app.services.route_planner.get_route_candidates", lambda request: candidates)
+    monkeypatch.setattr("app.services.route_planner.load_planner_feedback_profile", lambda city, mode: neutral_profile)
+    monkeypatch.setattr(
+        "app.services.route_planner.city_profile_by_token",
+        lambda city: {
+            "routing_limits": {
+                "max_exact_poi_evaluations_per_step": 15,
+            }
+        },
+    )
+    monkeypatch.setattr("app.services.route_planner.get_routing_service", lambda: object())
+
+    def fake_plan_travel(start, end, pace, routing_service, city_profile, transport_mode, departure_dt=None):
+        nonlocal plan_travel_calls
+        plan_travel_calls += 1
+        return make_travel_plan("walk", 40, 3_000)
+
+    monkeypatch.setattr("app.services.route_planner.plan_travel", fake_plan_travel)
+
+    request = RouteGenerateRequest(
+        city="nitra",
+        start_lat=48.3076,
+        start_lon=18.0845,
+        available_minutes=50,
+        interests=[],
+        pace="normal",
+        return_to_start=False,
+        start_datetime="2026-04-27T10:00",
+        respect_opening_hours=True,
+        transport_mode="walk",
+    )
+
+    result = generate_route(request)
+
+    assert result["route"] == []
+    assert plan_travel_calls == 15

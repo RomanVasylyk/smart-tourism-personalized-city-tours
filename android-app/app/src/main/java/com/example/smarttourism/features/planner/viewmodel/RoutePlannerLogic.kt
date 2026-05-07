@@ -373,6 +373,56 @@ internal fun mergeReroutedRouteResponse(
     )
 }
 
+internal fun finalizedHandledRouteResponse(
+    previousResponse: RouteResponse,
+    visitedPoiIds: List<Int>,
+    skippedPoiIds: List<Int>
+): RouteResponse {
+    val handledPoiIds = (visitedPoiIds + skippedPoiIds).distinct()
+    if (handledPoiIds.isEmpty()) {
+        return previousResponse.copy(
+            used_minutes = 0,
+            remaining_minutes = previousResponse.available_minutes,
+            total_visit_minutes = 0,
+            total_walk_minutes = 0,
+            return_to_start_minutes = 0,
+            poi_count = 0,
+            route = emptyList(),
+            legs = null,
+            full_geometry = emptyList()
+        )
+    }
+
+    val handledItems = previousResponse.route
+        .filter { item -> item.poi_id in handledPoiIds }
+        .sortedBy { item -> item.order }
+    val handledLegs = previousResponse.legs
+        .orEmpty()
+        .filter { leg -> leg.to.poi_id in handledPoiIds }
+        .sortedBy { leg -> leg.order }
+
+    val renumberedItems = handledItems.mapIndexed { index, item ->
+        item.copy(order = index + 1)
+    }
+    val renumberedLegs = handledLegs.mapIndexed { index, leg ->
+        leg.copy(order = index + 1)
+    }
+    val usedMinutes = renumberedItems.maxOfOrNull { item -> item.departure_after_min } ?: 0
+    val totalVisitMinutes = renumberedItems.sumOf { item -> item.visit_duration_min }
+
+    return previousResponse.copy(
+        used_minutes = usedMinutes,
+        remaining_minutes = maxOf(0, previousResponse.available_minutes - usedMinutes),
+        total_visit_minutes = totalVisitMinutes,
+        total_walk_minutes = maxOf(0, usedMinutes - totalVisitMinutes),
+        return_to_start_minutes = 0,
+        poi_count = renumberedItems.size,
+        route = renumberedItems,
+        legs = renumberedLegs.ifEmpty { null },
+        full_geometry = mergeLegGeometries(renumberedLegs)
+    )
+}
+
 internal fun mergeLegGeometries(legs: List<RouteLegDto>): List<com.example.smarttourism.data.remote.dto.RouteCoordinateDto> {
     if (legs.isEmpty()) {
         return emptyList()
