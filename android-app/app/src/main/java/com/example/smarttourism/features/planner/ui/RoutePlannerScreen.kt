@@ -278,6 +278,7 @@ fun RoutePlannerScreen() {
                 defaultZoom = selectedCity?.default_zoom,
                 currentRouteLocation = currentRouteLocation,
                 visitedPoiIds = visitedPoiIds,
+                skippedPoiIds = skippedPoiIds,
                 isRouteActive = routeSessionStatus == RouteSessionStatus.IN_PROGRESS,
                 isPoiLoading = isPoiLoading,
                 isSelectingStart = false,
@@ -364,6 +365,7 @@ fun RoutePlannerScreen() {
                             defaultZoom = selectedCity?.default_zoom,
                             currentRouteLocation = currentRouteLocation,
                             visitedPoiIds = visitedPoiIds,
+                            skippedPoiIds = skippedPoiIds,
                             isRouteActive = false,
                             isPoiLoading = isPoiLoading,
                             isSelectingStart = isSelectingStart,
@@ -456,6 +458,7 @@ fun RoutePlannerScreen() {
                             defaultZoom = selectedCity?.default_zoom,
                             currentRouteLocation = currentRouteLocation,
                             visitedPoiIds = visitedPoiIds,
+                            skippedPoiIds = skippedPoiIds,
                             isRouteActive = false,
                             isPoiLoading = isPoiLoading,
                             isSelectingStart = false,
@@ -490,10 +493,12 @@ fun RoutePlannerScreen() {
                         skippedPoiIds = skippedPoiIds,
                         isRouteActive = false,
                         canSkip = canSkipStops,
+                        canReplace = true,
                         isActionInProgress = isRerouting,
                         highlightedPoiId = progressMetrics.nextTarget?.poi_id,
                         onMarkVisited = { poiId -> plannerViewModel.markRouteStopVisited(poiId) },
-                        onSkip = { poiId -> plannerViewModel.skipRouteStop(poiId) }
+                        onSkip = { poiId -> plannerViewModel.removePreviewStop(poiId) },
+                        onReplace = { poiId -> plannerViewModel.replacePreviewStop(poiId) }
                     )
                 }
 
@@ -506,6 +511,7 @@ fun RoutePlannerScreen() {
                             defaultZoom = selectedCity?.default_zoom,
                             currentRouteLocation = currentRouteLocation,
                             visitedPoiIds = visitedPoiIds,
+                            skippedPoiIds = skippedPoiIds,
                             isRouteActive = false,
                             isPoiLoading = isPoiLoading,
                             isSelectingStart = false,
@@ -557,10 +563,12 @@ fun RoutePlannerScreen() {
                         skippedPoiIds = skippedPoiIds,
                         isRouteActive = false,
                         canSkip = false,
+                        canReplace = false,
                         isActionInProgress = false,
                         highlightedPoiId = null,
                         onMarkVisited = {},
-                        onSkip = {}
+                        onSkip = {},
+                        onReplace = {}
                     )
                 }
 
@@ -673,10 +681,12 @@ fun RoutePlannerScreen() {
                     skippedPoiIds = skippedPoiIds,
                     isRouteActive = routeSessionStatus == RouteSessionStatus.IN_PROGRESS,
                     canSkip = canSkipStops,
+                    canReplace = false,
                     isActionInProgress = isRerouting,
                     highlightedPoiId = progressMetrics.nextTarget?.poi_id,
                     onMarkVisited = { poiId -> plannerViewModel.markRouteStopVisited(poiId) },
-                    onSkip = { poiId -> plannerViewModel.skipRouteStop(poiId) }
+                    onSkip = { poiId -> plannerViewModel.skipRouteStop(poiId) },
+                    onReplace = {}
                 )
             }
         }
@@ -733,6 +743,7 @@ fun RoutePlannerScreen() {
                     defaultZoom = selectedCity?.default_zoom,
                     currentLocation = currentRouteLocation,
                     visitedPoiIds = visitedPoiIds.toSet(),
+                    skippedPoiIds = skippedPoiIds.toSet(),
                     isRouteActive = routeSessionStatus == RouteSessionStatus.IN_PROGRESS,
                     isLoading = isPoiLoading,
                     isFullScreen = true,
@@ -802,6 +813,7 @@ private fun PlannerMapPanel(
     defaultZoom: Double?,
     currentRouteLocation: RouteStartDto?,
     visitedPoiIds: List<Int>,
+    skippedPoiIds: List<Int>,
     isRouteActive: Boolean,
     isPoiLoading: Boolean,
     isSelectingStart: Boolean,
@@ -829,6 +841,7 @@ private fun PlannerMapPanel(
             defaultZoom = defaultZoom,
             currentLocation = currentRouteLocation,
             visitedPoiIds = visitedPoiIds.toSet(),
+            skippedPoiIds = skippedPoiIds.toSet(),
             isRouteActive = isRouteActive,
             isLoading = isPoiLoading,
             isFullScreen = false,
@@ -964,10 +977,12 @@ private fun LazyListScope.routeStopItems(
     skippedPoiIds: List<Int>,
     isRouteActive: Boolean,
     canSkip: Boolean,
+    canReplace: Boolean,
     isActionInProgress: Boolean,
     highlightedPoiId: Int?,
     onMarkVisited: (Int) -> Unit,
-    onSkip: (Int) -> Unit
+    onSkip: (Int) -> Unit,
+    onReplace: (Int) -> Unit
 ) {
     if (routeStops.isEmpty()) {
         item {
@@ -1000,9 +1015,11 @@ private fun LazyListScope.routeStopItems(
             isLast = index == routeStops.lastIndex,
             isRouteActive = isRouteActive,
             canSkip = canSkip,
+            canReplace = canReplace,
             isActionInProgress = isActionInProgress,
             onMarkVisited = { onMarkVisited(item.poi_id) },
-            onSkip = { onSkip(item.poi_id) }
+            onSkip = { onSkip(item.poi_id) },
+            onReplace = { onReplace(item.poi_id) }
         )
     }
 }

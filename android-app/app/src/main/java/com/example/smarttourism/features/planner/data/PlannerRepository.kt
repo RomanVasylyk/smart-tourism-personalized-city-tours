@@ -9,6 +9,8 @@ import com.example.smarttourism.data.remote.api.PoiApi
 import com.example.smarttourism.data.remote.dto.CityDto
 import com.example.smarttourism.data.remote.dto.PoiDto
 import com.example.smarttourism.data.remote.dto.RouteFeedbackRequest
+import com.example.smarttourism.data.remote.dto.RouteLegDto
+import com.example.smarttourism.data.remote.dto.RouteLegRequest
 import com.example.smarttourism.data.remote.dto.RouteRequest
 import com.example.smarttourism.data.remote.dto.RouteResponse
 import com.example.smarttourism.data.remote.dto.RouteSessionCreateRequest
@@ -36,6 +38,9 @@ internal class PlannerRepository(
 
     suspend fun generateRoute(request: RouteRequest): RouteResponse =
         api.generateRoute(request)
+
+    suspend fun generateRouteLeg(request: RouteLegRequest): RouteLegDto =
+        api.generateRouteLeg(request)
 
     suspend fun getRouteSession(routeId: String): RouteSessionDto =
         api.getRouteSession(routeId)

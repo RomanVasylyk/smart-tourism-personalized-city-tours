@@ -173,6 +173,35 @@ def test_generate_route_returns_planned_stop(monkeypatch):
     assert body["full_geometry"][0] == {"lat": 48.3076, "lon": 18.0845}
 
 
+def test_generate_route_leg_returns_direct_leg(monkeypatch):
+    monkeypatch.setattr("app.services.route_planner.get_routing_service", lambda: FakeRoutingService())
+
+    response = client.post(
+        "/route/leg",
+        json={
+            "city": "nitra",
+            "start_lat": 48.3076,
+            "start_lon": 18.0845,
+            "end_lat": 48.3172,
+            "end_lon": 18.0861,
+            "end_poi_id": 10,
+            "end_name": "Nitra Castle",
+            "pace": "normal",
+            "start_datetime": "2026-04-19T10:00",
+            "transport_mode": "walk",
+        },
+    )
+
+    body = response.json()
+
+    assert response.status_code == 200
+    assert body["to"]["poi_id"] == 10
+    assert body["to"]["name"] == "Nitra Castle"
+    assert body["duration_minutes"] == 10
+    assert body["routing_source"] == "test"
+    assert body["geometry"][0] == {"lat": 48.3076, "lon": 18.0845}
+
+
 def test_generate_route_can_return_transit_segments(monkeypatch):
     rows = [
         {

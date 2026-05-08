@@ -44,6 +44,19 @@ class RouteGenerateRequest(BaseModel):
     transport_mode: Literal["walk", "walk_or_mhd"] = TRANSPORT_MODE_WALK
 
 
+class RouteLegRequest(BaseModel):
+    city: str = "nitra"
+    start_lat: float
+    start_lon: float
+    end_lat: float
+    end_lon: float
+    end_poi_id: int
+    end_name: str | None = None
+    pace: str = "normal"
+    start_datetime: str | None = None
+    transport_mode: Literal["walk", "walk_or_mhd"] = TRANSPORT_MODE_WALK
+
+
 def parse_start_datetime(raw_value: str | None) -> datetime:
     if raw_value is None:
         return datetime.now().replace(second=0, microsecond=0)
@@ -166,6 +179,42 @@ def max_exact_poi_evaluations_per_step(
     if effective_transport_mode != TRANSPORT_MODE_WALK:
         return DEFAULT_MAX_EXACT_POI_EVALUATIONS_PER_STEP_TRANSIT
     return DEFAULT_MAX_EXACT_POI_EVALUATIONS_PER_STEP
+
+
+def generate_route_leg(request: RouteLegRequest) -> dict:
+    city_profile = city_profile_by_token(request.city) or {}
+    effective_transport_mode = normalized_transport_mode(request.transport_mode, city_profile)
+    departure_dt = parse_start_datetime(request.start_datetime)
+    routing_service = get_routing_service()
+
+    start = RoutePoint(lat=request.start_lat, lon=request.start_lon)
+    end = RoutePoint(lat=request.end_lat, lon=request.end_lon)
+    travel_plan = plan_travel(
+        start=start,
+        end=end,
+        pace=request.pace,
+        routing_service=routing_service,
+        city_profile=city_profile,
+        transport_mode=effective_transport_mode,
+        departure_dt=departure_dt,
+    )
+
+    from_point = point_dict("start", request.start_lat, request.start_lon)
+    to_point = point_dict(
+        "poi",
+        request.end_lat,
+        request.end_lon,
+        {
+            "id": request.end_poi_id,
+            "name": request.end_name,
+        },
+    )
+    return leg_dict(
+        order=1,
+        from_point=from_point,
+        to_point=to_point,
+        travel_plan=travel_plan,
+    )
 
 
 def estimated_minutes_for_distance(distance_meters: float, speed_kmh: float) -> int:

@@ -4,7 +4,7 @@ from fastapi import APIRouter
 
 from app.db.database import get_connection
 from app.services.city_profiles import city_profile_by_token, load_city_profiles
-from app.services.route_planner import RouteGenerateRequest, generate_route
+from app.services.route_planner import RouteGenerateRequest, RouteLegRequest, generate_route, generate_route_leg
 from app.services.route_sessions import (
     RouteFeedbackRequest,
     RouteSessionCreateRequest,
@@ -95,6 +95,11 @@ def get_pois(city: str = "nitra"):
 @router.post("/route/generate")
 def generate_route_endpoint(request: RouteGenerateRequest):
     return generate_route(request)
+
+
+@router.post("/route/leg")
+def generate_route_leg_endpoint(request: RouteLegRequest):
+    return generate_route_leg(request)
 
 
 @router.post("/route-sessions")

@@ -4,7 +4,9 @@ import com.example.smarttourism.data.remote.dto.CityDto
 import com.example.smarttourism.data.remote.dto.PoiDto
 import com.example.smarttourism.data.remote.dto.RouteFeedbackDto
 import com.example.smarttourism.data.remote.dto.RouteFeedbackRequest
+import com.example.smarttourism.data.remote.dto.RouteLegRequest
 import com.example.smarttourism.data.remote.dto.RouteRequest
+import com.example.smarttourism.data.remote.dto.RouteLegDto
 import com.example.smarttourism.data.remote.dto.RouteResponse
 import com.example.smarttourism.data.remote.dto.RouteSessionCreateRequest
 import com.example.smarttourism.data.remote.dto.RouteSessionDto
@@ -31,6 +33,11 @@ interface PoiApi {
     suspend fun generateRoute(
         @Body request: RouteRequest
     ): RouteResponse
+
+    @POST("route/leg")
+    suspend fun generateRouteLeg(
+        @Body request: RouteLegRequest
+    ): RouteLegDto
 
     @POST("route-sessions")
     suspend fun createRouteSession(

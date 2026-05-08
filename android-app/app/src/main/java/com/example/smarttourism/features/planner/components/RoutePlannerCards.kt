@@ -1278,9 +1278,11 @@ internal fun RouteStopTimelineItem(
     isLast: Boolean,
     isRouteActive: Boolean,
     canSkip: Boolean,
+    canReplace: Boolean,
     isActionInProgress: Boolean,
     onMarkVisited: () -> Unit,
-    onSkip: () -> Unit
+    onSkip: () -> Unit,
+    onReplace: () -> Unit
 ) {
     var expanded by remember(item.poi_id) { mutableStateOf(isNext) }
     val statusColor = when {
@@ -1405,7 +1407,7 @@ internal fun RouteStopTimelineItem(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
-                if (!isVisited && !isSkipped && (canSkip || isRouteActive)) {
+                if (!isVisited && !isSkipped && (canSkip || canReplace || isRouteActive)) {
                     Spacer(modifier = Modifier.height(10.dp))
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -1417,7 +1419,24 @@ internal fun RouteStopTimelineItem(
                                 enabled = !isActionInProgress,
                                 modifier = Modifier.weight(1f)
                             ) {
-                                Text(stringResource(R.string.action_skip_stop))
+                                Text(
+                                    stringResource(
+                                        if (isRouteActive) {
+                                            R.string.action_skip_stop
+                                        } else {
+                                            R.string.action_remove_stop
+                                        }
+                                    )
+                                )
+                            }
+                        }
+                        if (canReplace) {
+                            OutlinedButton(
+                                onClick = onReplace,
+                                enabled = !isActionInProgress,
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Text(stringResource(R.string.action_replace_stop))
                             }
                         }
                         if (isRouteActive) {

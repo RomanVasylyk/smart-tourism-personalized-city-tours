@@ -17,7 +17,7 @@
     <string name="status_route_generation_failed">Route generation failed</string>
     <string name="status_gps_tracking_unavailable">GPS tracking unavailable</string>
     <string name="status_off_route_title">You are off route</string>
-    <string name="status_off_route_body">Your GPS position is far from the next route segment. The route will update automatically from your current location.</string>
+    <string name="status_off_route_body">Your GPS position is far from the next route segment. Continue to the next point or skip it if needed.</string>
     <string name="status_off_route_rerouting_body">Updating the route from your current location.</string>
     <string name="status_no_stops_title">No stops generated</string>
     <string name="status_no_stops_body">No route stops match the selected time budget, interests, and opening-hours constraints.</string>
@@ -172,6 +172,8 @@
     <string name="action_view_stop_details">View details</string>
     <string name="action_hide_stop_details">Hide details</string>
     <string name="action_mark_visited">Mark visited</string>
+    <string name="action_remove_stop">Remove</string>
+    <string name="action_replace_stop">Replace</string>
     <string name="action_skip_stop">Skip</string>
 
     <string name="map_start_selection_hint">Tap the map to choose the route start point</string>

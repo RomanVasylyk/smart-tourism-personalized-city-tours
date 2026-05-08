@@ -15,6 +15,7 @@ import com.example.smarttourism.data.remote.dto.CityDto
 import com.example.smarttourism.data.remote.dto.PoiDto
 import com.example.smarttourism.data.remote.dto.RouteFeedbackRequest
 import com.example.smarttourism.data.remote.dto.RouteItemDto
+import com.example.smarttourism.data.remote.dto.RouteLegRequest
 import com.example.smarttourism.data.remote.dto.RouteRequest
 import com.example.smarttourism.data.remote.dto.RouteResponse
 import com.example.smarttourism.data.remote.dto.RouteSessionCreateRequest
@@ -387,6 +388,9 @@ internal class RoutePlannerViewModel(
             return
         }
 
+        val responseBeforeVisit = routeResponse
+        val locationAtVisit = currentRouteLocation
+        val statusAtVisit = routeSessionStatus
         val updatedVisited = (visitedPoiIds + poiId).distinct()
         visitedPoiIds = updatedVisited
         syncVisitedPoisToBackend(listOf(poiId))
@@ -401,6 +405,24 @@ internal class RoutePlannerViewModel(
             )
         } else {
             persistRouteSession(visitedIds = updatedVisited)
+            if (
+                statusAtVisit == RouteSessionStatus.IN_PROGRESS &&
+                responseBeforeVisit != null &&
+                locationAtVisit != null &&
+                repository.isNetworkAvailable()
+            ) {
+                refreshActiveRouteApproachLeg(
+                    previousResponse = responseBeforeVisit,
+                    currentLocation = locationAtVisit,
+                    nextTarget = nextPendingPoi
+                )
+            } else {
+                currentRouteSnapshot()?.let { snapshot ->
+                    viewModelScope.launch {
+                        repository.saveSnapshot(snapshot)
+                    }
+                }
+            }
         }
     }
 
@@ -409,6 +431,9 @@ internal class RoutePlannerViewModel(
             return
         }
 
+        val responseBeforeSkip = routeResponse
+        val locationAtSkip = currentRouteLocation
+        val statusAtSkip = routeSessionStatus
         val updatedSkipped = (skippedPoiIds + poiId).distinct()
         skippedPoiIds = updatedSkipped
         currentRouteRequest = currentRouteRequest?.copy(
@@ -437,17 +462,24 @@ internal class RoutePlannerViewModel(
             skippedIds = updatedSkipped
         )
 
-        if (routeResponse == null || currentRouteRequest == null || !repository.isNetworkAvailable()) {
-            return
+        if (
+            statusAtSkip == RouteSessionStatus.IN_PROGRESS &&
+            responseBeforeSkip != null &&
+            locationAtSkip != null &&
+            repository.isNetworkAvailable()
+        ) {
+            refreshActiveRouteApproachLeg(
+                previousResponse = responseBeforeSkip,
+                currentLocation = locationAtSkip,
+                nextTarget = nextPendingPoi
+            )
+        } else {
+            currentRouteSnapshot()?.let { snapshot ->
+                viewModelScope.launch {
+                    repository.saveSnapshot(snapshot)
+                }
+            }
         }
-
-        val rerouteStart = rerouteStartPoint(
-            routeItems = routeItems,
-            visitedPoiIds = visitedPoiIds,
-            currentLocation = currentRouteLocation,
-            fallbackStart = startPoint
-        )
-        recalculateRouteFromPoint(rerouteStart, false, listOf(poiId))
     }
 
     fun recalculateFromCurrentLocation() {
@@ -455,9 +487,83 @@ internal class RoutePlannerViewModel(
         recalculateRouteFromPoint(location, false, emptyList())
     }
 
+    fun removePreviewStop(poiId: Int) {
+        if (routeSessionStatus != RouteSessionStatus.NOT_STARTED) {
+            return
+        }
+        val response = routeResponse ?: return
+        val request = currentRouteRequest ?: return
+        val updatedRequest = request.copy(
+            exclude_poi_ids = (request.exclude_poi_ids.orEmpty() + poiId).distinct()
+        )
+        val updatedResponse = removePreviewRoutePoi(response, poiId)
+
+        currentRouteRequest = updatedRequest
+        if (updatedResponse.route.isEmpty()) {
+            routeResponse = null
+            hasPendingRouteChanges = false
+            hasNoGeneratedStops = true
+        } else {
+            routeResponse = updatedResponse
+            hasPendingRouteChanges = false
+            hasNoGeneratedStops = false
+            viewModelScope.launch {
+                repository.saveSnapshot(
+                    SavedRouteSnapshot(
+                        request = updatedRequest,
+                        response = updatedResponse
+                    )
+                )
+            }
+        }
+    }
+
+    fun replacePreviewStop(poiId: Int) {
+        if (routeSessionStatus != RouteSessionStatus.NOT_STARTED) {
+            return
+        }
+        val request = currentRouteRequest ?: return
+        if (!repository.isNetworkAvailable()) {
+            routeError = offlineRouteGenerationMessage
+            return
+        }
+
+        viewModelScope.launch {
+            isRerouting = true
+            clearRouteMessages()
+            val updatedRequest = request.copy(
+                exclude_poi_ids = (request.exclude_poi_ids.orEmpty() + poiId).distinct()
+            )
+
+            try {
+                val generatedRoute = repository.generateRoute(updatedRequest)
+                currentRouteRequest = updatedRequest
+                if (generatedRoute.route.isEmpty()) {
+                    routeResponse = null
+                    hasPendingRouteChanges = false
+                    hasNoGeneratedStops = true
+                    return@launch
+                }
+                routeResponse = generatedRoute
+                hasPendingRouteChanges = false
+                repository.saveSnapshot(
+                    SavedRouteSnapshot(
+                        request = updatedRequest,
+                        response = generatedRoute
+                    )
+                )
+            } catch (e: Exception) {
+                routeError = e.toUserMessage(routeGenerationFailedMessage)
+            } finally {
+                isRerouting = false
+            }
+        }
+    }
+
     fun handleTrackedLocation(routeLocation: RouteStartDto) {
         currentRouteLocation = routeLocation
         trackingError = null
+        var approachLegRefreshed = false
 
         val mutableVisited = visitedPoiIds.toMutableList()
         val newlyVisitedPoiIds = markNearbyPoisVisited(
@@ -474,16 +580,9 @@ internal class RoutePlannerViewModel(
             nextTarget != null &&
             distanceToNextRouteSegmentMeters(routeResponse, nextTarget.poi_id, routeLocation) > OffRouteDistanceMeters
 
+        val nowMs = System.currentTimeMillis()
         if (isCurrentlyOffRoute) {
-            val now = System.currentTimeMillis()
-            val detectedAt = offRouteDetectedAtMs ?: now.also { offRouteDetectedAtMs = it }
-            val rerouteCooldownReady = lastAutoRerouteAtMs == null ||
-                now - (lastAutoRerouteAtMs ?: 0L) >= AutoRerouteCooldownMs
-            val rerouteSustained = now - detectedAt >= OffRouteSustainDurationMs
-
-            if (!isRerouting && rerouteCooldownReady && rerouteSustained) {
-                recalculateRouteFromPoint(routeLocation, true, emptyList())
-            }
+            offRouteDetectedAtMs = offRouteDetectedAtMs ?: nowMs
         } else {
             offRouteDetectedAtMs = null
         }
@@ -503,6 +602,51 @@ internal class RoutePlannerViewModel(
                 skippedIds = skippedPoiIds
             )
             syncVisitedPoisToBackend(newlyVisitedPoiIds)
+            if (
+                routeSessionStatus == RouteSessionStatus.IN_PROGRESS &&
+                routeResponse != null &&
+                nextTarget != null &&
+                repository.isNetworkAvailable()
+            ) {
+                refreshActiveRouteApproachLeg(
+                    previousResponse = routeResponse!!,
+                    currentLocation = routeLocation,
+                    nextTarget = nextTarget
+                )
+                approachLegRefreshed = true
+            } else {
+                currentRouteSnapshot()?.let { snapshot ->
+                    viewModelScope.launch {
+                        repository.saveSnapshot(snapshot)
+                    }
+                }
+            }
+        }
+
+        val offRouteDetectedAt = offRouteDetectedAtMs
+        val autoRerouteCooldownElapsed = lastAutoRerouteAtMs?.let { lastTriggeredAt ->
+            nowMs - lastTriggeredAt >= AutoRerouteCooldownMs
+        } ?: true
+        val offRouteSustained = offRouteDetectedAt != null &&
+            nowMs - offRouteDetectedAt >= OffRouteSustainDurationMs
+
+        if (
+            !approachLegRefreshed &&
+            routeSessionStatus == RouteSessionStatus.IN_PROGRESS &&
+            routeResponse != null &&
+            nextTarget != null &&
+            isCurrentlyOffRoute &&
+            offRouteSustained &&
+            autoRerouteCooldownElapsed &&
+            repository.isNetworkAvailable() &&
+            !isRerouting
+        ) {
+            refreshActiveRouteApproachLeg(
+                previousResponse = routeResponse!!,
+                currentLocation = routeLocation,
+                nextTarget = nextTarget,
+                autoTriggered = true
+            )
         }
     }
 
@@ -1137,6 +1281,59 @@ internal class RoutePlannerViewModel(
             } finally {
                 if (autoTriggered) {
                     lastAutoRerouteAtMs = System.currentTimeMillis()
+                }
+                isRerouting = false
+            }
+        }
+    }
+
+    private fun refreshActiveRouteApproachLeg(
+        previousResponse: RouteResponse,
+        currentLocation: RouteStartDto,
+        nextTarget: RouteItemDto,
+        autoTriggered: Boolean = false
+    ) {
+        val cityToken = currentRouteRequest?.city ?: selectedCity?.slug ?: previousResponse.city
+        val routeLegRequest = RouteLegRequest(
+            city = cityToken,
+            start_lat = currentLocation.lat,
+            start_lon = currentLocation.lon,
+            end_lat = nextTarget.lat,
+            end_lon = nextTarget.lon,
+            end_poi_id = nextTarget.poi_id,
+            end_name = nextTarget.name,
+            pace = currentRouteRequest?.pace ?: previousResponse.pace,
+            start_datetime = defaultRouteStartDateTime().toString(),
+            transport_mode = currentRouteRequest?.transport_mode ?: previousResponse.transport_mode ?: "walk"
+        )
+
+        viewModelScope.launch {
+            isRerouting = true
+            try {
+                val replacementLeg = repository.generateRouteLeg(routeLegRequest)
+                val updatedResponse = replaceActiveRouteApproachLeg(
+                    previousResponse = previousResponse,
+                    nextPoiId = nextTarget.poi_id,
+                    replacementLeg = replacementLeg
+                )
+                routeResponse = updatedResponse
+                val snapshot = currentRouteSnapshot()
+                if (snapshot != null) {
+                    repository.saveSnapshot(snapshot)
+                    persistRouteSession(
+                        status = routeSessionStatus,
+                        skippedIds = skippedPoiIds,
+                        snapshotOverride = snapshot
+                    )
+                }
+            } catch (_: Exception) {
+                currentRouteSnapshot()?.let { snapshot ->
+                    repository.saveSnapshot(snapshot)
+                }
+            } finally {
+                if (autoTriggered) {
+                    lastAutoRerouteAtMs = System.currentTimeMillis()
+                    offRouteDetectedAtMs = null
                 }
                 isRerouting = false
             }
