@@ -11,5 +11,6 @@ data class RouteRequest(
     val start_datetime: String? = null,
     val respect_opening_hours: Boolean = true,
     val exclude_poi_ids: List<Int> = emptyList(),
+    val preferred_poi_ids: List<Int>? = emptyList(),
     val transport_mode: String? = "walk"
 )

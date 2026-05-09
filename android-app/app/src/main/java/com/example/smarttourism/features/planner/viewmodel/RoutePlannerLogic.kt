@@ -153,6 +153,53 @@ internal fun RouteSessionDto.toRouteFeedback(): RouteFeedback? {
     )
 }
 
+internal fun defaultRouteBookmarkTitle(
+    snapshot: SavedRouteSnapshot,
+    cityName: String? = null
+): String {
+    val displayCity = (cityName ?: snapshot.response.city).ifBlank { snapshot.response.city }
+    val leadingStops = snapshot.response.route.take(2).map { item -> item.name }
+    val extraCount = (snapshot.response.route.size - leadingStops.size).coerceAtLeast(0)
+    val stopLabel = buildString {
+        append(leadingStops.joinToString(" • "))
+        if (extraCount > 0) {
+            append(" +")
+            append(extraCount)
+        }
+    }.trim()
+
+    return if (stopLabel.isBlank()) {
+        displayCity
+    } else {
+        "$displayCity • $stopLabel"
+    }
+}
+
+internal fun buildPreviewReplacementCandidates(
+    targetPoiId: Int,
+    routeItems: List<RouteItemDto>,
+    pois: List<PoiDto>,
+    selectedInterests: List<String>,
+    excludePoiIds: List<Int>,
+    limit: Int = 12
+): List<PoiDto> {
+    val targetItem = routeItems.firstOrNull { item -> item.poi_id == targetPoiId } ?: return emptyList()
+    val blockedIds = (routeItems.map { item -> item.poi_id } + excludePoiIds + targetPoiId).toSet()
+    val allowedCategories = selectedInterests.toSet()
+
+    return pois
+        .asSequence()
+        .filter { poi -> poi.id !in blockedIds }
+        .filter { poi -> allowedCategories.isEmpty() || poi.category in allowedCategories }
+        .sortedWith(
+            compareByDescending<PoiDto> { poi -> poi.category == targetItem.category }
+                .thenByDescending { poi -> poi.base_score ?: 0.0 }
+                .thenBy { poi -> poi.name.lowercase(Locale.getDefault()) }
+        )
+        .take(limit)
+        .toList()
+}
+
 internal fun RouteSessionStatus.isRestorable(): Boolean =
     this == RouteSessionStatus.NOT_STARTED ||
         this == RouteSessionStatus.IN_PROGRESS ||

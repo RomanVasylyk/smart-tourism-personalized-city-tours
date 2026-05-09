@@ -41,6 +41,7 @@ class RouteGenerateRequest(BaseModel):
     start_datetime: str | None = None
     respect_opening_hours: bool = True
     exclude_poi_ids: list[int] = Field(default_factory=list)
+    preferred_poi_ids: list[int] = Field(default_factory=list)
     transport_mode: Literal["walk", "walk_or_mhd"] = TRANSPORT_MODE_WALK
 
 
@@ -159,7 +160,28 @@ def get_route_candidates(request: RouteGenerateRequest) -> list[dict]:
             except PsycopgError:
                 fallback_sql, fallback_params = build_sql(include_feedback=False)
                 cur.execute(fallback_sql, fallback_params)
-            return cur.fetchall()
+            rows = cur.fetchall()
+
+            preferred_ids = [poi_id for poi_id in request.preferred_poi_ids if poi_id not in request.exclude_poi_ids]
+            if not preferred_ids:
+                return rows
+
+            existing_ids = {int(row["id"]) for row in rows}
+            missing_preferred_ids = [poi_id for poi_id in preferred_ids if poi_id not in existing_ids]
+            if not missing_preferred_ids:
+                return rows
+
+            preferred_sql = base_select
+            preferred_sql += feedback_joins
+            preferred_sql = preferred_sql.replace("p.wikipedia_url", f"p.wikipedia_url{feedback_columns}")
+            preferred_sql += """
+                WHERE lower(c.name) = lower(%s)
+                  AND p.is_active = TRUE
+                  AND p.id = ANY(%s)
+            """
+            cur.execute(preferred_sql, (city_name, missing_preferred_ids))
+            preferred_rows = cur.fetchall()
+            return rows + preferred_rows
 
 
 def max_exact_poi_evaluations_per_step(
@@ -264,11 +286,13 @@ def approximate_candidate_priority(
     poi: dict,
     approx_travel_minutes: int,
     category_counts: dict[str, int],
+    preferred_poi_ids: set[int],
 ) -> float:
     base_component = float(poi["base_score"] or 0.0) * BASE_SCORE_MULTIPLIER
     repeat_penalty = REPEAT_CATEGORY_PENALTY * category_counts.get(poi["category"], 0)
     travel_penalty = approx_travel_minutes * TRAVEL_MINUTE_PENALTY
-    return base_component - repeat_penalty - travel_penalty
+    preferred_bonus = 24.0 if int(poi["id"]) in preferred_poi_ids else 0.0
+    return base_component + preferred_bonus - repeat_penalty - travel_penalty
 
 
 def shortlist_route_candidates(
@@ -283,6 +307,7 @@ def shortlist_route_candidates(
     city_profile: dict,
     effective_transport_mode: str,
     exact_limit: int,
+    preferred_poi_ids: set[int],
 ) -> list[dict]:
     remaining_candidates = [poi for poi in candidates if poi["id"] not in used_ids]
     if len(remaining_candidates) <= exact_limit:
@@ -314,6 +339,7 @@ def shortlist_route_candidates(
                     poi,
                     approx_travel_minutes=approx_travel + approx_return,
                     category_counts=category_counts,
+                    preferred_poi_ids=preferred_poi_ids,
                 ),
                 float(poi["base_score"] or 0.0),
                 poi,
@@ -347,6 +373,7 @@ def generate_route(request: RouteGenerateRequest) -> dict:
     current_endpoint = start_endpoint
 
     used_ids: set[int] = set()
+    preferred_poi_ids = {poi_id for poi_id in request.preferred_poi_ids if poi_id not in request.exclude_poi_ids}
     category_counts: dict[str, int] = {}
     route_items: list[dict] = []
     legs: list[dict] = []
@@ -373,6 +400,7 @@ def generate_route(request: RouteGenerateRequest) -> dict:
             city_profile=city_profile,
             effective_transport_mode=effective_transport_mode,
             exact_limit=exact_candidate_limit,
+            preferred_poi_ids=preferred_poi_ids,
         )
 
         if not evaluation_candidates:
@@ -424,6 +452,7 @@ def generate_route(request: RouteGenerateRequest) -> dict:
                 category_counts=category_counts,
                 feedback_profile=feedback_profile,
                 effective_transport_mode=effective_transport_mode,
+                preferred_poi_ids=preferred_poi_ids,
             )
 
             if utility > best_utility:

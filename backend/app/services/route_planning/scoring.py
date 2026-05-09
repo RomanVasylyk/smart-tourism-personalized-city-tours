@@ -6,6 +6,7 @@ from app.services.transport_planner import TRANSPORT_MODE_WALK, TravelPlan
 BASE_SCORE_MULTIPLIER = 10.0
 TRAVEL_MINUTE_PENALTY = 0.35
 REPEAT_CATEGORY_PENALTY = 0.8
+PREFERRED_POI_BONUS = 32.0
 
 def clamp(value: float, minimum: float, maximum: float) -> float:
     return max(minimum, min(maximum, value))
@@ -47,6 +48,7 @@ def score_candidate(
     category_counts: dict[str, int],
     feedback_profile: PlannerFeedbackProfile,
     effective_transport_mode: str,
+    preferred_poi_ids: set[int] | None = None,
 ) -> tuple[float, dict[str, float]]:
     poi_stats = PlannerFeedbackStats.from_row(poi, "poi_feedback_")
     category_stats = PlannerFeedbackStats.from_row(poi, "category_feedback_")
@@ -100,8 +102,11 @@ def score_candidate(
             + (rate_signal(transport_stats.interesting_pois_rate) * 0.6)
         )
 
+    preferred_bonus = PREFERRED_POI_BONUS if int(poi["id"]) in (preferred_poi_ids or set()) else 0.0
+
     final_score = (
         base_component
+        + preferred_bonus
         + poi_bonus
         + category_bonus
         + completion_bonus
@@ -114,6 +119,7 @@ def score_candidate(
 
     return final_score, {
         "base_score": base_component,
+        "preferred_bonus": preferred_bonus,
         "poi_bonus": poi_bonus,
         "category_bonus": category_bonus,
         "completion_bonus": completion_bonus,

@@ -9,6 +9,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.smarttourism.R
 import com.example.smarttourism.data.model.ActiveRouteSession
+import com.example.smarttourism.data.model.RouteBookmark
 import com.example.smarttourism.data.model.RouteFeedback
 import com.example.smarttourism.data.model.SavedRouteSnapshot
 import com.example.smarttourism.data.remote.dto.CityDto
@@ -76,7 +77,11 @@ internal class RoutePlannerViewModel(
 
     var routeResponse by mutableStateOf<RouteResponse?>(null)
         private set
+    var routeBookmarks by mutableStateOf<List<RouteBookmark>>(emptyList())
+        private set
     var currentRouteRequest by mutableStateOf<RouteRequest?>(null)
+        private set
+    var activeBookmarkId by mutableStateOf<String?>(null)
         private set
     var hasPendingRouteChanges by mutableStateOf(false)
         private set
@@ -148,6 +153,9 @@ internal class RoutePlannerViewModel(
     val isPublicTransportAvailable: Boolean
         get() = selectedCity?.supportsPublicTransport() == true
 
+    val isCurrentRouteBookmarked: Boolean
+        get() = activeBookmarkId != null
+
     fun initialize() {
         if (initialized) {
             return
@@ -163,6 +171,7 @@ internal class RoutePlannerViewModel(
             return
         }
         selectedCity = city
+        activeBookmarkId = null
         currentRouteRequest = null
         clearRouteMessages()
         clearDisplayedRoute()
@@ -249,6 +258,9 @@ internal class RoutePlannerViewModel(
                 return_to_start = returnToStart,
                 start_datetime = startDateTime.truncatedTo(ChronoUnit.MINUTES).toString(),
                 respect_opening_hours = respectOpeningHours,
+                preferred_poi_ids = currentRouteRequest?.preferred_poi_ids
+                    .orEmpty()
+                    .filterNot { poiId -> poiId in visitedPoiIds || poiId in skippedPoiIds },
                 transport_mode = if (allowPublicTransport && isPublicTransportAvailable) {
                     "walk_or_mhd"
                 } else {
@@ -300,6 +312,63 @@ internal class RoutePlannerViewModel(
             }
         }
     }
+
+    fun saveCurrentRouteBookmark() {
+        val snapshot = currentRouteSnapshot() ?: return
+        viewModelScope.launch {
+            val now = System.currentTimeMillis()
+            val existingBookmark = activeBookmarkId?.let { bookmarkId ->
+                routeBookmarks.firstOrNull { bookmark -> bookmark.id == bookmarkId }
+            }
+            val bookmark = RouteBookmark(
+                id = existingBookmark?.id ?: UUID.randomUUID().toString(),
+                title = existingBookmark?.title
+                    ?: defaultRouteBookmarkTitle(snapshot, selectedCity?.name ?: snapshot.response.city),
+                citySlug = selectedCity?.slug ?: snapshot.request.city,
+                snapshot = snapshot,
+                createdAtEpochMs = existingBookmark?.createdAtEpochMs ?: now,
+                updatedAtEpochMs = now
+            )
+            repository.saveRouteBookmark(bookmark)
+            activeBookmarkId = bookmark.id
+            routeBookmarks = repository.loadRouteBookmarks()
+        }
+    }
+
+    fun openRouteBookmark(bookmarkId: String) {
+        viewModelScope.launch {
+            val bookmark = repository.loadRouteBookmark(bookmarkId) ?: return@launch
+            resetRouteSession()
+            clearRouteMessages()
+            activeBookmarkId = bookmark.id
+            restoreSnapshot(bookmark.snapshot)
+            val bookmarkCity = cities.firstOrNull { city -> city.matchesToken(bookmark.citySlug) }
+                ?: cities.firstOrNull { city -> city.matchesToken(bookmark.snapshot.request.city) }
+            if (bookmarkCity != null) {
+                loadPoisForCity(bookmarkCity)
+            }
+            repository.saveSnapshot(bookmark.snapshot)
+        }
+    }
+
+    fun deleteRouteBookmark(bookmarkId: String) {
+        viewModelScope.launch {
+            repository.deleteRouteBookmark(bookmarkId)
+            if (activeBookmarkId == bookmarkId) {
+                activeBookmarkId = null
+            }
+            routeBookmarks = repository.loadRouteBookmarks()
+        }
+    }
+
+    fun previewReplacementCandidates(poiId: Int): List<PoiDto> =
+        buildPreviewReplacementCandidates(
+            targetPoiId = poiId,
+            routeItems = routeItems,
+            pois = pois,
+            selectedInterests = selectedInterests,
+            excludePoiIds = currentRouteRequest?.exclude_poi_ids.orEmpty()
+        )
 
     fun activateRouteTracking() {
         if (hasPendingRouteChanges) {
@@ -437,7 +506,10 @@ internal class RoutePlannerViewModel(
         val updatedSkipped = (skippedPoiIds + poiId).distinct()
         skippedPoiIds = updatedSkipped
         currentRouteRequest = currentRouteRequest?.copy(
-            exclude_poi_ids = (currentRouteRequest?.exclude_poi_ids.orEmpty() + poiId).distinct()
+            exclude_poi_ids = (currentRouteRequest?.exclude_poi_ids.orEmpty() + poiId).distinct(),
+            preferred_poi_ids = currentRouteRequest?.preferred_poi_ids
+                .orEmpty()
+                .filterNot { preferredPoiId -> preferredPoiId == poiId }
         )
         val nextPendingPoi = nextPendingPoi(routeItems, visitedPoiIds, updatedSkipped)
         currentTargetPoiId = nextPendingPoi?.poi_id
@@ -494,7 +566,8 @@ internal class RoutePlannerViewModel(
         val response = routeResponse ?: return
         val request = currentRouteRequest ?: return
         val updatedRequest = request.copy(
-            exclude_poi_ids = (request.exclude_poi_ids.orEmpty() + poiId).distinct()
+            exclude_poi_ids = (request.exclude_poi_ids.orEmpty() + poiId).distinct(),
+            preferred_poi_ids = request.preferred_poi_ids.orEmpty().filterNot { preferredPoiId -> preferredPoiId == poiId }
         )
         val updatedResponse = removePreviewRoutePoi(response, poiId)
 
@@ -518,7 +591,7 @@ internal class RoutePlannerViewModel(
         }
     }
 
-    fun replacePreviewStop(poiId: Int) {
+    fun replacePreviewStop(poiId: Int, preferredPoiId: Int? = null) {
         if (routeSessionStatus != RouteSessionStatus.NOT_STARTED) {
             return
         }
@@ -531,19 +604,31 @@ internal class RoutePlannerViewModel(
         viewModelScope.launch {
             isRerouting = true
             clearRouteMessages()
+            val updatedPreferredPoiIds = buildList {
+                addAll(request.preferred_poi_ids.orEmpty().filterNot { preferredId -> preferredId == poiId })
+                if (preferredPoiId != null) {
+                    add(preferredPoiId)
+                }
+            }.distinct()
             val updatedRequest = request.copy(
-                exclude_poi_ids = (request.exclude_poi_ids.orEmpty() + poiId).distinct()
+                exclude_poi_ids = (request.exclude_poi_ids.orEmpty() + poiId).distinct(),
+                preferred_poi_ids = updatedPreferredPoiIds
             )
 
             try {
                 val generatedRoute = repository.generateRoute(updatedRequest)
-                currentRouteRequest = updatedRequest
                 if (generatedRoute.route.isEmpty()) {
                     routeResponse = null
+                    currentRouteRequest = updatedRequest
                     hasPendingRouteChanges = false
                     hasNoGeneratedStops = true
                     return@launch
                 }
+                if (preferredPoiId != null && generatedRoute.route.none { item -> item.poi_id == preferredPoiId }) {
+                    routeError = routeGenerationFailedMessage
+                    return@launch
+                }
+                currentRouteRequest = updatedRequest
                 routeResponse = generatedRoute
                 hasPendingRouteChanges = false
                 repository.saveSnapshot(
@@ -724,6 +809,7 @@ internal class RoutePlannerViewModel(
         val activeStatus = routeSessionStatus
         val activeStartedAt = routeStartedAt ?: defaultRouteStartDateTime().toString()
 
+        activeBookmarkId = null
         hasPendingRouteChanges = false
         routeResponse = null
         currentRouteRequest = null
@@ -766,6 +852,7 @@ internal class RoutePlannerViewModel(
     }
 
     private suspend fun bootstrap() {
+        routeBookmarks = repository.loadRouteBookmarks()
         val activeSession = repository.loadActiveSession()
         val savedSnapshot = activeSession?.snapshot ?: repository.loadSnapshot()
         var restoredCityToken = savedSnapshot?.request?.city
@@ -871,7 +958,18 @@ internal class RoutePlannerViewModel(
     private fun restoreSnapshot(snapshot: SavedRouteSnapshot) {
         hasPendingRouteChanges = false
         hasNoGeneratedStops = false
-        currentRouteRequest = snapshot.request.copy(
+        currentRouteRequest = RouteRequest(
+            city = snapshot.request.city,
+            start_lat = snapshot.request.start_lat,
+            start_lon = snapshot.request.start_lon,
+            available_minutes = snapshot.request.available_minutes,
+            interests = snapshot.request.interests,
+            pace = snapshot.request.pace,
+            return_to_start = snapshot.request.return_to_start,
+            start_datetime = snapshot.request.start_datetime,
+            respect_opening_hours = snapshot.request.respect_opening_hours,
+            exclude_poi_ids = snapshot.request.exclude_poi_ids.orEmpty(),
+            preferred_poi_ids = snapshot.request.preferred_poi_ids.orEmpty(),
             transport_mode = snapshot.request.transport_mode ?: "walk"
         )
         routeResponse = snapshot.response
@@ -1228,6 +1326,9 @@ internal class RoutePlannerViewModel(
                 available_minutes = remainingMinutes,
                 start_datetime = defaultRouteStartDateTime().toString(),
                 exclude_poi_ids = (visitedPoiIds + effectiveSkippedPoiIds).distinct(),
+                preferred_poi_ids = baseRequest.preferred_poi_ids
+                    .orEmpty()
+                    .filterNot { poiId -> poiId in visitedPoiIds || poiId in effectiveSkippedPoiIds },
                 transport_mode = baseRequest.transport_mode ?: "walk"
             )
 

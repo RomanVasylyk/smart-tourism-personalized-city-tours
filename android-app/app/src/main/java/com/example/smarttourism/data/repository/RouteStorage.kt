@@ -2,6 +2,7 @@ package com.example.smarttourism.data.repository
 
 import android.content.Context
 import com.example.smarttourism.data.model.ActiveRouteSession
+import com.example.smarttourism.data.model.RouteBookmark
 import com.example.smarttourism.data.model.SavedRouteSnapshot
 import java.util.UUID
 
@@ -31,6 +32,26 @@ object RouteStorage {
 
     suspend fun clearActiveSession(context: Context) {
         OfflineCacheRepository.clearActiveRouteSession(context)
+    }
+
+    suspend fun saveRouteBookmark(
+        context: Context,
+        bookmark: RouteBookmark
+    ) {
+        OfflineCacheRepository.saveRouteBookmark(context, bookmark)
+    }
+
+    suspend fun loadRouteBookmarks(context: Context): List<RouteBookmark> =
+        OfflineCacheRepository.getRouteBookmarks(context)
+
+    suspend fun loadRouteBookmark(
+        context: Context,
+        bookmarkId: String
+    ): RouteBookmark? =
+        OfflineCacheRepository.getRouteBookmark(context, bookmarkId)
+
+    suspend fun deleteRouteBookmark(context: Context, bookmarkId: String) {
+        OfflineCacheRepository.deleteRouteBookmark(context, bookmarkId)
     }
 
     fun getOrCreateDeviceId(context: Context): String {

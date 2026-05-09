@@ -1,6 +1,7 @@
 package com.example.smarttourism.data.repository
 
 import android.content.Context
+import com.example.smarttourism.data.local.BookmarkedRouteEntity
 import com.example.smarttourism.data.local.CachedCityEntity
 import com.example.smarttourism.data.local.CachedLastRouteEntity
 import com.example.smarttourism.data.local.CachedPoiEntity
@@ -11,6 +12,7 @@ import com.example.smarttourism.data.local.PendingFeedbackEntity
 import com.example.smarttourism.data.local.PendingPoiVisitSyncEntity
 import com.example.smarttourism.data.local.PendingRouteSessionSyncEntity
 import com.example.smarttourism.data.model.ActiveRouteSession
+import com.example.smarttourism.data.model.RouteBookmark
 import com.example.smarttourism.data.model.SavedRouteSnapshot
 import com.example.smarttourism.data.remote.api.PoiApi
 import com.example.smarttourism.data.remote.dto.CityBboxDto
@@ -158,6 +160,36 @@ object OfflineCacheRepository {
             .getLastRoute()
             ?.snapshotJson
             ?.let { rawJson -> fromJsonOrNull(rawJson, SavedRouteSnapshot::class.java) }
+
+    suspend fun saveRouteBookmark(
+        context: Context,
+        bookmark: RouteBookmark
+    ) {
+        dao(context).upsertBookmarkedRoute(
+            BookmarkedRouteEntity(
+                bookmarkId = bookmark.id,
+                title = bookmark.title,
+                citySlug = bookmark.citySlug,
+                snapshotJson = gson.toJson(bookmark.snapshot),
+                createdAtEpochMs = bookmark.createdAtEpochMs,
+                updatedAtEpochMs = bookmark.updatedAtEpochMs
+            )
+        )
+    }
+
+    suspend fun getRouteBookmarks(context: Context): List<RouteBookmark> =
+        dao(context)
+            .getBookmarkedRoutes()
+            .mapNotNull { entity -> entity.toRouteBookmarkOrNull() }
+
+    suspend fun getRouteBookmark(context: Context, bookmarkId: String): RouteBookmark? =
+        dao(context)
+            .getBookmarkedRoute(bookmarkId)
+            ?.toRouteBookmarkOrNull()
+
+    suspend fun deleteRouteBookmark(context: Context, bookmarkId: String) {
+        dao(context).deleteBookmarkedRoute(bookmarkId)
+    }
 
     suspend fun saveActiveRouteSession(context: Context, session: ActiveRouteSession) {
         dao(context).saveActiveRouteSession(
@@ -397,6 +429,18 @@ object OfflineCacheRepository {
 
     private fun <T> fromJsonOrNull(rawJson: String, clazz: Class<T>): T? =
         runCatching { gson.fromJson(rawJson, clazz) }.getOrNull()
+
+    private fun BookmarkedRouteEntity.toRouteBookmarkOrNull(): RouteBookmark? {
+        val snapshot = fromJsonOrNull(snapshotJson, SavedRouteSnapshot::class.java) ?: return null
+        return RouteBookmark(
+            id = bookmarkId,
+            title = title,
+            citySlug = citySlug,
+            snapshot = snapshot,
+            createdAtEpochMs = createdAtEpochMs,
+            updatedAtEpochMs = updatedAtEpochMs
+        )
+    }
 
     private data class SyncBatchResult(
         val syncedCount: Int,

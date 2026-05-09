@@ -55,6 +55,18 @@ interface OfflineCacheDao {
     @Query("DELETE FROM cached_last_route WHERE cacheKey = :cacheKey")
     suspend fun clearLastRoute(cacheKey: String = LastRouteCacheKey)
 
+    @Query("SELECT * FROM bookmarked_routes ORDER BY updatedAtEpochMs DESC, title")
+    suspend fun getBookmarkedRoutes(): List<BookmarkedRouteEntity>
+
+    @Query("SELECT * FROM bookmarked_routes WHERE bookmarkId = :bookmarkId LIMIT 1")
+    suspend fun getBookmarkedRoute(bookmarkId: String): BookmarkedRouteEntity?
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsertBookmarkedRoute(route: BookmarkedRouteEntity)
+
+    @Query("DELETE FROM bookmarked_routes WHERE bookmarkId = :bookmarkId")
+    suspend fun deleteBookmarkedRoute(bookmarkId: String)
+
     @Query("SELECT * FROM cached_route_sessions WHERE isActive = 1 ORDER BY updatedAtEpochMs DESC LIMIT 1")
     suspend fun getActiveRouteSession(): CachedRouteSessionEntity?
 

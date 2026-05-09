@@ -4,6 +4,7 @@ import android.content.Context
 import com.example.smarttourism.core.network.ApiModule
 import com.example.smarttourism.core.platform.NetworkMonitor
 import com.example.smarttourism.data.model.ActiveRouteSession
+import com.example.smarttourism.data.model.RouteBookmark
 import com.example.smarttourism.data.model.SavedRouteSnapshot
 import com.example.smarttourism.data.remote.api.PoiApi
 import com.example.smarttourism.data.remote.dto.CityDto
@@ -78,6 +79,20 @@ internal class PlannerRepository(
 
     suspend fun clearActiveSession() {
         RouteStorage.clearActiveSession(context)
+    }
+
+    suspend fun saveRouteBookmark(bookmark: RouteBookmark) {
+        RouteStorage.saveRouteBookmark(context, bookmark)
+    }
+
+    suspend fun loadRouteBookmarks(): List<RouteBookmark> =
+        RouteStorage.loadRouteBookmarks(context)
+
+    suspend fun loadRouteBookmark(bookmarkId: String): RouteBookmark? =
+        RouteStorage.loadRouteBookmark(context, bookmarkId)
+
+    suspend fun deleteRouteBookmark(bookmarkId: String) {
+        RouteStorage.deleteRouteBookmark(context, bookmarkId)
     }
 
     suspend fun getPendingSyncOperationCount(): Int =

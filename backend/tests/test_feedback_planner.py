@@ -49,7 +49,15 @@ def make_travel_plan(mode: str, minutes: int, distance_meters: float, source: st
     )
 
 
-def run_route(monkeypatch, *, candidates: list[dict], profile: PlannerFeedbackProfile, travel_plans: dict[int, TravelPlan], transport_enabled: bool = False) -> dict:
+def run_route(
+    monkeypatch,
+    *,
+    candidates: list[dict],
+    profile: PlannerFeedbackProfile,
+    travel_plans: dict[int, TravelPlan],
+    transport_enabled: bool = False,
+    preferred_poi_ids: list[int] | None = None,
+) -> dict:
     plan_by_coords = {(candidate["lat"], candidate["lon"]): travel_plans[candidate["id"]] for candidate in candidates}
 
     monkeypatch.setattr("app.services.route_planner.get_route_candidates", lambda request: candidates)
@@ -75,6 +83,7 @@ def run_route(monkeypatch, *, candidates: list[dict], profile: PlannerFeedbackPr
         return_to_start=False,
         start_datetime="2026-04-27T10:00",
         respect_opening_hours=True,
+        preferred_poi_ids=preferred_poi_ids or [],
         transport_mode="walk_or_mhd" if transport_enabled else "walk",
     )
     return generate_route(request)
@@ -276,3 +285,33 @@ def test_generate_route_limits_exact_candidate_evaluations(monkeypatch):
 
     assert result["route"] == []
     assert plan_travel_calls == 15
+
+
+def test_preferred_poi_ids_can_override_best_scored_default(monkeypatch):
+    neutral_profile = PlannerFeedbackProfile()
+    candidates = [
+        make_candidate(401, "Castle", "historical_site", 48.3172, 18.0861, 0.95, 20),
+        make_candidate(402, "Museum", "museum", 48.3200, 18.0900, 0.70, 20),
+    ]
+    travel_plans = {
+        401: make_travel_plan("walk", 7, 650),
+        402: make_travel_plan("walk", 7, 660),
+    }
+
+    default_route = run_route(
+        monkeypatch,
+        candidates=candidates,
+        profile=neutral_profile,
+        travel_plans=travel_plans,
+    )
+    preferred_route = run_route(
+        monkeypatch,
+        candidates=candidates,
+        profile=neutral_profile,
+        travel_plans=travel_plans,
+        preferred_poi_ids=[402],
+    )
+
+    assert default_route["route"][0]["poi_id"] == 401
+    assert preferred_route["route"][0]["poi_id"] == 402
+    assert preferred_route["route"][0]["planner_score_breakdown"]["preferred_bonus"] > 0

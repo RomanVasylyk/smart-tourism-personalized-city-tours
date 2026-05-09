@@ -71,6 +71,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.example.smarttourism.data.model.ActiveRouteSession
+import com.example.smarttourism.data.model.RouteBookmark
 import com.example.smarttourism.core.network.ApiModule
 import com.example.smarttourism.data.remote.dto.CityDto
 import com.example.smarttourism.core.platform.NetworkMonitor
@@ -850,6 +851,198 @@ internal fun RoutePreviewSummaryPanel(routeResponse: RouteResponse) {
                     value = transportLabel,
                     modifier = Modifier.weight(1f)
                 )
+            }
+        }
+    }
+}
+
+@Composable
+internal fun RouteBookmarksSheetContent(
+    bookmarks: List<RouteBookmark>,
+    activeBookmarkId: String?,
+    onOpenBookmark: (String) -> Unit,
+    onDeleteBookmark: (String) -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text(
+                text = stringResource(R.string.route_bookmarks_title),
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.SemiBold
+            )
+            Text(
+                text = stringResource(R.string.route_bookmarks_body),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+
+        if (bookmarks.isEmpty()) {
+            Text(
+                text = stringResource(R.string.route_bookmarks_empty),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        } else {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                bookmarks.forEach { bookmark ->
+                    Surface(
+                        shape = RoundedCornerShape(18.dp),
+                        tonalElevation = 2.dp,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.Top
+                            ) {
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = bookmark.title,
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                    Text(
+                                        text = stringResource(
+                                            R.string.route_bookmark_meta,
+                                            bookmark.snapshot.response.city,
+                                            bookmark.snapshot.response.poi_count
+                                        ),
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                                if (activeBookmarkId == bookmark.id) {
+                                    Surface(
+                                        shape = RoundedCornerShape(999.dp),
+                                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
+                                    ) {
+                                        Text(
+                                            text = stringResource(R.string.route_bookmark_current),
+                                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                                            style = MaterialTheme.typography.labelMedium,
+                                            color = MaterialTheme.colorScheme.primary,
+                                            fontWeight = FontWeight.Medium
+                                        )
+                                    }
+                                }
+                            }
+                            Text(
+                                text = bookmark.snapshot.response.route.take(3).joinToString(" • ") { item -> item.name },
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                Button(
+                                    onClick = { onOpenBookmark(bookmark.id) },
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Text(stringResource(R.string.action_open_bookmark))
+                                }
+                                OutlinedButton(
+                                    onClick = { onDeleteBookmark(bookmark.id) },
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Text(stringResource(R.string.action_delete_bookmark))
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+internal fun ReplaceRouteStopSheetContent(
+    targetStopName: String,
+    candidates: List<PoiDto>,
+    isActionInProgress: Boolean,
+    onUseBestSuggestion: () -> Unit,
+    onChooseCandidate: (Int) -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text(
+                text = stringResource(R.string.route_replace_stop_title),
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.SemiBold
+            )
+            Text(
+                text = stringResource(R.string.route_replace_stop_body, targetStopName),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+
+        Button(
+            onClick = onUseBestSuggestion,
+            enabled = !isActionInProgress,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(stringResource(R.string.action_replace_with_best))
+        }
+
+        if (candidates.isEmpty()) {
+            Text(
+                text = stringResource(R.string.route_replace_candidates_empty),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        } else {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                candidates.forEach { poi ->
+                    Surface(
+                        shape = RoundedCornerShape(18.dp),
+                        tonalElevation = 2.dp,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = poi.name,
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                                Text(
+                                    text = categoryLabel(poi.category),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                            OutlinedButton(
+                                onClick = { onChooseCandidate(poi.id) },
+                                enabled = !isActionInProgress
+                            ) {
+                                Text(stringResource(R.string.action_choose_stop))
+                            }
+                        }
+                    }
+                }
             }
         }
     }

@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -68,6 +69,7 @@ fun RoutePlannerScreen() {
     val offlineMapProgress = plannerViewModel.offlineMapProgress
     val offlineMapMessage = plannerViewModel.offlineMapMessage
     val routeResponse = plannerViewModel.routeResponse
+    val routeBookmarks = plannerViewModel.routeBookmarks
     val isRouteLoading = plannerViewModel.isRouteLoading
     val routeError = plannerViewModel.routeError
     val isRerouting = plannerViewModel.isRerouting
@@ -93,6 +95,8 @@ fun RoutePlannerScreen() {
     val progressMetrics = plannerViewModel.progressMetrics
     val selectedCityAvailableCategories = plannerViewModel.selectedCityAvailableCategories
     val isPublicTransportAvailable = plannerViewModel.isPublicTransportAvailable
+    val activeBookmarkId = plannerViewModel.activeBookmarkId
+    val isCurrentRouteBookmarked = plannerViewModel.isCurrentRouteBookmarked
     val isPlannerEditingLocked =
         routeSessionStatus == RouteSessionStatus.IN_PROGRESS ||
             routeSessionStatus == RouteSessionStatus.PAUSED
@@ -106,7 +110,9 @@ fun RoutePlannerScreen() {
     var isMapFullScreen by remember { mutableStateOf(false) }
     var isParameterSheetOpen by remember { mutableStateOf(false) }
     var isStopsSheetOpen by remember { mutableStateOf(false) }
+    var isBookmarksSheetOpen by remember { mutableStateOf(false) }
     var isFeedbackDialogOpen by remember { mutableStateOf(false) }
+    var replacingPoiId by remember { mutableStateOf<Int?>(null) }
     var locationError by remember { mutableStateOf<String?>(null) }
     var trackingPermissionAction by remember { mutableStateOf(TrackingPermissionAction.START) }
     var autoOpenedFeedbackToken by remember { mutableStateOf<String?>(null) }
@@ -118,12 +124,16 @@ fun RoutePlannerScreen() {
     LaunchedEffect(plannerMode) {
         if (plannerMode != PlannerMode.PREVIEW) {
             isParameterSheetOpen = false
+            replacingPoiId = null
         }
         if (plannerMode == PlannerMode.ACTIVE || plannerMode == PlannerMode.COMPLETED) {
             isSelectingStart = false
         }
         if (plannerMode != PlannerMode.ACTIVE) {
             isStopsSheetOpen = false
+        }
+        if (plannerMode == PlannerMode.ACTIVE) {
+            isBookmarksSheetOpen = false
         }
         if (plannerMode != PlannerMode.COMPLETED) {
             isFeedbackDialogOpen = false
@@ -343,6 +353,22 @@ fun RoutePlannerScreen() {
 
             when (plannerMode) {
                 PlannerMode.PLANNING -> {
+                    if (routeBookmarks.isNotEmpty()) {
+                        item {
+                            OutlinedButton(
+                                onClick = { isBookmarksSheetOpen = true },
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text(
+                                    stringResource(
+                                        R.string.action_open_route_bookmarks_with_count,
+                                        routeBookmarks.size
+                                    )
+                                )
+                            }
+                        }
+                    }
+
                     item {
                         CitySelectorCard(
                             cities = cities,
@@ -485,6 +511,34 @@ fun RoutePlannerScreen() {
                         )
                     }
 
+                    item {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            Button(
+                                onClick = { plannerViewModel.saveCurrentRouteBookmark() },
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Text(
+                                    stringResource(
+                                        if (isCurrentRouteBookmarked) {
+                                            R.string.action_update_route_bookmark
+                                        } else {
+                                            R.string.action_save_route_bookmark
+                                        }
+                                    )
+                                )
+                            }
+                            OutlinedButton(
+                                onClick = { isBookmarksSheetOpen = true },
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Text(stringResource(R.string.action_open_route_bookmarks))
+                            }
+                        }
+                    }
+
                     routeStopItems(
                         titleRes = R.string.route_section_all_stops,
                         routeStops = routeItems,
@@ -498,7 +552,7 @@ fun RoutePlannerScreen() {
                         highlightedPoiId = progressMetrics.nextTarget?.poi_id,
                         onMarkVisited = { poiId -> plannerViewModel.markRouteStopVisited(poiId) },
                         onSkip = { poiId -> plannerViewModel.removePreviewStop(poiId) },
-                        onReplace = { poiId -> plannerViewModel.replacePreviewStop(poiId) }
+                        onReplace = { poiId -> replacingPoiId = poiId }
                     )
                 }
 
@@ -533,6 +587,34 @@ fun RoutePlannerScreen() {
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Text(stringResource(R.string.action_plan_another_route))
+                        }
+                    }
+
+                    item {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            Button(
+                                onClick = { plannerViewModel.saveCurrentRouteBookmark() },
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Text(
+                                    stringResource(
+                                        if (isCurrentRouteBookmarked) {
+                                            R.string.action_update_route_bookmark
+                                        } else {
+                                            R.string.action_save_route_bookmark
+                                        }
+                                    )
+                                )
+                            }
+                            OutlinedButton(
+                                onClick = { isBookmarksSheetOpen = true },
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Text(stringResource(R.string.action_open_route_bookmarks))
+                            }
                         }
                     }
 
@@ -657,6 +739,59 @@ fun RoutePlannerScreen() {
                         onGenerateRoute = {
                             plannerViewModel.generateRoute()
                             isParameterSheetOpen = false
+                        }
+                    )
+                }
+            }
+        }
+    }
+
+    if (isBookmarksSheetOpen) {
+        ModalBottomSheet(
+            onDismissRequest = { isBookmarksSheetOpen = false }
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 16.dp, end = 16.dp, bottom = 32.dp)
+            ) {
+                RouteBookmarksSheetContent(
+                    bookmarks = routeBookmarks,
+                    activeBookmarkId = activeBookmarkId,
+                    onOpenBookmark = { bookmarkId ->
+                        plannerViewModel.openRouteBookmark(bookmarkId)
+                        isBookmarksSheetOpen = false
+                    },
+                    onDeleteBookmark = { bookmarkId ->
+                        plannerViewModel.deleteRouteBookmark(bookmarkId)
+                    }
+                )
+            }
+        }
+    }
+
+    replacingPoiId?.let { targetPoiId ->
+        val targetStop = routeItems.firstOrNull { item -> item.poi_id == targetPoiId }
+        if (targetStop != null) {
+            ModalBottomSheet(
+                onDismissRequest = { replacingPoiId = null }
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 16.dp, end = 16.dp, bottom = 32.dp)
+                ) {
+                    ReplaceRouteStopSheetContent(
+                        targetStopName = targetStop.name,
+                        candidates = plannerViewModel.previewReplacementCandidates(targetPoiId),
+                        isActionInProgress = isRerouting,
+                        onUseBestSuggestion = {
+                            plannerViewModel.replacePreviewStop(targetPoiId)
+                            replacingPoiId = null
+                        },
+                        onChooseCandidate = { preferredPoiId ->
+                            plannerViewModel.replacePreviewStop(targetPoiId, preferredPoiId)
+                            replacingPoiId = null
                         }
                     )
                 }
