@@ -74,6 +74,7 @@ fun RoutePlannerScreen() {
     val routeError = plannerViewModel.routeError
     val isRerouting = plannerViewModel.isRerouting
     val availableMinutes = plannerViewModel.availableMinutes
+    val maxAvailableMinutesLimit = plannerViewModel.maxAvailableMinutesLimit
     val pace = plannerViewModel.pace
     val returnToStart = plannerViewModel.returnToStart
     val respectOpeningHours = plannerViewModel.respectOpeningHours
@@ -435,6 +436,7 @@ fun RoutePlannerScreen() {
                     item {
                         RouteParametersCard(
                             availableMinutes = availableMinutes,
+                            maxAvailableMinutes = maxAvailableMinutesLimit,
                             onAvailableMinutesChange = { plannerViewModel.updateAvailableMinutes(it) },
                             availableInterests = selectedCityAvailableCategories,
                             selectedInterests = selectedInterests,
@@ -717,6 +719,7 @@ fun RoutePlannerScreen() {
                 item {
                     RouteParametersCard(
                         availableMinutes = availableMinutes,
+                        maxAvailableMinutes = maxAvailableMinutesLimit,
                         onAvailableMinutesChange = { plannerViewModel.updateAvailableMinutes(it) },
                         availableInterests = selectedCityAvailableCategories,
                         selectedInterests = selectedInterests,

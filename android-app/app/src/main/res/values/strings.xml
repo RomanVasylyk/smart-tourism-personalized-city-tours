@@ -86,7 +86,6 @@
     <string name="allow_public_transport_label">Allow MHD</string>
     <string name="allow_public_transport_body">Allow the planner to combine walking with city public transport where the selected city supports it.</string>
     <string name="available_time_label">Available time</string>
-    <string name="available_minutes_option">%1$d minutes</string>
     <string name="interests_label">Interests</string>
     <string name="interests_unavailable">No categories are configured for the selected city.</string>
     <string name="pace_label">Pace</string>

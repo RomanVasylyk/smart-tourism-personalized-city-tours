@@ -46,6 +46,7 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -102,6 +103,7 @@ import java.time.temporal.ChronoUnit
 import java.util.Locale
 import java.util.UUID
 import kotlin.math.ceil
+import kotlin.math.roundToInt
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 
@@ -368,6 +370,7 @@ internal fun StartPointCard(
 @OptIn(ExperimentalLayoutApi::class)
 internal fun RouteParametersCard(
     availableMinutes: Int,
+    maxAvailableMinutes: Int,
     onAvailableMinutesChange: (Int) -> Unit,
     availableInterests: List<String>,
     selectedInterests: List<String>,
@@ -427,13 +430,37 @@ internal fun RouteParametersCard(
                 text = stringResource(R.string.available_time_label),
                 style = MaterialTheme.typography.labelLarge
             )
-            SingleChoiceChipRow(
-                options = AvailableMinutesOptions,
-                selectedOption = availableMinutes,
-                enabled = isEditingEnabled,
-                label = { option -> Text(stringResource(R.string.available_minutes_option, option)) },
-                onOptionSelected = onAvailableMinutesChange
-            )
+            val sliderMaximum = maxOf(MinimumAvailableMinutes, maxAvailableMinutes)
+            val sliderSteps = ((sliderMaximum - MinimumAvailableMinutes) / AvailableMinutesStepMinutes - 1)
+                .coerceAtLeast(0)
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = formatAvailableMinutes(availableMinutes),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Text(
+                        text = "${formatAvailableMinutes(MinimumAvailableMinutes)} - ${formatAvailableMinutes(sliderMaximum)}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                Slider(
+                    value = availableMinutes.toFloat(),
+                    onValueChange = { rawValue ->
+                        val steppedValue = rawValue.roundToInt()
+                        onAvailableMinutesChange(steppedValue)
+                    },
+                    valueRange = MinimumAvailableMinutes.toFloat()..sliderMaximum.toFloat(),
+                    steps = sliderSteps,
+                    enabled = isEditingEnabled
+                )
+            }
 
             Text(
                 text = stringResource(R.string.pace_label),
@@ -583,6 +610,16 @@ private fun CompactToggleRow(
                 enabled = enabled
             )
         }
+    }
+}
+
+private fun formatAvailableMinutes(totalMinutes: Int): String {
+    val hours = totalMinutes / 60
+    val minutes = totalMinutes % 60
+    return when {
+        hours == 0 -> "${minutes} min"
+        minutes == 0 -> "${hours} h"
+        else -> "${hours} h ${minutes} min"
     }
 }
 

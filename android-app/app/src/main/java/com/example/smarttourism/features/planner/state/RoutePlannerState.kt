@@ -7,7 +7,9 @@ import java.util.Locale
 
 internal const val DefaultCitySlug = "nitra"
 internal val EmptyStartPoint = RouteStartDto(lat = 48.3076, lon = 18.0845)
-internal val AvailableMinutesOptions = listOf(120, 180, 240)
+internal const val MinimumAvailableMinutes = 30
+internal const val MaximumAvailableMinutes = 720
+internal const val AvailableMinutesStepMinutes = 15
 internal val DefaultInterestCategories = listOf(
     "attraction",
     "museum",

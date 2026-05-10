@@ -156,6 +156,9 @@ internal class RoutePlannerViewModel(
     val isCurrentRouteBookmarked: Boolean
         get() = activeBookmarkId != null
 
+    val maxAvailableMinutesLimit: Int
+        get() = maxAvailableMinutesFor(selectedCity)
+
     fun initialize() {
         if (initialized) {
             return
@@ -188,7 +191,7 @@ internal class RoutePlannerViewModel(
     }
 
     fun updateAvailableMinutes(value: Int) {
-        availableMinutes = value
+        availableMinutes = clampAvailableMinutes(value)
         hasNoGeneratedStops = false
         invalidateRoutePreviewIfAllowed()
     }
@@ -974,7 +977,7 @@ internal class RoutePlannerViewModel(
         )
         routeResponse = snapshot.response
         startPoint = RouteStartDto(snapshot.request.start_lat, snapshot.request.start_lon)
-        availableMinutes = snapshot.request.available_minutes
+        availableMinutes = clampAvailableMinutes(snapshot.request.available_minutes, city = null)
         pace = snapshot.request.pace
         returnToStart = snapshot.request.return_to_start
         respectOpeningHours = snapshot.request.respect_opening_hours
@@ -1034,6 +1037,7 @@ internal class RoutePlannerViewModel(
         selectedCity = city
         isPoiLoading = true
         offlineMapProgress = null
+        availableMinutes = clampAvailableMinutes(availableMinutes, city)
 
         if (selectedInterests.isEmpty()) {
             selectedInterests = city.availableCategories()
@@ -1076,6 +1080,30 @@ internal class RoutePlannerViewModel(
         }
 
         offlineStoredRegion = offlineMapManager.findRegionBySlug(city.slug)
+    }
+
+    private fun maxAvailableMinutesFor(city: CityDto?): Int =
+        city?.routing_limits?.max_available_minutes
+            ?.coerceIn(MinimumAvailableMinutes, MaximumAvailableMinutes)
+            ?: MaximumAvailableMinutes
+
+    private fun clampAvailableMinutes(value: Int, city: CityDto? = selectedCity): Int {
+        val maxAllowedMinutes = maxAvailableMinutesFor(city)
+        val clampedValue = value.coerceIn(MinimumAvailableMinutes, maxAllowedMinutes)
+        val relativeMinutes = clampedValue - MinimumAvailableMinutes
+        val remainder = relativeMinutes % AvailableMinutesStepMinutes
+
+        if (remainder == 0) {
+            return clampedValue
+        }
+
+        val roundedValue = if (remainder >= AvailableMinutesStepMinutes / 2) {
+            clampedValue + (AvailableMinutesStepMinutes - remainder)
+        } else {
+            clampedValue - remainder
+        }
+
+        return roundedValue.coerceIn(MinimumAvailableMinutes, maxAllowedMinutes)
     }
 
     private fun refreshPendingSyncOperationCount() {
