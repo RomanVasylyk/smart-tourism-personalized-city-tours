@@ -11,6 +11,7 @@ import com.example.smarttourism.R
 import com.example.smarttourism.data.model.ActiveRouteSession
 import com.example.smarttourism.data.model.RouteBookmark
 import com.example.smarttourism.data.model.RouteFeedback
+import com.example.smarttourism.data.model.RouteHistoryEntry
 import com.example.smarttourism.data.model.SavedRouteSnapshot
 import com.example.smarttourism.data.remote.dto.CityDto
 import com.example.smarttourism.data.remote.dto.PoiDto
@@ -49,6 +50,7 @@ internal class RoutePlannerViewModel(
     private val offlineMapDownloadedMessage = appContext.getString(R.string.offline_map_download_complete)
     private val offlineMapDeletedMessage = appContext.getString(R.string.offline_map_delete_complete)
     private val pendingSyncQueuedMessage = appContext.getString(R.string.pending_sync_queued)
+    private val routeHistoryLoadFailedMessage = appContext.getString(R.string.route_history_load_failed)
 
     private var initialized = false
 
@@ -79,6 +81,8 @@ internal class RoutePlannerViewModel(
         private set
     var routeBookmarks by mutableStateOf<List<RouteBookmark>>(emptyList())
         private set
+    var routeHistory by mutableStateOf<List<RouteHistoryEntry>>(emptyList())
+        private set
     var currentRouteRequest by mutableStateOf<RouteRequest?>(null)
         private set
     var activeBookmarkId by mutableStateOf<String?>(null)
@@ -87,7 +91,11 @@ internal class RoutePlannerViewModel(
         private set
     var isRouteLoading by mutableStateOf(false)
         private set
+    var isRouteHistoryLoading by mutableStateOf(false)
+        private set
     var routeError by mutableStateOf<String?>(null)
+        private set
+    var routeHistoryError by mutableStateOf<String?>(null)
         private set
     var hasNoGeneratedStops by mutableStateOf(false)
         private set
@@ -166,6 +174,12 @@ internal class RoutePlannerViewModel(
         initialized = true
         viewModelScope.launch {
             bootstrap()
+        }
+    }
+
+    fun loadRouteHistory(forceRefresh: Boolean = true) {
+        viewModelScope.launch {
+            refreshRouteHistory(forceRefresh)
         }
     }
 
@@ -382,18 +396,27 @@ internal class RoutePlannerViewModel(
             return
         }
 
-        if (
+        val shouldStartFreshSession =
             routeSessionStatus == RouteSessionStatus.NOT_STARTED ||
-            routeSessionStatus == RouteSessionStatus.COMPLETED ||
-            routeSessionStatus == RouteSessionStatus.CANCELLED
-        ) {
+                routeSessionStatus == RouteSessionStatus.COMPLETED ||
+                routeSessionStatus == RouteSessionStatus.CANCELLED
+
+        if (shouldStartFreshSession) {
             visitedPoiIds = emptyList()
             skippedPoiIds = emptyList()
             routeFeedback = null
         }
 
-        val activeRouteId = routeId ?: UUID.randomUUID().toString()
-        val activeStartedAt = routeStartedAt ?: defaultRouteStartDateTime().toString()
+        val activeRouteId = if (shouldStartFreshSession) {
+            UUID.randomUUID().toString()
+        } else {
+            routeId ?: UUID.randomUUID().toString()
+        }
+        val activeStartedAt = if (shouldStartFreshSession) {
+            defaultRouteStartDateTime().toString()
+        } else {
+            routeStartedAt ?: defaultRouteStartDateTime().toString()
+        }
 
         routeId = activeRouteId
         routeStartedAt = activeStartedAt
@@ -811,6 +834,10 @@ internal class RoutePlannerViewModel(
         val activeRouteId = routeId
         val activeStatus = routeSessionStatus
         val activeStartedAt = routeStartedAt ?: defaultRouteStartDateTime().toString()
+        val cancelledFinishedAt = defaultRouteStartDateTime().toString()
+        val existingHistoryEntry = activeRouteId?.let { activeId ->
+            routeHistory.firstOrNull { entry -> entry.routeId == activeId }
+        }
 
         activeBookmarkId = null
         hasPendingRouteChanges = false
@@ -824,7 +851,22 @@ internal class RoutePlannerViewModel(
             snapshot != null &&
             (activeStatus == RouteSessionStatus.IN_PROGRESS || activeStatus == RouteSessionStatus.PAUSED)
         ) {
+            val cancelledHistoryEntry = buildRouteHistoryEntry(
+                routeId = activeRouteId,
+                cityName = snapshot.response.city,
+                status = RouteSessionStatus.CANCELLED,
+                startedAt = activeStartedAt,
+                finishedAt = existingHistoryEntry?.finishedAt ?: cancelledFinishedAt,
+                snapshot = snapshot,
+                visitedPoiIds = visitedPoiIds,
+                skippedPoiIds = skippedPoiIds,
+                feedback = routeFeedback,
+                updatedAtEpochMs = existingHistoryEntry?.updatedAtEpochMs
+                    ?: routeHistoryTimestamp(existingHistoryEntry?.finishedAt ?: cancelledFinishedAt)
+            )
             viewModelScope.launch {
+                repository.saveRouteHistoryEntry(cancelledHistoryEntry)
+                routeHistory = upsertRouteHistoryEntry(routeHistory, cancelledHistoryEntry)
                 val response = snapshot.response
                 repository.enqueuePendingRouteSession(
                     RouteSessionCreateRequest(
@@ -839,7 +881,7 @@ internal class RoutePlannerViewModel(
                         return_to_start = response.return_to_start,
                         opening_hours_enabled = response.respect_opening_hours,
                         started_at = activeStartedAt,
-                        finished_at = defaultRouteStartDateTime().toString(),
+                        finished_at = cancelledFinishedAt,
                         used_minutes = response.used_minutes,
                         total_walk_minutes = response.total_walk_minutes,
                         total_visit_minutes = response.total_visit_minutes,
@@ -856,6 +898,7 @@ internal class RoutePlannerViewModel(
 
     private suspend fun bootstrap() {
         routeBookmarks = repository.loadRouteBookmarks()
+        routeHistory = sortRouteHistoryEntries(repository.loadRouteHistoryEntries())
         val activeSession = repository.loadActiveSession()
         val savedSnapshot = activeSession?.snapshot ?: repository.loadSnapshot()
         var restoredCityToken = savedSnapshot?.request?.city
@@ -954,6 +997,8 @@ internal class RoutePlannerViewModel(
                 }
             }
         }
+
+        refreshRouteHistory(forceRefresh = true)
 
         loadCities(restoredCityToken)
     }
@@ -1218,16 +1263,33 @@ internal class RoutePlannerViewModel(
         val savedStartedAt = startedAtValue ?: defaultRouteStartDateTime().toString()
         val nextTargetId = nextPendingPoi(snapshot.response.route, visitedIds, skippedIds)?.poi_id
         val totalCount = progressTotalCount(snapshot.response.route, skippedIds)
+        val existingHistoryEntry = routeHistory.firstOrNull { entry -> entry.routeId == savedRouteId }
+        val finishedAt = if (status == RouteSessionStatus.COMPLETED || status == RouteSessionStatus.CANCELLED) {
+            existingHistoryEntry?.finishedAt ?: defaultRouteStartDateTime().toString()
+        } else {
+            null
+        }
+        val historyUpdatedAt = when {
+            status == RouteSessionStatus.COMPLETED || status == RouteSessionStatus.CANCELLED ->
+                existingHistoryEntry?.updatedAtEpochMs ?: routeHistoryTimestamp(finishedAt)
+            else -> System.currentTimeMillis()
+        }
+        val historyEntry = buildRouteHistoryEntry(
+            routeId = savedRouteId,
+            cityName = snapshot.response.city,
+            status = status,
+            startedAt = savedStartedAt,
+            finishedAt = finishedAt,
+            snapshot = snapshot,
+            visitedPoiIds = visitedIds,
+            skippedPoiIds = skippedIds,
+            feedback = feedback,
+            updatedAtEpochMs = historyUpdatedAt
+        )
 
         currentTargetPoiId = nextTargetId
 
         viewModelScope.launch {
-            val finishedAt = if (status == RouteSessionStatus.COMPLETED || status == RouteSessionStatus.CANCELLED) {
-                defaultRouteStartDateTime().toString()
-            } else {
-                null
-            }
-
             repository.saveActiveSession(
                 ActiveRouteSession(
                     route_id = savedRouteId,
@@ -1242,6 +1304,8 @@ internal class RoutePlannerViewModel(
                     feedback = feedback
                 )
             )
+            repository.saveRouteHistoryEntry(historyEntry)
+            routeHistory = upsertRouteHistoryEntry(routeHistory, historyEntry)
             enqueueRouteSessionSync(
                 sessionRouteId = savedRouteId,
                 status = status,
@@ -1250,6 +1314,171 @@ internal class RoutePlannerViewModel(
                 finishedAt = finishedAt
             )
         }
+    }
+
+    private suspend fun refreshRouteHistory(forceRefresh: Boolean) {
+        val cachedHistory = sortRouteHistoryEntries(repository.loadRouteHistoryEntries())
+        if (routeHistory.isEmpty()) {
+            routeHistory = cachedHistory
+        }
+        if (!forceRefresh && routeHistory.isNotEmpty()) {
+            return
+        }
+
+        isRouteHistoryLoading = true
+        routeHistoryError = null
+
+        if (!repository.isNetworkAvailable()) {
+            isRouteHistoryLoading = false
+            return
+        }
+
+        runCatching {
+            val remoteEntries = repository.getRouteSessions(deviceId)
+                .mapNotNull { session ->
+                    runCatching { session.toRouteHistoryEntry() }.getOrNull()
+                }
+            val mergedEntries = mergeRouteHistoryEntries(
+                cachedHistory,
+                remoteEntries,
+                buildCurrentRouteHistoryEntry()
+            )
+            repository.saveRouteHistoryEntries(mergedEntries)
+            routeHistory = mergedEntries
+        }.onFailure { error ->
+            routeHistory = cachedHistory
+            routeHistoryError = if (cachedHistory.isEmpty()) {
+                error.toUserMessage(routeHistoryLoadFailedMessage)
+            } else {
+                null
+            }
+        }
+
+        isRouteHistoryLoading = false
+    }
+
+    private fun buildCurrentRouteHistoryEntry(): RouteHistoryEntry? {
+        val currentSnapshot = currentRouteSnapshot() ?: return null
+        val currentRouteId = routeId ?: return null
+        val startedAtValue = routeStartedAt ?: defaultRouteStartDateTime().toString()
+        val existingHistoryEntry = routeHistory.firstOrNull { entry -> entry.routeId == currentRouteId }
+        val finishedAtValue = if (
+            routeSessionStatus == RouteSessionStatus.COMPLETED ||
+                routeSessionStatus == RouteSessionStatus.CANCELLED
+        ) {
+            existingHistoryEntry?.finishedAt ?: defaultRouteStartDateTime().toString()
+        } else {
+            null
+        }
+        val historyUpdatedAt = when {
+            routeSessionStatus == RouteSessionStatus.COMPLETED ||
+                routeSessionStatus == RouteSessionStatus.CANCELLED ->
+                existingHistoryEntry?.updatedAtEpochMs ?: routeHistoryTimestamp(finishedAtValue)
+            else -> System.currentTimeMillis()
+        }
+
+        return buildRouteHistoryEntry(
+            routeId = currentRouteId,
+            cityName = currentSnapshot.response.city,
+            status = routeSessionStatus,
+            startedAt = startedAtValue,
+            finishedAt = finishedAtValue,
+            snapshot = currentSnapshot,
+            visitedPoiIds = visitedPoiIds,
+            skippedPoiIds = skippedPoiIds,
+            feedback = routeFeedback,
+            updatedAtEpochMs = historyUpdatedAt
+        )
+    }
+
+    private fun sortRouteHistoryEntries(entries: List<RouteHistoryEntry>): List<RouteHistoryEntry> =
+        entries.sortedByDescending { entry -> entry.updatedAtEpochMs }
+
+    private fun mergeRouteHistoryEntries(
+        cachedEntries: List<RouteHistoryEntry>,
+        remoteEntries: List<RouteHistoryEntry>,
+        currentEntry: RouteHistoryEntry?
+    ): List<RouteHistoryEntry> {
+        val merged = linkedMapOf<String, RouteHistoryEntry>()
+        cachedEntries.forEach { entry ->
+            merged[entry.routeId] = entry
+        }
+        remoteEntries.forEach { entry ->
+            val existing = merged[entry.routeId]
+            merged[entry.routeId] = if (existing == null) {
+                entry
+            } else {
+                mergeRemoteHistoryEntry(existing, entry)
+            }
+        }
+        if (currentEntry != null) {
+            val existing = merged[currentEntry.routeId]
+            merged[currentEntry.routeId] = if (existing == null) {
+                currentEntry
+            } else {
+                choosePreferredHistoryEntry(existing, currentEntry)
+            }
+        }
+        return sortRouteHistoryEntries(merged.values.toList())
+    }
+
+    private fun mergeRemoteHistoryEntry(
+        localEntry: RouteHistoryEntry,
+        remoteEntry: RouteHistoryEntry
+    ): RouteHistoryEntry =
+        remoteEntry.copy(
+            feedback = remoteEntry.feedback ?: localEntry.feedback,
+            visitedPoiIds = if (
+                remoteEntry.visitedPoiIds.isNotEmpty() ||
+                    remoteEntry.skippedPoiIds.isNotEmpty()
+            ) {
+                remoteEntry.visitedPoiIds
+            } else {
+                localEntry.visitedPoiIds
+            },
+            skippedPoiIds = if (
+                remoteEntry.visitedPoiIds.isNotEmpty() ||
+                    remoteEntry.skippedPoiIds.isNotEmpty()
+            ) {
+                remoteEntry.skippedPoiIds
+            } else {
+                localEntry.skippedPoiIds
+            }
+        )
+
+    private fun upsertRouteHistoryEntry(
+        currentEntries: List<RouteHistoryEntry>,
+        entry: RouteHistoryEntry
+    ): List<RouteHistoryEntry> =
+        sortRouteHistoryEntries(
+            buildList {
+                val existing = currentEntries.firstOrNull { current -> current.routeId == entry.routeId }
+                add(if (existing == null) entry else choosePreferredHistoryEntry(existing, entry))
+                addAll(currentEntries.filterNot { existingEntry -> existingEntry.routeId == entry.routeId })
+            }
+        )
+
+    private fun choosePreferredHistoryEntry(
+        existing: RouteHistoryEntry,
+        candidate: RouteHistoryEntry
+    ): RouteHistoryEntry {
+        val existingStatus = RouteSessionStatus.fromRawValue(existing.status)
+        val candidateStatus = RouteSessionStatus.fromRawValue(candidate.status)
+
+        if (existingStatus.isTerminal() && !candidateStatus.isTerminal()) {
+            return existing
+        }
+        if (!existingStatus.isTerminal() && candidateStatus.isTerminal()) {
+            return candidate
+        }
+        if (existing.feedback != null && candidate.feedback == null) {
+            return existing
+        }
+        if (existing.feedback == null && candidate.feedback != null) {
+            return candidate
+        }
+
+        return if (candidate.updatedAtEpochMs >= existing.updatedAtEpochMs) candidate else existing
     }
 
     private fun syncVisitedPoisToBackend(poiIds: List<Int>) {

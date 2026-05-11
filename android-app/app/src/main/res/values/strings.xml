@@ -165,6 +165,24 @@
     <string name="route_active_distance">Distance</string>
     <string name="route_active_remaining">Remaining</string>
     <string name="action_view_all_stops">All stops</string>
+    <string name="action_open_route_history">Trip history</string>
+    <string name="action_refresh_history">Refresh</string>
+    <string name="action_view_history_details">Open details</string>
+    <string name="action_close_history_details">Close details</string>
+
+    <string name="route_history_title">Trip history</string>
+    <string name="route_history_body">Review previous routes, stop progress, and the feedback you saved.</string>
+    <string name="route_history_empty">No saved trip history yet.</string>
+    <string name="route_history_current">Current</string>
+    <string name="route_history_meta">%1$d stops • %2$d min • %3$s</string>
+    <string name="route_history_feedback_title">Saved feedback</string>
+    <string name="route_history_feedback_empty">No feedback saved for this trip.</string>
+    <string name="route_history_rating_value">Rating: %1$d / 5</string>
+    <string name="route_history_rating_missing">No rating</string>
+    <string name="route_history_metric_visited">Visited</string>
+    <string name="route_history_metric_skipped">Skipped</string>
+    <string name="route_history_stops_title">Stops</string>
+    <string name="route_history_load_failed">Failed to load route history.</string>
 
     <string name="route_stop_title">%1$d. %2$s</string>
     <string name="route_stop_walk_from_previous">Travel from previous: %1$d min</string>
@@ -212,5 +230,7 @@
 
     <string name="state_on">on</string>
     <string name="state_off">off</string>
+    <string name="state_yes">Yes</string>
+    <string name="state_no">No</string>
     <string name="common_unknown">Unknown</string>
 </resources>

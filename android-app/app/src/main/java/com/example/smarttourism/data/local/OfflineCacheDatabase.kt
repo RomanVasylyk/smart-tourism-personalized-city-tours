@@ -14,11 +14,12 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         CachedLastRouteEntity::class,
         BookmarkedRouteEntity::class,
         CachedRouteSessionEntity::class,
+        RouteHistoryEntryEntity::class,
         PendingFeedbackEntity::class,
         PendingRouteSessionSyncEntity::class,
         PendingPoiVisitSyncEntity::class
     ],
-    version = 3,
+    version = 4,
     exportSchema = false
 )
 abstract class OfflineCacheDatabase : RoomDatabase() {
@@ -35,7 +36,7 @@ abstract class OfflineCacheDatabase : RoomDatabase() {
                     OfflineCacheDatabase::class.java,
                     "smart-tourism-offline.db"
                 )
-                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
                     .build().also { created ->
                     instance = created
                 }
@@ -115,6 +116,20 @@ abstract class OfflineCacheDatabase : RoomDatabase() {
                         citySlug TEXT NOT NULL,
                         snapshotJson TEXT NOT NULL,
                         createdAtEpochMs INTEGER NOT NULL,
+                        updatedAtEpochMs INTEGER NOT NULL
+                    )
+                    """
+                )
+            }
+        }
+
+        private val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS route_history_entries (
+                        routeId TEXT NOT NULL PRIMARY KEY,
+                        historyJson TEXT NOT NULL,
                         updatedAtEpochMs INTEGER NOT NULL
                     )
                     """

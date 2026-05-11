@@ -45,6 +45,7 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.smarttourism.R
+import com.example.smarttourism.data.model.RouteHistoryEntry
 import com.example.smarttourism.data.remote.dto.RouteItemDto
 import com.example.smarttourism.data.remote.dto.RouteResponse
 import com.example.smarttourism.data.remote.dto.RouteStartDto
@@ -70,8 +71,11 @@ fun RoutePlannerScreen() {
     val offlineMapMessage = plannerViewModel.offlineMapMessage
     val routeResponse = plannerViewModel.routeResponse
     val routeBookmarks = plannerViewModel.routeBookmarks
+    val routeHistory = plannerViewModel.routeHistory
     val isRouteLoading = plannerViewModel.isRouteLoading
+    val isRouteHistoryLoading = plannerViewModel.isRouteHistoryLoading
     val routeError = plannerViewModel.routeError
+    val routeHistoryError = plannerViewModel.routeHistoryError
     val isRerouting = plannerViewModel.isRerouting
     val availableMinutes = plannerViewModel.availableMinutes
     val maxAvailableMinutesLimit = plannerViewModel.maxAvailableMinutesLimit
@@ -112,7 +116,9 @@ fun RoutePlannerScreen() {
     var isParameterSheetOpen by remember { mutableStateOf(false) }
     var isStopsSheetOpen by remember { mutableStateOf(false) }
     var isBookmarksSheetOpen by remember { mutableStateOf(false) }
+    var isHistorySheetOpen by remember { mutableStateOf(false) }
     var isFeedbackDialogOpen by remember { mutableStateOf(false) }
+    var selectedHistoryEntry by remember { mutableStateOf<RouteHistoryEntry?>(null) }
     var replacingPoiId by remember { mutableStateOf<Int?>(null) }
     var locationError by remember { mutableStateOf<String?>(null) }
     var trackingPermissionAction by remember { mutableStateOf(TrackingPermissionAction.START) }
@@ -138,6 +144,9 @@ fun RoutePlannerScreen() {
         }
         if (plannerMode != PlannerMode.COMPLETED) {
             isFeedbackDialogOpen = false
+        }
+        if (!isHistorySheetOpen) {
+            selectedHistoryEntry = null
         }
     }
 
@@ -385,6 +394,18 @@ fun RoutePlannerScreen() {
                     }
 
                     item {
+                        OutlinedButton(
+                            onClick = {
+                                plannerViewModel.loadRouteHistory(forceRefresh = true)
+                                isHistorySheetOpen = true
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(stringResource(R.string.action_open_route_history))
+                        }
+                    }
+
+                    item {
                         PlannerMapPanel(
                             pois = pois,
                             routeResponse = routeResponse,
@@ -541,6 +562,18 @@ fun RoutePlannerScreen() {
                         }
                     }
 
+                    item {
+                        OutlinedButton(
+                            onClick = {
+                                plannerViewModel.loadRouteHistory(forceRefresh = true)
+                                isHistorySheetOpen = true
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(stringResource(R.string.action_open_route_history))
+                        }
+                    }
+
                     routeStopItems(
                         titleRes = R.string.route_section_all_stops,
                         routeStops = routeItems,
@@ -617,6 +650,18 @@ fun RoutePlannerScreen() {
                             ) {
                                 Text(stringResource(R.string.action_open_route_bookmarks))
                             }
+                        }
+                    }
+
+                    item {
+                        OutlinedButton(
+                            onClick = {
+                                plannerViewModel.loadRouteHistory(forceRefresh = true)
+                                isHistorySheetOpen = true
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(stringResource(R.string.action_open_route_history))
                         }
                     }
 
@@ -771,6 +816,37 @@ fun RoutePlannerScreen() {
                 )
             }
         }
+    }
+
+    if (isHistorySheetOpen) {
+        ModalBottomSheet(
+            onDismissRequest = {
+                isHistorySheetOpen = false
+                selectedHistoryEntry = null
+            }
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 16.dp, end = 16.dp, bottom = 32.dp)
+            ) {
+                RouteHistorySheetContent(
+                    historyEntries = routeHistory,
+                    currentRouteId = routeId,
+                    isLoading = isRouteHistoryLoading,
+                    errorMessage = routeHistoryError,
+                    onRefresh = { plannerViewModel.loadRouteHistory(forceRefresh = true) },
+                    onOpenEntry = { entry -> selectedHistoryEntry = entry }
+                )
+            }
+        }
+    }
+
+    selectedHistoryEntry?.let { historyEntry ->
+        RouteHistoryDetailsDialog(
+            entry = historyEntry,
+            onDismiss = { selectedHistoryEntry = null }
+        )
     }
 
     replacingPoiId?.let { targetPoiId ->

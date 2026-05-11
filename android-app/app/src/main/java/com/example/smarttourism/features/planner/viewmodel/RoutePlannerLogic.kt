@@ -63,6 +63,7 @@ import com.example.smarttourism.core.platform.NetworkMonitor
 import com.example.smarttourism.data.repository.OfflineCacheRepository
 import com.example.smarttourism.data.remote.dto.PoiDto
 import com.example.smarttourism.data.model.RouteFeedback
+import com.example.smarttourism.data.model.RouteHistoryEntry
 import com.example.smarttourism.data.remote.dto.RouteFeedbackRequest
 import com.example.smarttourism.data.remote.dto.RouteLegDto
 import com.example.smarttourism.data.remote.dto.RouteRequest
@@ -83,6 +84,8 @@ import com.example.smarttourism.features.map.offline.OfflineMapManager
 import com.example.smarttourism.features.map.offline.OfflineStoredRegion
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
+import java.time.OffsetDateTime
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.util.Locale
@@ -153,6 +156,66 @@ internal fun RouteSessionDto.toRouteFeedback(): RouteFeedback? {
     )
 }
 
+internal fun RouteSessionDto.toRouteHistoryEntry(): RouteHistoryEntry? {
+    val snapshot = toSavedRouteSnapshot() ?: return null
+    val visitedPoiIds = pois
+        .orEmpty()
+        .filter { poi -> poi.visited && !poi.skipped }
+        .map { poi -> poi.poi_id }
+        .distinct()
+    val skippedPoiIds = pois
+        .orEmpty()
+        .filter { poi -> poi.skipped }
+        .map { poi -> poi.poi_id }
+        .distinct()
+
+    return RouteHistoryEntry(
+        routeId = id,
+        cityName = city_name ?: snapshot.response.city,
+        status = status,
+        startedAt = started_at,
+        finishedAt = finished_at,
+        availableMinutes = available_minutes,
+        usedMinutes = used_minutes ?: snapshot.response.used_minutes,
+        totalWalkMinutes = total_walk_minutes ?: snapshot.response.total_walk_minutes,
+        totalVisitMinutes = total_visit_minutes ?: snapshot.response.total_visit_minutes,
+        snapshot = snapshot,
+        visitedPoiIds = visitedPoiIds,
+        skippedPoiIds = skippedPoiIds,
+        feedback = toRouteFeedback(),
+        updatedAtEpochMs = routeHistoryTimestamp(finished_at ?: started_at)
+    )
+}
+
+internal fun buildRouteHistoryEntry(
+    routeId: String,
+    cityName: String,
+    status: RouteSessionStatus,
+    startedAt: String,
+    finishedAt: String?,
+    snapshot: SavedRouteSnapshot,
+    visitedPoiIds: List<Int>,
+    skippedPoiIds: List<Int>,
+    feedback: RouteFeedback?,
+    updatedAtEpochMs: Long = System.currentTimeMillis()
+): RouteHistoryEntry =
+    RouteHistoryEntry(
+        routeId = routeId,
+        cityName = cityName,
+        status = status.rawValue,
+        startedAt = startedAt,
+        finishedAt = finishedAt,
+        availableMinutes = snapshot.request.available_minutes,
+        usedMinutes = snapshot.response.used_minutes,
+        totalWalkMinutes = snapshot.response.total_walk_minutes,
+        totalVisitMinutes = snapshot.response.total_visit_minutes,
+        snapshot = snapshot,
+        visitedPoiIds = visitedPoiIds.distinct(),
+        skippedPoiIds = skippedPoiIds.distinct(),
+        feedback = feedback,
+        updatedAtEpochMs = updatedAtEpochMs
+    )
+
 internal fun defaultRouteBookmarkTitle(
     snapshot: SavedRouteSnapshot,
     cityName: String? = null
@@ -204,6 +267,9 @@ internal fun RouteSessionStatus.isRestorable(): Boolean =
     this == RouteSessionStatus.NOT_STARTED ||
         this == RouteSessionStatus.IN_PROGRESS ||
         this == RouteSessionStatus.PAUSED
+
+internal fun RouteSessionStatus.isTerminal(): Boolean =
+    this == RouteSessionStatus.COMPLETED || this == RouteSessionStatus.CANCELLED
 
 internal fun CityDto.matchesToken(token: String?): Boolean {
     val normalizedToken = token?.trim()?.lowercase().orEmpty()
@@ -257,7 +323,7 @@ internal fun routeSegmentLabel(segment: RouteSegmentDto): String {
 
 internal fun String?.toRouteTimeOfDayLabel(): String? =
     runCatching {
-        this?.let(LocalDateTime::parse)?.format(RouteClockFormatter)
+        this?.toDisplayDateTime()?.format(RouteClockFormatter)
     }.getOrNull()
 
 @Composable
@@ -986,11 +1052,7 @@ internal fun defaultRouteStartDateTime(): LocalDateTime =
     LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES)
 
 internal fun parseRouteStartDateTime(rawValue: String?): LocalDateTime =
-    runCatching {
-        rawValue?.let(LocalDateTime::parse)?.truncatedTo(ChronoUnit.MINUTES) ?: defaultRouteStartDateTime()
-    }.getOrElse {
-        defaultRouteStartDateTime()
-    }
+    rawValue?.toDisplayDateTime()?.truncatedTo(ChronoUnit.MINUTES) ?: defaultRouteStartDateTime()
 
 internal fun String.toDisplayLabel(): String =
     split('_').joinToString(" ") { part ->
@@ -999,7 +1061,7 @@ internal fun String.toDisplayLabel(): String =
 
 internal fun String?.toRouteDateTimeLabel(unknownLabel: String): String =
     runCatching {
-        this?.let(LocalDateTime::parse)?.format(RouteTimeFormatter)
+        this?.toDisplayDateTime()?.format(RouteTimeFormatter)
     }.getOrNull() ?: unknownLabel
 
 internal fun Throwable.toUserMessage(defaultMessage: String): String {
@@ -1016,3 +1078,27 @@ internal fun formatDistanceMeters(distanceMeters: Float): String =
 
 internal fun formatCoordinate(value: Double): String =
     String.format("%.5f", value)
+
+internal fun routeHistoryTimestamp(rawValue: String?): Long =
+    runCatching {
+        rawValue?.toInstantEpochMillis()
+    }.getOrNull() ?: System.currentTimeMillis()
+
+private fun String.toDisplayDateTime(): LocalDateTime? =
+    runCatching {
+        OffsetDateTime.parse(this)
+            .atZoneSameInstant(ZoneId.systemDefault())
+            .toLocalDateTime()
+    }.recoverCatching {
+        LocalDateTime.parse(this)
+    }.getOrNull()
+
+private fun String.toInstantEpochMillis(): Long? =
+    runCatching {
+        OffsetDateTime.parse(this).toInstant().toEpochMilli()
+    }.recoverCatching {
+        LocalDateTime.parse(this)
+            .atZone(ZoneId.systemDefault())
+            .toInstant()
+            .toEpochMilli()
+    }.getOrNull()

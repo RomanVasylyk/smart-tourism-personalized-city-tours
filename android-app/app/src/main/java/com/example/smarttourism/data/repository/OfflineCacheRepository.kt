@@ -11,8 +11,10 @@ import com.example.smarttourism.data.local.OfflineCacheDatabase
 import com.example.smarttourism.data.local.PendingFeedbackEntity
 import com.example.smarttourism.data.local.PendingPoiVisitSyncEntity
 import com.example.smarttourism.data.local.PendingRouteSessionSyncEntity
+import com.example.smarttourism.data.local.RouteHistoryEntryEntity
 import com.example.smarttourism.data.model.ActiveRouteSession
 import com.example.smarttourism.data.model.RouteBookmark
+import com.example.smarttourism.data.model.RouteHistoryEntry
 import com.example.smarttourism.data.model.SavedRouteSnapshot
 import com.example.smarttourism.data.remote.api.PoiApi
 import com.example.smarttourism.data.remote.dto.CityBboxDto
@@ -190,6 +192,36 @@ object OfflineCacheRepository {
     suspend fun deleteRouteBookmark(context: Context, bookmarkId: String) {
         dao(context).deleteBookmarkedRoute(bookmarkId)
     }
+
+    suspend fun saveRouteHistoryEntry(context: Context, entry: RouteHistoryEntry) {
+        dao(context).upsertRouteHistoryEntry(
+            RouteHistoryEntryEntity(
+                routeId = entry.routeId,
+                historyJson = gson.toJson(entry),
+                updatedAtEpochMs = entry.updatedAtEpochMs
+            )
+        )
+    }
+
+    suspend fun saveRouteHistoryEntries(context: Context, entries: List<RouteHistoryEntry>) {
+        dao(context).upsertRouteHistoryEntries(
+            entries.map { entry ->
+                RouteHistoryEntryEntity(
+                    routeId = entry.routeId,
+                    historyJson = gson.toJson(entry),
+                    updatedAtEpochMs = entry.updatedAtEpochMs
+                )
+            }
+        )
+    }
+
+    suspend fun getRouteHistoryEntries(context: Context): List<RouteHistoryEntry> =
+        dao(context)
+            .getRouteHistoryEntries()
+            .mapNotNull { entity ->
+                fromJsonOrNull(entity.historyJson, RouteHistoryEntry::class.java)
+                    ?.copy(updatedAtEpochMs = entity.updatedAtEpochMs)
+            }
 
     suspend fun saveActiveRouteSession(context: Context, session: ActiveRouteSession) {
         dao(context).saveActiveRouteSession(

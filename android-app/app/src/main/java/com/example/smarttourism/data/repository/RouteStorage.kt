@@ -3,6 +3,7 @@ package com.example.smarttourism.data.repository
 import android.content.Context
 import com.example.smarttourism.data.model.ActiveRouteSession
 import com.example.smarttourism.data.model.RouteBookmark
+import com.example.smarttourism.data.model.RouteHistoryEntry
 import com.example.smarttourism.data.model.SavedRouteSnapshot
 import java.util.UUID
 
@@ -53,6 +54,23 @@ object RouteStorage {
     suspend fun deleteRouteBookmark(context: Context, bookmarkId: String) {
         OfflineCacheRepository.deleteRouteBookmark(context, bookmarkId)
     }
+
+    suspend fun saveRouteHistoryEntry(
+        context: Context,
+        entry: RouteHistoryEntry
+    ) {
+        OfflineCacheRepository.saveRouteHistoryEntry(context, entry)
+    }
+
+    suspend fun saveRouteHistoryEntries(
+        context: Context,
+        entries: List<RouteHistoryEntry>
+    ) {
+        OfflineCacheRepository.saveRouteHistoryEntries(context, entries)
+    }
+
+    suspend fun loadRouteHistoryEntries(context: Context): List<RouteHistoryEntry> =
+        OfflineCacheRepository.getRouteHistoryEntries(context)
 
     fun getOrCreateDeviceId(context: Context): String {
         val preferences = context.getSharedPreferences(PreferencesName, Context.MODE_PRIVATE)

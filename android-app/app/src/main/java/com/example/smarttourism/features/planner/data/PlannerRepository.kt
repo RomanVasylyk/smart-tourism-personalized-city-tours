@@ -5,6 +5,7 @@ import com.example.smarttourism.core.network.ApiModule
 import com.example.smarttourism.core.platform.NetworkMonitor
 import com.example.smarttourism.data.model.ActiveRouteSession
 import com.example.smarttourism.data.model.RouteBookmark
+import com.example.smarttourism.data.model.RouteHistoryEntry
 import com.example.smarttourism.data.model.SavedRouteSnapshot
 import com.example.smarttourism.data.remote.api.PoiApi
 import com.example.smarttourism.data.remote.dto.CityDto
@@ -94,6 +95,17 @@ internal class PlannerRepository(
     suspend fun deleteRouteBookmark(bookmarkId: String) {
         RouteStorage.deleteRouteBookmark(context, bookmarkId)
     }
+
+    suspend fun saveRouteHistoryEntry(entry: RouteHistoryEntry) {
+        RouteStorage.saveRouteHistoryEntry(context, entry)
+    }
+
+    suspend fun saveRouteHistoryEntries(entries: List<RouteHistoryEntry>) {
+        RouteStorage.saveRouteHistoryEntries(context, entries)
+    }
+
+    suspend fun loadRouteHistoryEntries(): List<RouteHistoryEntry> =
+        RouteStorage.loadRouteHistoryEntries(context)
 
     suspend fun getPendingSyncOperationCount(): Int =
         OfflineCacheRepository.getPendingSyncOperationCount(context)
