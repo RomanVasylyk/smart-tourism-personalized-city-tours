@@ -1,0 +1,2121 @@
+<!doctype html>
+<html class="no-js" lang="sk">
+
+<head>
+	<meta charset="utf-8">
+	
+<script>
+function inIframe () {
+    try {
+        return window.self !== window.top;
+    } catch (e) {
+        return true;
+    }
+}
+
+if (!inIframe()) {
+	document.write("<script>(function(){\/*\n\n Copyright The Closure Library Authors.\n SPDX-License-Identifier: Apache-2.0\n*\/\n'use strict';var g=function(a){var b=0;return function(){return b<a.length?{done:!1,value:a[b++]}:{done:!0}}},l=this||self,m=\/^[\\w+\/_-]+[=]{0,2}$\/,p=null,q=function(){},r=function(a){var b=typeof a;if(\"object\"==b)if(a){if(a instanceof Array)return\"array\";if(a instanceof Object)return b;var c=Object.prototype.toString.call(a);if(\"[object Window]\"==c)return\"object\";if(\"[object Array]\"==c||\"number\"==typeof a.length&&\"undefined\"!=typeof a.splice&&\"undefined\"!=typeof a.propertyIsEnumerable&&!a.propertyIsEnumerable(\"splice\"))return\"array\";\nif(\"[object Function]\"==c||\"undefined\"!=typeof a.call&&\"undefined\"!=typeof a.propertyIsEnumerable&&!a.propertyIsEnumerable(\"call\"))return\"function\"}else return\"null\";else if(\"function\"==b&&\"undefined\"==typeof a.call)return\"object\";return b},u=function(a,b){function c(){}c.prototype=b.prototype;a.prototype=new c;a.prototype.constructor=a};var v=function(a,b){Object.defineProperty(l,a,{configurable:!1,get:function(){return b},set:q})};var y=function(a,b){this.b=a===w&&b||\"\";this.a=x},x={},w={};var aa=function(a,b){a.src=b instanceof y&&b.constructor===y&&b.a===x?b.b:\"type_error:TrustedResourceUrl\";if(null===p)b:{b=l.document;if((b=b.querySelector&&b.querySelector(\"script[nonce]\"))&&(b=b.nonce||b.getAttribute(\"nonce\"))&&m.test(b)){p=b;break b}p=\"\"}b=p;b&&a.setAttribute(\"nonce\",b)};var z=function(){return Math.floor(2147483648*Math.random()).toString(36)+Math.abs(Math.floor(2147483648*Math.random())^+new Date).toString(36)};var A=function(a,b){b=String(b);\"application\/xhtml+xml\"===a.contentType&&(b=b.toLowerCase());return a.createElement(b)},B=function(a){this.a=a||l.document||document};B.prototype.appendChild=function(a,b){a.appendChild(b)};var C=function(a,b,c,d,e,f){try{var k=a.a,h=A(a.a,\"SCRIPT\");h.async=!0;aa(h,b);k.head.appendChild(h);h.addEventListener(\"load\",function(){e();d&&k.head.removeChild(h)});h.addEventListener(\"error\",function(){0<c?C(a,b,c-1,d,e,f):(d&&k.head.removeChild(h),f())})}catch(n){f()}};var ba=l.atob(\"aHR0cHM6Ly93d3cuZ3N0YXRpYy5jb20vaW1hZ2VzL2ljb25zL21hdGVyaWFsL3N5c3RlbS8xeC93YXJuaW5nX2FtYmVyXzI0ZHAucG5n\"),ca=l.atob(\"WW91IGFyZSBzZWVpbmcgdGhpcyBtZXNzYWdlIGJlY2F1c2UgYWQgb3Igc2NyaXB0IGJsb2NraW5nIHNvZnR3YXJlIGlzIGludGVyZmVyaW5nIHdpdGggdGhpcyBwYWdlLg==\"),da=l.atob(\"RGlzYWJsZSBhbnkgYWQgb3Igc2NyaXB0IGJsb2NraW5nIHNvZnR3YXJlLCB0aGVuIHJlbG9hZCB0aGlzIHBhZ2Uu\"),ea=function(a,b,c){this.b=a;this.f=new B(this.b);this.a=null;this.c=[];this.g=!1;this.i=b;this.h=c},F=function(a){if(a.b.body&&!a.g){var b=\nfunction(){D(a);l.setTimeout(function(){return E(a,3)},50)};C(a.f,a.i,2,!0,function(){l[a.h]||b()},b);a.g=!0}},D=function(a){for(var b=G(1,5),c=0;c<b;c++){var d=H(a);a.b.body.appendChild(d);a.c.push(d)}b=H(a);b.style.bottom=\"0\";b.style.left=\"0\";b.style.position=\"fixed\";b.style.width=G(100,110).toString()+\"%\";b.style.zIndex=G(2147483544,2147483644).toString();b.style[\"background-color\"]=I(249,259,242,252,219,229);b.style[\"box-shadow\"]=\"0 0 12px #888\";b.style.color=I(0,10,0,10,0,10);b.style.display=\n\"flex\";b.style[\"justify-content\"]=\"center\";b.style[\"font-family\"]=\"Roboto, Arial\";c=H(a);c.style.width=G(80,85).toString()+\"%\";c.style.maxWidth=G(750,775).toString()+\"px\";c.style.margin=\"24px\";c.style.display=\"flex\";c.style[\"align-items\"]=\"flex-start\";c.style[\"justify-content\"]=\"center\";d=A(a.f.a,\"IMG\");d.className=z();d.src=ba;d.style.height=\"24px\";d.style.width=\"24px\";d.style[\"padding-right\"]=\"16px\";var e=H(a),f=H(a);f.style[\"font-weight\"]=\"bold\";f.textContent=ca;var k=H(a);k.textContent=da;J(a,\ne,f);J(a,e,k);J(a,c,d);J(a,c,e);J(a,b,c);a.a=b;a.b.body.appendChild(a.a);b=G(1,5);for(c=0;c<b;c++)d=H(a),a.b.body.appendChild(d),a.c.push(d)},J=function(a,b,c){for(var d=G(1,5),e=0;e<d;e++){var f=H(a);b.appendChild(f)}b.appendChild(c);c=G(1,5);for(d=0;d<c;d++)e=H(a),b.appendChild(e)},G=function(a,b){return Math.floor(a+Math.random()*(b-a))},I=function(a,b,c,d,e,f){return\"rgb(\"+G(Math.max(a,0),Math.min(b,255)).toString()+\",\"+G(Math.max(c,0),Math.min(d,255)).toString()+\",\"+G(Math.max(e,0),Math.min(f,\n255)).toString()+\")\"},H=function(a){a=A(a.f.a,\"DIV\");a.className=z();return a},E=function(a,b){0>=b||null!=a.a&&0!=a.a.offsetHeight&&0!=a.a.offsetWidth||(fa(a),D(a),l.setTimeout(function(){return E(a,b-1)},50))},fa=function(a){var b=a.c;var c=\"undefined\"!=typeof Symbol&&Symbol.iterator&&b[Symbol.iterator];b=c?c.call(b):{next:g(b)};for(c=b.next();!c.done;c=b.next())(c=c.value)&&c.parentNode&&c.parentNode.removeChild(c);a.c=[];(b=a.a)&&b.parentNode&&b.parentNode.removeChild(b);a.a=null};var ia=function(a,b,c,d,e){var f=ha(c),k=function(n){n.appendChild(f);l.setTimeout(function(){f?(0!==f.offsetHeight&&0!==f.offsetWidth?b():a(),f.parentNode&&f.parentNode.removeChild(f)):a()},d)},h=function(n){document.body?k(document.body):0<n?l.setTimeout(function(){h(n-1)},e):b()};h(3)},ha=function(a){var b=document.createElement(\"div\");b.className=a;b.style.width=\"1px\";b.style.height=\"1px\";b.style.position=\"absolute\";b.style.left=\"-10000px\";b.style.top=\"-10000px\";b.style.zIndex=\"-10000\";return b};var K={},L=null;var M=function(){},N=\"function\"==typeof Uint8Array,O=function(a,b){a.b=null;b||(b=[]);a.j=void 0;a.f=-1;a.a=b;a:{if(b=a.a.length){--b;var c=a.a[b];if(!(null===c||\"object\"!=typeof c||Array.isArray(c)||N&&c instanceof Uint8Array)){a.g=b-a.f;a.c=c;break a}}a.g=Number.MAX_VALUE}a.i={}},P=[],Q=function(a,b){if(b<a.g){b+=a.f;var c=a.a[b];return c===P?a.a[b]=[]:c}if(a.c)return c=a.c[b],c===P?a.c[b]=[]:c},R=function(a,b,c){a.b||(a.b={});if(!a.b[c]){var d=Q(a,c);d&&(a.b[c]=new b(d))}return a.b[c]};\nM.prototype.h=N?function(){var a=Uint8Array.prototype.toJSON;Uint8Array.prototype.toJSON=function(){var b;void 0===b&&(b=0);if(!L){L={};for(var c=\"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789\".split(\"\"),d=[\"+\/=\",\"+\/\",\"-_=\",\"-_.\",\"-_\"],e=0;5>e;e++){var f=c.concat(d[e].split(\"\"));K[e]=f;for(var k=0;k<f.length;k++){var h=f[k];void 0===L[h]&&(L[h]=k)}}}b=K[b];c=[];for(d=0;d<this.length;d+=3){var n=this[d],t=(e=d+1<this.length)?this[d+1]:0;h=(f=d+2<this.length)?this[d+2]:0;k=n>>2;n=(n&\n3)<<4|t>>4;t=(t&15)<<2|h>>6;h&=63;f||(h=64,e||(t=64));c.push(b[k],b[n],b[t]||\"\",b[h]||\"\")}return c.join(\"\")};try{return JSON.stringify(this.a&&this.a,S)}finally{Uint8Array.prototype.toJSON=a}}:function(){return JSON.stringify(this.a&&this.a,S)};var S=function(a,b){return\"number\"!==typeof b||!isNaN(b)&&Infinity!==b&&-Infinity!==b?b:String(b)};M.prototype.toString=function(){return this.a.toString()};var T=function(a){O(this,a)};u(T,M);var U=function(a){O(this,a)};u(U,M);var ja=function(a,b){this.c=new B(a);var c=R(b,T,5);c=new y(w,Q(c,4)||\"\");this.b=new ea(a,c,Q(b,4));this.a=b},ka=function(a,b,c,d){b=new T(b?JSON.parse(b):null);b=new y(w,Q(b,4)||\"\");C(a.c,b,3,!1,c,function(){ia(function(){F(a.b);d(!1)},function(){d(!0)},Q(a.a,2),Q(a.a,3),Q(a.a,1))})};var la=function(a,b){V(a,\"internal_api_load_with_sb\",function(c,d,e){ka(b,c,d,e)});V(a,\"internal_api_sb\",function(){F(b.b)})},V=function(a,b,c){a=l.btoa(a+b);v(a,c)},W=function(a,b,c){for(var d=[],e=2;e<arguments.length;++e)d[e-2]=arguments[e];e=l.btoa(a+b);e=l[e];if(\"function\"==r(e))e.apply(null,d);else throw Error(\"API not exported.\");};var X=function(a){O(this,a)};u(X,M);var Y=function(a){this.h=window;this.a=a;this.b=Q(this.a,1);this.f=R(this.a,T,2);this.g=R(this.a,U,3);this.c=!1};Y.prototype.start=function(){ma();var a=new ja(this.h.document,this.g);la(this.b,a);na(this)};\nvar ma=function(){var a=function(){if(!l.frames.googlefcPresent)if(document.body){var b=document.createElement(\"iframe\");b.style.display=\"none\";b.style.width=\"0px\";b.style.height=\"0px\";b.style.border=\"none\";b.style.zIndex=\"-1000\";b.style.left=\"-1000px\";b.style.top=\"-1000px\";b.name=\"googlefcPresent\";b.setAttribute(\"aria-hidden\", \"true\");document.body.appendChild(b)}else l.setTimeout(a,5)};a()},na=function(a){var b=Date.now();W(a.b,\"internal_api_load_with_sb\",a.f.h(),function(){var c;var d=a.b,e=l[l.btoa(d+\"loader_js\")];if(e){e=l.atob(e);\ne=parseInt(e,10);d=l.btoa(d+\"loader_js\").split(\".\");var f=l;d[0]in f||\"undefined\"==typeof f.execScript||f.execScript(\"var \"+d[0]);for(;d.length&&(c=d.shift());)d.length?f[c]&&f[c]!==Object.prototype[c]?f=f[c]:f=f[c]={}:f[c]=null;c=Math.abs(b-e);c=1728E5>c?0:c}else c=-1;0!=c&&(W(a.b,\"internal_api_sb\"),Z(a,Q(a.a,6)))},function(c){Z(a,c?Q(a.a,4):Q(a.a,5))})},Z=function(a,b){a.c||(a.c=!0,a=new l.XMLHttpRequest,a.open(\"GET\",b,!0),a.send())};(function(a,b){l[a]=function(c){for(var d=[],e=0;e<arguments.length;++e)d[e-0]=arguments[e];l[a]=q;b.apply(null,d)}})(\"__d3lUW8vwsKlB__\",function(a){\"function\"==typeof window.atob&&(a=window.atob(a),a=new X(a?JSON.parse(a):null),(new Y(a)).start())});}).call(this);\n\nwindow.__d3lUW8vwsKlB__(\"WyI2ZjhmNjBlM2FkZGE2NDI1IixbbnVsbCxudWxsLG51bGwsImh0dHBzOi8vZnVuZGluZ2Nob2ljZXNtZXNzYWdlcy5nb29nbGUuY29tL2YvQUdTS1d4WHpQSFMyUlRRNjFLME1NckV5dVlJLWRBcTlvX3dSM1F3TzRraEplcTlhV1lFSXl3Q0stVk9tRmdVd1U3UmdVLXRFVXVMT3NGYzJNWHh6cnRyNXB3Y1x1MDAzZCJdCixbMjAsImRpdi1ncHQtYWQiLDEwMCwiTm1ZNFpqWXdaVE5oWkdSaE5qUXlOUVx1MDAzZFx1MDAzZCIsW251bGwsbnVsbCxudWxsLCJodHRwczovL3d3dy5nc3RhdGljLmNvbS8wZW1uL2YvcC82ZjhmNjBlM2FkZGE2NDI1LmpzP3VzcXBcdTAwM2RDQUkiXQpdCiwiaHR0cHM6Ly9mdW5kaW5nY2hvaWNlc21lc3NhZ2VzLmdvb2dsZS5jb20vbC9BR1NLV3hWYzF6UEpnX2JDU2Z6amtMZ2EweEwxZEdpQ3BpeUtqZ3Flc2VkV3h2VkEzVThPWFNHeWNFVDF3Z1pKY1p2M3doYTBYb0dxaGctb0k2ektlWERtP2FiXHUwMDNkMSIsImh0dHBzOi8vZnVuZGluZ2Nob2ljZXNtZXNzYWdlcy5nb29nbGUuY29tL2wvQUdTS1d4WDlaSEloMmJObnFZRzNleEowTVRTaXh6ZVdwaEZaLWQtSzBKbTNEMG92UEpoZ1JYTmxRaHFMUVRKNU5yYVhGNmhGOThROG5rWWFTMTdUTDZIdD9hYlx1MDAzZDJcdTAwMjZzYmZcdTAwM2QxIiwiaHR0cHM6Ly9mdW5kaW5nY2hvaWNlc21lc3NhZ2VzLmdvb2dsZS5jb20vbC9BR1NLV3hYZ2JJelJ4b1cza0JqN2xIRFI3NFZCMGMxZllDelplbHNJWUxucW5jRl9oMFBoWUZNbUpqOUNLSjA1NkhabldCYWFzNEdfYVFtbTh6TDRteEltP3NiZlx1MDAzZDIiXQo=\");<\/script>\n");
+}
+</script>
+	<script>
+// Define dataLayer and the gtag function.
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('consent', 'default', {
+  'analytics_storage': 'denied',
+  'ad_storage': 'denied'
+});
+</script>
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-P8Q9K35');</script>
+<!-- End Google Tag Manager -->
+	<meta http-equiv="x-ua-compatible" content="ie=edge">
+	<title>Cestovný poriadok liniek  3 4 8 • imhd.sk Trnava</title>
+	<meta name="description" content="MHD Trnava">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+	<link rel="manifest" href="/data/misc/site.webmanifest">
+	<meta name="msapplication-config" content="/data/misc/browserconfig_tt.xml">
+	<link rel="shortcut icon" href="/data/misc/icon32x32_tt.gif" type="image/gif">
+	<link rel="icon" href="/data/misc/icon32x32_tt.png" type="image/png">
+	<link rel="apple-touch-icon" href="/data/misc/icon180x180_tt.png">
+	<meta name="google-site-verification" content="48XdjRw-515O_jyZ0gPYVSpw2oSO7SMWzzYkQqD5PvM">
+	<meta name="twitter:card" content="summary_large_image">
+
+	<meta name="author" content="imhd.sk">
+	<meta name="copyright" content="imhd.sk">
+	<meta name="robots" content="all">
+	<link rel="search" type="application/opensearchdescription+xml" href="/tt/api/sk/opensearch.xml" title="imhd.sk Trnava">
+
+	<meta property="twitter:site" content="@imhdsk">
+	<meta property="og:site_name" content="imhd.sk Trnava">
+
+	<link rel="alternate" type="application/rss+xml" title="RSS 2.0" href="/tt/rss/dokumenty">
+	<meta property="og:image" content="https://imhd.sk/data/img/logo_imhd-sk_vertical.png">
+	<meta property="og:title" content="Cestovný poriadok liniek  3 4 8">
+	<meta name="og:description" content="Mestská hromadná doprava a regionálna doprava na Slovensku">
+	
+	<meta property="twitter:image" content="https://imhd.sk/data/img/logo_imhd-sk_vertical.png">
+	<meta property="twitter:title" content="Cestovný poriadok liniek  3 4 8">
+	<meta name="twitter:description" content="Mestská hromadná doprava a regionálna doprava na Slovensku">
+
+	<link rel="stylesheet" href="/data/css/core.css?1771271255">
+	<link rel="stylesheet" href="/data/css/vehicles.css?1630508300">
+	<link rel="stylesheet" href="/data/css/linky.css?1778374957">
+	<link rel="stylesheet" href="/data/css/core2.css?1770456451">
+	<link rel="stylesheet" media="print" href="/data/css/print.css?1721052238">
+	<link rel="stylesheet" href="https://use.typekit.net/usl0sqi.css">
+
+	<script src="/data/js/3rd/modernizr-3.6.0.min.js"></script>
+
+	<script src="https://code.jquery.com/jquery-3.5.1.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
+	<script>window.jQuery || document.write('<script src="/data/js/3rd/jquery-3.5.1.min.js"><\/script>')</script>
+
+	<script src="//cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+	<script>window.Popper || document.write('<script src="/data/js/3rd/popper.min.js"><\/script>')</script>
+	
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>	
+	<script>if (! $.fn.modal) {document.write('<script src="/data/js/3rd/bootstrap.min.js"><\/script>')}</script>
+	
+	<script src="/data/js/3rd/jquery.lazy/jquery.lazy.min.js"></script>
+	<script src="/data/js/3rd/jquery.lazy/jquery.lazy.plugins.min.js"></script>
+
+	<script src="/data/js/main.js?1675247273"></script>
+	<script>if ("serviceWorker" in navigator) {  navigator.serviceWorker.register("/data/js/sw.js"); }</script>
+
+	<link rel="stylesheet" type="text/css" media="screen" href="/data/css/themes/blue-yellow.css">
+				
+	<link rel="stylesheet" href="/data/js/3rd/typeahead/typeaheadjs.custom.css?1">
+	<link rel="stylesheet" href="/data/css/3rd/weather/css/weather-icons.min.css">
+	<link rel="stylesheet" href="/data/css/cepo.css?1772796962">
+	<link rel="stylesheet" href="/data/js/3rd/bootstrap-ui/css/bootstrap-ui.custom.icons.css">
+	<link rel="stylesheet" href="/data/css/Linky2020.css?1778374958"><script src="/data/js/3rd/typeahead/typeahead.bundle.custom.js"></script>
+			<script src="/data/js/main_web.js?1725694318"></script>
+			<script src="/data/js/cepo/schedule.js?1724326523"></script>
+			<script src="/data/js/cepo/line-color.js?1675341874"></script>
+			<script src="/data/js/cepo/cssParse.js?1696659938"></script>
+			<script src="/data/js/3rd/moment/moment-with-locales.min.js?1573406512"></script>
+			<script src="/data/js/3rd/moment/moment-timezone-with-data.min.js?1573406754"></script>
+			<script src="/data/js/cepo/next-departure.js?1770541020"></script>
+			
+</head>
+
+<body><!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-P8Q9K35"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+  <header class="Header js-header">
+    <div class="container">
+      <div class="Header-topBar row row-sm">
+	
+        <div class="Header-mobileTopBar col-12 col-sm-7 col-md-8 col-lg-auto col-lg-4 d-flex align-items-center">
+          <a class="Header-logo Logo" href="/tt/mhd">
+            <img class="Logo-img" src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==" alt="imhd.sk">
+            <span class="sr-only">imhd.sk</span>
+          </a>
+
+          <div class="Header-cityPicker CityPicker dropdown">
+            <button class="btn btn-block btn-white dropdown-toggle" type="button" id="HeaderCityPicker" data-toggle="dropdown" data-boundary="window" aria-haspopup="true" aria-expanded="false">
+              <span class="d-block text-truncate">Trnava</span>
+              <svg class="dropdown-chevron Icon small text-primary"><use xlink:href="/data/img/icons.svg#chevron-down"></use></svg>
+            </button>
+            <div class="dropdown-menu" role="menu" aria-labelledby="HeaderCityPicker">
+			
+				<a class="dropdown-item" href="/ba/mhd">Bratislava</a>
+				<a class="dropdown-item" href="/bb/mhd">Banská Bystrica</a>
+				<a class="dropdown-item" href="/hc/mhd">Hlohovec</a>
+				<a class="dropdown-item" href="/ke/mhd">Košice</a>
+				<a class="dropdown-item" href="/lm/mhd">Liptovský Mikuláš</a>
+				<a class="dropdown-item" href="/mt/mhd">Martin</a>
+				<a class="dropdown-item" href="/nr/mhd">Nitra</a>
+				<a class="dropdown-item" href="/nz/mhd">Nové Zámky</a>
+				<a class="dropdown-item" href="/pn/mhd">Piešťany</a>
+				<a class="dropdown-item" href="/tatry/mhd">Poprad-Tatry</a>
+				<a class="dropdown-item" href="/pb/mhd">Považská Bystrica</a>
+				<a class="dropdown-item" href="/po/mhd">Prešov</a>
+				<a class="dropdown-item" href="/pd/mhd">Prievidza</a>
+				<a class="dropdown-item" href="/rk/mhd">Ružomberok</a>
+				<a class="dropdown-item" href="/se/mhd">Senica</a>
+				<a class="dropdown-item" href="/si/mhd">Skalica</a>
+				<a class="dropdown-item" href="/sn/mhd">Spišská Nová Ves</a>
+				<a class="dropdown-item" href="/tn/mhd">Trenčín</a>
+				<a class="dropdown-item" href="/zv/mhd">Zvolen</a>
+				<a class="dropdown-item" href="/za/mhd">Žilina</a>
+				<a class="dropdown-item" href="/transport/mhd">Slovensko a svet</a>
+            </div>
+          </div>
+        </div>
+        <div class="col col-lg-4 order-11 order-lg-0">
+          <form class="Header-search Search" id="search-main">
+			<div class="input-group">
+            <label for="search-main-input" class="sr-only">Nájdi linku, zastávku, vozidlo, text</label>
+            <input id="search-main-input" class="Search-input form-control pb-2" type="text" placeholder="Nájdi linku, zastávku, vozidlo, text" aria-label="Nájdi linku, zastávku, vozidlo, text">
+			  <div id="search-main-button" class="input-group-append">
+				<button id="search-main-submit" type="submit" class="btn btn-default btn-narrow" title="Nájdi">
+					<svg class="Icon Search-icon-top"><use xlink:href="/data/img/icons.svg#search"></use></svg>
+				</button>
+			  </div>
+			</div>
+		  </form>
+        </div>
+		  
+        <div class="col-auto order-12 order-lg-0 text-center d-lg-none">
+          <a class="Header-item Header-item--virtualStop text-muted" href="/tt/online-zastavkova-tabula" aria-label="Najbližšia zastávka"><svg class="Header-itemIcon Icon text-primary mr-lg-1"><use href="/data/img/icons.svg#location3"></use></svg><strong class="Header-itemLabel d-none d-lg-inline-block">Najbližšia zastávka</strong></a>
+        </div>
+		  
+        <div class="col-12 col-sm-5 col-md-4 col-lg-auto col-lg-4 text-center text-sm-right d-none d-sm-block">
+          <div class="Header-user">
+		  
+            <a class="btn btn-sm btn-white d-lg-none" href="/tt/registracia-pouzivatela" >Registrácia</a>
+            <a class="btn btn-sm btn-primary d-lg-none" href="/tt/prihlasenie?target=cestovny-poriadok%2Flinka%2F3-4-8%2FDru%25C5%25BEba%2Fsmer-%25C5%25BDel-stanica%2Fca71bc7189aa71857f7c817f86807f827c82717b71857f7c817f86807f837c83717b71857f7c817f86807f877c8771ac7b71c17189807b71b67189818588877b71be71897f7b71c971897f7b71b371897171cc" >Prihlásenie</a>
+
+            <a class="btn btn-lg btn-white d-none d-lg-inline-block" href="/tt/registracia-pouzivatela" >Registrácia</a>
+            <a class="btn btn-lg btn-primary d-none d-lg-inline-block" href="/tt/prihlasenie?target=cestovny-poriadok%2Flinka%2F3-4-8%2FDru%25C5%25BEba%2Fsmer-%25C5%25BDel-stanica%2Fca71bc7189aa71857f7c817f86807f827c82717b71857f7c817f86807f837c83717b71857f7c817f86807f877c8771ac7b71c17189807b71b67189818588877b71be71897f7b71c971897f7b71b371897171cc" >Prihlásenie</a>
+          
+		  </div>
+        </div>
+      </div>
+
+      <nav id="headerNav" class="Header-nav js-headerNav">
+        <div class="Header-navInner">
+		  <div class="d-lg-none">
+			  <div class="row Header headerNavTitle--sm">
+				<div class="col-12">
+					<a class="Header-logo Logo ml-3" href="/tt/mhd">
+						<img class="Logo-img" src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==" alt="imhd.sk">
+						<span class="sr-only">imhd.sk</span>
+					</a>
+				</div>
+				  <div class="Header-navClose btn btn-transparent is-active d-lg-none js-headerNavClose">
+					<div class="Hamburger">
+					  <div class="Hamburger-bar"></div>
+					  <div class="Hamburger-bar"></div>
+					  <div class="Hamburger-bar"></div>
+					</div>
+
+					<span class="sr-only">Menu</span>
+				  </div>
+			  </div>
+
+				<div class="row headerNavSubtitle--sm">
+					<div class="col-3 my-auto p-0 align-self-center text-left">
+                <button class="btn btn-narrow btn-transparent dropdown-toggle" type="button" id="dropdownMenu4Button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                  <span class="text-muted"><svg class="Header-itemIcon Icon text-primary mr-1"><use xlink:href="/data/img/icons.svg#globe"></use></svg> sk</span>
+                  <svg class="Icon dropdown-chevron text-primary"><use xlink:href="/data/img/icons.svg#chevron-down"></use></svg>
+                </button>
+                <div class="dropdown-menu dropdown-menu-right" role="menu" aria-labelledby="dropdownMenu4Button">
+				
+						<a class="dropdown-item" href="/tt/schedule-timetable/linka/3-4-8/Dru%C5%BEba/smer-%C5%BDel-stanica/ca71bc7189aa71857f7c817f86807f827c82717b71857f7c817f86807f837c83717b71857f7c817f86807f877c8771ac7b71c17189807b71b67189818588877b71be71897f7b71c971897f7b71b371897171cc">English</a>
+                </div>
+			
+					</div>
+
+					<div class="col-9 my-auto p-0 text-right">
+					  <div class="Header-user m-0 p-0">
+						
+            <a class="btn btn-sm btn-white d-lg-none" href="/tt/registracia-pouzivatela" >Registrácia</a>
+            <a class="btn btn-sm btn-primary d-lg-none" href="/tt/prihlasenie?target=cestovny-poriadok%2Flinka%2F3-4-8%2FDru%25C5%25BEba%2Fsmer-%25C5%25BDel-stanica%2Fca71bc7189aa71857f7c817f86807f827c82717b71857f7c817f86807f837c83717b71857f7c817f86807f877c8771ac7b71c17189807b71b67189818588877b71be71897f7b71c971897f7b71b371897171cc" >Prihlásenie</a>
+
+            <a class="btn btn-lg btn-white d-none d-lg-inline-block" href="/tt/registracia-pouzivatela" >Registrácia</a>
+            <a class="btn btn-lg btn-primary d-none d-lg-inline-block" href="/tt/prihlasenie?target=cestovny-poriadok%2Flinka%2F3-4-8%2FDru%25C5%25BEba%2Fsmer-%25C5%25BDel-stanica%2Fca71bc7189aa71857f7c817f86807f827c82717b71857f7c817f86807f837c83717b71857f7c817f86807f877c8771ac7b71c17189807b71b67189818588877b71be71897f7b71c971897f7b71b371897171cc" >Prihlásenie</a>
+          
+					  </div>
+					</div>
+				</div>
+		  </div>
+
+          <div class="row row-no-gutter">
+            <div class="col-12 col-lg navbar navbar-default">
+			  					<ul class="Header-menu list-unstyled text-left text-lg-left">
+					<li>
+					<a href="/tt/informacie">Aktuality</a>
+					</li>
+					
+					<li class="dropdown"><a href="#" class="dropdown-toggle" id="header-menu_1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span class="lmenuinformacie">Užitočné informácie</span><svg class="Icon small Header-menu-caret"><use xlink:href="/data/img/icons.svg#chevron-right"></use></svg></a>
+					<div class="dropdown-menu" role="menu" aria-labelledby="header-menu_1">
+												<a class="dropdown-item" href="/tt/doc/sk/22667/22667">MHD na stanice</a>
+						<a class="dropdown-item" href="/tt/doc/sk/22678/22678">Bezbariérová doprava</a>
+						<div class="dropdown-divider"></div>
+						<a class="dropdown-item" href="/tt/doc/sk/22676/22676">Preprava zvierat</a>
+						<a class="dropdown-item" href="/tt/doc/sk/22677/22677">Preprava batožín a kočíkov</a>
+						<a class="dropdown-item" href="https://arriva.sk/files/tt/dokumenty/2025/Prepravn%C3%BD%20poriadok%20TTSK%20-%20verzia%201.6%20s%20platnos%C5%A5ou%20od%2025.8.2025.pdf">Prepravný poriadok</a>
+						<div class="dropdown-divider"></div>
+						<a class="dropdown-item" href="/tt/doc/sk/10025/Kontakt-na-dopravcu">Kontakt na dopravcu</a>
+					</div>
+				  
+					</li>
+					<li>
+					<a href="/tt/galerie">Fotky a médiá</a>
+					</li>
+					<li>
+					<a href="/tt/diskusne-forum">Diskusia</a>
+					</li>
+					<li>
+					<a href="/tt/vozidla-menu">Vozidlá</a>
+					</li>
+					<li>
+					<a href="/tt/doc/sk/10029/Historia-MHD-v-Trnave">História</a>
+					</li>
+					
+					<li class="dropdown"><a href="#" class="dropdown-toggle" id="header-menu_6" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Zábava</span><svg class="Icon small Header-menu-caret"><use xlink:href="/data/img/icons.svg#chevron-right"></use></svg></a>
+					<div class="dropdown-menu" role="menu" aria-labelledby="header-menu_6">
+												<a class="dropdown-item" href="/tt/sotolionar">Šotolionár</a>
+					</div>
+				  
+					</li>
+					</ul>
+            </div>
+
+            <div class="col-12 col-lg text-center text-lg-right Header-iconDiv">
+
+			  <a class="Header-item Header-item--virtualStop mr-3 text-muted" href="/tt/online-zastavkova-tabula?st=%3B" ><svg class="Header-itemIcon Icon text-primary mr-1"><use xlink:href="/data/img/icons.svg#location3"></use></svg><strong class="Header-itemLabel">Najbližšia zastávka</strong></a>
+
+                
+	            <div class="Header-item Header-item--weather text-muted">
+					<a href="http://openweathermap.org/city/3057124" target="_blank" class="text-muted">
+						<span class="sr-only">Jasná obloha</span>
+						<i class="Header-itemIcon Icon text-primary mr-1 wi wi-owm-day-800" title="Jasná obloha" aria-hidden="true"></i>
+						<strong class="Header-itemLabel pl-3">16 &deg;C</strong>
+					</a>
+				</div>
+			  
+              <div class="Header-item Header-item--lang dropdown d-none d-lg-inline-block">
+                <button class="btn btn-narrow btn-transparent dropdown-toggle" type="button" id="dropdownMenu4Button-1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                  <span class="text-muted"><svg class="Header-itemIcon Icon text-primary mr-1"><use xlink:href="/data/img/icons.svg#globe"></use></svg> sk</span>
+                  <svg class="Icon dropdown-chevron text-primary"><use xlink:href="/data/img/icons.svg#chevron-down"></use></svg>
+                </button>
+                <div class="dropdown-menu dropdown-menu-right" role="menu" aria-labelledby="dropdownMenu4Button-1">
+				
+						<a class="dropdown-item" href="/tt/schedule-timetable/linka/3-4-8/Dru%C5%BEba/smer-%C5%BDel-stanica/ca71bc7189aa71857f7c817f86807f827c82717b71857f7c817f86807f837c83717b71857f7c817f86807f877c8771ac7b71c17189807b71b67189818588877b71be71897f7b71c971897f7b71b371897171cc">English</a>
+                </div>
+			
+              </div>
+              <div class="d-lg-none">
+				<div class="bg-light my-3 py-3">
+            <div class="row">
+              <div class="col-12 col-lg text-center text-lg-left">
+                <a class="Footer-logo Logo" href="/tt/mhd">
+					<img class="Logo-img" src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==" alt="imhd.sk">
+                </a>
+
+                <div class="Footer-cityPicker CityPicker dropdown">
+                  <button class="btn btn-light dropdown-toggle" type="button" id="FooterCityPicker" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+					Trnava
+                    <svg class="dropdown-chevron Icon small text-primary"><use xlink:href="/data/img/icons.svg#chevron-down"></use></svg>
+                  </button>
+                  <div class="dropdown-menu" role="menu" aria-labelledby="FooterCityPicker">
+			
+					<a class="dropdown-item" href="/ba/mhd">Bratislava</a>
+					<a class="dropdown-item" href="/bb/mhd">Banská Bystrica</a>
+					<a class="dropdown-item" href="/hc/mhd">Hlohovec</a>
+					<a class="dropdown-item" href="/ke/mhd">Košice</a>
+					<a class="dropdown-item" href="/lm/mhd">Liptovský Mikuláš</a>
+					<a class="dropdown-item" href="/mt/mhd">Martin</a>
+					<a class="dropdown-item" href="/nr/mhd">Nitra</a>
+					<a class="dropdown-item" href="/nz/mhd">Nové Zámky</a>
+					<a class="dropdown-item" href="/pn/mhd">Piešťany</a>
+					<a class="dropdown-item" href="/tatry/mhd">Poprad-Tatry</a>
+					<a class="dropdown-item" href="/pb/mhd">Považská Bystrica</a>
+					<a class="dropdown-item" href="/po/mhd">Prešov</a>
+					<a class="dropdown-item" href="/pd/mhd">Prievidza</a>
+					<a class="dropdown-item" href="/rk/mhd">Ružomberok</a>
+					<a class="dropdown-item" href="/se/mhd">Senica</a>
+					<a class="dropdown-item" href="/si/mhd">Skalica</a>
+					<a class="dropdown-item" href="/sn/mhd">Spišská Nová Ves</a>
+					<a class="dropdown-item" href="/tn/mhd">Trenčín</a>
+					<a class="dropdown-item" href="/zv/mhd">Zvolen</a>
+					<a class="dropdown-item" href="/za/mhd">Žilina</a>
+					<a class="dropdown-item" href="/transport/mhd">Slovensko a svet</a>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-12 col-lg-auto text-right">
+                <form class="Footer-newsletter form-inline" action="/tt/registracia-pouzivatela">
+                  <h3 class="Footer-newsletterHeading">Novinky e-mailom</h3>
+
+                  <div class="input-group">
+				  
+                    <label class="sr-only" for="newsletter-input">Zadajte váš e-mail</label>
+                    <input id="newsletter-input" name="email" type="text" class="form-control" placeholder="Zadajte váš e-mail" aria-label="Zadajte váš e-mail" aria-describedby="newsletter-button-submit">
+                    <div class="input-group-append">
+                      <button class="btn btn-primary" type="submit" id="newsletter-button-submit">Pridať</button>
+                    </div>
+                  </div>
+                </form>
+              </div>
+
+              <div class="col-12 col-lg-auto text-center">
+                <ul class="Footer-networks Networks list-unstyled">
+	
+                  <li>
+                    <a href="https://www.facebook.com/imhd.sk" target="facebook">
+                      <svg class="Icon"><use xlink:href="/data/img/icons.svg#facebook"></use></svg>
+                      <span class="sr-only">Facebook</span>
+                    </a>
+                  </li>
+	
+                  <li>
+                    <a href="https://twitter.com/imhdsk" target="twitter">
+                      <svg class="Icon"><use xlink:href="/data/img/icons.svg#twitter"></use></svg>
+                      <span class="sr-only">Twitter</span>
+                    </a>
+                  </li>
+	
+                  <li>
+                    <a href="https://www.instagram.com/imhd.sk/" target="instagram">
+                      <svg class="Icon"><use xlink:href="/data/img/icons.svg#instagram"></use></svg>
+                      <span class="sr-only">Instagram</span>
+                    </a>
+                  </li>
+	
+                  <li>
+                    <a href="/tt/doc/sk/10810/Mobiln%C3%A1-aplik%C3%A1cia-imhd-sk">
+                      <svg class="Icon"><use xlink:href="/data/img/icons.svg#app"></use></svg>
+                      <span class="sr-only">Smartfónová appka</span>
+                    </a>
+                  </li>
+	
+                  <li>
+                    <a href="/tt/rss/dokumenty">
+                      <svg class="Icon"><use xlink:href="/data/img/icons.svg#rss"></use></svg>
+                      <span class="sr-only">Smartfónová appka</span>
+                    </a>
+                  </li>
+	
+				</ul>
+              </div>
+            </div>
+			</div>
+      <div class="row">
+        <div class="col-12 col-md-auto text-center text-md-right order-md-12">
+          <ul class="CopyFooter-menu list-unstyled">
+			<li><a href="/tt/doc/sk/10257/Autorsk%C3%A9-pr%C3%A1va" >Autorské práva</a></li>
+			<li><a href="/tt/doc/sk/10260/Podmienky-pou%C5%BE%C3%ADvania" >Podmienky</a></li>
+			<li><a href="javascript:googlefc.showRevocationMessage();">Súkromie</a></li>
+			<li><a href="/tt/doc/sk/10261/O-imhd-sk" >O imhd.sk</a></li>
+			<li><a href="/tt/doc/sk/15864/Kontakt" >Kontakt</a></li>
+          </ul>
+        </div>
+
+        <div class="col-12 col-md text-center text-md-left">
+          <ul class="CopyFooter-menu list-unstyled">
+			<li>Powered by<a href="https://www.websupport.sk" target="_blank" aria-label="websupport.sk"><svg class="Icon Logo-websupport"><use href="/data/img/icons.svg#websupport"></use></svg></a></li>
+			<li>Copyright © imhd.sk, 2000 – 2026</li>
+	      </ul>
+        </div>
+      </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <div class="Layout">
+    <nav class="Nav Layout-nav js-nav">
+      <ul class="Nav-menu list-unstyled">					<li><a href="/tt/cestovne-poriadky">
+					<svg class="Nav-icon Icon"><use xlink:href="/data/img/icons.svg#timetables"></use></svg>
+						<div class="Nav-label">Cestovné<br>poriadky</div>
+					</a>
+					<li><a href="/tt/planovac-cesty">
+					<svg class="Nav-icon Icon"><use xlink:href="/data/img/icons.svg#route"></use></svg>
+						<div class="Nav-label">Plánovač<br>cesty</div>
+					</a>
+					<li><a href="/tt/mapy-schemy">
+					<svg class="Nav-icon Icon"><use xlink:href="/data/img/icons.svg#map-location"></use></svg>
+						<div class="Nav-label">Mapy</div>
+					</a>
+					<li><a href="/tt/doc/sk/23792/23792">
+					<svg class="Nav-icon Icon"><use xlink:href="/data/img/icons.svg#tickets"></use></svg>
+						<div class="Nav-label">Cestovné<br>lístky</div>
+					</a>
+        <li class="d-lg-none">
+          <a class="js-headerNavOpen" href="#" aria-label="Menu" aria-expanded="false" aria-controls="headerNav">
+            <svg class="Nav-icon Icon"><use xlink:href="/data/img/icons.svg#menu"></use></svg>
+            <div class="Nav-label">Menu</div>
+          </a>
+        </li>
+      </ul>
+    </nav>
+	
+    <div class="Layout-main bg-white">
+      <div class="Content Content--noPadding">
+        <div class="container"><div class="d-print-none mt-2"><div class="d-block d-sm-none text-center">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9096168135415861"
+     crossorigin="anonymous"></script>
+<ins class="adsbygoogle"
+     style="display:inline-block;width:320px;height:100px"
+     data-ad-client="ca-pub-9096168135415861"
+     data-ad-slot="7139675657"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+</div></div><div class="d-print-none mb-4"><div class="d-none d-sm-block d-lg-none text-center">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9096168135415861"
+     crossorigin="anonymous"></script>
+<ins class="adsbygoogle"
+     style="display:inline-block;width:728px;height:90px"
+     data-ad-client="ca-pub-9096168135415861"
+     data-ad-slot="1824972319"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+</div></div><div class="d-print-none mb-4"><div class="d-none d-lg-block  text-center">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9096168135415861"
+     crossorigin="anonymous"></script>
+<ins class="adsbygoogle"
+     style="display:inline-block;width:1100px;height:350px"
+     data-ad-client="ca-pub-9096168135415861"
+     data-ad-slot="9659036782"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+</div></div><section class="Timetable">
+            <header class="TimetableHeader">
+              <h1 class="sr-only">Cestovný poriadok liniek  <span class="TimetableHeader-linka Linka--xl m-1 Linka his l3346">3</span><span class="TimetableHeader-linka Linka--xl m-1 Linka his l3335">4</span><span class="TimetableHeader-linka Linka--xl m-1 Linka his l3370">8</span></h1>
+
+              <div class="row">
+                <div class="TimetableHeader-primary col-12 col-lg col-print">
+                  <svg class="TimetableHeader-icon Icon"><use href="/data/img/vehicles.svg#bus"></use></svg>
+                  <h1 class="h2 m-2">&nbsp;</h1><a href="/tt/linka/3-4-8/ca71bc7189aa71857f7c817f86807f827c82717b71857f7c817f86807f837c83717b71857f7c817f86807f877c8771ac7b71b371897171cc" ><span class="TimetableHeader-linka Linka--xl m-1 Linka his l3346">3</span><span class="TimetableHeader-linka Linka--xl m-1 Linka his l3335">4</span><span class="TimetableHeader-linka Linka--xl m-1 Linka his l3370">8</span></a>
+
+                  <div class="TimetableHeader-route ml-2 mt-2 mb-2">
+                    <div class="TimetableHeader-start h4 font-weight-normal mb-1">Družba</div>
+                    <div class="TimetableHeader-dest h3 mb-0"><strong>Žel. stanica</strong></div>
+                  </div>
+                </div>
+
+                <div class="TimetableHeader-secondary col-12 col-lg-auto col-print-auto">
+                  <strong class="TimetableHeader-info h4 mr-3 mb-0 font-weight-normal">Platí od 1.4.2026</strong>
+					<button type="button" class="btn btn-light btn-lg btn-narrow d-none d-md-block d-print-none" id="printSchedule" >Vytlačiť</button><a class="ml-2 btn-light btn-lg btn-narrow d-none d-md-block d-print-none" href="/tt/cestovny-poriadok/linka/3-4-8/Dru%C5%BEba/smer-Dru%C5%BEba/ca71bc7189aa71857f7c817f86807f827c82717b71857f7c817f86807f837c83717b71857f7c817f86807f877c8771ac7b71c171897f7b71b67189818588877b71be71897f7b71c971897fcc" title="Opačný smer"><svg class="Icon"><use href="/data/img/icons.svg#switch-vertical"></use></svg></a>
+                </div>
+              </div>
+            </header>
+	<div class="px-3 py-0 my-0"></div>
+            <div class="ModuleGroup row row-no-gutter flex-lg-nowrap flex-print-nowrap">
+              <div id="ModuleGroup-left-linestops" class="ModuleGroup-left col-lg-auto col-print-auto maxWidthSafariFix order-12 order-lg-0 order-print-0">
+                <div class="Module Module--secondary">
+                  <div class="ModuleHeader">
+                    <h2 class="ModuleHeader-title">Zastávky</h2>
+                  </div>
+                  <div class="ModuleBody">
+                    <div class="table-responsive">
+                      <table class="table table-hover table-borderless table-striped table-sm stopsList">
+                        <thead>
+                          <tr>
+                            <th scope="col" class="stopRoute" colspan="1"></th>
+                            <th scope="col" class="text-center">min</th>
+                            <th scope="col" class="stopDeparture d-none"></th>
+                            <th scope="col"></th>
+                            <th scope="col">Zastávka</th>
+                            
+                          </tr>
+                        </thead>
+                        <tbody>
+							
+		                        <tr id="stopId0" class="clickable-stop selected-stop" data-href="/tt/cestovny-poriadok/linka/3-4-8/Dru%C5%BEba/smer-%C5%BDel-stanica/ca71bc7189aa71857f7c817f86807f827c82717b71857f7c817f86807f837c83717b71857f7c817f86807f877c8771ac7b71c17189807b71b3718971717b71b67189818588877b71be71897f7b71c971897fcc">
+		                          <td class="stopRoute mx-0 px-0"><svg id="bid-0-0" class="routedot" viewBox="0 0 64 80" preserveAspectRatio="xMidYMid slice"><use class="dotC" id="bid-0-0-0" href="/data/img/icons.svg#dotC"></use><use  id="bid-0-0-5" href="/data/img/icons.svg#dot5"></use></svg></td>
+		                          <td class="stopTime text-center"><span class="timemin"></span><span class="timemax"></span><span class="glyphicon glyphicon-chevron-down"></span></td>
+		                          <td class="stopDeparture d-none"></td>
+		                          <td class="tripstopAttributes"></td>
+		                          <td class="w-100 align-middle stopName">Družba <span class="float-right text-muted"><svg class="Icon Icon--opticalAlign"><use href="/data/img/icons.svg#stop"></use></svg><small>A</small></span></td>
+		                          
+		                        </tr>
+			
+
+		                        <tr id="stopId1" class="clickable-stop" data-href="/tt/cestovny-poriadok/linka/3-4-8/Poliklinika/smer-%C5%BDel-stanica/ca71bc7189aa71857f7c817f86807f827c82717b71857f7c817f86807f837c83717b71857f7c817f86807f877c8771ac7b71c17189807b71b3718971717b71b67189818680827b71be71897f7b71c9718980cc">
+		                          <td class="stopRoute mx-0 px-0"><svg id="bid-1-0" class="routedot" viewBox="0 0 64 80" preserveAspectRatio="xMidYMid slice"><use class="dotB" id="bid-1-0-0" href="/data/img/icons.svg#dotB"></use><use  id="bid-1-0-1" href="/data/img/icons.svg#dot1"></use><use  id="bid-1-0-5" href="/data/img/icons.svg#dot5"></use></svg></td>
+		                          <td class="stopTime text-center text-muted"><span class="timemin">1</span><span class="timemax">1</span></td>
+		                          <td class="stopDeparture d-none"></td>
+		                          <td class="tripstopAttributes text-muted"></td>
+		                          <td class="w-100 align-middle stopName">Poliklinika <span class="float-right text-muted"><svg class="Icon Icon--opticalAlign"><use href="/data/img/icons.svg#stop"></use></svg><small>A</small></span></td>
+		                          
+		                        </tr>
+			
+
+		                        <tr id="stopId2" class="clickable-stop" data-href="/tt/cestovny-poriadok/linka/3-4-8/V-Clementisa/smer-%C5%BDel-stanica/ca71bc7189aa71857f7c817f86807f827c82717b71857f7c817f86807f837c83717b71857f7c817f86807f877c8771ac7b71c17189807b71b3718971717b71b67189818588887b71be71897f7b71c9718981cc">
+		                          <td class="stopRoute mx-0 px-0"><svg id="bid-2-0" class="routedot" viewBox="0 0 64 80" preserveAspectRatio="xMidYMid slice"><use class="dotB" id="bid-2-0-0" href="/data/img/icons.svg#dotB"></use><use  id="bid-2-0-1" href="/data/img/icons.svg#dot1"></use><use  id="bid-2-0-5" href="/data/img/icons.svg#dot5"></use></svg></td>
+		                          <td class="stopTime text-center text-muted"><span class="timemin">3</span><span class="timemax">3</span></td>
+		                          <td class="stopDeparture d-none"></td>
+		                          <td class="tripstopAttributes text-muted"></td>
+		                          <td class="w-100 align-middle stopName">V. Clementisa <span class="float-right text-muted"><svg class="Icon Icon--opticalAlign"><use href="/data/img/icons.svg#stop"></use></svg><small>A</small></span></td>
+		                          
+		                        </tr>
+			
+
+		                        <tr id="stopId3" class="clickable-stop" data-href="/tt/cestovny-poriadok/linka/3-4-8/Spartakovsk%C3%A1/smer-%C5%BDel-stanica/ca71bc7189aa71857f7c817f86807f827c82717b71857f7c817f86807f837c83717b71857f7c817f86807f877c8771ac7b71c17189807b71b3718971717b71b6718981867f7f7b71be71897f7b71c9718982cc">
+		                          <td class="stopRoute mx-0 px-0"><svg id="bid-3-0" class="routedot" viewBox="0 0 64 80" preserveAspectRatio="xMidYMid slice"><use class="dotB" id="bid-3-0-0" href="/data/img/icons.svg#dotB"></use><use  id="bid-3-0-1" href="/data/img/icons.svg#dot1"></use><use  id="bid-3-0-5" href="/data/img/icons.svg#dot5"></use></svg></td>
+		                          <td class="stopTime text-center text-muted"><span class="timemin">4&nbsp;&ndash;&nbsp;5</span><span class="timemax">5</span></td>
+		                          <td class="stopDeparture d-none"></td>
+		                          <td class="tripstopAttributes text-muted"></td>
+		                          <td class="w-100 align-middle stopName">Spartakovská <span class="float-right text-muted"><svg class="Icon Icon--opticalAlign"><use href="/data/img/icons.svg#stop"></use></svg><small>A</small></span></td>
+		                          
+		                        </tr>
+			
+
+		                        <tr id="stopId4" class="clickable-stop" data-href="/tt/cestovny-poriadok/linka/3-4-8/Koll%C3%A1rova/smer-%C5%BDel-stanica/ca71bc7189aa71857f7c817f86807f827c82717b71857f7c817f86807f837c83717b71857f7c817f86807f877c8771ac7b71c17189807b71b3718971717b71b6718981867f807b71be71897f7b71c9718983cc">
+		                          <td class="stopRoute mx-0 px-0"><svg id="bid-4-0" class="routedot" viewBox="0 0 64 80" preserveAspectRatio="xMidYMid slice"><use class="dotB" id="bid-4-0-0" href="/data/img/icons.svg#dotB"></use><use  id="bid-4-0-1" href="/data/img/icons.svg#dot1"></use><use  id="bid-4-0-5" href="/data/img/icons.svg#dot5"></use></svg></td>
+		                          <td class="stopTime text-center text-muted"><span class="timemin">6&nbsp;&ndash;&nbsp;9</span><span class="timemax">9</span></td>
+		                          <td class="stopDeparture d-none"></td>
+		                          <td class="tripstopAttributes text-muted"></td>
+		                          <td class="w-100 align-middle stopName">Kollárova <span class="float-right text-muted"><svg class="Icon Icon--opticalAlign"><use href="/data/img/icons.svg#stop"></use></svg><small>A</small></span></td>
+		                          
+		                        </tr>
+			
+
+		                        <tr id="stopId5" class="clickable-stop" data-href="/tt/cestovny-poriadok/linka/3-4-8/%C5%BDel-stanica/smer-%C5%BDel-stanica/ca71bc7189aa71857f7c817f86807f827c82717b71857f7c817f86807f837c83717b71857f7c817f86807f877c8771ac7b71c17189807b71b3718971717b71b67189818587847b71be71897f7b71c9718984cc">
+		                          <td class="stopRoute mx-0 px-0"><svg id="bid-5-0" class="routedot" viewBox="0 0 64 80" preserveAspectRatio="xMidYMid slice"><use class="dotC" id="bid-5-0-0" href="/data/img/icons.svg#dotC"></use><use  id="bid-5-0-1" href="/data/img/icons.svg#dot1"></use></svg></td>
+		                          <td class="stopTime text-center text-muted"><span class="timemin">9&nbsp;&ndash;&nbsp;17</span><span class="timemax">17</span></td>
+		                          <td class="stopDeparture d-none"></td>
+		                          <td class="tripstopAttributes text-muted"></td>
+		                          <td class="w-100 align-middle stopName">Žel. stanica <span class="float-right text-muted"><svg class="Icon Icon--opticalAlign"><use href="/data/img/icons.svg#stop"></use></svg><small>B</small></span></td>
+		                          
+		                        </tr>
+			
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div> <!-- Module -->
+              </div>
+              <div class="TimetableTabsNotes ModuleGroup-right col-lg col-print">
+                <section class="Module Module--secondary js-timetableTimes">
+                  <script id="timetable-tabs-template" type="text/x-custom-template">
+                    <ul id="departures-tabs" class="TimetableTabs nav nav-tabs list-unstyled mb-0 d-print-none" role="tablist">
+					
+                      <li class="mr-1">
+                        <a class="TimetableTabHeading align-top show active" id="SM-78-tab" data-toggle="tab" href="#SM-78" role="tab" aria-controls="SM-78" aria-selected="false">Pracovné dni, školský rok</a>
+                      </li>
+			
+                      <li class="mr-1">
+                        <a class="TimetableTabHeading align-top" id="SM-79-tab" data-toggle="tab" href="#SM-79" role="tab" aria-controls="SM-79" aria-selected="false">Pracovné dni, školské prázdniny</a>
+                      </li>
+			
+                      <li class="mr-1">
+                        <a class="TimetableTabHeading align-top" id="SM-80-tab" data-toggle="tab" href="#SM-80" role="tab" aria-controls="SM-80" aria-selected="false">Voľné dni</a>
+                      </li>
+			
+                    </ul>
+                  </script>
+
+                  <div class="ModuleBody pt-0 pr-0 pb-0 pl-0">
+                    <div class="TimetableTabPanes d-flex" id="myTabContent">
+					
+                      <div class="TimetableTabPanes-item servicemode" id="SM-78">
+                        <h2 id="headerSM-78" class="TimetableTabHeading d-print-block align-top">Pracovné dni, školský rok</h2>
+                        <div class="TimetableTimes table-responsive">
+                          <table id="tableSM-78" class="table table-borderless table-striped table-sm">
+                            <thead>
+                              <tr>
+                                <th scope="col">hod</th>
+                                <th scope="col" colspan="9">min</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+			
+        <tr id="sm78T4"><th scope="row">4</th><td id="sm78T12341865T0T66687T0T" class="" data-depts="1778292119;1778378519;1778464919" data-depid="0">01</td><td id="sm78T12341867T0T66687T0T" class="" data-depts="1778294519;1778380919;1778467319" data-depid="1">41</td><td colspan="7"></td></tr>
+        <tr id="sm78T5"><th scope="row">5</th><td id="sm78T12407018T0T67514T0T" class="" data-depts="1778295959;1778382359;1778468759" data-depid="2">05</td><td id="sm78T12341905T0T66687T0T" class="" data-depts="1778295959;1778382359;1778468759" data-depid="3">05</td><td id="sm78T12406645T0T67510T0T" class="" data-depts="1778296619;1778383019;1778469419" data-depid="4">16</td><td id="sm78T12341907T0T66687T0T" class="" data-depts="1778297159;1778383559;1778469959" data-depid="5">25</td><td id="sm78T12406647T0T67510T0T" class="" data-depts="1778297759;1778384159;1778470559" data-depid="6">35</td><td id="sm78T12341909T0T66687T0T" class="" data-depts="1778298359;1778384759;1778471159" data-depid="7">45</td><td id="sm78T12406649T0T67510T0T" class="" data-depts="1778298959;1778385359;1778471759" data-depid="8">55</td><td colspan="2"></td></tr>
+        <tr id="sm78T6"><th scope="row">6</th><td id="sm78T12407022T0T67514T0T" class="" data-depts="1778299559;1778385959;1778472359" data-depid="9">05</td><td id="sm78T12341911T0T66687T0T" class="" data-depts="1778299559;1778385959;1778472359" data-depid="10">05</td><td id="sm78T12406651T0T67510T0T" class="" data-depts="1778300159;1778386559;1778472959" data-depid="11">15</td><td id="sm78T12341913T0T66687T0T" class="" data-depts="1778300759;1778387159;1778473559" data-depid="12">25</td><td id="sm78T12406653T0T67510T0T" class="" data-depts="1778301359;1778387759;1778474159" data-depid="13">35</td><td id="sm78T12407024T0T67514T0T" class="" data-depts="1778301359;1778387759;1778474159" data-depid="14">35</td><td id="sm78T12341915T0T66687T0T" class="" data-depts="1778301959;1778388359;1778474759" data-depid="15">45</td><td id="sm78T12406655T0T67510T0T" class="" data-depts="1778302559;1778388959;1778475359" data-depid="16">55</td><td colspan="1"></td></tr>
+        <tr id="sm78T7"><th scope="row">7</th><td id="sm78T12407026T0T67514T0T" class="" data-depts="1778303159;1778389559;1778475959" data-depid="17">05</td><td id="sm78T12341917T0T66687T0T" class="" data-depts="1778303159;1778389559;1778475959" data-depid="18">05</td><td id="sm78T12406657T0T67510T0T" class="" data-depts="1778303759;1778390159;1778476559" data-depid="19">15</td><td id="sm78T12341869T0T66687T0T" class="" data-depts="1778304359;1778390759;1778477159" data-depid="20">25</td><td id="sm78T12407069T0T67514T0T" class="" data-depts="1778304539;1778390939;1778477339" data-depid="21">28</td><td id="sm78T12406659T0T67510T0T" class="" data-depts="1778304959;1778391359;1778477759" data-depid="22">35</td><td id="sm78T12341919T0T66687T0T" class="" data-depts="1778305559;1778391959;1778478359" data-depid="23">45</td><td id="sm78T12406661T0T67510T0T" class="" data-depts="1778306159;1778392559;1778478959" data-depid="24">55</td><td colspan="1"></td></tr>
+        <tr id="sm78T8"><th scope="row">8</th><td id="sm78T12341921T0T66687T0T" class="" data-depts="1778306759;1778393159;1778479559" data-depid="25">05</td><td id="sm78T12407029T0T67514T0T" class="" data-depts="1778306759;1778393159;1778479559" data-depid="26">05</td><td id="sm78T12406663T0T67510T0T" class="" data-depts="1778307359;1778393759;1778480159" data-depid="27">15</td><td id="sm78T12341871T0T66687T0T" class="" data-depts="1778307959;1778394359;1778480759" data-depid="28">25</td><td id="sm78T12407031T0T67514T0T" class="" data-depts="1778308559;1778394959;1778481359" data-depid="29">35</td><td id="sm78T12406603T0T67510T0T" class="" data-depts="1778308859;1778395259;1778481659" data-depid="30">40</td><td id="sm78T12341873T0T66687T0T" class="" data-depts="1778309759;1778396159;1778482559" data-depid="31">55</td><td colspan="2"></td></tr>
+        <tr id="sm78T9"><th scope="row">9</th><td id="sm78T12406605T0T67510T0T" class="" data-depts="1778310659;1778397059;1778483459" data-depid="32">10</td><td id="sm78T12341875T0T66687T0T" class="" data-depts="1778311559;1778397959;1778484359" data-depid="33">25</td><td id="sm78T12407033T0T67514T0T" class="" data-depts="1778312159;1778398559;1778484959" data-depid="34">35</td><td id="sm78T12406607T0T67510T0T" class="" data-depts="1778312459;1778398859;1778485259" data-depid="35">40</td><td id="sm78T12341877T0T66687T0T" class="" data-depts="1778313359;1778399759;1778486159" data-depid="36">55</td><td colspan="4"></td></tr>
+        <tr id="sm78T10"><th scope="row">10</th><td id="sm78T12406609T0T67510T0T" class="" data-depts="1778314259;1778400659;1778487059" data-depid="37">10</td><td id="sm78T12341879T0T66687T0T" class="" data-depts="1778315159;1778401559;1778487959" data-depid="38">25</td><td id="sm78T12407035T0T67514T0T" class="" data-depts="1778315759;1778402159;1778488559" data-depid="39">35</td><td id="sm78T12406611T0T67510T0T" class="" data-depts="1778316059;1778402459;1778488859" data-depid="40">40</td><td id="sm78T12341881T0T66687T0T" class="" data-depts="1778316959;1778403359;1778489759" data-depid="41">55</td><td colspan="4"></td></tr>
+        <tr id="sm78T11"><th scope="row">11</th><td id="sm78T12406613T0T67510T0T" class="" data-depts="1778317859;1778404259;1778490659" data-depid="42">10</td><td id="sm78T12341883T0T66687T0T" class="" data-depts="1778318759;1778405159;1778491559" data-depid="43">25</td><td id="sm78T12407037T0T67514T0T" class="" data-depts="1778319359;1778405759;1778492159" data-depid="44">35</td><td id="sm78T12406615T0T67510T0T" class="" data-depts="1778319659;1778406059;1778492459" data-depid="45">40</td><td id="sm78T12341885T0T66687T0T" class="" data-depts="1778320559;1778406959;1778493359" data-depid="46">55</td><td colspan="4"></td></tr>
+        <tr id="sm78T12"><th scope="row">12</th><td id="sm78T12406617T0T67510T0T" class="" data-depts="1778321459;1778407859;1778494259" data-depid="47">10</td><td id="sm78T12341887T0T66687T0T" class="" data-depts="1778322359;1778408759;1778495159" data-depid="48">25</td><td id="sm78T12406665T0T67510T0T" class="" data-depts="1778322959;1778409359;1778495759" data-depid="49">35</td><td id="sm78T12407039T0T67514T0T" class="" data-depts="1778322959;1778409359;1778495759" data-depid="50">35</td><td id="sm78T12341923T0T66687T0T" class="" data-depts="1778323559;1778409959;1778496359" data-depid="51">45</td><td id="sm78T12406667T0T67510T0T" class="" data-depts="1778324159;1778410559;1778496959" data-depid="52">55</td><td colspan="3"></td></tr>
+        <tr id="sm78T13"><th scope="row">13</th><td id="sm78T12341925T0T66687T0T" class="" data-depts="1778324759;1778411159;1778497559" data-depid="53">05</td><td id="sm78T12406669T0T67510T0T" class="" data-depts="1778325359;1778411759;1778498159" data-depid="54">15</td><td id="sm78T12341927T0T66687T0T" class="" data-depts="1778325959;1778412359;1778498759" data-depid="55">25</td><td id="sm78T12407041T0T67514T0T" class="" data-depts="1778326259;1778412659;1778499059" data-depid="56">30</td><td id="sm78T12406671T0T67510T0T" class="" data-depts="1778326559;1778412959;1778499359" data-depid="57">35</td><td id="sm78T12341929T0T66687T0T" class="" data-depts="1778327159;1778413559;1778499959" data-depid="58">45</td><td id="sm78T12406673T0T67510T0T" class="" data-depts="1778327759;1778414159;1778500559" data-depid="59">55</td><td colspan="2"></td></tr>
+        <tr id="sm78T14"><th scope="row">14</th><td id="sm78T12407043T0T67514T0T" class="" data-depts="1778328359;1778414759;1778501159" data-depid="60">05</td><td id="sm78T12341931T0T66687T0T" class="" data-depts="1778328359;1778414759;1778501159" data-depid="61">05</td><td id="sm78T12406675T0T67510T0T" class="" data-depts="1778328959;1778415359;1778501759" data-depid="62">15</td><td id="sm78T12341933T0T66687T0T" class="" data-depts="1778329559;1778415959;1778502359" data-depid="63">25</td><td id="sm78T12406677T0T67510T0T" class="" data-depts="1778330159;1778416559;1778502959" data-depid="64">35</td><td id="sm78T12407045T0T67514T0T" class="" data-depts="1778330159;1778416559;1778502959" data-depid="65">35</td><td id="sm78T12341935T0T66687T0T" class="" data-depts="1778330759;1778417159;1778503559" data-depid="66">45</td><td id="sm78T12406678T0T67510T0T" class="" data-depts="1778331359;1778417759;1778504159" data-depid="67">55</td><td colspan="1"></td></tr>
+        <tr id="sm78T15"><th scope="row">15</th><td id="sm78T12407047T0T67514T0T" class="" data-depts="1778331959;1778418359;1778504759" data-depid="68">05</td><td id="sm78T12341937T0T66687T0T" class="" data-depts="1778331959;1778418359;1778504759" data-depid="69">05</td><td id="sm78T12406679T0T67510T0T" class="" data-depts="1778332559;1778418959;1778505359" data-depid="70">15</td><td id="sm78T12341939T0T66687T0T" class="" data-depts="1778333159;1778419559;1778505959" data-depid="71">25</td><td id="sm78T12406680T0T67510T0T" class="" data-depts="1778333759;1778420159;1778506559" data-depid="72">35</td><td id="sm78T12407049T0T67514T0T" class="" data-depts="1778333759;1778420159;1778506559" data-depid="73">35</td><td id="sm78T12341941T0T66687T0T" class="" data-depts="1778334359;1778420759;1778507159" data-depid="74">45</td><td id="sm78T12406681T0T67510T0T" class="" data-depts="1778334959;1778421359;1778507759" data-depid="75">55</td><td colspan="1"></td></tr>
+        <tr id="sm78T16"><th scope="row">16</th><td id="sm78T12407051T0T67514T0T" class="" data-depts="1778335559;1778421959;1778508359" data-depid="76">05</td><td id="sm78T12341943T0T66687T0T" class="" data-depts="1778335559;1778421959;1778508359" data-depid="77">05</td><td id="sm78T12406682T0T67510T0T" class="" data-depts="1778336159;1778422559;1778508959" data-depid="78">15</td><td id="sm78T12341945T0T66687T0T" class="" data-depts="1778336759;1778423159;1778509559" data-depid="79">25</td><td id="sm78T12406683T0T67510T0T" class="" data-depts="1778337359;1778423759;1778510159" data-depid="80">35</td><td id="sm78T12407053T0T67514T0T" class="" data-depts="1778337359;1778423759;1778510159" data-depid="81">35</td><td id="sm78T12341947T0T66687T0T" class="" data-depts="1778337959;1778424359;1778510759" data-depid="82">45</td><td id="sm78T12406684T0T67510T0T" class="" data-depts="1778338559;1778424959;1778511359" data-depid="83">55</td><td colspan="1"></td></tr>
+        <tr id="sm78T17"><th scope="row">17</th><td id="sm78T12341949T0T66687T0T" class="" data-depts="1778339159;1778425559;1778511959" data-depid="84">05</td><td id="sm78T12406685T0T67510T0T" class="" data-depts="1778339759;1778426159;1778512559" data-depid="85">15</td><td id="sm78T12341889T0T66687T0T" class="" data-depts="1778340419;1778426819;1778513219" data-depid="86">26</td><td id="sm78T12407055T0T67514T0T" class="" data-depts="1778341019;1778427419;1778513819" data-depid="87">36</td><td id="sm78T12406619T0T67510T0T" class="" data-depts="1778341319;1778427719;1778514119" data-depid="88">41</td><td id="sm78T12341891T0T66687T0T" class="" data-depts="1778342219;1778428619;1778515019" data-depid="89">56</td><td colspan="3"></td></tr>
+        <tr id="sm78T18"><th scope="row">18</th><td id="sm78T12406621T0T67510T0T" class="" data-depts="1778343119;1778429519;1778515919" data-depid="90">11</td><td id="sm78T12341893T0T66687T0T" class="" data-depts="1778344019;1778430419;1778516819" data-depid="91">26</td><td id="sm78T12407057T0T67514T0T" class="" data-depts="1778344619;1778431019;1778517419" data-depid="92">36</td><td id="sm78T12406623T0T67510T0T" class="" data-depts="1778344919;1778431319;1778517719" data-depid="93">41</td><td id="sm78T12341895T0T66687T0T" class="" data-depts="1778345819;1778432219;1778518619" data-depid="94">56</td><td colspan="4"></td></tr>
+        <tr id="sm78T19"><th scope="row">19</th><td id="sm78T12406625T0T67510T0T" class="" data-depts="1778346719;1778433119;1778519519" data-depid="95">11</td><td id="sm78T12341897T0T66687T0T" class="" data-depts="1778347619;1778434019;1778520419" data-depid="96">26</td><td id="sm78T12407059T0T67514T0T" class="" data-depts="1778348219;1778434619;1778521019" data-depid="97">36</td><td id="sm78T12406627T0T67510T0T" class="" data-depts="1778348519;1778434919;1778521319" data-depid="98">41</td><td id="sm78T12341899T0T66687T0T" class="" data-depts="1778349419;1778435819;1778522219" data-depid="99">56</td><td colspan="4"></td></tr>
+        <tr id="sm78T20"><th scope="row">20</th><td id="sm78T12406629T0T67510T0T" class="" data-depts="1778350319;1778436719;1778523119" data-depid="100">11</td><td id="sm78T12341901T0T66687T0T" class="" data-depts="1778351219;1778437619;1778524019" data-depid="101">26</td><td id="sm78T12407061T0T67514T0T" class="" data-depts="1778351819;1778438219;1778524619" data-depid="102">36</td><td id="sm78T12406631T0T67510T0T" class="" data-depts="1778353019;1778439419;1778525819" data-depid="103">56</td><td colspan="5"></td></tr>
+        <tr id="sm78T21"><th scope="row">21</th><td id="sm78T12341903T0T66687T0T" class="" data-depts="1778354819;1778441219;1778527619" data-depid="104">26</td><td id="sm78T12407063T0T67514T0T" class="" data-depts="1778355419;1778441819;1778528219" data-depid="105">36</td><td id="sm78T12406633T0T67510T0T" class="" data-depts="1778356619;1778443019;1778529419" data-depid="106">56</td><td colspan="6"></td></tr>
+        <tr id="sm78T22"><th scope="row">22</th><td id="sm78T12341904T0T66687T0T" class="" data-depts="1778358419;1778444819;1778531219" data-depid="107">26</td><td id="sm78T12407065T0T67514T0T" class="" data-depts="1778359019;1778445419;1778531819" data-depid="108">36</td><td colspan="7"></td></tr>
+	                        </tbody>
+	                      </table>
+	                    </div>
+	                  </div>
+		
+                      <div class="TimetableTabPanes-item servicemode" id="SM-79">
+                        <h2 id="headerSM-79" class="TimetableTabHeading d-print-block align-top">Pracovné dni, školské prázdniny</h2>
+                        <div class="TimetableTimes table-responsive">
+                          <table id="tableSM-79" class="table table-borderless table-striped table-sm">
+                            <thead>
+                              <tr>
+                                <th scope="col">hod</th>
+                                <th scope="col" colspan="7">min</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+			
+        <tr id="sm79T4"><th scope="row">4</th><td id="sm79T12341865T0T66687T0T" class="" data-depts="1778292119;1778378519;1778464919" data-depid="109">01</td><td id="sm79T12341867T0T66687T0T" class="" data-depts="1778294519;1778380919;1778467319" data-depid="110">41</td><td colspan="5"></td></tr>
+        <tr id="sm79T5"><th scope="row">5</th><td id="sm79T12407018T0T67514T0T" class="" data-depts="1778295959;1778382359;1778468759" data-depid="111">05</td><td id="sm79T12406686T0T67510T0T" class="" data-depts="1778296319;1778382719;1778469119" data-depid="112">11</td><td id="sm79T12341952T0T66687T0T" class="" data-depts="1778297159;1778383559;1778469959" data-depid="113">25</td><td id="sm79T12406688T0T67510T0T" class="" data-depts="1778298059;1778384459;1778470859" data-depid="114">40</td><td id="sm79T12341954T0T66687T0T" class="" data-depts="1778298959;1778385359;1778471759" data-depid="115">55</td><td colspan="2"></td></tr>
+        <tr id="sm79T6"><th scope="row">6</th><td id="sm79T12407022T0T67514T0T" class="" data-depts="1778299559;1778385959;1778472359" data-depid="116">05</td><td id="sm79T12406690T0T67510T0T" class="" data-depts="1778299859;1778386259;1778472659" data-depid="117">10</td><td id="sm79T12341956T0T66687T0T" class="" data-depts="1778300759;1778387159;1778473559" data-depid="118">25</td><td id="sm79T12407024T0T67514T0T" class="" data-depts="1778301359;1778387759;1778474159" data-depid="119">35</td><td id="sm79T12406692T0T67510T0T" class="" data-depts="1778301659;1778388059;1778474459" data-depid="120">40</td><td id="sm79T12341958T0T66687T0T" class="" data-depts="1778302559;1778388959;1778475359" data-depid="121">55</td><td colspan="1"></td></tr>
+        <tr id="sm79T7"><th scope="row">7</th><td id="sm79T12407026T0T67514T0T" class="" data-depts="1778303159;1778389559;1778475959" data-depid="122">05</td><td id="sm79T12406694T0T67510T0T" class="" data-depts="1778303459;1778389859;1778476259" data-depid="123">10</td><td id="sm79T12341869T0T66687T0T" class="" data-depts="1778304359;1778390759;1778477159" data-depid="124">25</td><td id="sm79T12407070T0T67514T0T" class="" data-depts="1778304959;1778391359;1778477759" data-depid="125">35</td><td id="sm79T12406696T0T67510T0T" class="" data-depts="1778305259;1778391659;1778478059" data-depid="126">40</td><td id="sm79T12341960T0T66687T0T" class="" data-depts="1778306159;1778392559;1778478959" data-depid="127">55</td><td colspan="1"></td></tr>
+        <tr id="sm79T8"><th scope="row">8</th><td id="sm79T12407029T0T67514T0T" class="" data-depts="1778306759;1778393159;1778479559" data-depid="128">05</td><td id="sm79T12406698T0T67510T0T" class="" data-depts="1778307059;1778393459;1778479859" data-depid="129">10</td><td id="sm79T12341871T0T66687T0T" class="" data-depts="1778307959;1778394359;1778480759" data-depid="130">25</td><td id="sm79T12407031T0T67514T0T" class="" data-depts="1778308559;1778394959;1778481359" data-depid="131">35</td><td id="sm79T12406603T0T67510T0T" class="" data-depts="1778308859;1778395259;1778481659" data-depid="132">40</td><td id="sm79T12341873T0T66687T0T" class="" data-depts="1778309759;1778396159;1778482559" data-depid="133">55</td><td colspan="1"></td></tr>
+        <tr id="sm79T9"><th scope="row">9</th><td id="sm79T12406605T0T67510T0T" class="" data-depts="1778310659;1778397059;1778483459" data-depid="134">10</td><td id="sm79T12341875T0T66687T0T" class="" data-depts="1778311559;1778397959;1778484359" data-depid="135">25</td><td id="sm79T12407033T0T67514T0T" class="" data-depts="1778312159;1778398559;1778484959" data-depid="136">35</td><td id="sm79T12406607T0T67510T0T" class="" data-depts="1778312459;1778398859;1778485259" data-depid="137">40</td><td id="sm79T12341877T0T66687T0T" class="" data-depts="1778313359;1778399759;1778486159" data-depid="138">55</td><td colspan="2"></td></tr>
+        <tr id="sm79T10"><th scope="row">10</th><td id="sm79T12406609T0T67510T0T" class="" data-depts="1778314259;1778400659;1778487059" data-depid="139">10</td><td id="sm79T12341879T0T66687T0T" class="" data-depts="1778315159;1778401559;1778487959" data-depid="140">25</td><td id="sm79T12407035T0T67514T0T" class="" data-depts="1778315759;1778402159;1778488559" data-depid="141">35</td><td id="sm79T12406611T0T67510T0T" class="" data-depts="1778316059;1778402459;1778488859" data-depid="142">40</td><td id="sm79T12341881T0T66687T0T" class="" data-depts="1778316959;1778403359;1778489759" data-depid="143">55</td><td colspan="2"></td></tr>
+        <tr id="sm79T11"><th scope="row">11</th><td id="sm79T12406613T0T67510T0T" class="" data-depts="1778317859;1778404259;1778490659" data-depid="144">10</td><td id="sm79T12341883T0T66687T0T" class="" data-depts="1778318759;1778405159;1778491559" data-depid="145">25</td><td id="sm79T12407037T0T67514T0T" class="" data-depts="1778319359;1778405759;1778492159" data-depid="146">35</td><td id="sm79T12406615T0T67510T0T" class="" data-depts="1778319659;1778406059;1778492459" data-depid="147">40</td><td id="sm79T12341885T0T66687T0T" class="" data-depts="1778320559;1778406959;1778493359" data-depid="148">55</td><td colspan="2"></td></tr>
+        <tr id="sm79T12"><th scope="row">12</th><td id="sm79T12406617T0T67510T0T" class="" data-depts="1778321459;1778407859;1778494259" data-depid="149">10</td><td id="sm79T12341887T0T66687T0T" class="" data-depts="1778322359;1778408759;1778495159" data-depid="150">25</td><td id="sm79T12407039T0T67514T0T" class="" data-depts="1778322959;1778409359;1778495759" data-depid="151">35</td><td id="sm79T12406700T0T67510T0T" class="" data-depts="1778323259;1778409659;1778496059" data-depid="152">40</td><td id="sm79T12341962T0T66687T0T" class="" data-depts="1778324159;1778410559;1778496959" data-depid="153">55</td><td colspan="2"></td></tr>
+        <tr id="sm79T13"><th scope="row">13</th><td id="sm79T12406702T0T67510T0T" class="" data-depts="1778325059;1778411459;1778497859" data-depid="154">10</td><td id="sm79T12341964T0T66687T0T" class="" data-depts="1778325959;1778412359;1778498759" data-depid="155">25</td><td id="sm79T12407041T0T67514T0T" class="" data-depts="1778326259;1778412659;1778499059" data-depid="156">30</td><td id="sm79T12406703T0T67510T0T" class="" data-depts="1778326859;1778413259;1778499659" data-depid="157">40</td><td id="sm79T12341966T0T66687T0T" class="" data-depts="1778327759;1778414159;1778500559" data-depid="158">55</td><td colspan="2"></td></tr>
+        <tr id="sm79T14"><th scope="row">14</th><td id="sm79T12407043T0T67514T0T" class="" data-depts="1778328359;1778414759;1778501159" data-depid="159">05</td><td id="sm79T12406704T0T67510T0T" class="" data-depts="1778328659;1778415059;1778501459" data-depid="160">10</td><td id="sm79T12341968T0T66687T0T" class="" data-depts="1778329559;1778415959;1778502359" data-depid="161">25</td><td id="sm79T12407045T0T67514T0T" class="" data-depts="1778330159;1778416559;1778502959" data-depid="162">35</td><td id="sm79T12406705T0T67510T0T" class="" data-depts="1778330459;1778416859;1778503259" data-depid="163">40</td><td id="sm79T12341970T0T66687T0T" class="" data-depts="1778331359;1778417759;1778504159" data-depid="164">55</td><td colspan="1"></td></tr>
+        <tr id="sm79T15"><th scope="row">15</th><td id="sm79T12407047T0T67514T0T" class="" data-depts="1778331959;1778418359;1778504759" data-depid="165">05</td><td id="sm79T12406706T0T67510T0T" class="" data-depts="1778332259;1778418659;1778505059" data-depid="166">10</td><td id="sm79T12341972T0T66687T0T" class="" data-depts="1778333159;1778419559;1778505959" data-depid="167">25</td><td id="sm79T12407049T0T67514T0T" class="" data-depts="1778333759;1778420159;1778506559" data-depid="168">35</td><td id="sm79T12406707T0T67510T0T" class="" data-depts="1778334059;1778420459;1778506859" data-depid="169">40</td><td id="sm79T12341974T0T66687T0T" class="" data-depts="1778334959;1778421359;1778507759" data-depid="170">55</td><td colspan="1"></td></tr>
+        <tr id="sm79T16"><th scope="row">16</th><td id="sm79T12407051T0T67514T0T" class="" data-depts="1778335559;1778421959;1778508359" data-depid="171">05</td><td id="sm79T12406708T0T67510T0T" class="" data-depts="1778335859;1778422259;1778508659" data-depid="172">10</td><td id="sm79T12341976T0T66687T0T" class="" data-depts="1778336759;1778423159;1778509559" data-depid="173">25</td><td id="sm79T12407053T0T67514T0T" class="" data-depts="1778337359;1778423759;1778510159" data-depid="174">35</td><td id="sm79T12406709T0T67510T0T" class="" data-depts="1778337659;1778424059;1778510459" data-depid="175">40</td><td id="sm79T12341978T0T66687T0T" class="" data-depts="1778338559;1778424959;1778511359" data-depid="176">55</td><td colspan="1"></td></tr>
+        <tr id="sm79T17"><th scope="row">17</th><td id="sm79T12406710T0T67510T0T" class="" data-depts="1778339459;1778425859;1778512259" data-depid="177">10</td><td id="sm79T12341889T0T66687T0T" class="" data-depts="1778340419;1778426819;1778513219" data-depid="178">26</td><td id="sm79T12407055T0T67514T0T" class="" data-depts="1778341019;1778427419;1778513819" data-depid="179">36</td><td id="sm79T12406619T0T67510T0T" class="" data-depts="1778341319;1778427719;1778514119" data-depid="180">41</td><td id="sm79T12341891T0T66687T0T" class="" data-depts="1778342219;1778428619;1778515019" data-depid="181">56</td><td colspan="2"></td></tr>
+        <tr id="sm79T18"><th scope="row">18</th><td id="sm79T12406621T0T67510T0T" class="" data-depts="1778343119;1778429519;1778515919" data-depid="182">11</td><td id="sm79T12341893T0T66687T0T" class="" data-depts="1778344019;1778430419;1778516819" data-depid="183">26</td><td id="sm79T12407057T0T67514T0T" class="" data-depts="1778344619;1778431019;1778517419" data-depid="184">36</td><td id="sm79T12406623T0T67510T0T" class="" data-depts="1778344919;1778431319;1778517719" data-depid="185">41</td><td id="sm79T12341895T0T66687T0T" class="" data-depts="1778345819;1778432219;1778518619" data-depid="186">56</td><td colspan="2"></td></tr>
+        <tr id="sm79T19"><th scope="row">19</th><td id="sm79T12406625T0T67510T0T" class="" data-depts="1778346719;1778433119;1778519519" data-depid="187">11</td><td id="sm79T12341897T0T66687T0T" class="" data-depts="1778347619;1778434019;1778520419" data-depid="188">26</td><td id="sm79T12407059T0T67514T0T" class="" data-depts="1778348219;1778434619;1778521019" data-depid="189">36</td><td id="sm79T12406627T0T67510T0T" class="" data-depts="1778348519;1778434919;1778521319" data-depid="190">41</td><td id="sm79T12341899T0T66687T0T" class="" data-depts="1778349419;1778435819;1778522219" data-depid="191">56</td><td colspan="2"></td></tr>
+        <tr id="sm79T20"><th scope="row">20</th><td id="sm79T12406629T0T67510T0T" class="" data-depts="1778350319;1778436719;1778523119" data-depid="192">11</td><td id="sm79T12341901T0T66687T0T" class="" data-depts="1778351219;1778437619;1778524019" data-depid="193">26</td><td id="sm79T12407061T0T67514T0T" class="" data-depts="1778351819;1778438219;1778524619" data-depid="194">36</td><td id="sm79T12406631T0T67510T0T" class="" data-depts="1778353019;1778439419;1778525819" data-depid="195">56</td><td colspan="3"></td></tr>
+        <tr id="sm79T21"><th scope="row">21</th><td id="sm79T12341903T0T66687T0T" class="" data-depts="1778354819;1778441219;1778527619" data-depid="196">26</td><td id="sm79T12407063T0T67514T0T" class="" data-depts="1778355419;1778441819;1778528219" data-depid="197">36</td><td id="sm79T12406633T0T67510T0T" class="" data-depts="1778356619;1778443019;1778529419" data-depid="198">56</td><td colspan="4"></td></tr>
+        <tr id="sm79T22"><th scope="row">22</th><td id="sm79T12341904T0T66687T0T" class="" data-depts="1778358419;1778444819;1778531219" data-depid="199">26</td><td id="sm79T12407065T0T67514T0T" class="" data-depts="1778359019;1778445419;1778531819" data-depid="200">36</td><td colspan="5"></td></tr>
+	                        </tbody>
+	                      </table>
+	                    </div>
+	                  </div>
+		
+                      <div class="TimetableTabPanes-item servicemode" id="SM-80">
+                        <h2 id="headerSM-80" class="TimetableTabHeading d-print-block align-top">Voľné dni</h2>
+                        <div class="TimetableTimes table-responsive">
+                          <table id="tableSM-80" class="table table-borderless table-striped table-sm">
+                            <thead>
+                              <tr>
+                                <th scope="col">hod</th>
+                                <th scope="col" colspan="6">min</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+			
+        <tr id="sm80T4"><th scope="row">4</th><td colspan="6"></td></tr>
+        <tr id="sm80T5"><th scope="row">5</th><td id="sm80T12341982T0T66687T0T" class="" data-depts="1778296319;1778382719;1778469119" data-depid="201">11</td><td id="sm80T12407072T0T67514T0T" class="" data-depts="1778297819;1778384219;1778470619" data-depid="202">36</td><td id="sm80T12406711T0T67510T0T" class="" data-depts="1778298119;1778384519;1778470919" data-depid="203">41</td><td colspan="3"></td></tr>
+        <tr id="sm80T6"><th scope="row">6</th><td id="sm80T12341984T0T66687T0T" class="" data-depts="1778299919;1778386319;1778472719" data-depid="204">11</td><td id="sm80T12407074T0T67514T0T" class="" data-depts="1778301419;1778387819;1778474219" data-depid="205">36</td><td id="sm80T12406713T0T67510T0T" class="" data-depts="1778301719;1778388119;1778474519" data-depid="206">41</td><td colspan="3"></td></tr>
+        <tr id="sm80T7"><th scope="row">7</th><td id="sm80T12341986T0T66687T0T" class="" data-depts="1778303519;1778389919;1778476319" data-depid="207">11</td><td id="sm80T12407076T0T67514T0T" class="" data-depts="1778305019;1778391419;1778477819" data-depid="208">36</td><td id="sm80T12406715T0T67510T0T" class="" data-depts="1778305319;1778391719;1778478119" data-depid="209">41</td><td id="sm80T12341988T0T66687T0T" class="" data-depts="1778306219;1778392619;1778479019" data-depid="210">56</td><td colspan="2"></td></tr>
+        <tr id="sm80T8"><th scope="row">8</th><td id="sm80T12406717T0T67510T0T" class="" data-depts="1778307119;1778393519;1778479919" data-depid="211">11</td><td id="sm80T12341990T0T66687T0T" class="" data-depts="1778308019;1778394419;1778480819" data-depid="212">26</td><td id="sm80T12407078T0T67514T0T" class="" data-depts="1778308619;1778395019;1778481419" data-depid="213">36</td><td id="sm80T12406719T0T67510T0T" class="" data-depts="1778308919;1778395319;1778481719" data-depid="214">41</td><td id="sm80T12341992T0T66687T0T" class="" data-depts="1778309819;1778396219;1778482619" data-depid="215">56</td><td colspan="1"></td></tr>
+        <tr id="sm80T9"><th scope="row">9</th><td id="sm80T12406721T0T67510T0T" class="" data-depts="1778310719;1778397119;1778483519" data-depid="216">11</td><td id="sm80T12341994T0T66687T0T" class="" data-depts="1778311619;1778398019;1778484419" data-depid="217">26</td><td id="sm80T12407080T0T67514T0T" class="" data-depts="1778312219;1778398619;1778485019" data-depid="218">36</td><td id="sm80T12406723T0T67510T0T" class="" data-depts="1778312519;1778398919;1778485319" data-depid="219">41</td><td id="sm80T12341996T0T66687T0T" class="" data-depts="1778313419;1778399819;1778486219" data-depid="220">56</td><td colspan="1"></td></tr>
+        <tr id="sm80T10"><th scope="row">10</th><td id="sm80T12406725T0T67510T0T" class="" data-depts="1778314319;1778400719;1778487119" data-depid="221">11</td><td id="sm80T12341998T0T66687T0T" class="" data-depts="1778315219;1778401619;1778488019" data-depid="222">26</td><td id="sm80T12407082T0T67514T0T" class="" data-depts="1778315819;1778402219;1778488619" data-depid="223">36</td><td id="sm80T12406727T0T67510T0T" class="" data-depts="1778316119;1778402519;1778488919" data-depid="224">41</td><td id="sm80T12342000T0T66687T0T" class="" data-depts="1778317019;1778403419;1778489819" data-depid="225">56</td><td colspan="1"></td></tr>
+        <tr id="sm80T11"><th scope="row">11</th><td id="sm80T12406729T0T67510T0T" class="" data-depts="1778317919;1778404319;1778490719" data-depid="226">11</td><td id="sm80T12342002T0T66687T0T" class="" data-depts="1778318819;1778405219;1778491619" data-depid="227">26</td><td id="sm80T12407084T0T67514T0T" class="" data-depts="1778319419;1778405819;1778492219" data-depid="228">36</td><td id="sm80T12406731T0T67510T0T" class="" data-depts="1778319719;1778406119;1778492519" data-depid="229">41</td><td id="sm80T12342004T0T66687T0T" class="" data-depts="1778320619;1778407019;1778493419" data-depid="230">56</td><td colspan="1"></td></tr>
+        <tr id="sm80T12"><th scope="row">12</th><td id="sm80T12406733T0T67510T0T" class="" data-depts="1778321519;1778407919;1778494319" data-depid="231">11</td><td id="sm80T12342006T0T66687T0T" class="" data-depts="1778322419;1778408819;1778495219" data-depid="232">26</td><td id="sm80T12407086T0T67514T0T" class="" data-depts="1778323019;1778409419;1778495819" data-depid="233">36</td><td id="sm80T12406735T0T67510T0T" class="" data-depts="1778323319;1778409719;1778496119" data-depid="234">41</td><td id="sm80T12342008T0T66687T0T" class="" data-depts="1778324219;1778410619;1778497019" data-depid="235">56</td><td colspan="1"></td></tr>
+        <tr id="sm80T13"><th scope="row">13</th><td id="sm80T12406737T0T67510T0T" class="" data-depts="1778325119;1778411519;1778497919" data-depid="236">11</td><td id="sm80T12342010T0T66687T0T" class="" data-depts="1778326019;1778412419;1778498819" data-depid="237">26</td><td id="sm80T12407088T0T67514T0T" class="" data-depts="1778326619;1778413019;1778499419" data-depid="238">36</td><td id="sm80T12406739T0T67510T0T" class="" data-depts="1778326919;1778413319;1778499719" data-depid="239">41</td><td id="sm80T12342012T0T66687T0T" class="" data-depts="1778327819;1778414219;1778500619" data-depid="240">56</td><td colspan="1"></td></tr>
+        <tr id="sm80T14"><th scope="row">14</th><td id="sm80T12406741T0T67510T0T" class="" data-depts="1778328719;1778415119;1778501519" data-depid="241">11</td><td id="sm80T12342014T0T66687T0T" class="" data-depts="1778329619;1778416019;1778502419" data-depid="242">26</td><td id="sm80T12407090T0T67514T0T" class="" data-depts="1778330219;1778416619;1778503019" data-depid="243">36</td><td id="sm80T12406743T0T67510T0T" class="" data-depts="1778330519;1778416919;1778503319" data-depid="244">41</td><td id="sm80T12342016T0T66687T0T" class="" data-depts="1778331419;1778417819;1778504219" data-depid="245">56</td><td colspan="1"></td></tr>
+        <tr id="sm80T15"><th scope="row">15</th><td id="sm80T12406745T0T67510T0T" class="" data-depts="1778332319;1778418719;1778505119" data-depid="246">11</td><td id="sm80T12342018T0T66687T0T" class="" data-depts="1778333219;1778419619;1778506019" data-depid="247">26</td><td id="sm80T12407092T0T67514T0T" class="" data-depts="1778333819;1778420219;1778506619" data-depid="248">36</td><td id="sm80T12406747T0T67510T0T" class="" data-depts="1778334119;1778420519;1778506919" data-depid="249">41</td><td id="sm80T12342020T0T66687T0T" class="" data-depts="1778335019;1778421419;1778507819" data-depid="250">56</td><td colspan="1"></td></tr>
+        <tr id="sm80T16"><th scope="row">16</th><td id="sm80T12406749T0T67510T0T" class="" data-depts="1778335919;1778422319;1778508719" data-depid="251">11</td><td id="sm80T12342022T0T66687T0T" class="" data-depts="1778336819;1778423219;1778509619" data-depid="252">26</td><td id="sm80T12407094T0T67514T0T" class="" data-depts="1778337419;1778423819;1778510219" data-depid="253">36</td><td id="sm80T12406751T0T67510T0T" class="" data-depts="1778337719;1778424119;1778510519" data-depid="254">41</td><td id="sm80T12342024T0T66687T0T" class="" data-depts="1778338619;1778425019;1778511419" data-depid="255">56</td><td colspan="1"></td></tr>
+        <tr id="sm80T17"><th scope="row">17</th><td id="sm80T12406753T0T67510T0T" class="" data-depts="1778339519;1778425919;1778512319" data-depid="256">11</td><td id="sm80T12342026T0T66687T0T" class="" data-depts="1778340419;1778426819;1778513219" data-depid="257">26</td><td id="sm80T12407096T0T67514T0T" class="" data-depts="1778341019;1778427419;1778513819" data-depid="258">36</td><td id="sm80T12406755T0T67510T0T" class="" data-depts="1778341319;1778427719;1778514119" data-depid="259">41</td><td id="sm80T12342028T0T66687T0T" class="" data-depts="1778342219;1778428619;1778515019" data-depid="260">56</td><td colspan="1"></td></tr>
+        <tr id="sm80T18"><th scope="row">18</th><td id="sm80T12406757T0T67510T0T" class="" data-depts="1778343119;1778429519;1778515919" data-depid="261">11</td><td id="sm80T12342030T0T66687T0T" class="" data-depts="1778344019;1778430419;1778516819" data-depid="262">26</td><td id="sm80T12407098T0T67514T0T" class="" data-depts="1778344619;1778431019;1778517419" data-depid="263">36</td><td id="sm80T12406759T0T67510T0T" class="" data-depts="1778344919;1778431319;1778517719" data-depid="264">41</td><td id="sm80T12342032T0T66687T0T" class="" data-depts="1778345819;1778432219;1778518619" data-depid="265">56</td><td colspan="1"></td></tr>
+        <tr id="sm80T19"><th scope="row">19</th><td id="sm80T12406761T0T67510T0T" class="" data-depts="1778346719;1778433119;1778519519" data-depid="266">11</td><td id="sm80T12342034T0T66687T0T" class="" data-depts="1778347619;1778434019;1778520419" data-depid="267">26</td><td id="sm80T12407100T0T67514T0T" class="" data-depts="1778348219;1778434619;1778521019" data-depid="268">36</td><td id="sm80T12406763T0T67510T0T" class="" data-depts="1778348519;1778434919;1778521319" data-depid="269">41</td><td id="sm80T12342036T0T66687T0T" class="" data-depts="1778349419;1778435819;1778522219" data-depid="270">56</td><td colspan="1"></td></tr>
+        <tr id="sm80T20"><th scope="row">20</th><td id="sm80T12406765T0T67510T0T" class="" data-depts="1778350319;1778436719;1778523119" data-depid="271">11</td><td id="sm80T12342038T0T66687T0T" class="" data-depts="1778351219;1778437619;1778524019" data-depid="272">26</td><td id="sm80T12407102T0T67514T0T" class="" data-depts="1778351819;1778438219;1778524619" data-depid="273">36</td><td id="sm80T12406767T0T67510T0T" class="" data-depts="1778353019;1778439419;1778525819" data-depid="274">56</td><td colspan="2"></td></tr>
+        <tr id="sm80T21"><th scope="row">21</th><td id="sm80T12342040T0T66687T0T" class="" data-depts="1778354819;1778441219;1778527619" data-depid="275">26</td><td id="sm80T12407104T0T67514T0T" class="" data-depts="1778355419;1778441819;1778528219" data-depid="276">36</td><td id="sm80T12406769T0T67510T0T" class="" data-depts="1778356619;1778443019;1778529419" data-depid="277">56</td><td colspan="3"></td></tr>
+        <tr id="sm80T22"><th scope="row">22</th><td id="sm80T12342042T0T66687T0T" class="" data-depts="1778358419;1778444819;1778531219" data-depid="278">26</td><td id="sm80T12407106T0T67514T0T" class="" data-depts="1778359019;1778445419;1778531819" data-depid="279">36</td><td colspan="4"></td></tr>
+	                        </tbody>
+	                      </table>
+	                    </div>
+	                  </div>
+		
+                    </div>
+                  </div>
+                  
+				  <div class="ModuleBody notesTableDiv">
+                    <h2 class="mb-3">Poznámky</h2>
+
+                    <table class="table table-borderless table-sm notesTable">
+                      <tbody>
+						
+		<tr id="noteRemark-(Line)-66687-0">
+			<td class="text-center TimetableNote"></td><td class="text-dark w-100">Poznámka pre spoje linky <span class=" Linka his l3335">4</span>: Počas školského roka sú spoje o 6:17, 7:57, 13:17, 14:57, 16:37 a 18:18 z Kopánky vykonávané kĺbovým autobusom (bez garancie).</td></tr>
+		
+		<tr id="noteRemark-(Operator)-0">
+			<td class="text-center TimetableNote"></td><td class="text-dark w-100">Dopravca: Arriva Trnava, a. s., Nitrianska 5, Trnava, info: +421 915 733 733</td></tr>
+		
+                      </tbody>
+                    </table>
+                  </div>
+                  
+                </section>
+              </div>
+            </div> <!-- ModuleGroup -->
+	<div class="ml-3 mr-3 mt-3"><select class="custom-select d-print-none" name="filterStopsTo" id="filterStopsTo" onchange="ChangeFilterStopsToSelectBox(this, '/tt/cestovny-poriadok/linka/3-4-8/Dru%C5%BEba/smer-%C5%BDel-stanica/ca71bc7189aa71857f7c817f86807f827c82717b71857f7c817f86807f837c83717b71857f7c817f86807f877c8771ac7b71c17189807b71b67189818588877b71be71897f7b71c971897f7b71b371897171cc');">
+		<option value="7c80" selected>-- Zobraziť len spoje premávajúce na zastávku --</option>
+				<option value="7f" disabled>Družba</option>
+				<option value="80">Poliklinika</option>
+				<option value="81">V. Clementisa</option>
+				<option value="82">Spartakovská</option>
+				<option value="83">Kollárova</option>
+				<option value="84">Žel. stanica</option>
+				</select></div>
+            <div class="ml-3 mr-3 mt-3">
+			   <button class="Accordion-toggle btn btn-light btn-block text-left mb-5" type="button" data-toggle="collapse" data-target="#scheduleSettings" aria-expanded="false">
+				 <span class="Heading h6 mb-1 ml-3">Nastavenia zobrazenia</span>
+				 <svg class="Accordion-icon Icon TimetableNote mr-3"><use href="/data/img/icons.svg#chevron-down"></use></svg>
+				</button>
+			  <div id="scheduleSettings" class="Accordion-body collapse d-print-none mb-5 ml-5">
+			  <div>V zozname zastávok zobraziť<div ><div class="custom-control custom-radio"><input type="radio" class="custom-control-input" name="viewUpdate2" id="viewUpdate20" value="0" checked >
+				<label class="custom-control-label" for="viewUpdate20">iba maximálne časy jazdy</label></div><div class="custom-control custom-radio"><input type="radio" class="custom-control-input" name="viewUpdate2" id="viewUpdate21" value="1"  >
+				<label class="custom-control-label" for="viewUpdate21">minimálne aj maximálne časy jazdy</label></div></div></div><div class="mt-5">Odchody zobraziť v usporiadaní<div ><div class="custom-control custom-radio"><input type="radio" class="custom-control-input" name="viewUpdate1" id="viewUpdate10" value="0" checked >
+				<label class="custom-control-label" for="viewUpdate10">od začiatku do konca premávky linky</label></div><div class="custom-control custom-radio"><input type="radio" class="custom-control-input" name="viewUpdate1" id="viewUpdate11" value="1"  >
+				<label class="custom-control-label" for="viewUpdate11">od 0. do 23. hodiny</label></div></div></div>
+			  </div>
+            </div>
+	
+<div><table id="stopsListFull-123240" class="table table-hover table-borderless table-striped table-sm d-none">
+                        <thead>
+                          <tr>
+                            <th data-chronoHeader="1" scope="col" class="text-center">min</th>
+                            <th scope="col" class="stopDeparture"></th>
+                            <th scope="col"></th>
+                            <th scope="col">Zastávka</th>
+                            
+                          </tr>
+                        </thead>
+                        <tbody>
+							
+		                        <tr id="stopId123240-0" class="">
+		                          <td class="stopTime text-center text-muted"><span class="timemin"></span></td>
+		                          <td class="stopDeparture"></td>
+		                          <td class="tripstopAttributes text-muted"></td>
+		                          <td class="w-100 align-middle stopName startofroute">Kamenný mlyn <span class="float-right text-muted"><svg class="Icon Icon--opticalAlign"><use href="/data/img/icons.svg#stop"></use></svg><small>A</small></span></td>
+		                          
+		                        </tr>
+			
+
+		                        <tr id="stopId123240-1" class="">
+		                          <td class="stopTime text-center text-muted"><span class="timemin"></span></td>
+		                          <td class="stopDeparture"></td>
+		                          <td class="tripstopAttributes text-muted"><svg class="Icon"><use href="/data/img/icons.svg#request-stop"></use></svg></td>
+		                          <td class="w-100 align-middle stopName">T. Kružliaka <span class="float-right text-muted"><svg class="Icon Icon--opticalAlign"><use href="/data/img/icons.svg#stop"></use></svg><small>A</small></span></td>
+		                          
+		                        </tr>
+			
+
+		                        <tr id="stopId123240-2" class="">
+		                          <td class="stopTime text-center text-muted"><span class="timemin"></span></td>
+		                          <td class="stopDeparture"></td>
+		                          <td class="tripstopAttributes text-muted"></td>
+		                          <td class="w-100 align-middle stopName">Kamenná cesta, cint. <span class="float-right text-muted"><svg class="Icon Icon--opticalAlign"><use href="/data/img/icons.svg#stop"></use></svg><small>A</small></span></td>
+		                          
+		                        </tr>
+			
+
+		                        <tr id="stopId123240-3" class="">
+		                          <td class="stopTime text-center text-muted"><span class="timemin"></span></td>
+		                          <td class="stopDeparture"></td>
+		                          <td class="tripstopAttributes text-muted"><svg class="Icon"><use href="/data/img/icons.svg#request-stop"></use></svg></td>
+		                          <td class="w-100 align-middle stopName">Ovocná <span class="float-right text-muted"><svg class="Icon Icon--opticalAlign"><use href="/data/img/icons.svg#stop"></use></svg><small>A</small></span></td>
+		                          
+		                        </tr>
+			
+
+		                        <tr id="stopId123240-4" class="">
+		                          <td class="stopTime text-center text-muted"><span class="timemin"></span></td>
+		                          <td class="stopDeparture"></td>
+		                          <td class="tripstopAttributes text-muted"></td>
+		                          <td class="w-100 align-middle stopName">Okružné nám. <span class="float-right text-muted"><svg class="Icon Icon--opticalAlign"><use href="/data/img/icons.svg#stop"></use></svg><small>A</small></span></td>
+		                          
+		                        </tr>
+			
+
+		                        <tr id="stopId123240-5" class="">
+		                          <td class="stopTime text-center text-muted"><span class="timemin"></span></td>
+		                          <td class="stopDeparture"></td>
+		                          <td class="tripstopAttributes text-muted"></td>
+		                          <td class="w-100 align-middle stopName">Študentská <span class="float-right text-muted"><svg class="Icon Icon--opticalAlign"><use href="/data/img/icons.svg#stop"></use></svg><small>A</small></span></td>
+		                          
+		                        </tr>
+			
+
+		                        <tr id="stopId123240-6" class="">
+		                          <td class="stopTime text-center text-muted"><span class="timemin"></span></td>
+		                          <td class="stopDeparture"></td>
+		                          <td class="tripstopAttributes text-muted"></td>
+		                          <td class="w-100 align-middle stopName">Orion <span class="float-right text-muted"><svg class="Icon Icon--opticalAlign"><use href="/data/img/icons.svg#stop"></use></svg><small>A</small></span></td>
+		                          
+		                        </tr>
+			
+
+		                        <tr id="stopId123240-7" class="">
+		                          <td class="stopTime text-center text-muted"><span class="timemin"></span></td>
+		                          <td class="stopDeparture"></td>
+		                          <td class="tripstopAttributes text-muted"></td>
+		                          <td class="w-100 align-middle stopName">Bernolákova brána <span class="float-right text-muted"><svg class="Icon Icon--opticalAlign"><use href="/data/img/icons.svg#stop"></use></svg><small>B</small></span></td>
+		                          
+		                        </tr>
+			
+
+		                        <tr id="stopId123240-8" class="">
+		                          <td class="stopTime text-center text-muted"><span class="timemin"></span></td>
+		                          <td class="stopDeparture"></td>
+		                          <td class="tripstopAttributes text-muted"></td>
+		                          <td class="w-100 align-middle stopName">Zelený kríčok <span class="float-right text-muted"><svg class="Icon Icon--opticalAlign"><use href="/data/img/icons.svg#stop"></use></svg><small>B</small></span></td>
+		                          
+		                        </tr>
+			
+
+		                        <tr id="stopId123240-9" class="">
+		                          <td class="stopTime text-center text-muted"><span class="timemin"></span></td>
+		                          <td class="stopDeparture"></td>
+		                          <td class="tripstopAttributes text-muted"></td>
+		                          <td class="w-100 align-middle stopName">Špačinská <span class="float-right text-muted"><svg class="Icon Icon--opticalAlign"><use href="/data/img/icons.svg#stop"></use></svg><small>B</small></span></td>
+		                          
+		                        </tr>
+			
+
+		                        <tr id="stopId123240-10" class="">
+		                          <td class="stopTime text-center text-muted"><span class="timemin"></span></td>
+		                          <td class="stopDeparture"></td>
+		                          <td class="tripstopAttributes text-muted"><svg class="Icon"><use href="/data/img/icons.svg#request-stop"></use></svg></td>
+		                          <td class="w-100 align-middle stopName">Na hlinách <span class="float-right text-muted"><svg class="Icon Icon--opticalAlign"><use href="/data/img/icons.svg#stop"></use></svg><small>B</small></span></td>
+		                          
+		                        </tr>
+			
+
+		                        <tr id="stopId123240-11" class="">
+		                          <td class="stopTime text-center text-muted"><span class="timemin"></span></td>
+		                          <td class="stopDeparture"></td>
+		                          <td class="tripstopAttributes text-muted"><svg class="Icon"><use href="/data/img/icons.svg#request-stop"></use></svg></td>
+		                          <td class="w-100 align-middle stopName">Okružná <span class="float-right text-muted"><svg class="Icon Icon--opticalAlign"><use href="/data/img/icons.svg#stop"></use></svg><small>B</small></span></td>
+		                          
+		                        </tr>
+			
+
+		                        <tr id="stopId123240-12" class="selected-stop">
+		                          <td class="stopTime text-center"><span class="timemin"></span><span class="glyphicon glyphicon-chevron-down"></span></td>
+		                          <td class="stopDeparture"></td>
+		                          <td class="tripstopAttributes"></td>
+		                          <td class="w-100 align-middle stopName">Družba <span class="float-right text-muted"><svg class="Icon Icon--opticalAlign"><use href="/data/img/icons.svg#stop"></use></svg><small>A</small></span></td>
+		                          
+		                        </tr>
+			
+
+		                        <tr id="stopId123240-13" class="">
+		                          <td class="stopTime text-center text-muted"><span class="timemin"></span></td>
+		                          <td class="stopDeparture"></td>
+		                          <td class="tripstopAttributes text-muted"></td>
+		                          <td class="w-100 align-middle stopName">Poliklinika <span class="float-right text-muted"><svg class="Icon Icon--opticalAlign"><use href="/data/img/icons.svg#stop"></use></svg><small>A</small></span></td>
+		                          
+		                        </tr>
+			
+
+		                        <tr id="stopId123240-14" class="">
+		                          <td class="stopTime text-center text-muted"><span class="timemin"></span></td>
+		                          <td class="stopDeparture"></td>
+		                          <td class="tripstopAttributes text-muted"></td>
+		                          <td class="w-100 align-middle stopName">V. Clementisa <span class="float-right text-muted"><svg class="Icon Icon--opticalAlign"><use href="/data/img/icons.svg#stop"></use></svg><small>A</small></span></td>
+		                          
+		                        </tr>
+			
+
+		                        <tr id="stopId123240-15" class="">
+		                          <td class="stopTime text-center text-muted"><span class="timemin"></span></td>
+		                          <td class="stopDeparture"></td>
+		                          <td class="tripstopAttributes text-muted"></td>
+		                          <td class="w-100 align-middle stopName">Spartakovská <span class="float-right text-muted"><svg class="Icon Icon--opticalAlign"><use href="/data/img/icons.svg#stop"></use></svg><small>A</small></span></td>
+		                          
+		                        </tr>
+			
+
+		                        <tr id="stopId123240-16" class="">
+		                          <td class="stopTime text-center text-muted"><span class="timemin"></span></td>
+		                          <td class="stopDeparture"></td>
+		                          <td class="tripstopAttributes text-muted"></td>
+		                          <td class="w-100 align-middle stopName">Kollárova <span class="float-right text-muted"><svg class="Icon Icon--opticalAlign"><use href="/data/img/icons.svg#stop"></use></svg><small>A</small></span></td>
+		                          
+		                        </tr>
+			
+
+		                        <tr id="stopId123240-17" class="">
+		                          <td class="stopTime text-center text-muted"><span class="timemin"></span></td>
+		                          <td class="stopDeparture"></td>
+		                          <td class="tripstopAttributes text-muted"></td>
+		                          <td class="w-100 align-middle stopName">Žel. stanica <span class="float-right text-muted"><svg class="Icon Icon--opticalAlign"><use href="/data/img/icons.svg#stop"></use></svg><small>B</small></span></td>
+		                          
+		                        </tr>
+			
+
+		                        <tr id="stopId123240-18" class="">
+		                          <td class="stopTime text-center text-muted"><span class="timemin"></span></td>
+		                          <td class="stopDeparture"></td>
+		                          <td class="tripstopAttributes text-muted"></td>
+		                          <td class="w-100 align-middle stopName">Dohnányho <span class="float-right text-muted"><svg class="Icon Icon--opticalAlign"><use href="/data/img/icons.svg#stop"></use></svg><small>B</small></span></td>
+		                          
+		                        </tr>
+			
+
+		                        <tr id="stopId123240-19" class="">
+		                          <td class="stopTime text-center text-muted"><span class="timemin"></span></td>
+		                          <td class="stopDeparture"></td>
+		                          <td class="tripstopAttributes text-muted"><svg class="Icon"><use href="/data/img/icons.svg#request-stop"></use></svg></td>
+		                          <td class="w-100 align-middle stopName">Tamaškovičova <span class="float-right text-muted"><svg class="Icon Icon--opticalAlign"><use href="/data/img/icons.svg#stop"></use></svg><small>B</small></span></td>
+		                          
+		                        </tr>
+			
+
+		                        <tr id="stopId123240-20" class="">
+		                          <td class="stopTime text-center text-muted"><span class="timemin"></span></td>
+		                          <td class="stopDeparture"></td>
+		                          <td class="tripstopAttributes text-muted"></td>
+		                          <td class="w-100 align-middle stopName">Pedagogická fakulta <span class="float-right text-muted"><svg class="Icon Icon--opticalAlign"><use href="/data/img/icons.svg#stop"></use></svg><small>B</small></span></td>
+		                          
+		                        </tr>
+			
+
+		                        <tr id="stopId123240-21" class="">
+		                          <td class="stopTime text-center text-muted"><span class="timemin"></span></td>
+		                          <td class="stopDeparture"></td>
+		                          <td class="tripstopAttributes text-muted"></td>
+		                          <td class="w-100 align-middle stopName">IKEA <span class="float-right text-muted"><svg class="Icon Icon--opticalAlign"><use href="/data/img/icons.svg#stop"></use></svg><small>A</small></span></td>
+		                          
+		                        </tr>
+			
+
+		                        <tr id="stopId123240-22" class="">
+		                          <td class="stopTime text-center text-muted"><span class="timemin"></span></td>
+		                          <td class="stopDeparture"></td>
+		                          <td class="tripstopAttributes text-muted"><svg class="Icon"><use href="/data/img/icons.svg#request-stop"></use></svg></td>
+		                          <td class="w-100 align-middle stopName">Nitrianska <span class="float-right text-muted"><svg class="Icon Icon--opticalAlign"><use href="/data/img/icons.svg#stop"></use></svg><small>B</small></span></td>
+		                          
+		                        </tr>
+			
+
+		                        <tr id="stopId123240-23" class="">
+		                          <td class="stopTime text-center text-muted"><span class="timemin"></span></td>
+		                          <td class="stopDeparture"></td>
+		                          <td class="tripstopAttributes text-muted"><svg class="Icon"><use href="/data/img/icons.svg#request-stop"></use></svg></td>
+		                          <td class="w-100 align-middle stopName">Modranka <span class="float-right text-muted"><svg class="Icon Icon--opticalAlign"><use href="/data/img/icons.svg#stop"></use></svg><small>A</small></span></td>
+		                          
+		                        </tr>
+			
+
+		                        <tr id="stopId123240-24" class="">
+		                          <td class="stopTime text-center text-muted"><span class="timemin"></span></td>
+		                          <td class="stopDeparture"></td>
+		                          <td class="tripstopAttributes text-muted"></td>
+		                          <td class="w-100 align-middle stopName startofroute">Modranka, cint. <span class="float-right text-muted"><svg class="Icon Icon--opticalAlign"><use href="/data/img/icons.svg#stop"></use></svg><small>A</small></span></td>
+		                          
+		                        </tr>
+			
+                        </tbody>
+                      </table></div>
+<div><table id="stopsListFull-123231" class="table table-hover table-borderless table-striped table-sm d-none">
+                        <thead>
+                          <tr>
+                            <th data-chronoHeader="1" scope="col" class="text-center">min</th>
+                            <th scope="col" class="stopDeparture"></th>
+                            <th scope="col"></th>
+                            <th scope="col">Zastávka</th>
+                            
+                          </tr>
+                        </thead>
+                        <tbody>
+							
+		                        <tr id="stopId123231-0" class="">
+		                          <td class="stopTime text-center text-muted"><span class="timemin"></span></td>
+		                          <td class="stopDeparture"></td>
+		                          <td class="tripstopAttributes text-muted"></td>
+		                          <td class="w-100 align-middle stopName startofroute">Pekné pole <span class="float-right text-muted"><svg class="Icon Icon--opticalAlign"><use href="/data/img/icons.svg#stop"></use></svg><small>A</small></span></td>
+		                          
+		                        </tr>
+			
+
+		                        <tr id="stopId123231-1" class="">
+		                          <td class="stopTime text-center text-muted"><span class="timemin"></span></td>
+		                          <td class="stopDeparture"></td>
+		                          <td class="tripstopAttributes text-muted"></td>
+		                          <td class="w-100 align-middle stopName">Dobšinského <span class="float-right text-muted"><svg class="Icon Icon--opticalAlign"><use href="/data/img/icons.svg#stop"></use></svg><small>A</small></span></td>
+		                          
+		                        </tr>
+			
+
+		                        <tr id="stopId123231-2" class="">
+		                          <td class="stopTime text-center text-muted"><span class="timemin"></span></td>
+		                          <td class="stopDeparture"></td>
+		                          <td class="tripstopAttributes text-muted"><svg class="Icon"><use href="/data/img/icons.svg#request-stop"></use></svg></td>
+		                          <td class="w-100 align-middle stopName">J. Hlubíka <span class="float-right text-muted"><svg class="Icon Icon--opticalAlign"><use href="/data/img/icons.svg#stop"></use></svg><small>A</small></span></td>
+		                          
+		                        </tr>
+			
+
+		                        <tr id="stopId123231-3" class="">
+		                          <td class="stopTime text-center text-muted"><span class="timemin"></span></td>
+		                          <td class="stopDeparture"></td>
+		                          <td class="tripstopAttributes text-muted"></td>
+		                          <td class="w-100 align-middle stopName startofroute">Kopánka <span class="float-right text-muted"><svg class="Icon Icon--opticalAlign"><use href="/data/img/icons.svg#stop"></use></svg><small>A</small></span></td>
+		                          
+		                        </tr>
+			
+
+		                        <tr id="stopId123231-4" class="">
+		                          <td class="stopTime text-center text-muted"><span class="timemin"></span></td>
+		                          <td class="stopDeparture"></td>
+		                          <td class="tripstopAttributes text-muted"></td>
+		                          <td class="w-100 align-middle stopName">Kopánka <span class="float-right text-muted"><svg class="Icon Icon--opticalAlign"><use href="/data/img/icons.svg#stop"></use></svg><small>C</small></span></td>
+		                          
+		                        </tr>
+			
+
+		                        <tr id="stopId123231-5" class="">
+		                          <td class="stopTime text-center text-muted"><span class="timemin"></span></td>
+		                          <td class="stopDeparture"></td>
+		                          <td class="tripstopAttributes text-muted"></td>
+		                          <td class="w-100 align-middle stopName">Kopánka <span class="float-right text-muted"><svg class="Icon Icon--opticalAlign"><use href="/data/img/icons.svg#stop"></use></svg><small>B</small></span></td>
+		                          
+		                        </tr>
+			
+
+		                        <tr id="stopId123231-6" class="">
+		                          <td class="stopTime text-center text-muted"><span class="timemin"></span></td>
+		                          <td class="stopDeparture"></td>
+		                          <td class="tripstopAttributes text-muted"></td>
+		                          <td class="w-100 align-middle stopName">Saleziánska <span class="float-right text-muted"><svg class="Icon Icon--opticalAlign"><use href="/data/img/icons.svg#stop"></use></svg><small>A</small></span></td>
+		                          
+		                        </tr>
+			
+
+		                        <tr id="stopId123231-7" class="">
+		                          <td class="stopTime text-center text-muted"><span class="timemin"></span></td>
+		                          <td class="stopDeparture"></td>
+		                          <td class="tripstopAttributes text-muted"></td>
+		                          <td class="w-100 align-middle stopName">Veterná <span class="float-right text-muted"><svg class="Icon Icon--opticalAlign"><use href="/data/img/icons.svg#stop"></use></svg><small>A</small></span></td>
+		                          
+		                        </tr>
+			
+
+		                        <tr id="stopId123231-8" class="selected-stop">
+		                          <td class="stopTime text-center"><span class="timemin"></span><span class="glyphicon glyphicon-chevron-down"></span></td>
+		                          <td class="stopDeparture"></td>
+		                          <td class="tripstopAttributes"></td>
+		                          <td class="w-100 align-middle stopName">Družba <span class="float-right text-muted"><svg class="Icon Icon--opticalAlign"><use href="/data/img/icons.svg#stop"></use></svg><small>A</small></span></td>
+		                          
+		                        </tr>
+			
+
+		                        <tr id="stopId123231-9" class="">
+		                          <td class="stopTime text-center text-muted"><span class="timemin"></span></td>
+		                          <td class="stopDeparture"></td>
+		                          <td class="tripstopAttributes text-muted"></td>
+		                          <td class="w-100 align-middle stopName">Poliklinika <span class="float-right text-muted"><svg class="Icon Icon--opticalAlign"><use href="/data/img/icons.svg#stop"></use></svg><small>A</small></span></td>
+		                          
+		                        </tr>
+			
+
+		                        <tr id="stopId123231-10" class="">
+		                          <td class="stopTime text-center text-muted"><span class="timemin"></span></td>
+		                          <td class="stopDeparture"></td>
+		                          <td class="tripstopAttributes text-muted"></td>
+		                          <td class="w-100 align-middle stopName">V. Clementisa <span class="float-right text-muted"><svg class="Icon Icon--opticalAlign"><use href="/data/img/icons.svg#stop"></use></svg><small>A</small></span></td>
+		                          
+		                        </tr>
+			
+
+		                        <tr id="stopId123231-11" class="">
+		                          <td class="stopTime text-center text-muted"><span class="timemin"></span></td>
+		                          <td class="stopDeparture"></td>
+		                          <td class="tripstopAttributes text-muted"></td>
+		                          <td class="w-100 align-middle stopName">Spartakovská <span class="float-right text-muted"><svg class="Icon Icon--opticalAlign"><use href="/data/img/icons.svg#stop"></use></svg><small>A</small></span></td>
+		                          
+		                        </tr>
+			
+
+		                        <tr id="stopId123231-12" class="">
+		                          <td class="stopTime text-center text-muted"><span class="timemin"></span></td>
+		                          <td class="stopDeparture"></td>
+		                          <td class="tripstopAttributes text-muted"></td>
+		                          <td class="w-100 align-middle stopName">Kollárova <span class="float-right text-muted"><svg class="Icon Icon--opticalAlign"><use href="/data/img/icons.svg#stop"></use></svg><small>A</small></span></td>
+		                          
+		                        </tr>
+			
+
+		                        <tr id="stopId123231-13" class="">
+		                          <td class="stopTime text-center text-muted"><span class="timemin"></span></td>
+		                          <td class="stopDeparture"></td>
+		                          <td class="tripstopAttributes text-muted"></td>
+		                          <td class="w-100 align-middle stopName">Žel. stanica <span class="float-right text-muted"><svg class="Icon Icon--opticalAlign"><use href="/data/img/icons.svg#stop"></use></svg><small>B</small></span></td>
+		                          
+		                        </tr>
+			
+
+		                        <tr id="stopId123231-14" class="">
+		                          <td class="stopTime text-center text-muted"><span class="timemin"></span></td>
+		                          <td class="stopDeparture"></td>
+		                          <td class="tripstopAttributes text-muted"></td>
+		                          <td class="w-100 align-middle stopName">Hospodárska <span class="float-right text-muted"><svg class="Icon Icon--opticalAlign"><use href="/data/img/icons.svg#stop"></use></svg><small>B</small></span></td>
+		                          
+		                        </tr>
+			
+
+		                        <tr id="stopId123231-15" class="">
+		                          <td class="stopTime text-center text-muted"><span class="timemin"></span></td>
+		                          <td class="stopDeparture"></td>
+		                          <td class="tripstopAttributes text-muted"></td>
+		                          <td class="w-100 align-middle stopName">Orion <span class="float-right text-muted"><svg class="Icon Icon--opticalAlign"><use href="/data/img/icons.svg#stop"></use></svg><small>B</small></span></td>
+		                          
+		                        </tr>
+			
+
+		                        <tr id="stopId123231-16" class="">
+		                          <td class="stopTime text-center text-muted"><span class="timemin"></span></td>
+		                          <td class="stopDeparture"></td>
+		                          <td class="tripstopAttributes text-muted"></td>
+		                          <td class="w-100 align-middle stopName">Študentská <span class="float-right text-muted"><svg class="Icon Icon--opticalAlign"><use href="/data/img/icons.svg#stop"></use></svg><small>B</small></span></td>
+		                          
+		                        </tr>
+			
+
+		                        <tr id="stopId123231-17" class="">
+		                          <td class="stopTime text-center text-muted"><span class="timemin"></span></td>
+		                          <td class="stopDeparture"></td>
+		                          <td class="tripstopAttributes text-muted"></td>
+		                          <td class="w-100 align-middle stopName">MTF <span class="float-right text-muted"><svg class="Icon Icon--opticalAlign"><use href="/data/img/icons.svg#stop"></use></svg><small>B</small></span></td>
+		                          
+		                        </tr>
+			
+
+		                        <tr id="stopId123231-18" class="">
+		                          <td class="stopTime text-center text-muted"><span class="timemin"></span></td>
+		                          <td class="stopDeparture"></td>
+		                          <td class="tripstopAttributes text-muted"></td>
+		                          <td class="w-100 align-middle stopName">Úrad práce <span class="float-right text-muted"><svg class="Icon Icon--opticalAlign"><use href="/data/img/icons.svg#stop"></use></svg><small>B</small></span></td>
+		                          
+		                        </tr>
+			
+
+		                        <tr id="stopId123231-19" class="">
+		                          <td class="stopTime text-center text-muted"><span class="timemin"></span></td>
+		                          <td class="stopDeparture"></td>
+		                          <td class="tripstopAttributes text-muted"></td>
+		                          <td class="w-100 align-middle stopName">B. Smetanu <span class="float-right text-muted"><svg class="Icon Icon--opticalAlign"><use href="/data/img/icons.svg#stop"></use></svg><small>B</small></span></td>
+		                          
+		                        </tr>
+			
+
+		                        <tr id="stopId123231-20" class="">
+		                          <td class="stopTime text-center text-muted"><span class="timemin"></span></td>
+		                          <td class="stopDeparture"></td>
+		                          <td class="tripstopAttributes text-muted"></td>
+		                          <td class="w-100 align-middle stopName">J. G. Tajovského <span class="float-right text-muted"><svg class="Icon Icon--opticalAlign"><use href="/data/img/icons.svg#stop"></use></svg><small>B</small></span></td>
+		                          
+		                        </tr>
+			
+
+		                        <tr id="stopId123231-21" class="">
+		                          <td class="stopTime text-center text-muted"><span class="timemin"></span></td>
+		                          <td class="stopDeparture"></td>
+		                          <td class="tripstopAttributes text-muted"></td>
+		                          <td class="w-100 align-middle stopName startofroute">Prednádražie <span class="float-right text-muted"><svg class="Icon Icon--opticalAlign"><use href="/data/img/icons.svg#stop"></use></svg><small>A</small></span></td>
+		                          
+		                        </tr>
+			
+                        </tbody>
+                      </table></div>
+<div><table id="stopsListFull-121658" class="table table-hover table-borderless table-striped table-sm d-none">
+                        <thead>
+                          <tr>
+                            <th data-chronoHeader="1" scope="col" class="text-center">min</th>
+                            <th scope="col" class="stopDeparture"></th>
+                            <th scope="col"></th>
+                            <th scope="col">Zastávka</th>
+                            
+                          </tr>
+                        </thead>
+                        <tbody>
+							
+		                        <tr id="stopId121658-0" class="">
+		                          <td class="stopTime text-center text-muted"><span class="timemin"></span></td>
+		                          <td class="stopDeparture"></td>
+		                          <td class="tripstopAttributes text-muted"></td>
+		                          <td class="w-100 align-middle stopName startofroute">Kopánka <span class="float-right text-muted"><svg class="Icon Icon--opticalAlign"><use href="/data/img/icons.svg#stop"></use></svg><small>D</small></span></td>
+		                          
+		                        </tr>
+			
+
+		                        <tr id="stopId121658-1" class="">
+		                          <td class="stopTime text-center text-muted"><span class="timemin"></span></td>
+		                          <td class="stopDeparture"></td>
+		                          <td class="tripstopAttributes text-muted"><svg class="Icon"><use href="/data/img/icons.svg#request-stop"></use></svg></td>
+		                          <td class="w-100 align-middle stopName">J. Hlubíka <span class="float-right text-muted"><svg class="Icon Icon--opticalAlign"><use href="/data/img/icons.svg#stop"></use></svg><small>B</small></span></td>
+		                          
+		                        </tr>
+			
+
+		                        <tr id="stopId121658-2" class="">
+		                          <td class="stopTime text-center text-muted"><span class="timemin"></span></td>
+		                          <td class="stopDeparture"></td>
+		                          <td class="tripstopAttributes text-muted"><svg class="Icon"><use href="/data/img/icons.svg#request-stop"></use></svg></td>
+		                          <td class="w-100 align-middle stopName">Kukučínova <span class="float-right text-muted"><svg class="Icon Icon--opticalAlign"><use href="/data/img/icons.svg#stop"></use></svg><small>A</small></span></td>
+		                          
+		                        </tr>
+			
+
+		                        <tr id="stopId121658-3" class="">
+		                          <td class="stopTime text-center text-muted"><span class="timemin"></span></td>
+		                          <td class="stopDeparture"></td>
+		                          <td class="tripstopAttributes text-muted"></td>
+		                          <td class="w-100 align-middle stopName">Obchodná akadémia <span class="float-right text-muted"><svg class="Icon Icon--opticalAlign"><use href="/data/img/icons.svg#stop"></use></svg><small>A</small></span></td>
+		                          
+		                        </tr>
+			
+
+		                        <tr id="stopId121658-4" class="">
+		                          <td class="stopTime text-center text-muted"><span class="timemin"></span></td>
+		                          <td class="stopDeparture"></td>
+		                          <td class="tripstopAttributes text-muted"></td>
+		                          <td class="w-100 align-middle stopName">Špačinská <span class="float-right text-muted"><svg class="Icon Icon--opticalAlign"><use href="/data/img/icons.svg#stop"></use></svg><small>A</small></span></td>
+		                          
+		                        </tr>
+			
+
+		                        <tr id="stopId121658-5" class="selected-stop">
+		                          <td class="stopTime text-center"><span class="timemin"></span><span class="glyphicon glyphicon-chevron-down"></span></td>
+		                          <td class="stopDeparture"></td>
+		                          <td class="tripstopAttributes"></td>
+		                          <td class="w-100 align-middle stopName">Družba <span class="float-right text-muted"><svg class="Icon Icon--opticalAlign"><use href="/data/img/icons.svg#stop"></use></svg><small>A</small></span></td>
+		                          
+		                        </tr>
+			
+
+		                        <tr id="stopId121658-6" class="">
+		                          <td class="stopTime text-center text-muted"><span class="timemin"></span></td>
+		                          <td class="stopDeparture"></td>
+		                          <td class="tripstopAttributes text-muted"></td>
+		                          <td class="w-100 align-middle stopName">Poliklinika <span class="float-right text-muted"><svg class="Icon Icon--opticalAlign"><use href="/data/img/icons.svg#stop"></use></svg><small>A</small></span></td>
+		                          
+		                        </tr>
+			
+
+		                        <tr id="stopId121658-7" class="">
+		                          <td class="stopTime text-center text-muted"><span class="timemin"></span></td>
+		                          <td class="stopDeparture"></td>
+		                          <td class="tripstopAttributes text-muted"></td>
+		                          <td class="w-100 align-middle stopName">V. Clementisa <span class="float-right text-muted"><svg class="Icon Icon--opticalAlign"><use href="/data/img/icons.svg#stop"></use></svg><small>A</small></span></td>
+		                          
+		                        </tr>
+			
+
+		                        <tr id="stopId121658-8" class="">
+		                          <td class="stopTime text-center text-muted"><span class="timemin"></span></td>
+		                          <td class="stopDeparture"></td>
+		                          <td class="tripstopAttributes text-muted"></td>
+		                          <td class="w-100 align-middle stopName">Spartakovská <span class="float-right text-muted"><svg class="Icon Icon--opticalAlign"><use href="/data/img/icons.svg#stop"></use></svg><small>A</small></span></td>
+		                          
+		                        </tr>
+			
+
+		                        <tr id="stopId121658-9" class="">
+		                          <td class="stopTime text-center text-muted"><span class="timemin"></span></td>
+		                          <td class="stopDeparture"></td>
+		                          <td class="tripstopAttributes text-muted"></td>
+		                          <td class="w-100 align-middle stopName">Kollárova <span class="float-right text-muted"><svg class="Icon Icon--opticalAlign"><use href="/data/img/icons.svg#stop"></use></svg><small>A</small></span></td>
+		                          
+		                        </tr>
+			
+
+		                        <tr id="stopId121658-10" class="">
+		                          <td class="stopTime text-center text-muted"><span class="timemin"></span></td>
+		                          <td class="stopDeparture"></td>
+		                          <td class="tripstopAttributes text-muted"></td>
+		                          <td class="w-100 align-middle stopName">Žel. stanica <span class="float-right text-muted"><svg class="Icon Icon--opticalAlign"><use href="/data/img/icons.svg#stop"></use></svg><small>B</small></span></td>
+		                          
+		                        </tr>
+			
+
+		                        <tr id="stopId121658-11" class="">
+		                          <td class="stopTime text-center text-muted"><span class="timemin"></span></td>
+		                          <td class="stopDeparture"></td>
+		                          <td class="tripstopAttributes text-muted"></td>
+		                          <td class="w-100 align-middle stopName">Dohnányho <span class="float-right text-muted"><svg class="Icon Icon--opticalAlign"><use href="/data/img/icons.svg#stop"></use></svg><small>B</small></span></td>
+		                          
+		                        </tr>
+			
+
+		                        <tr id="stopId121658-12" class="">
+		                          <td class="stopTime text-center text-muted"><span class="timemin"></span></td>
+		                          <td class="stopDeparture"></td>
+		                          <td class="tripstopAttributes text-muted"></td>
+		                          <td class="w-100 align-middle stopName">Zelenečská <span class="float-right text-muted"><svg class="Icon Icon--opticalAlign"><use href="/data/img/icons.svg#stop"></use></svg><small>B</small></span></td>
+		                          
+		                        </tr>
+			
+
+		                        <tr id="stopId121658-13" class="">
+		                          <td class="stopTime text-center text-muted"><span class="timemin"></span></td>
+		                          <td class="stopDeparture"></td>
+		                          <td class="tripstopAttributes text-muted"></td>
+		                          <td class="w-100 align-middle stopName">Nevädzová <span class="float-right text-muted"><svg class="Icon Icon--opticalAlign"><use href="/data/img/icons.svg#stop"></use></svg><small>B</small></span></td>
+		                          
+		                        </tr>
+			
+
+		                        <tr id="stopId121658-14" class="">
+		                          <td class="stopTime text-center text-muted"><span class="timemin"></span></td>
+		                          <td class="stopDeparture"></td>
+		                          <td class="tripstopAttributes text-muted"></td>
+		                          <td class="w-100 align-middle stopName">Trnavan <span class="float-right text-muted"><svg class="Icon Icon--opticalAlign"><use href="/data/img/icons.svg#stop"></use></svg><small>B</small></span></td>
+		                          
+		                        </tr>
+			
+
+		                        <tr id="stopId121658-15" class="">
+		                          <td class="stopTime text-center text-muted"><span class="timemin"></span></td>
+		                          <td class="stopDeparture"></td>
+		                          <td class="tripstopAttributes text-muted"></td>
+		                          <td class="w-100 align-middle stopName">Linčianska <span class="float-right text-muted"><svg class="Icon Icon--opticalAlign"><use href="/data/img/icons.svg#stop"></use></svg><small>A</small></span></td>
+		                          
+		                        </tr>
+			
+
+		                        <tr id="stopId121658-16" class="">
+		                          <td class="stopTime text-center text-muted"><span class="timemin"></span></td>
+		                          <td class="stopDeparture"></td>
+		                          <td class="tripstopAttributes text-muted"><svg class="Icon"><use href="/data/img/icons.svg#request-stop"></use></svg></td>
+		                          <td class="w-100 align-middle stopName">Nerudova <span class="float-right text-muted"><svg class="Icon Icon--opticalAlign"><use href="/data/img/icons.svg#stop"></use></svg><small>A</small></span></td>
+		                          
+		                        </tr>
+			
+
+		                        <tr id="stopId121658-17" class="">
+		                          <td class="stopTime text-center text-muted"><span class="timemin"></span></td>
+		                          <td class="stopDeparture"></td>
+		                          <td class="tripstopAttributes text-muted"></td>
+		                          <td class="w-100 align-middle stopName">Strojárenská <span class="float-right text-muted"><svg class="Icon Icon--opticalAlign"><use href="/data/img/icons.svg#stop"></use></svg><small>B</small></span></td>
+		                          
+		                        </tr>
+			
+
+		                        <tr id="stopId121658-18" class="">
+		                          <td class="stopTime text-center text-muted"><span class="timemin"></span></td>
+		                          <td class="stopDeparture"></td>
+		                          <td class="tripstopAttributes text-muted"></td>
+		                          <td class="w-100 align-middle stopName">SACHS <span class="float-right text-muted"><svg class="Icon Icon--opticalAlign"><use href="/data/img/icons.svg#stop"></use></svg><small>B</small></span></td>
+		                          
+		                        </tr>
+			
+
+		                        <tr id="stopId121658-19" class="">
+		                          <td class="stopTime text-center text-muted"><span class="timemin"></span></td>
+		                          <td class="stopDeparture"></td>
+		                          <td class="tripstopAttributes text-muted"><svg class="Icon"><use href="/data/img/icons.svg#request-stop"></use></svg></td>
+		                          <td class="w-100 align-middle stopName">HKS <span class="float-right text-muted"><svg class="Icon Icon--opticalAlign"><use href="/data/img/icons.svg#stop"></use></svg><small>B</small></span></td>
+		                          
+		                        </tr>
+			
+
+		                        <tr id="stopId121658-20" class="">
+		                          <td class="stopTime text-center text-muted"><span class="timemin"></span></td>
+		                          <td class="stopDeparture"></td>
+		                          <td class="tripstopAttributes text-muted"></td>
+		                          <td class="w-100 align-middle stopName startofroute">BOGE <span class="float-right text-muted"><svg class="Icon Icon--opticalAlign"><use href="/data/img/icons.svg#stop"></use></svg><small>A</small></span></td>
+		                          
+		                        </tr>
+			
+                        </tbody>
+                      </table></div><div id="calendarBlock" style="display: none;"><span id="calendarModeName"></span><div id="calendar" style="width: 200px; height: 200px; margin-right: 50px;"></div><span class="operates">Premáva</span><br><span class="doesntOperate">Nepremáva</span><br><span class="unknownOperates">Nie je k dispozícii</span></div><script>
+  var apiCepoUrl = "/tt/api/cepo";
+  var forceMaxMinutesView = 1;
+  var tariffID = {"121658":[6],"123231":[9],"123240":[13]};
+  var tariffConvertTable = {"123240":{"1":0,"2":1,"3":2,"4":3,"5":4,"6":5,"7":6,"8":7,"9":8,"10":9,"11":10,"12":11,"13":12,"14":13,"15":14,"16":15,"17":16,"18":17,"19":18,"20":19,"21":20,"22":21,"23":22,"24":23,"25":24},"123231":{"1":0,"2":1,"3":2,"4":3,"5":4,"6":5,"7":6,"8":7,"9":8,"10":9,"11":10,"12":11,"13":12,"14":13,"15":14,"16":15,"17":16,"18":17,"19":18,"20":19,"21":20,"22":21},"121658":{"1":0,"2":1,"3":2,"4":3,"5":4,"6":5,"7":6,"8":7,"9":8,"10":9,"11":10,"12":11,"13":12,"14":13,"15":14,"16":15,"17":16,"19":17,"20":18,"21":19,"22":20}};
+  var stopsTariffsTable = {"123240":{"13":0,"14":1,"15":2,"16":3,"17":4,"18":5},"123231":{"9":0,"10":1,"11":2,"12":3,"13":4,"14":5},"121658":{"6":0,"7":1,"8":2,"9":3,"10":4,"11":5}};
+  var diffDaysServiceMode = [];
+  var columnsTariff = [[[0],[0],[0],[0],[0],[0]]];
+  var columnsTariffRouteChange = [];
+  var adminDate = 0;
+  var set = {"67510":4476,"66687":4476,"67514":4476};
+  var stopPoleCodeIgnore = [];
+  var tzOperators = null;
+  var cityPartFilter = {"60":"1"};
+  var timezones = null;
+  var validDaysInYear = [128, 129, 130];
+  var ourtt = "";
+  var txtNotAbleToSaveToDB = "Nepodarilo sa uložiť nové nastavenia. Kontaktuje prosím administrátora webu.";
+  var urlload_trip_to_linestoptrips = "/tt/nacitaj-odchody-spojov";
+  var tz = "Europe/Bratislava";
+  var currentTime = 1778400481;
+  var dataserver = "/data/";
+  var tableType = "linecombi";
+  var lineValidityForJS = [1,1,1];
+  var lineInfo = {"67510":["3"," Linka his l3346","",67510],"66687":["4"," Linka his l3335","",66687],"67514":["8"," Linka his l3370","",67514]};
+  var txtTripDetailTextForJSTypeu = "Spoj pokračuje bez nutnosti prestupu<br>ako linka %s";
+  var txtTripDetailTextForJSTypeg = "Na spoj nadväzuje iný spoj tejto linky.";
+  var txtNotes = "Poznámky";
+  var txtStopIsForbidden = "Zastávka nie je určená ani na nástup ani výstup cestujúcich";
+  var txtStopIsForLoadOnly = "Zastávka je určená len na nástup cestujúcich";
+  var txtStopIsForUnloadOnly = "Zastávka je určená len na výstup cestujúcich";
+  var txtStopRequestStop = "Zastávka na znamenie";
+  var txtTripTelephone = "Spoj premáva len ak bol vopred telefonicky objednaný";
+  var txtTripConditional = "Spoj premáva podmienečne";
+  var txtTripRequestStop = "Zastávka na znamenie pre daný spoj";
+  var txtTripIsForLoadOnly = "Zastávka spoja je určená len na nástup cestujúcich";
+  var txtTripIsForUnloadOnly = "Zastávka spoja je určená len na výstup cestujúcich";
+  var txtTripIsStopForbidden = "Zastávka spoja nie je určená ani na nástup ani výstup cestujúcich";
+  var txtTripLowFloor = "Spoj zabezpečuje nízkopodlažné vozidlo";
+  var txtTripBicycles = "Spoj prepravuje bicykle";
+  var txtTripLuggage = "Spoj s rozšírenou prepravou batožiny";
+  var txtTripFood = "Spoj s možnosťou občerstvenia";
+  var txtat = "o";
+  var txtShowPreviousStopsInServiceDetail = "<span class=\"glyphicon glyphicon-menu-up\"></span> Zobraz predošlé zastávky <span class=\"glyphicon glyphicon-menu-up\"></span>";
+  var tripConnectionSets = [];
+  var chronoHeader = "0";
+  var txtMin = "min";
+  var txtHm = "h:min";
+  var soundsForJS = [];
+  var displaySeconds = [];
+  var servicePatternsOperates = {"78":["0","0","1"],"79":["0","0","0"],"80":["1","1","0"]};
+  </script>
+				<div class="m-5 d-print-none">
+				    <div class="mb-3 d-none d-md-block">
+				        <div class="ModuleHeader bg-primary text-white">
+				          <div class="ModuleHeader-title h3 px-3">Linky na tejto zastávke</div>
+				        </div> <!-- row -->
+				        <div class="ModuleBody pt-2 pb-2">
+				          <div class="table-responsive">
+				            <table class="table table-borderless table-striped">
+				              <thead>
+				                <tr>
+				                  <th scope="col" colspan="2">Linka</th>
+				                  <th scope="col">Smer</th>
+				                </tr>
+				              </thead>
+				              <tbody>
+				
+				               <tr data-href="/tt/cestovny-poriadok/linka/3/Dru%C5%BEba/smer-Predn%C3%A1dra%C5%BEie/ca71bd718971857f7c817f86807f827c82717b71c171897f7b71b671897181858887717b71be7189717f71cc">
+				                      <td class="align-middle text-center">
+				                        <svg class="TimetableHeader-icon Icon"><use href="/data/img/vehicles.svg#bus"></use></svg>
+				                      </td>
+				                      <td class="align-middle text-center text-body">
+				                        <span class=" Linka tt l3">3</span>
+				                      </td>
+				                      <td class="align-middle w-100">
+				                        Prednádražie
+				                      </td>
+				                    </tr>
+				
+				               <tr data-href="/tt/cestovny-poriadok/linka/3/Dru%C5%BEba/smer-Pekn%C3%A9-pole/ca71bd718971857f7c817f86807f827c82717b71c17189807b71b671897181858887717b71be7189717f71cc">
+				                      <td class="align-middle text-center">
+				                        <svg class="TimetableHeader-icon Icon"><use href="/data/img/vehicles.svg#bus"></use></svg>
+				                      </td>
+				                      <td class="align-middle text-center text-body">
+				                        <span class=" Linka tt l3">3</span>
+				                      </td>
+				                      <td class="align-middle w-100">
+				                        Pekné pole
+				                      </td>
+				                    </tr>
+				
+				               <tr data-href="/tt/cestovny-poriadok/linka/4/Dru%C5%BEba/smer-Stroj%C3%A1rensk%C3%A1-BOGE/ca71bd718971857f7c817f86807f837c83717b71c171897f7b71b671897181858887717b71be7189717f71cc">
+				                      <td class="align-middle text-center">
+				                        <svg class="TimetableHeader-icon Icon"><use href="/data/img/vehicles.svg#bus"></use></svg>
+				                      </td>
+				                      <td class="align-middle text-center text-body">
+				                        <span class=" Linka tt l4">4</span>
+				                      </td>
+				                      <td class="align-middle w-100">
+				                        Strojárenská; BOGE
+				                      </td>
+				                    </tr>
+				
+				               <tr data-href="/tt/cestovny-poriadok/linka/4/Dru%C5%BEba/smer-Kop%C3%A1nka/ca71bd718971857f7c817f86807f837c83717b71c17189807b71b671897181858887717b71be7189717f71cc">
+				                      <td class="align-middle text-center">
+				                        <svg class="TimetableHeader-icon Icon"><use href="/data/img/vehicles.svg#bus"></use></svg>
+				                      </td>
+				                      <td class="align-middle text-center text-body">
+				                        <span class=" Linka tt l4">4</span>
+				                      </td>
+				                      <td class="align-middle w-100">
+				                        Kopánka
+				                      </td>
+				                    </tr>
+				
+				               <tr data-href="/tt/cestovny-poriadok/linka/6/Dru%C5%BEba/smer-Okru%C5%BEn%C3%A9-n%C3%A1m-City-Park/ca71bd718971857f7c817f86807f857c85717b71c171897f7b71b671897181858887717b71be7189717f71cc">
+				                      <td class="align-middle text-center">
+				                        <svg class="TimetableHeader-icon Icon"><use href="/data/img/vehicles.svg#bus"></use></svg>
+				                      </td>
+				                      <td class="align-middle text-center text-body">
+				                        <span class=" Linka tt l6">6</span>
+				                      </td>
+				                      <td class="align-middle w-100">
+				                        Okružné nám.; City Park
+				                      </td>
+				                    </tr>
+				
+				               <tr data-href="/tt/cestovny-poriadok/linka/6/Dru%C5%BEba/smer-V%C3%BDchodn%C3%A1-Sib%C3%ADrska/ca71bd718971857f7c817f86807f857c85717b71c17189807b71b671897181858887717b71be7189717f71cc">
+				                      <td class="align-middle text-center">
+				                        <svg class="TimetableHeader-icon Icon"><use href="/data/img/vehicles.svg#bus"></use></svg>
+				                      </td>
+				                      <td class="align-middle text-center text-body">
+				                        <span class=" Linka tt l6">6</span>
+				                      </td>
+				                      <td class="align-middle w-100">
+				                        Východná; Sibírska
+				                      </td>
+				                    </tr>
+				
+				               <tr data-href="/tt/cestovny-poriadok/linka/7/Dru%C5%BEba/smer-Vozovka/ca71bd718971857f7c817f86807f867c86717b71c171897f7b71b671897181858887717b71be7189717f71cc">
+				                      <td class="align-middle text-center">
+				                        <svg class="TimetableHeader-icon Icon"><use href="/data/img/vehicles.svg#bus"></use></svg>
+				                      </td>
+				                      <td class="align-middle text-center text-body">
+				                        <span class=" Linka tt l7">7</span>
+				                      </td>
+				                      <td class="align-middle w-100">
+				                        Vozovka
+				                      </td>
+				                    </tr>
+				
+				               <tr data-href="/tt/cestovny-poriadok/linka/7/Dru%C5%BEba/smer-Neme%C4%8Danka/ca71bd718971857f7c817f86807f867c86717b71c17189807b71b671897181858887717b71be7189717f71cc">
+				                      <td class="align-middle text-center">
+				                        <svg class="TimetableHeader-icon Icon"><use href="/data/img/vehicles.svg#bus"></use></svg>
+				                      </td>
+				                      <td class="align-middle text-center text-body">
+				                        <span class=" Linka tt l7">7</span>
+				                      </td>
+				                      <td class="align-middle w-100">
+				                        Nemečanka
+				                      </td>
+				                    </tr>
+				
+				               <tr data-href="/tt/cestovny-poriadok/linka/8/Dru%C5%BEba/smer-Kamenn%C3%BD-mlyn/ca71bd718971857f7c817f86807f877c87717b71c171897f7b71b671897181858887717b71be7189717f71cc">
+				                      <td class="align-middle text-center">
+				                        <svg class="TimetableHeader-icon Icon"><use href="/data/img/vehicles.svg#bus"></use></svg>
+				                      </td>
+				                      <td class="align-middle text-center text-body">
+				                        <span class=" Linka tt l8">8</span>
+				                      </td>
+				                      <td class="align-middle w-100">
+				                        Kamenný mlyn
+				                      </td>
+				                    </tr>
+				
+				               <tr data-href="/tt/cestovny-poriadok/linka/8/Dru%C5%BEba/smer-Modranka-cint/ca71bd718971857f7c817f86807f877c87717b71c17189807b71b671897181858887717b71be7189717f71cc">
+				                      <td class="align-middle text-center">
+				                        <svg class="TimetableHeader-icon Icon"><use href="/data/img/vehicles.svg#bus"></use></svg>
+				                      </td>
+				                      <td class="align-middle text-center text-body">
+				                        <span class=" Linka tt l8">8</span>
+				                      </td>
+				                      <td class="align-middle w-100">
+				                        Modranka, cint.
+				                      </td>
+				                    </tr>
+				
+				               <tr data-href="/tt/cestovny-poriadok/linka/N1/Dru%C5%BEba/smer-%C5%A0rob%C3%A1rova/ca71bd718971857f7c817f868080807c9d80717b71c171897f7b71b671897181858887717b71be7189717f71cc">
+				                      <td class="align-middle text-center">
+				                        <svg class="TimetableHeader-icon Icon"><use href="/data/img/vehicles.svg#bus"></use></svg>
+				                      </td>
+				                      <td class="align-middle text-center text-body">
+				                        <span class=" Linka tt lN1">N1</span>
+				                      </td>
+				                      <td class="align-middle w-100">
+				                        Šrobárova
+				                      </td>
+				                    </tr>
+				
+				              </tbody>
+				            </table>
+				          </div>
+					<div class="pb-3 text-center">
+					<form><button formaction="/tt/vsetky-odchody-zo-zastavky/Dru%C5%BEba/ca71b67189718185888771cc" class="btn" >Všetky odchody zo zastávky </button></form>
+					</div>
+				      </div>
+				    </div>
+			    </div>
+		
+				<div class="m-2 d-print-none">
+				    <div class="mb-3 d-md-none">
+				        <div class="ModuleHeader bg-primary px-3">
+				               <button class="Accordion-toggle btn btn-block btn-primary text-white text-left font-weight-normal pt-0 pb-0" type="button" data-toggle="collapse" data-target="#line-list" aria-expanded="false" aria-controls="line-list">
+						 <span class="ModuleHeader-title h3">Linky na tejto zastávke</span>
+				                 <svg class="Accordion-icon Icon text-white"><use href="/data/img/icons.svg#chevron-down"></use></svg>
+				                </button>
+				        </div> <!-- row -->
+				        <div class="ModuleBody pt-2 pb-2 accordion-body collapse" id="line-list">
+				          <div class="table-responsive">
+				            <table class="table table-borderless table-striped">
+				              <thead>
+				                <tr>
+				                  <th scope="col" colspan="2">Linka</th>
+				                  <th scope="col">Smer</th>
+				                </tr>
+				              </thead>
+				              <tbody>
+				
+				               <tr data-href="/tt/cestovny-poriadok/linka/3/Dru%C5%BEba/smer-Predn%C3%A1dra%C5%BEie/ca71bd718971857f7c817f86807f827c82717b71c171897f7b71b671897181858887717b71be7189717f71cc">
+				                      <td class="align-middle text-center">
+				                        <svg class="TimetableHeader-icon Icon"><use href="/data/img/vehicles.svg#bus"></use></svg>
+				                      </td>
+				                      <td class="align-middle text-center text-body">
+				                        <span class=" Linka tt l3">3</span>
+				                      </td>
+				                      <td class="align-middle w-100">
+				                        Prednádražie
+				                      </td>
+				                    </tr>
+				
+				               <tr data-href="/tt/cestovny-poriadok/linka/3/Dru%C5%BEba/smer-Pekn%C3%A9-pole/ca71bd718971857f7c817f86807f827c82717b71c17189807b71b671897181858887717b71be7189717f71cc">
+				                      <td class="align-middle text-center">
+				                        <svg class="TimetableHeader-icon Icon"><use href="/data/img/vehicles.svg#bus"></use></svg>
+				                      </td>
+				                      <td class="align-middle text-center text-body">
+				                        <span class=" Linka tt l3">3</span>
+				                      </td>
+				                      <td class="align-middle w-100">
+				                        Pekné pole
+				                      </td>
+				                    </tr>
+				
+				               <tr data-href="/tt/cestovny-poriadok/linka/4/Dru%C5%BEba/smer-Stroj%C3%A1rensk%C3%A1-BOGE/ca71bd718971857f7c817f86807f837c83717b71c171897f7b71b671897181858887717b71be7189717f71cc">
+				                      <td class="align-middle text-center">
+				                        <svg class="TimetableHeader-icon Icon"><use href="/data/img/vehicles.svg#bus"></use></svg>
+				                      </td>
+				                      <td class="align-middle text-center text-body">
+				                        <span class=" Linka tt l4">4</span>
+				                      </td>
+				                      <td class="align-middle w-100">
+				                        Strojárenská; BOGE
+				                      </td>
+				                    </tr>
+				
+				               <tr data-href="/tt/cestovny-poriadok/linka/4/Dru%C5%BEba/smer-Kop%C3%A1nka/ca71bd718971857f7c817f86807f837c83717b71c17189807b71b671897181858887717b71be7189717f71cc">
+				                      <td class="align-middle text-center">
+				                        <svg class="TimetableHeader-icon Icon"><use href="/data/img/vehicles.svg#bus"></use></svg>
+				                      </td>
+				                      <td class="align-middle text-center text-body">
+				                        <span class=" Linka tt l4">4</span>
+				                      </td>
+				                      <td class="align-middle w-100">
+				                        Kopánka
+				                      </td>
+				                    </tr>
+				
+				               <tr data-href="/tt/cestovny-poriadok/linka/6/Dru%C5%BEba/smer-Okru%C5%BEn%C3%A9-n%C3%A1m-City-Park/ca71bd718971857f7c817f86807f857c85717b71c171897f7b71b671897181858887717b71be7189717f71cc">
+				                      <td class="align-middle text-center">
+				                        <svg class="TimetableHeader-icon Icon"><use href="/data/img/vehicles.svg#bus"></use></svg>
+				                      </td>
+				                      <td class="align-middle text-center text-body">
+				                        <span class=" Linka tt l6">6</span>
+				                      </td>
+				                      <td class="align-middle w-100">
+				                        Okružné nám.; City Park
+				                      </td>
+				                    </tr>
+				
+				               <tr data-href="/tt/cestovny-poriadok/linka/6/Dru%C5%BEba/smer-V%C3%BDchodn%C3%A1-Sib%C3%ADrska/ca71bd718971857f7c817f86807f857c85717b71c17189807b71b671897181858887717b71be7189717f71cc">
+				                      <td class="align-middle text-center">
+				                        <svg class="TimetableHeader-icon Icon"><use href="/data/img/vehicles.svg#bus"></use></svg>
+				                      </td>
+				                      <td class="align-middle text-center text-body">
+				                        <span class=" Linka tt l6">6</span>
+				                      </td>
+				                      <td class="align-middle w-100">
+				                        Východná; Sibírska
+				                      </td>
+				                    </tr>
+				
+				               <tr data-href="/tt/cestovny-poriadok/linka/7/Dru%C5%BEba/smer-Vozovka/ca71bd718971857f7c817f86807f867c86717b71c171897f7b71b671897181858887717b71be7189717f71cc">
+				                      <td class="align-middle text-center">
+				                        <svg class="TimetableHeader-icon Icon"><use href="/data/img/vehicles.svg#bus"></use></svg>
+				                      </td>
+				                      <td class="align-middle text-center text-body">
+				                        <span class=" Linka tt l7">7</span>
+				                      </td>
+				                      <td class="align-middle w-100">
+				                        Vozovka
+				                      </td>
+				                    </tr>
+				
+				               <tr data-href="/tt/cestovny-poriadok/linka/7/Dru%C5%BEba/smer-Neme%C4%8Danka/ca71bd718971857f7c817f86807f867c86717b71c17189807b71b671897181858887717b71be7189717f71cc">
+				                      <td class="align-middle text-center">
+				                        <svg class="TimetableHeader-icon Icon"><use href="/data/img/vehicles.svg#bus"></use></svg>
+				                      </td>
+				                      <td class="align-middle text-center text-body">
+				                        <span class=" Linka tt l7">7</span>
+				                      </td>
+				                      <td class="align-middle w-100">
+				                        Nemečanka
+				                      </td>
+				                    </tr>
+				
+				               <tr data-href="/tt/cestovny-poriadok/linka/8/Dru%C5%BEba/smer-Kamenn%C3%BD-mlyn/ca71bd718971857f7c817f86807f877c87717b71c171897f7b71b671897181858887717b71be7189717f71cc">
+				                      <td class="align-middle text-center">
+				                        <svg class="TimetableHeader-icon Icon"><use href="/data/img/vehicles.svg#bus"></use></svg>
+				                      </td>
+				                      <td class="align-middle text-center text-body">
+				                        <span class=" Linka tt l8">8</span>
+				                      </td>
+				                      <td class="align-middle w-100">
+				                        Kamenný mlyn
+				                      </td>
+				                    </tr>
+				
+				               <tr data-href="/tt/cestovny-poriadok/linka/8/Dru%C5%BEba/smer-Modranka-cint/ca71bd718971857f7c817f86807f877c87717b71c17189807b71b671897181858887717b71be7189717f71cc">
+				                      <td class="align-middle text-center">
+				                        <svg class="TimetableHeader-icon Icon"><use href="/data/img/vehicles.svg#bus"></use></svg>
+				                      </td>
+				                      <td class="align-middle text-center text-body">
+				                        <span class=" Linka tt l8">8</span>
+				                      </td>
+				                      <td class="align-middle w-100">
+				                        Modranka, cint.
+				                      </td>
+				                    </tr>
+				
+				               <tr data-href="/tt/cestovny-poriadok/linka/N1/Dru%C5%BEba/smer-%C5%A0rob%C3%A1rova/ca71bd718971857f7c817f868080807c9d80717b71c171897f7b71b671897181858887717b71be7189717f71cc">
+				                      <td class="align-middle text-center">
+				                        <svg class="TimetableHeader-icon Icon"><use href="/data/img/vehicles.svg#bus"></use></svg>
+				                      </td>
+				                      <td class="align-middle text-center text-body">
+				                        <span class=" Linka tt lN1">N1</span>
+				                      </td>
+				                      <td class="align-middle w-100">
+				                        Šrobárova
+				                      </td>
+				                    </tr>
+				
+				              </tbody>
+				            </table>
+				          </div>
+					<div class="pb-3 text-center">
+					<form><button formaction="/tt/vsetky-odchody-zo-zastavky/Dru%C5%BEba/ca71b67189718185888771cc" class="btn" >Všetky odchody zo zastávky </button></form>
+					</div>
+				      </div>
+				    </div>
+			    </div>
+		
+			<div id="departureDetails" class="modal fade" tabindex="-1">
+				<div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+					<div class="modal-content">
+						<div class="modal-header d-block">
+							<div class="d-flex">
+								<h2 class="modal-title text-body mt-0"><span id="departureDetailsLineName"></span> Detail spoja <span id="departureDetailsTripName"></span></h2>
+								<button type="button" class="close" data-dismiss="modal">&times;</button>
+							</div>
+							<h5 class="modal-title mt-1">&nbsp;<span id="departureDestination"></span></h5>
+						</div>
+						<div id="departureDetails-modal-body" class="modal-body text-left text-body">
+						</div>
+						<div class="modal-footer">
+							<button type="button" class="btn btn-secondary" data-dismiss="modal">Zatvoriť</button>
+						</div>
+					</div>
+				</div>
+			</div>
+			
+			<div id="printModal" class="modal d-none" tabindex="-1" role="dialog">
+				<div id="printModal_modalDialog" class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+					<div class="modal-content">
+						<div class="modal-header">
+							<h2 class="modal-title text-body">Označte časti pre tlač</h2>
+						</div>
+						<div class="modal-body text-left text-body">
+							<div class="row"><div class="col-12 form-inline"><div class="custom-control custom-checkbox"><input class="custom-control-input" type="checkbox" id="printLineStops" name="printLineStops" value="true" checked ><label class="custom-control-label" for="printLineStops">Zastávky na trase</label></div></div></div>					<div class="row"><div class="col-12 form-inline">&nbsp;</div></div>		
+							<div class="row"><div class="col-12 form-inline"><strong>Prevádzkové režimy:</strong></div></div>							<div class="row"><div class="col-12 form-inline"><div class="custom-control custom-checkbox"><input class="custom-control-input" type="checkbox" id="printSM-78" name="printSM-78" value="true" checked ><label class="custom-control-label" for="printSM-78">Pracovné dni, školský rok</label></div></div></div>							<div class="row"><div class="col-12 form-inline"><div class="custom-control custom-checkbox"><input class="custom-control-input" type="checkbox" id="printSM-79" name="printSM-79" value="true" checked ><label class="custom-control-label" for="printSM-79">Pracovné dni, školské prázdniny</label></div></div></div>							<div class="row"><div class="col-12 form-inline"><div class="custom-control custom-checkbox"><input class="custom-control-input" type="checkbox" id="printSM-80" name="printSM-80" value="true" checked ><label class="custom-control-label" for="printSM-80">Voľné dni</label></div></div></div>
+					</div>
+						<div class="modal-footer">
+							<button id="printButton" type="button" class="btn btn-secondary">Pokračovať na tlač</button>
+						</div>
+					</div>
+				</div>
+			</div><script>searchUrl = "/tt/api/sk/vyhladavanie?q="; searchDestUrl = "/tt/vyhladavanie?q=";</script></section> <!-- Module -->
+        </div> <!-- Container --><div class="d-print-none mt-4"><div class="d-block d-md-none text-center">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9096168135415861"
+     crossorigin="anonymous"></script>
+<ins class="adsbygoogle"
+     style="display:inline-block;width:300px;height:600px"
+     data-ad-client="ca-pub-9096168135415861"
+     data-ad-slot="3528742706"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+</div></div><div class="d-print-none mb-4"><div class="d-none d-md-block d-lg-none text-center">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9096168135415861"
+     crossorigin="anonymous"></script>
+<ins class="adsbygoogle"
+     style="display:inline-block;width:728px;height:90px"
+     data-ad-client="ca-pub-9096168135415861"
+     data-ad-slot="9919084758"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+</div></div><div class="d-print-none mb-4"><div class="d-none d-lg-block  text-center">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9096168135415861"
+     crossorigin="anonymous"></script>
+<ins class="adsbygoogle"
+     style="display:inline-block;width:970px;height:90px"
+     data-ad-client="ca-pub-9096168135415861"
+     data-ad-slot="8781069381"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+</div></div></div>
+	  
+      <footer class="Footer bg-light">
+	  
+        <div class="container">
+								<nav class="Footer-nav">
+					<div class="row">
+					
+					<div class="col-6 col-md-4 col-lg">
+					<h2>Cestovanie</h2>
+					
+					<ul class="Footer-navMenu list-unstyled">
+											<li><a href="/tt/planovac-cesty">
+						Plánovač cesty
+						</a>
+						
+					</li>
+						<li><a href="/tt/cestovne-poriadky">
+						Cestovné poriadky
+						</a>
+						
+					</li>
+						<li><a href="/tt/mapy-schemy">
+						Mapy
+						</a>
+						
+					</li>
+						<li><a href="/tt/mhd">
+						Aktuality
+						</a>
+						
+					</li>
+					</ul>
+					
+					</div>
+					
+					<div class="col-6 col-md-4 col-lg">
+					<h2>Cestovné lístky</h2>
+					
+					<ul class="Footer-navMenu list-unstyled">
+											<li><a href="/tt/doc/sk/23792/23792">
+						Ceny a typy lístkov
+						</a>
+						
+					</li>
+						<li><a href="/tt/doc/sk/23792/23792#sms">
+						SMS lístok
+						</a>
+						
+					</li>
+						<li><a href="/tt/doc/sk/23792/23792#bck">
+						Čipové karty
+						</a>
+						
+					</li>
+						<li><a href="/tt/doc/sk/23792/23792#predaj">
+						Predajné miesto
+						</a>
+						
+					</li>
+					</ul>
+					
+					</div>
+					
+					<div class="col-6 col-md-4 col-lg">
+					<h2>Informácie</h2>
+					
+					<ul class="Footer-navMenu list-unstyled">
+											<li><a href="https://arriva.sk/files/tt/dokumenty/2026/Prepravn%C3%BD%20poriadok%20TTSK%20a%20mesta%20TT%20platn%C3%BD%20od%201.3.2026.pdf">
+						Prepravný poriadok
+						</a>
+						
+					</li>
+						<li><a href="/tt/doc/sk/10025/Kontakt-na-dopravcu#kontakt">
+						Kontakt na dopravcu
+						</a>
+						
+					</li>
+						<li><a href="/tt/informacie">
+						Ďalšie informácie
+						</a>
+						
+					</li>
+					</ul>
+					
+					</div>
+					
+					<div class="col-6 col-md-4 col-lg">
+					<h2>Vozidlá</h2>
+					
+					<ul class="Footer-navMenu list-unstyled">
+											<li><a href="/tt/vozidla/23/autobusy-mhd">
+						Autobusy
+						</a>
+						
+					</li>
+						<li><a href="/tt/vozidla/vozidlovy-park">
+						Vyhľadávanie
+						</a>
+						
+					</li>
+						<li><a href="/tt/vozidla/evidencny-stav">
+						Evidenčný stav
+						</a>
+						
+					</li>
+					</ul>
+					
+					</div>
+					
+					<div class="col-6 col-md-4 col-lg">
+					<h2>I <svg class="Icon Icon--opticalAlign text-primary"><use xlink:href="/data/img/icons.svg#heart"></use></svg> MHD</h2>
+					
+					<ul class="Footer-navMenu list-unstyled">
+											<li><a href="/tt/galerie">
+						Fotky a médiá
+						</a>
+						
+					</li>
+						<li><a href="/tt/diskusne-forum">
+						Diskusia
+						</a>
+						
+					</li>
+						<li><a href="/tt/doc/sk/10029/Historia-MHD-v-Trnave">
+						História
+						</a>
+						
+					</li>
+						<li><a href="/tt/galeria/1969/vystrihovacky">
+						Vystrihovačky
+						</a>
+						
+					</li>
+						<li><a href="/tt/sotolionar">
+						Šotolionár
+						</a>
+						
+					</li>
+					</ul>
+					
+					</div>
+					</div>
+					</nav>
+          <div class="Footer-main">
+			
+            <div class="row">
+              <div class="col-12 col-lg text-center text-lg-left">
+                <a class="Footer-logo Logo" href="/tt/mhd">
+					<img class="Logo-img" src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==" alt="imhd.sk">
+                </a>
+
+                <div class="Footer-cityPicker CityPicker dropdown">
+                  <button class="btn btn-light dropdown-toggle" type="button" id="FooterCityPicker-1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+					Trnava
+                    <svg class="dropdown-chevron Icon small text-primary"><use xlink:href="/data/img/icons.svg#chevron-down"></use></svg>
+                  </button>
+                  <div class="dropdown-menu" role="menu" aria-labelledby="FooterCityPicker-1">
+			
+					<a class="dropdown-item" href="/ba/mhd">Bratislava</a>
+					<a class="dropdown-item" href="/bb/mhd">Banská Bystrica</a>
+					<a class="dropdown-item" href="/hc/mhd">Hlohovec</a>
+					<a class="dropdown-item" href="/ke/mhd">Košice</a>
+					<a class="dropdown-item" href="/lm/mhd">Liptovský Mikuláš</a>
+					<a class="dropdown-item" href="/mt/mhd">Martin</a>
+					<a class="dropdown-item" href="/nr/mhd">Nitra</a>
+					<a class="dropdown-item" href="/nz/mhd">Nové Zámky</a>
+					<a class="dropdown-item" href="/pn/mhd">Piešťany</a>
+					<a class="dropdown-item" href="/tatry/mhd">Poprad-Tatry</a>
+					<a class="dropdown-item" href="/pb/mhd">Považská Bystrica</a>
+					<a class="dropdown-item" href="/po/mhd">Prešov</a>
+					<a class="dropdown-item" href="/pd/mhd">Prievidza</a>
+					<a class="dropdown-item" href="/rk/mhd">Ružomberok</a>
+					<a class="dropdown-item" href="/se/mhd">Senica</a>
+					<a class="dropdown-item" href="/si/mhd">Skalica</a>
+					<a class="dropdown-item" href="/sn/mhd">Spišská Nová Ves</a>
+					<a class="dropdown-item" href="/tn/mhd">Trenčín</a>
+					<a class="dropdown-item" href="/zv/mhd">Zvolen</a>
+					<a class="dropdown-item" href="/za/mhd">Žilina</a>
+					<a class="dropdown-item" href="/transport/mhd">Slovensko a svet</a>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-12 col-lg-auto text-right">
+                <form class="Footer-newsletter form-inline" action="/tt/registracia-pouzivatela">
+                  <h3 class="Footer-newsletterHeading">Novinky e-mailom</h3>
+
+                  <div class="input-group">
+				  
+                    <label class="sr-only" for="newsletter-input-1">Zadajte váš e-mail</label>
+                    <input id="newsletter-input-1" name="email" type="text" class="form-control" placeholder="Zadajte váš e-mail" aria-label="Zadajte váš e-mail" aria-describedby="newsletter-button-submit-1">
+                    <div class="input-group-append">
+                      <button class="btn btn-primary" type="submit" id="newsletter-button-submit-1">Pridať</button>
+                    </div>
+                  </div>
+                </form>
+              </div>
+
+              <div class="col-12 col-lg-auto text-center">
+                <ul class="Footer-networks Networks list-unstyled">
+	
+                  <li>
+                    <a href="https://www.facebook.com/imhd.sk" target="facebook">
+                      <svg class="Icon"><use xlink:href="/data/img/icons.svg#facebook"></use></svg>
+                      <span class="sr-only">Facebook</span>
+                    </a>
+                  </li>
+	
+                  <li>
+                    <a href="https://twitter.com/imhdsk" target="twitter">
+                      <svg class="Icon"><use xlink:href="/data/img/icons.svg#twitter"></use></svg>
+                      <span class="sr-only">Twitter</span>
+                    </a>
+                  </li>
+	
+                  <li>
+                    <a href="https://www.instagram.com/imhd.sk/" target="instagram">
+                      <svg class="Icon"><use xlink:href="/data/img/icons.svg#instagram"></use></svg>
+                      <span class="sr-only">Instagram</span>
+                    </a>
+                  </li>
+	
+                  <li>
+                    <a href="/tt/doc/sk/10810/Mobiln%C3%A1-aplik%C3%A1cia-imhd-sk">
+                      <svg class="Icon"><use xlink:href="/data/img/icons.svg#app"></use></svg>
+                      <span class="sr-only">Smartfónová appka</span>
+                    </a>
+                  </li>
+	
+                  <li>
+                    <a href="/tt/rss/dokumenty">
+                      <svg class="Icon"><use xlink:href="/data/img/icons.svg#rss"></use></svg>
+                      <span class="sr-only">Smartfónová appka</span>
+                    </a>
+                  </li>
+	
+				</ul>
+              </div>
+            </div>
+			
+          </div>
+        </div>
+      </footer>
+    </div>
+  </div>
+  <footer class="CopyFooter">
+    <div class="container">
+	
+      <div class="row">
+        <div class="col-12 col-md-auto text-center text-md-right order-md-12">
+          <ul class="CopyFooter-menu list-unstyled">
+			<li><a href="/tt/doc/sk/10257/Autorsk%C3%A9-pr%C3%A1va" >Autorské práva</a></li>
+			<li><a href="/tt/doc/sk/10260/Podmienky-pou%C5%BE%C3%ADvania" >Podmienky</a></li>
+			<li><a href="javascript:googlefc.showRevocationMessage();">Súkromie</a></li>
+			<li><a href="/tt/doc/sk/10261/O-imhd-sk" >O imhd.sk</a></li>
+			<li><a href="/tt/doc/sk/15864/Kontakt" >Kontakt</a></li>
+          </ul>
+        </div>
+
+        <div class="col-12 col-md text-center text-md-left">
+          <ul class="CopyFooter-menu list-unstyled">
+			<li>Powered by<a href="https://www.websupport.sk" target="_blank" aria-label="websupport.sk"><svg class="Icon Logo-websupport"><use href="/data/img/icons.svg#websupport"></use></svg></a></li>
+			<li>Copyright © imhd.sk, 2000 – 2026</li>
+	      </ul>
+        </div>
+      </div>
+    </div>
+  </footer>
+	</body>
+
+</html>
+<!-- WEBINFO OK 309ms imhdsk.novalocal -->

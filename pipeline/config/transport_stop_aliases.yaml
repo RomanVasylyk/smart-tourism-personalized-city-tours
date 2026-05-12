@@ -33,4 +33,7 @@ cities:
       "Nitra , Výstavisko": "Výstavisko"
       "Nitra , Ďurčanského": "Ďurčanského"
   trnava:
-    stop_aliases: {}
+    stop_aliases:
+      "Letisko B": "Trnava, Letisko B"
+      "Žel. stanica A": "Železničná stanica A"
+      "Žel. stanica B": "Železničná stanica B"

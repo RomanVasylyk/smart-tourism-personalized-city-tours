@@ -16,6 +16,7 @@ from scripts.normalize_transport import (
     collapse_zero_delta_duplicate_name_rows,
     match_provider_stop_candidates,
     normalize_stop_name,
+    parse_imhd_html_variants,
     parse_stop_rows,
     split_stop_row_blocks,
     split_page_sections,
@@ -67,6 +68,69 @@ def test_normalize_stop_name_does_not_turn_regular_suffix_into_platform():
     assert normalize_stop_name("Lužianky, ZŠ") == "luzianky zs"
     assert normalize_stop_name("Centrum (A)") == "centrum platform a"
     assert normalize_stop_name("Štúrova A") == "sturova platform a"
+
+
+def test_parse_imhd_html_variants_handles_service_buckets_and_continuations(tmp_path):
+    html = """
+    <html><body>
+      <h1 class="sr-only">Cestovný poriadok linky 1</h1>
+      <strong class="TimetableHeader-info">Platí od 9.3.2026</strong>
+      <table class="table table-hover table-borderless table-striped table-sm stopsList">
+        <tr>
+          <th></th><th>min</th><th></th><th></th><th>Zastávka</th>
+        </tr>
+        <tr>
+          <td class="stopTime text-center"></td>
+          <td class="w-100 align-middle stopName startofroute">Letisko <small>B</small></td>
+        </tr>
+        <tr>
+          <td class="stopTime text-center"><span class="timemin">10</span><span class="timemax">10</span></td>
+          <td class="w-100 align-middle stopName">Linčianska <small>A</small></td>
+        </tr>
+        <tr>
+          <td class="stopTime text-center"><span class="timemin">14</span><span class="timemax">14</span></td>
+          <td class="w-100 align-middle stopName">BOGE <small>A</small></td>
+        </tr>
+      </table>
+      <h2 class="TimetableTabHeading d-print-block align-top">Pracovné dni, školský rok</h2>
+      <table class="table table-borderless table-striped table-sm">
+        <tr><th>hod</th><th colspan="2">min</th></tr>
+        <tr><th>7</th><td>04</td><td>19 B</td></tr>
+      </table>
+      <h2 class="TimetableTabHeading d-print-block align-top">Voľné dni</h2>
+      <table class="table table-borderless table-striped table-sm">
+        <tr><th>hod</th><th colspan="2">min</th></tr>
+        <tr><th>8</th><td>10</td><td></td></tr>
+      </table>
+      <table class="table table-borderless table-sm notesTable">
+        <tr><td class="text-center TimetableNote">B</td><td class="text-dark w-100">Zo zastávky Linčianska pokračuje v smere BOGE.</td></tr>
+      </table>
+    </body></html>
+    """
+    html_path = tmp_path / "line_1_01.html"
+    html_path.write_text(html, encoding="utf-8")
+    issues: list[TransportIssue] = []
+
+    variants = parse_imhd_html_variants(
+        html_path,
+        "https://imhd.sk/tt/cestovny-poriadok/linka/1/Letisko/smer-BOGE/hash",
+        "1",
+        issues,
+    )
+
+    assert len(variants) == 2
+    workday_variant = next(variant for variant in variants if variant.service_bucket == "workdays")
+    weekend_variant = next(variant for variant in variants if variant.service_bucket == "weekends_holidays")
+    assert workday_variant.line_number == "1"
+    assert workday_variant.valid_from == "2026-03-09"
+    assert workday_variant.stop_names == ["Letisko B", "Linčianska A", "BOGE A"]
+    assert workday_variant.edge_samples == [[600.0], [240.0]]
+    assert workday_variant.trip_columns == [
+        [424, 434, None],
+        [439, 449, 453],
+    ]
+    assert weekend_variant.trip_columns == [[490, 500, None]]
+    assert issues == []
 
 
 def test_match_provider_stop_candidates_uses_alt_keys_and_alias_map():

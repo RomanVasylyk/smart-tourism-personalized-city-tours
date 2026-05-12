@@ -2,3 +2,4 @@ requests
 pyyaml
 psycopg[binary]
 pypdf>=6.10
+beautifulsoup4

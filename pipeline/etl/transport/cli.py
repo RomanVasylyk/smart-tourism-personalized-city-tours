@@ -7,7 +7,7 @@ from utils.cities import load_city
 from .graph import build_processed_graph, compute_quality_report
 from .matching import build_osm_stop_index
 from .models import TransportIssue, VariantAccumulator
-from .parser import add_issue, load_osm_stops, parse_pdf_variants
+from .parser import add_issue, load_osm_stops, parse_document_variants
 from .paths import load_manifest, save_outputs, transport_paths
 from .text import load_stop_aliases
 
@@ -40,6 +40,7 @@ def main() -> None:
         filename = document.get("filename")
         source_url = document.get("source_url")
         line_id = str(document.get("line_id") or "")
+        document_format = str(document.get("document_format") or "pdf")
         if not filename or not source_url or not line_id:
             add_issue(
                 issues,
@@ -49,24 +50,30 @@ def main() -> None:
             )
             continue
 
-        pdf_path = raw_dir / "timetables" / filename
-        if not pdf_path.exists():
+        document_path = raw_dir / "timetables" / filename
+        if not document_path.exists():
             add_issue(
                 issues,
-                code="missing_timetable_pdf",
-                message="Skipping missing timetable PDF referenced by manifest.",
+                code="missing_timetable_document",
+                message="Skipping missing timetable document referenced by manifest.",
                 document=filename,
                 line_number=line_id,
             )
             continue
 
         try:
-            parsed_variants = parse_pdf_variants(pdf_path, str(source_url), line_id, issues)
+            parsed_variants = parse_document_variants(
+                document_path,
+                str(source_url),
+                line_id,
+                issues,
+                document_format=document_format,
+            )
         except Exception as exc:  # pragma: no cover - depends on external PDFs
             add_issue(
                 issues,
                 code="document_parse_failed",
-                message="Skipping PDF because parsing failed unexpectedly.",
+                message="Skipping timetable document because parsing failed unexpectedly.",
                 document=filename,
                 line_number=line_id,
                 error=str(exc),

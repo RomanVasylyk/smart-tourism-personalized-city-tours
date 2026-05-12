@@ -1,0 +1,170 @@
+{
+  "city": "trnava",
+  "provider": "imhd_trnava",
+  "datasource": "imhd_html",
+  "source_index_url": "https://imhd.sk/tt/cestovne-poriadky",
+  "stop_query_areas": [
+    {
+      "south": 48.3185992,
+      "west": 17.4874416,
+      "north": 48.4278428,
+      "east": 17.659514
+    }
+  ],
+  "downloaded_at": "2026-05-10T08:09:35Z",
+  "documents": [
+    {
+      "line_id": "1",
+      "source_url": "https://imhd.sk/tt/cestovny-poriadok/linka/1/Letisko/smer-Lin%C4%8Dianska-Stroj%C3%A1rensk%C3%A1-BOGE/ca71bd718971857f7c817f86807f807c80717b71c171897f7b71b67189818588867b71be71897f7b71c971897f7b71b371897171cc",
+      "origin_stop_name": "Letisko",
+      "destination_stop_name": "HKS",
+      "filename": "1_01.html",
+      "document_format": "imhd_html",
+      "size_bytes": 121357
+    },
+    {
+      "line_id": "1",
+      "source_url": "https://imhd.sk/tt/cestovny-poriadok/linka/1/BOGE/smer-Viktor%C3%ADniho-n%C3%A1m-Letisko/ca71bd718971857f7c817f86807f807c80717b71c17189807b71b67189818682867b71be71897f7b71c971897f7b71b371897171cc",
+      "origin_stop_name": "BOGE",
+      "destination_stop_name": "Kopánka",
+      "filename": "1_02.html",
+      "document_format": "imhd_html",
+      "size_bytes": 117674
+    },
+    {
+      "line_id": "N1",
+      "source_url": "https://imhd.sk/tt/cestovny-poriadok/linka/N1/%C5%A0rob%C3%A1rova/smer-%C5%A0rob%C3%A1rova/ca71bd718971857f7c817f868080807c9d80717b71c171897f7b71b67189818587817b71be71897f7b71c971897f7b71b371897171cc",
+      "origin_stop_name": "Šrobárova",
+      "destination_stop_name": "Špačinská",
+      "filename": "N1_01.html",
+      "document_format": "imhd_html",
+      "size_bytes": 101837
+    },
+    {
+      "line_id": "2",
+      "source_url": "https://imhd.sk/tt/cestovny-poriadok/linka/2/Neme%C4%8Danka/smer-OBI-Belgick%C3%A1/ca71bd718971857f7c817f86807f817c81717b71c171897f7b71b67189818680837b71be71897f7b71c971897f7b71b371897171cc",
+      "origin_stop_name": "Nemečanka",
+      "destination_stop_name": "OBI",
+      "filename": "2_01.html",
+      "document_format": "imhd_html",
+      "size_bytes": 109397
+    },
+    {
+      "line_id": "2",
+      "source_url": "https://imhd.sk/tt/cestovny-poriadok/linka/2/Belgick%C3%A1/smer-%C5%BDel-stanica-Neme%C4%8Danka/ca71bd718971857f7c817f86807f817c81717b71c17189807b71b67189818685857b71be71897f7b71c971897f7b71b371897171cc",
+      "origin_stop_name": "Belgická",
+      "destination_stop_name": "Trstínska",
+      "filename": "2_02.html",
+      "document_format": "imhd_html",
+      "size_bytes": 104013
+    },
+    {
+      "line_id": "3",
+      "source_url": "https://imhd.sk/tt/cestovny-poriadok/linka/3/Pekn%C3%A9-pole/smer-Predn%C3%A1dra%C5%BEie/ca71bd718971857f7c817f86807f827c82717b71c171897f7b71b67189838688847b71be71897f7b71c971897f7b71b371897171cc",
+      "origin_stop_name": "Pekné pole",
+      "destination_stop_name": "J. G. Tajovského",
+      "filename": "3_01.html",
+      "document_format": "imhd_html",
+      "size_bytes": 129101
+    },
+    {
+      "line_id": "3",
+      "source_url": "https://imhd.sk/tt/cestovny-poriadok/linka/3/Predn%C3%A1dra%C5%BEie/smer-Pekn%C3%A9-pole/ca71bd718971857f7c817f86807f827c82717b71c17189807b71b67189838681867b71be71897f7b71c971897f7b71b371897171cc",
+      "origin_stop_name": "Prednádražie",
+      "destination_stop_name": "Dobšinského",
+      "filename": "3_02.html",
+      "document_format": "imhd_html",
+      "size_bytes": 122464
+    },
+    {
+      "line_id": "4",
+      "source_url": "https://imhd.sk/tt/cestovny-poriadok/linka/4/Kop%C3%A1nka/smer-Stroj%C3%A1rensk%C3%A1-BOGE/ca71bd718971857f7c817f86807f837c83717b71c171897f7b71b67189818586887b71be71897f7b71c971897f7b71b371897171cc",
+      "origin_stop_name": "Kopánka",
+      "destination_stop_name": "HKS",
+      "filename": "4_01.html",
+      "document_format": "imhd_html",
+      "size_bytes": 134018
+    },
+    {
+      "line_id": "4",
+      "source_url": "https://imhd.sk/tt/cestovny-poriadok/linka/4/BOGE/smer-Kop%C3%A1nka/ca71bd718971857f7c817f86807f837c83717b71c17189807b71b67189818682867b71be71897f7b71c971897f7b71b371897171cc",
+      "origin_stop_name": "BOGE",
+      "destination_stop_name": "J. Hlubíka",
+      "filename": "4_02.html",
+      "document_format": "imhd_html",
+      "size_bytes": 107891
+    },
+    {
+      "line_id": "5",
+      "source_url": "https://imhd.sk/tt/cestovny-poriadok/linka/5/Vozovka/smer-Predn%C3%A1dra%C5%BEie/ca71bd718971857f7c817f86807f847c84717b71c171897f7b71b67189818681867b71be71897f7b71c971897f7b71b371897171cc",
+      "origin_stop_name": "Vozovka",
+      "destination_stop_name": "J. G. Tajovského",
+      "filename": "5_01.html",
+      "document_format": "imhd_html",
+      "size_bytes": 115387
+    },
+    {
+      "line_id": "5",
+      "source_url": "https://imhd.sk/tt/cestovny-poriadok/linka/5/Predn%C3%A1dra%C5%BEie/smer-Vozovka/ca71bd718971857f7c817f86807f847c84717b71c17189807b71b67189838681867b71be71897f7b71c971897f7b71b371897171cc",
+      "origin_stop_name": "Prednádražie",
+      "destination_stop_name": "ŽOS",
+      "filename": "5_02.html",
+      "document_format": "imhd_html",
+      "size_bytes": 107701
+    },
+    {
+      "line_id": "6",
+      "source_url": "https://imhd.sk/tt/cestovny-poriadok/linka/6/Sib%C3%ADrska/smer-Okru%C5%BEn%C3%A9-n%C3%A1m-City-Park/ca71bd718971857f7c817f86807f857c85717b71c171897f7b71b67189818684817b71be71897f7b71c971897f7b71b371897171cc",
+      "origin_stop_name": "Sibírska",
+      "destination_stop_name": "Slovenská",
+      "filename": "6_01.html",
+      "document_format": "imhd_html",
+      "size_bytes": 126450
+    },
+    {
+      "line_id": "6",
+      "source_url": "https://imhd.sk/tt/cestovny-poriadok/linka/6/City-Park/smer-Sib%C3%ADrska-V%C3%BDchodn%C3%A1/ca71bd718971857f7c817f86807f857c85717b71c17189807b71b67189818680857b71be71897f7b71c971897f7b71b371897171cc",
+      "origin_stop_name": "City Park",
+      "destination_stop_name": "Olympijská",
+      "filename": "6_02.html",
+      "document_format": "imhd_html",
+      "size_bytes": 125715
+    },
+    {
+      "line_id": "7",
+      "source_url": "https://imhd.sk/tt/cestovny-poriadok/linka/7/Neme%C4%8Danka/smer-Vozovka/ca71bd718971857f7c817f86807f867c86717b71c171897f7b71b67189818680837b71be71897f7b71c971897f7b71b371897171cc",
+      "origin_stop_name": "Nemečanka",
+      "destination_stop_name": "ŽOS",
+      "filename": "7_01.html",
+      "document_format": "imhd_html",
+      "size_bytes": 103396
+    },
+    {
+      "line_id": "7",
+      "source_url": "https://imhd.sk/tt/cestovny-poriadok/linka/7/Vozovka/smer-Neme%C4%8Danka/ca71bd718971857f7c817f86807f867c86717b71c17189807b71b67189818681867b71be71897f7b71c971897f7b71b371897171cc",
+      "origin_stop_name": "Vozovka",
+      "destination_stop_name": "Trstínska",
+      "filename": "7_02.html",
+      "document_format": "imhd_html",
+      "size_bytes": 106666
+    },
+    {
+      "line_id": "8",
+      "source_url": "https://imhd.sk/tt/cestovny-poriadok/linka/8/Modranka/smer-Kamenn%C3%BD-mlyn/ca71bd718971857f7c817f86807f877c87717b71c171897f7b71b67189818681837b71be71897f7b71c971897f7b71b371897171cc",
+      "origin_stop_name": "Modranka",
+      "destination_stop_name": "T. Kružliaka",
+      "filename": "8_01.html",
+      "document_format": "imhd_html",
+      "size_bytes": 122648
+    },
+    {
+      "line_id": "8",
+      "source_url": "https://imhd.sk/tt/cestovny-poriadok/linka/8/Kamenn%C3%BD-mlyn/smer-Modranka-cint/ca71bd718971857f7c817f86807f877c87717b71c17189807b71b6718981867f857b71be71897f7b71c971897f7b71b371897171cc",
+      "origin_stop_name": "Kamenný mlyn",
+      "destination_stop_name": "Modranka",
+      "filename": "8_02.html",
+      "document_format": "imhd_html",
+      "size_bytes": 129769
+    }
+  ]
+}

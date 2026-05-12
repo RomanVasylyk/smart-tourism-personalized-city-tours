@@ -13,7 +13,7 @@ from .matching import (
     match_provider_stop_candidates,
 )
 from .models import StopRow, TransportIssue, VariantAccumulator
-from .parser import add_issue, load_osm_stops, parse_pdf_variants
+from .parser import add_issue, load_osm_stops, parse_document_variants, parse_imhd_html_variants, parse_pdf_variants
 from .paths import load_manifest, report_paths, save_outputs, transport_paths
 from .text import (
     build_stop_match_keys,
@@ -43,6 +43,8 @@ __all__ = [
     "main",
     "match_provider_stop_candidates",
     "normalize_stop_name",
+    "parse_document_variants",
+    "parse_imhd_html_variants",
     "parse_pdf_variants",
     "parse_stop_rows",
     "report_paths",
