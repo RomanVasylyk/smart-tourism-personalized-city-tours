@@ -11,6 +11,7 @@ from pypdf import PdfReader
 from .matching import haversine_km
 from .models import StopRow, TransportIssue, VariantAccumulator
 from .text import (
+    build_city_prefixed_stop_match_keys,
     build_stop_match_keys,
     collapse_identical_consecutive_rows,
     collapse_zero_delta_duplicate_name_rows,
@@ -476,6 +477,7 @@ def load_osm_stops(raw_dir: Path, city: dict, stop_aliases: dict[str, str]) -> l
     raw_file = raw_dir / "osm_stops_raw.json"
     payload = json.loads(raw_file.read_text(encoding="utf-8"))
     center = city.get("center") or {}
+    city_name = str(city.get("name") or "").strip()
     center_lat = float(center.get("lat") or 0.0)
     center_lon = float(center.get("lon") or 0.0)
 
@@ -485,6 +487,11 @@ def load_osm_stops(raw_dir: Path, city: dict, stop_aliases: dict[str, str]) -> l
         name = str(tags.get("name") or "").strip()
         if not name:
             continue
+        alternate_names = [
+            str(tags.get(key) or "").strip()
+            for key in ("name:sk", "name:hu")
+            if str(tags.get(key) or "").strip()
+        ]
 
         point = element.get("center") or element
         lat = point.get("lat")
@@ -495,6 +502,15 @@ def load_osm_stops(raw_dir: Path, city: dict, stop_aliases: dict[str, str]) -> l
         ref = str(tags.get("local_ref") or tags.get("ref") or "").strip() or None
         base_name, platform_token = split_stop_name_components(name, stop_aliases)
         normalized_name = normalize_stop_name(name, stop_aliases)
+        match_keys: set[str] = set(build_stop_match_keys(name, ref, stop_aliases))
+        if city_name:
+            match_keys.update(build_city_prefixed_stop_match_keys(name, city_name, ref, stop_aliases))
+        for alternate_name in alternate_names:
+            match_keys.update(build_stop_match_keys(alternate_name, ref, stop_aliases))
+            if city_name:
+                match_keys.update(
+                    build_city_prefixed_stop_match_keys(alternate_name, city_name, ref, stop_aliases)
+                )
         stops.append(
             {
                 "osm_id": f"{element['type']}/{element['id']}",
@@ -502,11 +518,37 @@ def load_osm_stops(raw_dir: Path, city: dict, stop_aliases: dict[str, str]) -> l
                 "normalized_name": normalized_name,
                 "normalized_base_name": normalize_stop_base_name(base_name),
                 "platform_token": platform_token or normalized_platform_token(ref),
-                "match_keys": sorted(build_stop_match_keys(name, ref, stop_aliases)),
+                "match_keys": sorted(match_keys),
                 "lat": float(lat),
                 "lon": float(lon),
                 "ref": ref,
                 "distance_to_center_meters": haversine_km(center_lat, center_lon, float(lat), float(lon)) * 1_000,
             }
         )
+
+    provider_geocodes_file = raw_dir / "provider_stop_geocodes.json"
+    if provider_geocodes_file.exists():
+        for entry in json.loads(provider_geocodes_file.read_text(encoding="utf-8")):
+            stop_name = normalize_display_text(str(entry.get("stop_name") or ""))
+            lat = entry.get("lat")
+            lon = entry.get("lon")
+            if not stop_name or lat is None or lon is None:
+                continue
+
+            ref = str(entry.get("ref") or "").strip() or None
+            base_name, platform_token = split_stop_name_components(stop_name, stop_aliases)
+            stops.append(
+                {
+                    "osm_id": f"provider_geocode/{city.get('slug')}/{normalize_stop_base_name(stop_name).replace(' ', '-')}",
+                    "name": stop_name,
+                    "normalized_name": normalize_stop_name(stop_name, stop_aliases),
+                    "normalized_base_name": normalize_stop_base_name(base_name),
+                    "platform_token": platform_token or normalized_platform_token(ref),
+                    "match_keys": sorted(build_stop_match_keys(stop_name, ref, stop_aliases)),
+                    "lat": float(lat),
+                    "lon": float(lon),
+                    "ref": ref,
+                    "distance_to_center_meters": haversine_km(center_lat, center_lon, float(lat), float(lon)) * 1_000,
+                }
+            )
     return stops

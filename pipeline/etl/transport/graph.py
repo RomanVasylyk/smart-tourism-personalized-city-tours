@@ -8,7 +8,7 @@ from .constants import SERVICE_BUCKETS
 from .matching import choose_variant_stop_assignments, haversine_km, match_provider_stop_candidates, mean
 from .models import TransportIssue, VariantAccumulator
 from .parser import add_issue
-from .text import lookup_local_connection_rule, normalize_stop_base_name, normalize_stop_name
+from .text import lookup_local_connection_rule, normalize_display_text, normalize_stop_base_name, normalize_stop_name
 
 def line_sort_key(variant: VariantAccumulator) -> tuple[int, str, tuple[str, ...]]:
     try:
@@ -150,6 +150,120 @@ def is_same_station_transfer_candidate(from_stop: dict[str, Any], to_stop: dict[
     distance_meters = haversine_km(from_stop["lat"], from_stop["lon"], to_stop["lat"], to_stop["lon"]) * 1_000
     return distance_meters <= 250.0
 
+
+def synthetic_stop_graph_key(city_slug: str, stop_name: str) -> str:
+    normalized_stop_key = normalize_stop_name(stop_name).replace(" ", "-")
+    return f"provider_synthetic/{city_slug}/{normalized_stop_key}"
+
+
+def estimate_stop_coordinates(
+    missing_index: int,
+    assignments: list[tuple[int, dict[str, Any], str]],
+) -> tuple[float, float] | None:
+    previous_assignments = [assignment for assignment in assignments if assignment[0] < missing_index]
+    next_assignments = [assignment for assignment in assignments if assignment[0] > missing_index]
+
+    previous_assignment = previous_assignments[-1] if previous_assignments else None
+    next_assignment = next_assignments[0] if next_assignments else None
+    previous_previous_assignment = previous_assignments[-2] if len(previous_assignments) >= 2 else None
+    next_next_assignment = next_assignments[1] if len(next_assignments) >= 2 else None
+
+    if previous_assignment is not None and next_assignment is not None:
+        previous_index, previous_stop, _ = previous_assignment
+        next_index, next_stop, _ = next_assignment
+        step_count = next_index - previous_index
+        if step_count <= 0:
+            return None
+        ratio = (missing_index - previous_index) / step_count
+        lat = previous_stop["lat"] + ((next_stop["lat"] - previous_stop["lat"]) * ratio)
+        lon = previous_stop["lon"] + ((next_stop["lon"] - previous_stop["lon"]) * ratio)
+        return lat, lon
+
+    if previous_assignment is not None and previous_previous_assignment is not None:
+        previous_index, previous_stop, _ = previous_assignment
+        previous_previous_index, previous_previous_stop, _ = previous_previous_assignment
+        step_count = previous_index - previous_previous_index
+        if step_count <= 0:
+            return None
+        step_lat = (previous_stop["lat"] - previous_previous_stop["lat"]) / step_count
+        step_lon = (previous_stop["lon"] - previous_previous_stop["lon"]) / step_count
+        offset = missing_index - previous_index
+        return previous_stop["lat"] + (step_lat * offset), previous_stop["lon"] + (step_lon * offset)
+
+    if next_assignment is not None and next_next_assignment is not None:
+        next_index, next_stop, _ = next_assignment
+        next_next_index, next_next_stop, _ = next_next_assignment
+        step_count = next_next_index - next_index
+        if step_count <= 0:
+            return None
+        step_lat = (next_next_stop["lat"] - next_stop["lat"]) / step_count
+        step_lon = (next_next_stop["lon"] - next_stop["lon"]) / step_count
+        offset = next_index - missing_index
+        return next_stop["lat"] - (step_lat * offset), next_stop["lon"] - (step_lon * offset)
+
+    return None
+
+
+def build_synthetic_stop_record(
+    city: dict[str, Any],
+    stop_name: str,
+    lat: float,
+    lon: float,
+    stops_by_graph_key: dict[str, dict[str, Any]],
+) -> dict[str, Any]:
+    graph_stop_key = synthetic_stop_graph_key(str(city.get("slug") or "city"), stop_name)
+    stop_record = stops_by_graph_key.get(graph_stop_key)
+    if stop_record is not None:
+        return stop_record
+
+    stop_record = {
+        "graph_stop_key": graph_stop_key,
+        "name": normalize_display_text(stop_name),
+        "normalized_name": normalize_stop_name(stop_name),
+        "lat": lat,
+        "lon": lon,
+        "platform_ref": None,
+        "source": "provider_estimated",
+        "source_reference": graph_stop_key,
+        "matched_by": "estimated",
+    }
+    stops_by_graph_key[graph_stop_key] = stop_record
+    return stop_record
+
+
+def add_estimated_variant_stop_assignments(
+    city: dict[str, Any],
+    variant: VariantAccumulator,
+    assignments: list[tuple[int, dict[str, Any], str]],
+    stops_by_graph_key: dict[str, dict[str, Any]],
+) -> list[tuple[int, dict[str, Any], str]]:
+    if len(assignments) < 2:
+        return assignments
+
+    enriched_assignments = list(assignments)
+    assigned_indices = {index for index, _, _ in enriched_assignments}
+
+    for missing_index, stop_name in enumerate(variant.stop_names):
+        if missing_index in assigned_indices:
+            continue
+
+        estimated_coordinates = estimate_stop_coordinates(missing_index, enriched_assignments)
+        if estimated_coordinates is None:
+            continue
+
+        stop_record = build_synthetic_stop_record(
+            city,
+            stop_name,
+            estimated_coordinates[0],
+            estimated_coordinates[1],
+            stops_by_graph_key,
+        )
+        enriched_assignments.append((missing_index, stop_record, stop_name))
+        assigned_indices.add(missing_index)
+        enriched_assignments.sort(key=lambda item: item[0])
+
+    return enriched_assignments
+
 def build_processed_graph(
     city: dict,
     variants: list[VariantAccumulator],
@@ -209,24 +323,6 @@ def build_processed_graph(
             variant.valid_from, variant.valid_to = None, None
 
         matched_stops_with_indices: list[tuple[int, dict, str]] = []
-        for stop_name in variant.stop_names:
-            if match_provider_stop_candidates(stop_name, osm_index, stop_aliases)[0]:
-                continue
-
-            unmatched_record = unmatched_stops_by_name.setdefault(
-                stop_name,
-                {
-                    "stop_name": stop_name,
-                    "normalized_name": normalize_stop_name(stop_name, stop_aliases),
-                    "occurrences": 0,
-                    "line_numbers": set(),
-                    "source_urls": set(),
-                },
-            )
-            unmatched_record["occurrences"] += 1
-            unmatched_record["line_numbers"].add(variant.line_number)
-            unmatched_record["source_urls"].update(variant.source_urls)
-
         for index, osm_stop, matched_by in choose_variant_stop_assignments(variant.stop_names, osm_index, stop_aliases):
             graph_stop_key = osm_stop["osm_id"]
             stop_record = stops_by_graph_key.get(graph_stop_key)
@@ -245,6 +341,32 @@ def build_processed_graph(
                 stops_by_graph_key[graph_stop_key] = stop_record
 
             matched_stops_with_indices.append((index, stop_record, variant.stop_names[index]))
+
+        matched_stops_with_indices = add_estimated_variant_stop_assignments(
+            city,
+            variant,
+            matched_stops_with_indices,
+            stops_by_graph_key,
+        )
+
+        matched_indices = {index for index, _, _ in matched_stops_with_indices}
+        for index, stop_name in enumerate(variant.stop_names):
+            if index in matched_indices:
+                continue
+
+            unmatched_record = unmatched_stops_by_name.setdefault(
+                stop_name,
+                {
+                    "stop_name": stop_name,
+                    "normalized_name": normalize_stop_name(stop_name, stop_aliases),
+                    "occurrences": 0,
+                    "line_numbers": set(),
+                    "source_urls": set(),
+                },
+            )
+            unmatched_record["occurrences"] += 1
+            unmatched_record["line_numbers"].add(variant.line_number)
+            unmatched_record["source_urls"].update(variant.source_urls)
 
         if len(matched_stops_with_indices) < 2:
             add_issue(

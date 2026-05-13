@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import sys
 from pathlib import Path
 
@@ -14,6 +15,7 @@ from scripts.normalize_transport import (
     build_processed_graph,
     build_stop_match_keys,
     collapse_zero_delta_duplicate_name_rows,
+    load_osm_stops,
     match_provider_stop_candidates,
     normalize_stop_name,
     parse_imhd_html_variants,
@@ -68,6 +70,12 @@ def test_normalize_stop_name_does_not_turn_regular_suffix_into_platform():
     assert normalize_stop_name("Lužianky, ZŠ") == "luzianky zs"
     assert normalize_stop_name("Centrum (A)") == "centrum platform a"
     assert normalize_stop_name("Štúrova A") == "sturova platform a"
+
+
+def test_normalize_stop_name_strips_common_street_and_house_number_tokens():
+    assert normalize_stop_name("Nábrežná ul. č.93") == "nabrezna 93"
+    assert normalize_stop_name("Tatranská ul. č. 135") == "tatranska 135"
+    assert normalize_stop_name("SNP č.42") == "snp 42"
 
 
 def test_parse_imhd_html_variants_handles_service_buckets_and_continuations(tmp_path):
@@ -155,6 +163,77 @@ def test_match_provider_stop_candidates_uses_alt_keys_and_alias_map():
     assert [candidate["osm_id"] for candidate in candidates] == ["node/3"]
 
 
+def test_load_osm_stops_uses_name_sk_as_match_key(tmp_path):
+    raw_dir = tmp_path / "raw"
+    raw_dir.mkdir()
+    (raw_dir / "osm_stops_raw.json").write_text(
+        json.dumps(
+            {
+                "elements": [
+                    {
+                        "type": "node",
+                        "id": 1,
+                        "lat": 47.99,
+                        "lon": 18.16,
+                        "tags": {
+                            "name": "Námestie - Főtér",
+                            "name:sk": "Námestie",
+                            "highway": "bus_stop",
+                            "public_transport": "platform",
+                        },
+                    }
+                ]
+            },
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+    city = {"center": {"lat": 47.99, "lon": 18.16}}
+
+    stops = load_osm_stops(raw_dir, city, {})
+    osm_index = build_osm_stop_index(stops)
+    candidates, matched_by = match_provider_stop_candidates("Námestie", osm_index, {})
+
+    assert len(stops) == 1
+    assert matched_by == "exact"
+    assert [candidate["osm_id"] for candidate in candidates] == ["node/1"]
+
+
+def test_load_osm_stops_uses_city_prefixed_single_word_stop_key(tmp_path):
+    raw_dir = tmp_path / "raw"
+    raw_dir.mkdir()
+    (raw_dir / "osm_stops_raw.json").write_text(
+        json.dumps(
+            {
+                "elements": [
+                    {
+                        "type": "node",
+                        "id": 2,
+                        "lat": 47.99,
+                        "lon": 18.16,
+                        "tags": {
+                            "name": "Nové Zámky, Osram",
+                            "highway": "bus_stop",
+                            "public_transport": "platform",
+                        },
+                    }
+                ]
+            },
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+    city = {"name": "Nové Zámky", "center": {"lat": 47.99, "lon": 18.16}}
+
+    stops = load_osm_stops(raw_dir, city, {})
+    osm_index = build_osm_stop_index(stops)
+    candidates, matched_by = match_provider_stop_candidates("Osram", osm_index, {})
+
+    assert len(stops) == 1
+    assert matched_by == "exact"
+    assert [candidate["osm_id"] for candidate in candidates] == ["node/2"]
+
+
 def test_build_processed_graph_drops_invalid_trip_but_keeps_valid_line():
     city = {"slug": "test-city", "transport": {"provider": "test_provider"}}
     variant = VariantAccumulator(
@@ -192,6 +271,47 @@ def test_build_processed_graph_drops_invalid_trip_but_keeps_valid_line():
     assert metrics["invalid_trip_count"] == 1
     assert metrics["dropped_trip_count"] == 1
     assert graph["trips"][0]["stop_times"][-1]["time_minutes"] == 318
+
+
+def test_build_processed_graph_estimates_unmatched_stop_between_matched_anchors():
+    city = {"slug": "test-city", "transport": {"provider": "test_provider"}}
+    variant = VariantAccumulator(
+        line_number="1",
+        service_bucket="workdays",
+        source_urls={"https://example.invalid/1.html"},
+        stop_names=["Stanica", "Provider Midpoint", "Centrum"],
+        edge_samples=[[120.0], [180.0]],
+        trip_columns=[
+            [310, 312, 318],
+            [350, 352, 358],
+        ],
+        valid_from="2026-01-01",
+        valid_to="2026-12-31",
+    )
+    osm_index = build_osm_stop_index(
+        [
+            make_stop("node/10", "Stanica", 48.30, 18.08),
+            make_stop("node/11", "Centrum", 48.302, 18.082),
+        ]
+    )
+
+    graph, metrics, unmatched = build_processed_graph(
+        city,
+        [variant],
+        osm_index,
+        {},
+        [],
+    )
+
+    assert unmatched == []
+    assert metrics["dropped_trip_count"] == 0
+    assert any(stop["name"] == "Provider Midpoint" for stop in graph["stops"])
+    assert len(graph["lines"]) == 1
+    assert [stop["provider_stop_name"] for stop in graph["lines"][0]["stops"]] == [
+        "Stanica",
+        "Provider Midpoint",
+        "Centrum",
+    ]
 
 
 def test_build_processed_graph_estimates_adjacent_zero_delta_connection():

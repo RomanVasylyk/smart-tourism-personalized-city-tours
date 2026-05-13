@@ -14,6 +14,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+from etl.transport.text import apply_stop_alias, load_stop_aliases
 from utils.cities import load_city
 
 OVERPASS_URLS = (
@@ -26,6 +27,8 @@ QUERY_TIMEOUT_SECONDS = 90
 MAX_ATTEMPTS_PER_URL = 2
 RETRYABLE_STATUS_CODES = {429, 504}
 PAUSE_BETWEEN_BATCHES_SECONDS = 1
+NOMINATIM_SEARCH_URL = "https://nominatim.openstreetmap.org/search"
+GEOCODE_PAUSE_SECONDS = 1.1
 PROVIDER_HEADERS = {
     "User-Agent": "smart-tourism-starter/1.0 (educational project)",
 }
@@ -116,8 +119,13 @@ def build_stop_query(city: dict) -> str:
             (
                 f'  node["highway"="bus_stop"]({south},{west},{north},{east});',
                 f'  node["public_transport"="platform"]({south},{west},{north},{east});',
+                f'  node["public_transport"="stop_position"]["bus"="yes"]({south},{west},{north},{east});',
+                f'  node["amenity"="bus_station"]({south},{west},{north},{east});',
+                f'  node["public_transport"="station"]["bus"="yes"]({south},{west},{north},{east});',
                 f'  way["highway"="bus_stop"]({south},{west},{north},{east});',
                 f'  way["public_transport"="platform"]({south},{west},{north},{east});',
+                f'  way["amenity"="bus_station"]({south},{west},{north},{east});',
+                f'  way["public_transport"="station"]["bus"="yes"]({south},{west},{north},{east});',
             )
         )
     query_lines.extend((");", "out center tags;"))
@@ -147,6 +155,11 @@ def normalize_whitespace(value: str) -> str:
 
 def sanitize_line_id_for_filename(line_id: str) -> str:
     return re.sub(r"[^A-Za-z0-9_-]+", "_", str(line_id or "").strip()) or "line"
+
+
+def slugify_stop_name(value: str) -> str:
+    slug = re.sub(r"[^A-Za-z0-9]+", "-", normalize_whitespace(value)).strip("-").lower()
+    return slug or "stop"
 
 
 def provider_link_rank(url: str) -> tuple[int, int, int]:
@@ -244,6 +257,7 @@ def discover_imhd_direction_documents(line_html: str, line_url: str, city_code: 
                 "source_url": origin_schedule_url,
                 "origin_stop_name": origin_stop_name,
                 "destination_stop_name": destination_stop_name,
+                "route_stop_names": [stop_name for stop_name, _ in stop_links],
                 "filename": f"{sanitize_line_id_for_filename(line_id)}_{document_number:02d}.html",
                 "document_format": "imhd_html",
             }
@@ -253,6 +267,90 @@ def discover_imhd_direction_documents(line_html: str, line_url: str, city_code: 
         raise RuntimeError(f"No direction timetable pages found on imhd.sk line page {line_url}")
 
     return discovered_documents
+
+
+def city_viewbox(city: dict) -> str | None:
+    bbox = city.get("bbox") or {}
+    south = bbox.get("south")
+    west = bbox.get("west")
+    north = bbox.get("north")
+    east = bbox.get("east")
+    if None in {south, west, north, east}:
+        return None
+    return f"{west},{north},{east},{south}"
+
+
+def geocode_query_candidates(stop_name: str, city: dict, stop_aliases: dict[str, str]) -> list[str]:
+    city_name = str(city.get("name") or city.get("slug") or "").strip()
+    country = str(city.get("country") or "").strip()
+    canonical_name = apply_stop_alias(stop_name, stop_aliases)
+
+    candidates = [
+        f"{canonical_name}, {city_name}, {country}",
+        f"{canonical_name} {city_name} {country}",
+    ]
+    if canonical_name != stop_name:
+        candidates.extend(
+            (
+                f"{stop_name}, {city_name}, {country}",
+                f"{stop_name} {city_name} {country}",
+            )
+        )
+    return [candidate for candidate in dict.fromkeys(candidates) if normalize_whitespace(candidate)]
+
+
+def geocode_provider_stop_names(
+    city: dict,
+    stop_names: set[str],
+    session: requests.Session,
+    stop_aliases: dict[str, str],
+) -> list[dict]:
+    viewbox = city_viewbox(city)
+    if not viewbox:
+        return []
+
+    geocoded_stops: list[dict] = []
+    for stop_name in sorted(stop_names):
+        result: dict | None = None
+        for query in geocode_query_candidates(stop_name, city, stop_aliases):
+            response = session.get(
+                NOMINATIM_SEARCH_URL,
+                params={
+                    "q": query,
+                    "format": "jsonv2",
+                    "limit": 1,
+                    "viewbox": viewbox,
+                    "bounded": 1,
+                },
+                timeout=HTTP_TIMEOUT_SECONDS,
+            )
+            if response.ok:
+                try:
+                    payload = response.json()
+                except ValueError:
+                    payload = []
+            else:
+                payload = []
+
+            if payload:
+                first_result = payload[0]
+                result = {
+                    "stop_name": stop_name,
+                    "query": query,
+                    "display_name": str(first_result.get("display_name") or stop_name),
+                    "lat": float(first_result["lat"]),
+                    "lon": float(first_result["lon"]),
+                    "category": first_result.get("category"),
+                    "type": first_result.get("type"),
+                }
+                break
+            time.sleep(GEOCODE_PAUSE_SECONDS)
+
+        if result is not None:
+            geocoded_stops.append(result)
+        time.sleep(GEOCODE_PAUSE_SECONDS)
+
+    return geocoded_stops
 
 
 def discover_imhd_documents(
@@ -389,6 +487,20 @@ def main() -> None:
         ),
         encoding="utf-8",
     )
+
+    if datasource == "imhd_html" and transport.get("provider_stop_geocodes_enabled") is True:
+        stop_aliases = load_stop_aliases(city_slug)
+        provider_stop_names = {
+            normalize_whitespace(stop_name)
+            for document in downloaded_documents
+            for stop_name in (document.get("route_stop_names") or [])
+            if normalize_whitespace(stop_name)
+        }
+        provider_stop_geocodes = geocode_provider_stop_names(city, provider_stop_names, session, stop_aliases)
+        (raw_dir / "provider_stop_geocodes.json").write_text(
+            json.dumps(provider_stop_geocodes, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
 
     stop_payload = fetch_overpass_query(session, "transport_stops", build_stop_query(city))
     (raw_dir / "osm_stops_raw.json").write_text(

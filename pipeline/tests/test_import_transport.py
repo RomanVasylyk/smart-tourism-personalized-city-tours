@@ -48,6 +48,8 @@ def test_build_stop_query_includes_all_transport_query_areas():
     assert '(11.0,21.0,31.0,41.0);' in query
     assert query.count('node["highway"="bus_stop"]') == 2
     assert query.count('way["public_transport"="platform"]') == 2
+    assert query.count('node["public_transport"="stop_position"]["bus"="yes"]') == 2
+    assert query.count('node["amenity"="bus_station"]') == 2
 
 
 def test_discover_imhd_line_links_extracts_unique_line_pages():

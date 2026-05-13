@@ -1,0 +1,1196 @@
+{
+  "version": 0.6,
+  "generator": "Overpass API 0.7.62.11 87bfad18",
+  "osm3s": {
+    "timestamp_osm_base": "2026-05-11T08:40:59Z",
+    "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+  },
+  "elements": [
+    {
+      "type": "node",
+      "id": 8792487,
+      "lat": 47.986181,
+      "lon": 18.1740442,
+      "tags": {
+        "bus": "yes",
+        "name": "Stará nemocnica - Öreg kórház",
+        "name:hu": "Öreg kórház",
+        "name:sk": "Stará nemocnica",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 258649191,
+      "lat": 47.9784807,
+      "lon": 18.1784415,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "public_transport": "platform",
+        "source": "mapillary"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1857018900,
+      "lat": 47.9848989,
+      "lon": 18.1680781,
+      "tags": {
+        "bus": "yes",
+        "name": "Komárnanská ul., č.24",
+        "network": "MHD Nové Zámky",
+        "network:wikidata": "Q110521795",
+        "operator": "Arriva Nové Zámky",
+        "operator:wikidata": "Q102542886",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 4727171353,
+      "lat": 48.0016176,
+      "lon": 18.1599238,
+      "tags": {
+        "bench": "no",
+        "highway": "bus_stop",
+        "shelter": "no"
+      }
+    },
+    {
+      "type": "node",
+      "id": 5009224192,
+      "lat": 48.0362854,
+      "lon": 18.1161966,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "name": "Palárikovo,Ľudovítov,osada",
+        "public_transport": "platform"
+      }
+    },
+    {
+      "type": "node",
+      "id": 5011673862,
+      "lat": 47.9951749,
+      "lon": 18.1105975,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "name": "Andovce,,cintorín",
+        "public_transport": "platform"
+      }
+    },
+    {
+      "type": "node",
+      "id": 5011673865,
+      "lat": 47.9952925,
+      "lon": 18.1156767,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "name": "Andovce,,kríž",
+        "public_transport": "platform"
+      }
+    },
+    {
+      "type": "node",
+      "id": 5011846030,
+      "lat": 47.9811702,
+      "lon": 18.1446207,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "name": "Nové Zámky,, Gúgska ul. Jednota",
+        "public_transport": "platform"
+      }
+    },
+    {
+      "type": "node",
+      "id": 5630145832,
+      "lat": 47.9925935,
+      "lon": 18.1752861,
+      "tags": {
+        "bench": "no",
+        "bin": "yes",
+        "bus": "yes",
+        "highway": "bus_stop",
+        "lit": "yes",
+        "name": "Nové Zámky,rázc.k žel.st.",
+        "public_transport": "platform",
+        "shelter": "no",
+        "tactile_paving": "no"
+      }
+    },
+    {
+      "type": "node",
+      "id": 5784914507,
+      "lat": 47.9559071,
+      "lon": 18.1421005,
+      "tags": {
+        "highway": "bus_stop",
+        "name": "Nesvady, Aňala"
+      }
+    },
+    {
+      "type": "node",
+      "id": 6339262514,
+      "lat": 47.9763811,
+      "lon": 18.1386803,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "name": "Berek",
+        "public_transport": "platform"
+      }
+    },
+    {
+      "type": "node",
+      "id": 6343265854,
+      "lat": 47.9860995,
+      "lon": 18.173993,
+      "tags": {
+        "bench": "yes",
+        "bus": "yes",
+        "departures_board": "timetable",
+        "highway": "bus_stop",
+        "name": "Stará nemocnica - Öreg kórház",
+        "name:hu": "Öreg kórház",
+        "name:sk": "Stará nemocnica",
+        "public_transport": "platform",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 6343709065,
+      "lat": 47.9768529,
+      "lon": 18.1135695,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "name": "Nové Zámky, Tekvicové pole",
+        "public_transport": "platform"
+      }
+    },
+    {
+      "type": "node",
+      "id": 6343709067,
+      "lat": 47.9643243,
+      "lon": 18.08916,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "name": "Nový Gúg",
+        "public_transport": "platform"
+      }
+    },
+    {
+      "type": "node",
+      "id": 6343709079,
+      "lat": 47.9728092,
+      "lon": 18.1055448,
+      "tags": {
+        "highway": "bus_stop",
+        "name": "Nové Zámky, Cergát"
+      }
+    },
+    {
+      "type": "node",
+      "id": 6349768166,
+      "lat": 47.9812415,
+      "lon": 18.1441255,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "public_transport": "platform"
+      }
+    },
+    {
+      "type": "node",
+      "id": 6349768168,
+      "lat": 47.9808194,
+      "lon": 18.1383636,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "name": "Nové Zámky,,čist.st.",
+        "public_transport": "platform"
+      }
+    },
+    {
+      "type": "node",
+      "id": 6349768173,
+      "lat": 47.9804429,
+      "lon": 18.1548755,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "name": "Vajanského ul. 27",
+        "public_transport": "platform",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 6349768177,
+      "lat": 47.980845,
+      "lon": 18.1644877,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "name": "G.Bethlehena, ZŠ",
+        "public_transport": "platform"
+      }
+    },
+    {
+      "type": "node",
+      "id": 6349768608,
+      "lat": 47.9806061,
+      "lon": 18.1372971,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "public_transport": "platform"
+      }
+    },
+    {
+      "type": "node",
+      "id": 6350117987,
+      "lat": 47.9837954,
+      "lon": 18.1290125,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "name": "Nové Zámky,,Agrokomplex",
+        "public_transport": "platform"
+      }
+    },
+    {
+      "type": "node",
+      "id": 6354825106,
+      "lat": 47.9833047,
+      "lon": 18.1523268,
+      "tags": {
+        "bench": "no",
+        "bin": "no",
+        "bus": "yes",
+        "highway": "bus_stop",
+        "lit": "yes",
+        "name": "Nové Zámky, Gúgska ul. č 18",
+        "public_transport": "platform",
+        "shelter": "no",
+        "tactile_paving": "no"
+      }
+    },
+    {
+      "type": "node",
+      "id": 6358823004,
+      "lat": 48.0050145,
+      "lon": 18.0925409,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "name": "Zemné,Gúg,č.d.2",
+        "public_transport": "platform"
+      }
+    },
+    {
+      "type": "node",
+      "id": 6358823018,
+      "lat": 48.003559,
+      "lon": 18.0999089,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "name": "Zemné,Gúg",
+        "public_transport": "platform"
+      }
+    },
+    {
+      "type": "node",
+      "id": 6363343841,
+      "lat": 47.978561,
+      "lon": 18.1466034,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "name": "Tatranská ul. č. 93",
+        "public_transport": "platform"
+      }
+    },
+    {
+      "type": "node",
+      "id": 6363343843,
+      "lat": 47.9774921,
+      "lon": 18.1428696,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "name": "Tatranská ul. č. 135",
+        "public_transport": "platform"
+      }
+    },
+    {
+      "type": "node",
+      "id": 6458844150,
+      "lat": 48.0311781,
+      "lon": 18.1060211,
+      "tags": {
+        "highway": "bus_stop",
+        "name": "Palárikovo, Ľudovítov, Jur",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 6459503483,
+      "lat": 48.0413167,
+      "lon": 18.0716467,
+      "tags": {
+        "highway": "bus_stop",
+        "name": "Palárikovo, Šlahor"
+      }
+    },
+    {
+      "type": "node",
+      "id": 6471047529,
+      "lat": 47.9919725,
+      "lon": 18.1682686,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "public_transport": "platform",
+        "source": "mapillary"
+      }
+    },
+    {
+      "type": "node",
+      "id": 6471047536,
+      "lat": 47.9898319,
+      "lon": 18.1703742,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "public_transport": "platform",
+        "source": "mapillary"
+      }
+    },
+    {
+      "type": "node",
+      "id": 6471048115,
+      "lat": 47.9863529,
+      "lon": 18.1584652,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "name": "Nové Zámky,,Andovská ZŠ",
+        "public_transport": "platform",
+        "source": "mapillary"
+      }
+    },
+    {
+      "type": "node",
+      "id": 6483113599,
+      "lat": 47.9774828,
+      "lon": 18.1643969,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "public_transport": "platform",
+        "source": "DigitalGlobe"
+      }
+    },
+    {
+      "type": "node",
+      "id": 6483113624,
+      "lat": 47.9770268,
+      "lon": 18.1789907,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "name": "Nové Zámky, Osram",
+        "public_transport": "platform",
+        "source": "mapillary"
+      }
+    },
+    {
+      "type": "node",
+      "id": 6483113637,
+      "lat": 47.9771911,
+      "lon": 18.1414707,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "public_transport": "platform",
+        "source": "mapillary"
+      }
+    },
+    {
+      "type": "node",
+      "id": 6483113838,
+      "lat": 47.9655875,
+      "lon": 18.1852915,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "name": "Nové Zámky, Novum",
+        "public_transport": "platform",
+        "source": "mapillary"
+      }
+    },
+    {
+      "type": "node",
+      "id": 6483113841,
+      "lat": 47.9703262,
+      "lon": 18.1828518,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "public_transport": "platform",
+        "source": "mapillary"
+      }
+    },
+    {
+      "type": "node",
+      "id": 6483113842,
+      "lat": 47.9656306,
+      "lon": 18.1855222,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "name": "Nové Zámky, Novum",
+        "public_transport": "platform",
+        "source": "mapillary"
+      }
+    },
+    {
+      "type": "node",
+      "id": 6695312721,
+      "lat": 47.9864503,
+      "lon": 18.1472289,
+      "tags": {
+        "bench": "yes",
+        "bus": "yes",
+        "departures_board": "timetable",
+        "highway": "bus_stop",
+        "name": "Andovská ul. č.72 - Andódi u. 72.",
+        "name:hu": "Andódi u. 72.",
+        "name:sk": "Andovská ul. č.72",
+        "public_transport": "platform",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 6775141443,
+      "lat": 47.9601034,
+      "lon": 18.1466575,
+      "tags": {
+        "highway": "bus_stop"
+      }
+    },
+    {
+      "type": "node",
+      "id": 6775141444,
+      "lat": 47.9601932,
+      "lon": 18.1469257,
+      "tags": {
+        "highway": "bus_stop",
+        "name": "Nesvady, Aňalské záhrady, rácz."
+      }
+    },
+    {
+      "type": "node",
+      "id": 6788959630,
+      "lat": 47.9446366,
+      "lon": 18.1972429,
+      "tags": {
+        "highway": "bus_stop"
+      }
+    },
+    {
+      "type": "node",
+      "id": 6788959648,
+      "lat": 47.9453806,
+      "lon": 18.1970176,
+      "tags": {
+        "highway": "bus_stop",
+        "name": "Bajč, Kotelnica, SM rácz."
+      }
+    },
+    {
+      "type": "node",
+      "id": 6792941086,
+      "lat": 47.9513164,
+      "lon": 18.1388671,
+      "tags": {
+        "highway": "bus_stop",
+        "name": "Nesvady, Aňalské Záhrady"
+      }
+    },
+    {
+      "type": "node",
+      "id": 6792941092,
+      "lat": 47.9512266,
+      "lon": 18.138674,
+      "tags": {
+        "highway": "bus_stop"
+      }
+    },
+    {
+      "type": "node",
+      "id": 6802315549,
+      "lat": 47.9930871,
+      "lon": 18.1754375,
+      "tags": {
+        "bench": "no",
+        "bin": "no",
+        "bus": "yes",
+        "highway": "bus_stop",
+        "lit": "yes",
+        "name": "Nové Zámky, rázc. k žel. st.",
+        "public_transport": "platform",
+        "shelter": "no",
+        "tactile_paving": "no"
+      }
+    },
+    {
+      "type": "node",
+      "id": 6989161189,
+      "lat": 48.0003363,
+      "lon": 18.1575014,
+      "tags": {
+        "highway": "bus_stop",
+        "name": "AQUARIO"
+      }
+    },
+    {
+      "type": "node",
+      "id": 6989166486,
+      "lat": 47.9894446,
+      "lon": 18.1515394,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "name": "Nemocnica, Areál - Kórház, fõbejárat",
+        "name:hu": "Kórház, fõbejárat",
+        "name:sk": "Nemocnica, Areál",
+        "public_transport": "platform"
+      }
+    },
+    {
+      "type": "node",
+      "id": 6989166487,
+      "lat": 47.986894,
+      "lon": 18.1596103,
+      "tags": {
+        "bench": "yes",
+        "bus": "yes",
+        "departures_board": "timetable",
+        "highway": "bus_stop",
+        "name": "Poliklinika - Poliklinika",
+        "name:hu": "Poliklinika",
+        "name:sk": "Poliklinika",
+        "public_transport": "platform",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 6989166586,
+      "lat": 47.988926,
+      "lon": 18.1550808,
+      "tags": {
+        "bench": "yes",
+        "bus": "yes",
+        "departures_board": "timetable",
+        "highway": "bus_stop",
+        "name": "Nemocnica, detské odd. - Kórház, gyerekosztály",
+        "name:hu": "Kórház, gyerekosztály",
+        "name:sk": "Nemocnica, detské odd.",
+        "public_transport": "platform",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 6989166687,
+      "lat": 47.9859749,
+      "lon": 18.162791,
+      "tags": {
+        "bench": "yes",
+        "bus": "yes",
+        "departures_board": "timetable",
+        "highway": "bus_stop",
+        "name": "Námestie - Főtér",
+        "name:hu": "Fõ tér",
+        "name:sk": "Námestie",
+        "public_transport": "platform"
+      }
+    },
+    {
+      "type": "node",
+      "id": 6989169685,
+      "lat": 47.9939088,
+      "lon": 18.1675249,
+      "tags": {
+        "highway": "bus_stop",
+        "name": "SNP č.42"
+      }
+    },
+    {
+      "type": "node",
+      "id": 6989179487,
+      "lat": 47.9848423,
+      "lon": 18.1680886,
+      "tags": {
+        "bench": "yes",
+        "bus": "yes",
+        "departures_board": "timetable",
+        "highway": "bus_stop",
+        "name": "Komárnanská ul., č.24",
+        "network": "MHD Nové Zámky",
+        "network:wikidata": "Q110521795",
+        "operator": "Arriva Nové Zámky",
+        "operator:wikidata": "Q102542886",
+        "public_transport": "platform",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 6989179488,
+      "lat": 47.9799641,
+      "lon": 18.1690356,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "name": "Nábrežná ul. č.93",
+        "public_transport": "platform"
+      }
+    },
+    {
+      "type": "node",
+      "id": 6989194085,
+      "lat": 47.982538,
+      "lon": 18.1687283,
+      "tags": {
+        "bench": "yes",
+        "bus": "yes",
+        "departures_board": "timetable",
+        "highway": "bus_stop",
+        "name": "Bitunková ul., Pošta - Vágóhíd u., Posta",
+        "name:hu": "Vágóhíd u., Posta",
+        "name:sk": "Bitunková ul., Pošta",
+        "public_transport": "platform",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 6989199585,
+      "lat": 47.980685,
+      "lon": 18.1697438,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "name": "Nábrežná ul. č.93",
+        "public_transport": "platform"
+      }
+    },
+    {
+      "type": "node",
+      "id": 6989739585,
+      "lat": 47.9865053,
+      "lon": 18.1737319,
+      "tags": {
+        "bench": "yes",
+        "bus": "yes",
+        "departures_board": "timetable",
+        "highway": "bus_stop",
+        "name": "Stará nemocnica - Öreg kórház",
+        "name:hu": "Öreg kórház",
+        "name:sk": "Stará nemocnica",
+        "public_transport": "platform",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 7656240697,
+      "lat": 48.0428096,
+      "lon": 18.1896901,
+      "tags": {
+        "bench": "yes",
+        "bus": "yes",
+        "departures_board": "timetable",
+        "highway": "bus_stop",
+        "lit": "no",
+        "name": "Bánov,RD",
+        "operator": "Arriva Nové Zámky, a. s.",
+        "public_transport": "platform",
+        "shelter": "yes",
+        "tactile_paving": "no"
+      }
+    },
+    {
+      "type": "node",
+      "id": 7656240698,
+      "lat": 47.9997141,
+      "lon": 18.1787186,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "name": "Nové Zámky, Mliekospol",
+        "public_transport": "platform"
+      }
+    },
+    {
+      "type": "node",
+      "id": 8512117590,
+      "lat": 48.0441644,
+      "lon": 18.0848361,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "name": "Palárikovo,,nový cintorín",
+        "public_transport": "platform"
+      }
+    },
+    {
+      "type": "node",
+      "id": 8515330884,
+      "lat": 47.9911564,
+      "lon": 18.1639528,
+      "tags": {
+        "bench": "yes",
+        "bus": "yes",
+        "departures_board": "timetable",
+        "highway": "bus_stop",
+        "name": "Nové Zámky, T. G. Masaryka",
+        "network": "MHD Nové Zámky",
+        "network:wikidata": "Q110521795",
+        "operator": "Arriva Nové Zámky",
+        "operator:wikidata": "Q102542886",
+        "public_transport": "platform",
+        "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 8515330885,
+      "lat": 47.9939108,
+      "lon": 18.1049775,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "name": "Andovce,,OcÚ",
+        "public_transport": "platform"
+      }
+    },
+    {
+      "type": "node",
+      "id": 8515330886,
+      "lat": 47.9955236,
+      "lon": 18.1008608,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "name": "Andovce,,č.d.128",
+        "public_transport": "platform"
+      }
+    },
+    {
+      "type": "node",
+      "id": 8515330887,
+      "lat": 47.9976467,
+      "lon": 18.1035014,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "name": "Andovce,,č.d.205",
+        "public_transport": "platform"
+      }
+    },
+    {
+      "type": "node",
+      "id": 8516912633,
+      "lat": 48.0454451,
+      "lon": 18.1950686,
+      "tags": {
+        "bench": "no",
+        "bus": "yes",
+        "highway": "bus_stop",
+        "name": "Bánov,,Štúrova ul.",
+        "public_transport": "platform",
+        "shelter": "no"
+      }
+    },
+    {
+      "type": "node",
+      "id": 8516912635,
+      "lat": 48.0440227,
+      "lon": 18.2011191,
+      "tags": {
+        "bus": "yes",
+        "highway": "bus_stop",
+        "name": "Bánov,,Pod hájom č.d.20",
+        "public_transport": "platform",
+        "shelter": "no"
+      }
+    },
+    {
+      "type": "node",
+      "id": 8516912636,
+      "lat": 48.0432596,
+      "lon": 18.197589,
+      "tags": {
+        "bench": "no",
+        "bus": "yes",
+        "highway": "bus_stop",
+        "name": "Bánov,,Štefánikova ul.č.d.78",
+        "public_transport": "platform",
+        "shelter": "no"
+      }
+    },
+    {
+      "type": "node",
+      "id": 9774989599,
+      "lat": 47.993634,
+      "lon": 18.1746092,
+      "tags": {
+        "bench": "yes",
+        "bin": "yes",
+        "bus": "yes",
+        "highway": "bus_stop",
+        "lit": "yes",
+        "name": "Železničná stanica",
+        "public_transport": "platform",
+        "shelter": "yes",
+        "tactile_paving": "no"
+      }
+    },
+    {
+      "type": "node",
+      "id": 11691295705,
+      "lat": 48.0429691,
+      "lon": 18.1897582,
+      "tags": {
+        "bench": "no",
+        "bus": "yes",
+        "departures_board": "timetable",
+        "highway": "bus_stop",
+        "name": "Bánov, RD",
+        "operator": "Arriva Nové Zámky, a. s.",
+        "public_transport": "platform",
+        "shelter": "no"
+      }
+    },
+    {
+      "type": "node",
+      "id": 11691295706,
+      "lat": 48.0426842,
+      "lon": 18.1901386,
+      "tags": {
+        "bench": "no",
+        "bus": "yes",
+        "highway": "bus_stop",
+        "name": "Bánov, Štefánikova č. d. 4",
+        "operator": "Arriva Nové Zámky, a. s.",
+        "public_transport": "platform",
+        "shelter": "no"
+      }
+    },
+    {
+      "type": "node",
+      "id": 11691295707,
+      "lat": 48.0427496,
+      "lon": 18.1900624,
+      "tags": {
+        "bench": "no",
+        "bus": "yes",
+        "highway": "bus_stop",
+        "name": "Bánov, Štefánikova č. d. 4",
+        "operator": "Arriva Nové Zámky, a. s.",
+        "public_transport": "platform",
+        "shelter": "no"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12888196767,
+      "lat": 47.9826394,
+      "lon": 18.1687846,
+      "tags": {
+        "bus": "yes",
+        "name": "Bitunková ul., Pošta - Vágóhíd u., Posta",
+        "name:hu": "Vágóhíd u., Posta",
+        "name:sk": "Bitunková ul., Pošta",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12888421892,
+      "lat": 47.986054,
+      "lon": 18.162859,
+      "tags": {
+        "bus": "yes",
+        "name": "Námestie - Fõ tér",
+        "name:hu": "Fõ tér",
+        "name:sk": "Námestie",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12888466301,
+      "lat": 47.9863636,
+      "lon": 18.1737878,
+      "tags": {
+        "bus": "yes",
+        "name": "Stará nemocnica - Öreg kórház",
+        "name:hu": "Öreg kórház",
+        "name:sk": "Stará nemocnica",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12888703818,
+      "lat": 47.988971,
+      "lon": 18.1551111,
+      "tags": {
+        "bus": "yes",
+        "name": "Nemocnica, detské odd. - Kórház, gyerekosztály",
+        "name:hu": "Kórház, gyerekosztály",
+        "name:sk": "Nemocnica, detské odd.",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12888703819,
+      "lat": 47.9891612,
+      "lon": 18.1548736,
+      "tags": {
+        "bench": "no",
+        "bus": "yes",
+        "departures_board": "timetable",
+        "highway": "bus_stop",
+        "name": "Nemocnica, detské odd. - Kórház, gyerekosztály",
+        "name:hu": "Kórház, gyerekosztály",
+        "name:sk": "Nemocnica, detské odd.",
+        "public_transport": "platform",
+        "shelter": "no"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12888703820,
+      "lat": 47.9891036,
+      "lon": 18.1548428,
+      "tags": {
+        "bus": "yes",
+        "name": "Nemocnica, detské odd. - Kórház, gyerekosztály",
+        "name:hu": "Kórház, gyerekosztály",
+        "name:sk": "Nemocnica, detské odd.",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12888703825,
+      "lat": 47.9869426,
+      "lon": 18.1597497,
+      "tags": {
+        "bus": "yes",
+        "name": "Poliklinika - Poliklinika",
+        "name:hu": "Poliklinika",
+        "name:sk": "Poliklinika",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12888703826,
+      "lat": 47.9874286,
+      "lon": 18.1592357,
+      "tags": {
+        "bus": "yes",
+        "name": "Poliklinika - Poliklinika",
+        "name:hu": "Poliklinika",
+        "name:sk": "Poliklinika",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12888703827,
+      "lat": 47.9873496,
+      "lon": 18.1594481,
+      "tags": {
+        "bench": "no",
+        "bus": "yes",
+        "departures_board": "timetable",
+        "highway": "bus_stop",
+        "name": "Poliklinika - Poliklinika",
+        "name:hu": "Poliklinika",
+        "name:sk": "Poliklinika",
+        "public_transport": "platform",
+        "shelter": "no"
+      }
+    },
+    {
+      "type": "node",
+      "id": 13481937927,
+      "lat": 47.9908475,
+      "lon": 18.1636966,
+      "tags": {
+        "bench": "no",
+        "bus": "yes",
+        "departures_board": "timetable",
+        "highway": "bus_stop",
+        "name": "Nové Zámky, T. G. Masaryka",
+        "network": "MHD Nové Zámky",
+        "network:wikidata": "Q110521795",
+        "operator": "Arriva Nové Zámky",
+        "operator:wikidata": "Q102542886",
+        "public_transport": "platform",
+        "shelter": "no"
+      }
+    },
+    {
+      "type": "way",
+      "id": 1078763334,
+      "center": {
+        "lat": 47.9948629,
+        "lon": 18.1741539
+      },
+      "tags": {
+        "loc_ref": "1",
+        "name": "Nové Zámky",
+        "public_transport": "platform",
+        "railway": "platform",
+        "train": "yes"
+      }
+    },
+    {
+      "type": "way",
+      "id": 1078763335,
+      "center": {
+        "lat": 47.9950188,
+        "lon": 18.1742128
+      },
+      "tags": {
+        "bench": "yes",
+        "bin": "yes",
+        "loc_ref": "2",
+        "name": "Nové Zámky",
+        "public_transport": "platform",
+        "railway": "platform",
+        "shelter": "yes",
+        "train": "yes"
+      }
+    },
+    {
+      "type": "way",
+      "id": 1078770140,
+      "center": {
+        "lat": 47.9950634,
+        "lon": 18.1743975
+      },
+      "tags": {
+        "name": "Nové Zámky",
+        "public_transport": "platform",
+        "railway": "platform",
+        "train": "yes"
+      }
+    },
+    {
+      "type": "way",
+      "id": 1078770141,
+      "center": {
+        "lat": 47.9953826,
+        "lon": 18.1741208
+      },
+      "tags": {
+        "name": "Nové Zámky",
+        "public_transport": "platform",
+        "railway": "platform",
+        "train": "yes"
+      }
+    },
+    {
+      "type": "way",
+      "id": 1122906451,
+      "center": {
+        "lat": 48.0460956,
+        "lon": 18.1675767
+      },
+      "tags": {
+        "name": "Bánov",
+        "operator": "ŽSR",
+        "public_transport": "platform",
+        "railway": "platform"
+      }
+    },
+    {
+      "type": "way",
+      "id": 1246061908,
+      "center": {
+        "lat": 47.9923076,
+        "lon": 18.1704448
+      },
+      "tags": {
+        "amenity": "bus_station",
+        "bus": "yes",
+        "name": "Nové Zámky, aut. st.",
+        "public_transport": "station"
+      }
+    },
+    {
+      "type": "way",
+      "id": 1314686838,
+      "center": {
+        "lat": 48.0358971,
+        "lon": 18.112853
+      },
+      "tags": {
+        "name": "Ľudovítov",
+        "operator": "ŽSR",
+        "public_transport": "platform",
+        "railway": "platform",
+        "train": "yes"
+      }
+    },
+    {
+      "type": "way",
+      "id": 1314686839,
+      "center": {
+        "lat": 48.0358315,
+        "lon": 18.1127397
+      },
+      "tags": {
+        "name": "Ľudovítov",
+        "operator": "ŽSR",
+        "public_transport": "platform",
+        "railway": "platform",
+        "train": "yes"
+      }
+    },
+    {
+      "type": "way",
+      "id": 1457734255,
+      "center": {
+        "lat": 47.9936104,
+        "lon": 18.1746018
+      },
+      "tags": {
+        "highway": "platform",
+        "public_transport": "platform"
+      }
+    }
+  ]
+}

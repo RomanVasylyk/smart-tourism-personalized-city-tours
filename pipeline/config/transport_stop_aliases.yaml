@@ -37,3 +37,8 @@ cities:
       "Letisko B": "Trnava, Letisko B"
       "Žel. stanica A": "Železničná stanica A"
       "Žel. stanica B": "Železničná stanica B"
+  nove-zamky:
+    stop_aliases:
+      "Autobusové stanovište": "Nové Zámky, aut. st."
+      "Šurianska cesta , Jednota": "Nové Zámky,, Gúgska ul. Jednota"
+      "Hradná , ZŠ": "G.Bethlehena, ZŠ"

@@ -116,3 +116,57 @@ cities:
       min_walking_distance_savings_meters: 350
     city_specific_exclusions:
       excluded_name_patterns: []
+  - slug: nove-zamky
+    name: Nové Zámky
+    country: Slovakia
+    center:
+      lat: 47.9861843
+      lon: 18.1631415
+    bbox:
+      south: 47.9439300
+      west: 18.0695258
+      north: 48.0463439
+      east: 18.2384480
+    available_categories:
+      - attraction
+      - museum
+      - gallery
+      - viewpoint
+      - monument
+      - historical_site
+      - park
+      - religious_site
+    default_score_adjustments:
+      historical_site: 0.05
+      religious_site: 0.03
+    default_zoom: 13.0
+    routing_limits:
+      max_available_minutes: 300
+      max_poi_candidates: 250
+    transport:
+      mhd_enabled: true
+      provider: imhd_nove_zamky
+      mode: static
+      datasource: imhd_html
+      source_index_url: https://imhd.sk/nz/cestovne-poriadky
+      imhd_city_code: nz
+      line_id_allowlist:
+        - "1"
+        - "4"
+        - "6"
+        - "7"
+        - "8"
+        - "9"
+        - "10"
+      raw_data_subdir: transport/nove-zamky/raw
+      processed_graph_path: transport/nove-zamky/processed/transport_graph.json
+      stop_source: osm_overpass
+      average_wait_minutes: 4
+      transit_speed_kmh: 22
+      min_direct_distance_meters: 1000
+      max_first_mile_meters: 650
+      max_last_mile_meters: 650
+      max_total_duration_multiplier: 1.15
+      min_walking_distance_savings_meters: 350
+    city_specific_exclusions:
+      excluded_name_patterns: []

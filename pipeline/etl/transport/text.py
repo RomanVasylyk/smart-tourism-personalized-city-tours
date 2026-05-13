@@ -97,8 +97,15 @@ def normalize_stop_base_name(value: str) -> str:
     normalized_value = strip_accents(normalize_display_text(value)).upper()
     for pattern, replacement in STOP_NAME_ABBREVIATIONS:
         normalized_value = pattern.sub(replacement, normalized_value)
+    normalized_value = re.sub(r"\bULICA\b", " ", normalized_value)
+    normalized_value = re.sub(r"\bUL\b", " ", normalized_value)
+    normalized_value = re.sub(r"\bCISLO\b(?=\s*\d)", " ", normalized_value)
+    normalized_value = re.sub(r"\bC\s*\.\s*(?=\d)", " ", normalized_value)
+    normalized_value = re.sub(r"\bC\b(?=\s*\d)", " ", normalized_value)
     normalized_value = normalized_value.replace("STUROVA", "STUROVA")
     normalized_value = re.sub(r"[^\w\s]", " ", normalized_value)
+    normalized_value = re.sub(r"\bUL\b", " ", normalized_value)
+    normalized_value = re.sub(r"\bC\b(?=\s*\d)", " ", normalized_value)
     normalized_value = re.sub(r"\s+", " ", normalized_value)
     return normalized_value.strip().lower()
 
@@ -149,6 +156,28 @@ def build_stop_match_keys(
             if ref_token:
                 keys.add(f"{locality_stripped_base_name} platform {ref_token.lower()}")
     return {key for key in keys if key}
+
+def build_city_prefixed_stop_match_keys(
+    stop_name: str,
+    city_name: str,
+    ref: str | None = None,
+    stop_aliases: dict[str, str] | None = None,
+) -> set[str]:
+    stop_aliases = stop_aliases or {}
+    normalized_stop_name = normalize_display_text(stop_name)
+    normalized_city_name = normalize_display_text(city_name)
+    if not normalized_stop_name or not normalized_city_name:
+        return set()
+
+    normalized_stop_name_key = strip_accents(normalized_stop_name).casefold()
+    normalized_city_name_key = strip_accents(normalized_city_name).casefold()
+    if not normalized_stop_name_key.startswith(normalized_city_name_key):
+        return set()
+
+    remainder = normalized_stop_name[len(normalized_city_name):].strip(" ,;/")
+    if not remainder:
+        return set()
+    return build_stop_match_keys(remainder, ref, stop_aliases)
 
 def detect_service_bucket(page_text: str) -> str:
     normalized_text = strip_accents(page_text).upper()
