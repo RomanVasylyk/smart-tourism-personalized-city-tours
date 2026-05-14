@@ -44,7 +44,8 @@ def ensure_city(conn, city: dict) -> int:
             SELECT id
             FROM cities
             WHERE lower(name) = lower(%s) AND lower(country) = lower(%s)
-                LIMIT 1;
+            ORDER BY id
+            LIMIT 1;
             """,
             (city_name, country),
         )

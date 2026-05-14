@@ -118,3 +118,28 @@ def test_discover_imhd_direction_documents_selects_first_stop_schedule_per_direc
     assert documents[0]["source_url"] == "https://imhd.sk/tt/cestovny-poriadok/linka/1/Letisko/smer-BOGE/hash-a"
     assert documents[0]["filename"] == "1_01.html"
     assert documents[1]["origin_stop_name"] == "BOGE"
+
+
+def test_discover_imhd_direction_documents_falls_back_to_single_schedule_links():
+    html = """
+    <section class="Timetable">
+      <a href="/tn/cestovny-poriadok/linka/D/Priemyselny-park/smer-Detske-mestecko/hash-d">
+        Priemyselný park
+      </a>
+    </section>
+    """
+
+    documents = discover_imhd_direction_documents(
+        html,
+        "https://imhd.sk/tn/linka/D/hash-line",
+        "tn",
+        "D",
+    )
+
+    assert len(documents) == 1
+    assert documents[0]["line_id"] == "D"
+    assert documents[0]["origin_stop_name"] == "Priemyselný park"
+    assert documents[0]["source_url"] == (
+        "https://imhd.sk/tn/cestovny-poriadok/linka/D/Priemyselny-park/smer-Detske-mestecko/hash-d"
+    )
+    assert documents[0]["document_format"] == "imhd_html"

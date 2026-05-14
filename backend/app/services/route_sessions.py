@@ -377,7 +377,13 @@ def get_city_id(cur, city: str) -> int:
     city_name = city_profile.get("name") or city
 
     cur.execute(
-        "SELECT id FROM cities WHERE lower(name) = lower(%s)",
+        """
+        SELECT id
+        FROM cities
+        WHERE lower(name) = lower(%s)
+        ORDER BY id
+        LIMIT 1
+        """,
         (city_name,),
     )
     city_row = cur.fetchone()

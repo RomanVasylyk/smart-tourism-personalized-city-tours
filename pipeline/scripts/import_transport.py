@@ -221,6 +221,7 @@ def discover_imhd_direction_documents(line_html: str, line_url: str, city_code: 
     soup = BeautifulSoup(line_html, "html.parser")
     discovered_documents: list[dict] = []
     seen_route_keys: set[tuple[str, ...]] = set()
+    seen_schedule_urls: set[str] = set()
 
     timetable_section = soup.find("section", class_="Timetable") or soup
     for table in timetable_section.find_all("table"):
@@ -248,6 +249,7 @@ def discover_imhd_direction_documents(line_html: str, line_url: str, city_code: 
             continue
 
         seen_route_keys.add(route_key)
+        seen_schedule_urls.update(schedule_url for _, schedule_url in stop_links)
         origin_stop_name, origin_schedule_url = stop_links[0]
         destination_stop_name = stop_links[-1][0]
         document_number = len(discovered_documents) + 1
@@ -262,6 +264,35 @@ def discover_imhd_direction_documents(line_html: str, line_url: str, city_code: 
                 "document_format": "imhd_html",
             }
         )
+
+    if not discovered_documents:
+        for link in timetable_section.find_all("a", href=True):
+            absolute_url = urljoin(line_url, link["href"])
+            parsed_url = urlparse(absolute_url)
+            match = IMHD_SCHEDULE_PATH_PATTERN.match(parsed_url.path)
+            if match is None or match.group("city").casefold() != city_code.casefold():
+                continue
+            if normalize_whitespace(unquote(match.group("line_id"))).upper() != line_id.upper():
+                continue
+            if absolute_url in seen_schedule_urls:
+                continue
+
+            stop_name = normalize_whitespace(link.get_text(" ", strip=True))
+            if not stop_name:
+                stop_name = normalize_whitespace(unquote(parsed_url.path.rstrip("/").split("/")[-3]))
+            seen_schedule_urls.add(absolute_url)
+            document_number = len(discovered_documents) + 1
+            discovered_documents.append(
+                {
+                    "line_id": line_id,
+                    "source_url": absolute_url,
+                    "origin_stop_name": stop_name,
+                    "destination_stop_name": None,
+                    "route_stop_names": [],
+                    "filename": f"{sanitize_line_id_for_filename(line_id)}_{document_number:02d}.html",
+                    "document_format": "imhd_html",
+                }
+            )
 
     if not discovered_documents:
         raise RuntimeError(f"No direction timetable pages found on imhd.sk line page {line_url}")

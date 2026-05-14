@@ -34,12 +34,14 @@ def get_cities():
                 """
                 SELECT id, name, country, center_lat, center_lon
                 FROM cities
-                ORDER BY name
+                ORDER BY name, id
                 """
             )
             rows = cur.fetchall()
 
-    rows_by_name = {row["name"].strip().lower(): row for row in rows}
+    rows_by_name = {}
+    for row in rows:
+        rows_by_name.setdefault(row["name"].strip().lower(), row)
     city_profiles = load_city_profiles()
     ordered_rows = []
 

@@ -170,3 +170,75 @@ cities:
       min_walking_distance_savings_meters: 350
     city_specific_exclusions:
       excluded_name_patterns: []
+  - slug: trencin
+    name: Trenčín
+    country: Slovakia
+    center:
+      lat: 48.8922719
+      lon: 18.0387465
+    bbox:
+      south: 48.8495976
+      west: 17.9499657
+      north: 48.9472334
+      east: 18.1653242
+    available_categories:
+      - attraction
+      - museum
+      - gallery
+      - viewpoint
+      - monument
+      - historical_site
+      - park
+      - religious_site
+    default_score_adjustments:
+      historical_site: 0.05
+      religious_site: 0.03
+    default_zoom: 13.0
+    routing_limits:
+      max_available_minutes: 300
+      max_poi_candidates: 250
+    transport:
+      mhd_enabled: true
+      provider: imhd_trencin
+      mode: static
+      datasource: imhd_html
+      source_index_url: https://imhd.sk/tn/cestovne-poriadky
+      imhd_city_code: tn
+      line_id_allowlist:
+        - "1"
+        - "2"
+        - "3"
+        - "4"
+        - "6"
+        - "7"
+        - "8"
+        - "11"
+        - "16"
+        - "23"
+        - "24"
+        - "25"
+        - "N1"
+        - "N2"
+        - "N3"
+        - "P5"
+        - "P6"
+        - "P7"
+        - "R50"
+        - "A"
+        - "B"
+        - "C"
+        - "D"
+        - "E"
+        - "F"
+      raw_data_subdir: transport/trencin/raw
+      processed_graph_path: transport/trencin/processed/transport_graph.json
+      stop_source: osm_overpass
+      average_wait_minutes: 4
+      transit_speed_kmh: 22
+      min_direct_distance_meters: 1000
+      max_first_mile_meters: 650
+      max_last_mile_meters: 650
+      max_total_duration_multiplier: 1.15
+      min_walking_distance_savings_meters: 350
+    city_specific_exclusions:
+      excluded_name_patterns: []

@@ -332,7 +332,13 @@ def recompute_feedback_stats(city: str | None = None) -> dict[str, int | str | N
 
             if city_name is not None:
                 cur.execute(
-                    "SELECT id, name FROM cities WHERE lower(name) = lower(%s)",
+                    """
+                    SELECT id, name
+                    FROM cities
+                    WHERE lower(name) = lower(%s)
+                    ORDER BY id
+                    LIMIT 1
+                    """,
                     (city_name,),
                 )
                 city_row = cur.fetchone()
@@ -404,6 +410,8 @@ def load_planner_feedback_profile(city: str, transport_mode: str) -> PlannerFeed
                         ON tmfs.city_id = c.id
                        AND tmfs.transport_mode = %s
                     WHERE lower(c.name) = lower(%s)
+                    ORDER BY c.id
+                    LIMIT 1
                     """,
                     (transport_mode, city_name),
                 )
