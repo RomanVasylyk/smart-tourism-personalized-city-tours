@@ -39,6 +39,7 @@ def ensure_city(conn, city: dict) -> int:
     center_lat, center_lon = get_center(city)
 
     with conn.cursor(row_factory=dict_row) as cur:
+        cur.execute("LOCK TABLE cities IN SHARE ROW EXCLUSIVE MODE;")
         cur.execute(
             """
             SELECT id

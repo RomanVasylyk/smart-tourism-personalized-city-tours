@@ -1,0 +1,1170 @@
+<!doctype html>
+<html class="no-js" lang="sk">
+
+<head>
+	<meta charset="utf-8">
+	
+<script>
+function inIframe () {
+    try {
+        return window.self !== window.top;
+    } catch (e) {
+        return true;
+    }
+}
+
+if (!inIframe()) {
+	document.write("<script>(function(){\/*\n\n Copyright The Closure Library Authors.\n SPDX-License-Identifier: Apache-2.0\n*\/\n'use strict';var g=function(a){var b=0;return function(){return b<a.length?{done:!1,value:a[b++]}:{done:!0}}},l=this||self,m=\/^[\\w+\/_-]+[=]{0,2}$\/,p=null,q=function(){},r=function(a){var b=typeof a;if(\"object\"==b)if(a){if(a instanceof Array)return\"array\";if(a instanceof Object)return b;var c=Object.prototype.toString.call(a);if(\"[object Window]\"==c)return\"object\";if(\"[object Array]\"==c||\"number\"==typeof a.length&&\"undefined\"!=typeof a.splice&&\"undefined\"!=typeof a.propertyIsEnumerable&&!a.propertyIsEnumerable(\"splice\"))return\"array\";\nif(\"[object Function]\"==c||\"undefined\"!=typeof a.call&&\"undefined\"!=typeof a.propertyIsEnumerable&&!a.propertyIsEnumerable(\"call\"))return\"function\"}else return\"null\";else if(\"function\"==b&&\"undefined\"==typeof a.call)return\"object\";return b},u=function(a,b){function c(){}c.prototype=b.prototype;a.prototype=new c;a.prototype.constructor=a};var v=function(a,b){Object.defineProperty(l,a,{configurable:!1,get:function(){return b},set:q})};var y=function(a,b){this.b=a===w&&b||\"\";this.a=x},x={},w={};var aa=function(a,b){a.src=b instanceof y&&b.constructor===y&&b.a===x?b.b:\"type_error:TrustedResourceUrl\";if(null===p)b:{b=l.document;if((b=b.querySelector&&b.querySelector(\"script[nonce]\"))&&(b=b.nonce||b.getAttribute(\"nonce\"))&&m.test(b)){p=b;break b}p=\"\"}b=p;b&&a.setAttribute(\"nonce\",b)};var z=function(){return Math.floor(2147483648*Math.random()).toString(36)+Math.abs(Math.floor(2147483648*Math.random())^+new Date).toString(36)};var A=function(a,b){b=String(b);\"application\/xhtml+xml\"===a.contentType&&(b=b.toLowerCase());return a.createElement(b)},B=function(a){this.a=a||l.document||document};B.prototype.appendChild=function(a,b){a.appendChild(b)};var C=function(a,b,c,d,e,f){try{var k=a.a,h=A(a.a,\"SCRIPT\");h.async=!0;aa(h,b);k.head.appendChild(h);h.addEventListener(\"load\",function(){e();d&&k.head.removeChild(h)});h.addEventListener(\"error\",function(){0<c?C(a,b,c-1,d,e,f):(d&&k.head.removeChild(h),f())})}catch(n){f()}};var ba=l.atob(\"aHR0cHM6Ly93d3cuZ3N0YXRpYy5jb20vaW1hZ2VzL2ljb25zL21hdGVyaWFsL3N5c3RlbS8xeC93YXJuaW5nX2FtYmVyXzI0ZHAucG5n\"),ca=l.atob(\"WW91IGFyZSBzZWVpbmcgdGhpcyBtZXNzYWdlIGJlY2F1c2UgYWQgb3Igc2NyaXB0IGJsb2NraW5nIHNvZnR3YXJlIGlzIGludGVyZmVyaW5nIHdpdGggdGhpcyBwYWdlLg==\"),da=l.atob(\"RGlzYWJsZSBhbnkgYWQgb3Igc2NyaXB0IGJsb2NraW5nIHNvZnR3YXJlLCB0aGVuIHJlbG9hZCB0aGlzIHBhZ2Uu\"),ea=function(a,b,c){this.b=a;this.f=new B(this.b);this.a=null;this.c=[];this.g=!1;this.i=b;this.h=c},F=function(a){if(a.b.body&&!a.g){var b=\nfunction(){D(a);l.setTimeout(function(){return E(a,3)},50)};C(a.f,a.i,2,!0,function(){l[a.h]||b()},b);a.g=!0}},D=function(a){for(var b=G(1,5),c=0;c<b;c++){var d=H(a);a.b.body.appendChild(d);a.c.push(d)}b=H(a);b.style.bottom=\"0\";b.style.left=\"0\";b.style.position=\"fixed\";b.style.width=G(100,110).toString()+\"%\";b.style.zIndex=G(2147483544,2147483644).toString();b.style[\"background-color\"]=I(249,259,242,252,219,229);b.style[\"box-shadow\"]=\"0 0 12px #888\";b.style.color=I(0,10,0,10,0,10);b.style.display=\n\"flex\";b.style[\"justify-content\"]=\"center\";b.style[\"font-family\"]=\"Roboto, Arial\";c=H(a);c.style.width=G(80,85).toString()+\"%\";c.style.maxWidth=G(750,775).toString()+\"px\";c.style.margin=\"24px\";c.style.display=\"flex\";c.style[\"align-items\"]=\"flex-start\";c.style[\"justify-content\"]=\"center\";d=A(a.f.a,\"IMG\");d.className=z();d.src=ba;d.style.height=\"24px\";d.style.width=\"24px\";d.style[\"padding-right\"]=\"16px\";var e=H(a),f=H(a);f.style[\"font-weight\"]=\"bold\";f.textContent=ca;var k=H(a);k.textContent=da;J(a,\ne,f);J(a,e,k);J(a,c,d);J(a,c,e);J(a,b,c);a.a=b;a.b.body.appendChild(a.a);b=G(1,5);for(c=0;c<b;c++)d=H(a),a.b.body.appendChild(d),a.c.push(d)},J=function(a,b,c){for(var d=G(1,5),e=0;e<d;e++){var f=H(a);b.appendChild(f)}b.appendChild(c);c=G(1,5);for(d=0;d<c;d++)e=H(a),b.appendChild(e)},G=function(a,b){return Math.floor(a+Math.random()*(b-a))},I=function(a,b,c,d,e,f){return\"rgb(\"+G(Math.max(a,0),Math.min(b,255)).toString()+\",\"+G(Math.max(c,0),Math.min(d,255)).toString()+\",\"+G(Math.max(e,0),Math.min(f,\n255)).toString()+\")\"},H=function(a){a=A(a.f.a,\"DIV\");a.className=z();return a},E=function(a,b){0>=b||null!=a.a&&0!=a.a.offsetHeight&&0!=a.a.offsetWidth||(fa(a),D(a),l.setTimeout(function(){return E(a,b-1)},50))},fa=function(a){var b=a.c;var c=\"undefined\"!=typeof Symbol&&Symbol.iterator&&b[Symbol.iterator];b=c?c.call(b):{next:g(b)};for(c=b.next();!c.done;c=b.next())(c=c.value)&&c.parentNode&&c.parentNode.removeChild(c);a.c=[];(b=a.a)&&b.parentNode&&b.parentNode.removeChild(b);a.a=null};var ia=function(a,b,c,d,e){var f=ha(c),k=function(n){n.appendChild(f);l.setTimeout(function(){f?(0!==f.offsetHeight&&0!==f.offsetWidth?b():a(),f.parentNode&&f.parentNode.removeChild(f)):a()},d)},h=function(n){document.body?k(document.body):0<n?l.setTimeout(function(){h(n-1)},e):b()};h(3)},ha=function(a){var b=document.createElement(\"div\");b.className=a;b.style.width=\"1px\";b.style.height=\"1px\";b.style.position=\"absolute\";b.style.left=\"-10000px\";b.style.top=\"-10000px\";b.style.zIndex=\"-10000\";return b};var K={},L=null;var M=function(){},N=\"function\"==typeof Uint8Array,O=function(a,b){a.b=null;b||(b=[]);a.j=void 0;a.f=-1;a.a=b;a:{if(b=a.a.length){--b;var c=a.a[b];if(!(null===c||\"object\"!=typeof c||Array.isArray(c)||N&&c instanceof Uint8Array)){a.g=b-a.f;a.c=c;break a}}a.g=Number.MAX_VALUE}a.i={}},P=[],Q=function(a,b){if(b<a.g){b+=a.f;var c=a.a[b];return c===P?a.a[b]=[]:c}if(a.c)return c=a.c[b],c===P?a.c[b]=[]:c},R=function(a,b,c){a.b||(a.b={});if(!a.b[c]){var d=Q(a,c);d&&(a.b[c]=new b(d))}return a.b[c]};\nM.prototype.h=N?function(){var a=Uint8Array.prototype.toJSON;Uint8Array.prototype.toJSON=function(){var b;void 0===b&&(b=0);if(!L){L={};for(var c=\"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789\".split(\"\"),d=[\"+\/=\",\"+\/\",\"-_=\",\"-_.\",\"-_\"],e=0;5>e;e++){var f=c.concat(d[e].split(\"\"));K[e]=f;for(var k=0;k<f.length;k++){var h=f[k];void 0===L[h]&&(L[h]=k)}}}b=K[b];c=[];for(d=0;d<this.length;d+=3){var n=this[d],t=(e=d+1<this.length)?this[d+1]:0;h=(f=d+2<this.length)?this[d+2]:0;k=n>>2;n=(n&\n3)<<4|t>>4;t=(t&15)<<2|h>>6;h&=63;f||(h=64,e||(t=64));c.push(b[k],b[n],b[t]||\"\",b[h]||\"\")}return c.join(\"\")};try{return JSON.stringify(this.a&&this.a,S)}finally{Uint8Array.prototype.toJSON=a}}:function(){return JSON.stringify(this.a&&this.a,S)};var S=function(a,b){return\"number\"!==typeof b||!isNaN(b)&&Infinity!==b&&-Infinity!==b?b:String(b)};M.prototype.toString=function(){return this.a.toString()};var T=function(a){O(this,a)};u(T,M);var U=function(a){O(this,a)};u(U,M);var ja=function(a,b){this.c=new B(a);var c=R(b,T,5);c=new y(w,Q(c,4)||\"\");this.b=new ea(a,c,Q(b,4));this.a=b},ka=function(a,b,c,d){b=new T(b?JSON.parse(b):null);b=new y(w,Q(b,4)||\"\");C(a.c,b,3,!1,c,function(){ia(function(){F(a.b);d(!1)},function(){d(!0)},Q(a.a,2),Q(a.a,3),Q(a.a,1))})};var la=function(a,b){V(a,\"internal_api_load_with_sb\",function(c,d,e){ka(b,c,d,e)});V(a,\"internal_api_sb\",function(){F(b.b)})},V=function(a,b,c){a=l.btoa(a+b);v(a,c)},W=function(a,b,c){for(var d=[],e=2;e<arguments.length;++e)d[e-2]=arguments[e];e=l.btoa(a+b);e=l[e];if(\"function\"==r(e))e.apply(null,d);else throw Error(\"API not exported.\");};var X=function(a){O(this,a)};u(X,M);var Y=function(a){this.h=window;this.a=a;this.b=Q(this.a,1);this.f=R(this.a,T,2);this.g=R(this.a,U,3);this.c=!1};Y.prototype.start=function(){ma();var a=new ja(this.h.document,this.g);la(this.b,a);na(this)};\nvar ma=function(){var a=function(){if(!l.frames.googlefcPresent)if(document.body){var b=document.createElement(\"iframe\");b.style.display=\"none\";b.style.width=\"0px\";b.style.height=\"0px\";b.style.border=\"none\";b.style.zIndex=\"-1000\";b.style.left=\"-1000px\";b.style.top=\"-1000px\";b.name=\"googlefcPresent\";b.setAttribute(\"aria-hidden\", \"true\");document.body.appendChild(b)}else l.setTimeout(a,5)};a()},na=function(a){var b=Date.now();W(a.b,\"internal_api_load_with_sb\",a.f.h(),function(){var c;var d=a.b,e=l[l.btoa(d+\"loader_js\")];if(e){e=l.atob(e);\ne=parseInt(e,10);d=l.btoa(d+\"loader_js\").split(\".\");var f=l;d[0]in f||\"undefined\"==typeof f.execScript||f.execScript(\"var \"+d[0]);for(;d.length&&(c=d.shift());)d.length?f[c]&&f[c]!==Object.prototype[c]?f=f[c]:f=f[c]={}:f[c]=null;c=Math.abs(b-e);c=1728E5>c?0:c}else c=-1;0!=c&&(W(a.b,\"internal_api_sb\"),Z(a,Q(a.a,6)))},function(c){Z(a,c?Q(a.a,4):Q(a.a,5))})},Z=function(a,b){a.c||(a.c=!0,a=new l.XMLHttpRequest,a.open(\"GET\",b,!0),a.send())};(function(a,b){l[a]=function(c){for(var d=[],e=0;e<arguments.length;++e)d[e-0]=arguments[e];l[a]=q;b.apply(null,d)}})(\"__d3lUW8vwsKlB__\",function(a){\"function\"==typeof window.atob&&(a=window.atob(a),a=new X(a?JSON.parse(a):null),(new Y(a)).start())});}).call(this);\n\nwindow.__d3lUW8vwsKlB__(\"WyI2ZjhmNjBlM2FkZGE2NDI1IixbbnVsbCxudWxsLG51bGwsImh0dHBzOi8vZnVuZGluZ2Nob2ljZXNtZXNzYWdlcy5nb29nbGUuY29tL2YvQUdTS1d4WHpQSFMyUlRRNjFLME1NckV5dVlJLWRBcTlvX3dSM1F3TzRraEplcTlhV1lFSXl3Q0stVk9tRmdVd1U3UmdVLXRFVXVMT3NGYzJNWHh6cnRyNXB3Y1x1MDAzZCJdCixbMjAsImRpdi1ncHQtYWQiLDEwMCwiTm1ZNFpqWXdaVE5oWkdSaE5qUXlOUVx1MDAzZFx1MDAzZCIsW251bGwsbnVsbCxudWxsLCJodHRwczovL3d3dy5nc3RhdGljLmNvbS8wZW1uL2YvcC82ZjhmNjBlM2FkZGE2NDI1LmpzP3VzcXBcdTAwM2RDQUkiXQpdCiwiaHR0cHM6Ly9mdW5kaW5nY2hvaWNlc21lc3NhZ2VzLmdvb2dsZS5jb20vbC9BR1NLV3hWYzF6UEpnX2JDU2Z6amtMZ2EweEwxZEdpQ3BpeUtqZ3Flc2VkV3h2VkEzVThPWFNHeWNFVDF3Z1pKY1p2M3doYTBYb0dxaGctb0k2ektlWERtP2FiXHUwMDNkMSIsImh0dHBzOi8vZnVuZGluZ2Nob2ljZXNtZXNzYWdlcy5nb29nbGUuY29tL2wvQUdTS1d4WDlaSEloMmJObnFZRzNleEowTVRTaXh6ZVdwaEZaLWQtSzBKbTNEMG92UEpoZ1JYTmxRaHFMUVRKNU5yYVhGNmhGOThROG5rWWFTMTdUTDZIdD9hYlx1MDAzZDJcdTAwMjZzYmZcdTAwM2QxIiwiaHR0cHM6Ly9mdW5kaW5nY2hvaWNlc21lc3NhZ2VzLmdvb2dsZS5jb20vbC9BR1NLV3hYZ2JJelJ4b1cza0JqN2xIRFI3NFZCMGMxZllDelplbHNJWUxucW5jRl9oMFBoWUZNbUpqOUNLSjA1NkhabldCYWFzNEdfYVFtbTh6TDRteEltP3NiZlx1MDAzZDIiXQo=\");<\/script>\n");
+}
+</script>
+	<script>
+// Define dataLayer and the gtag function.
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('consent', 'default', {
+  'analytics_storage': 'denied',
+  'ad_storage': 'denied'
+});
+</script>
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-P8Q9K35');</script>
+<!-- End Google Tag Manager -->
+	<meta http-equiv="x-ua-compatible" content="ie=edge">
+	<title>Cestovné poriadky • imhd.sk Žilina</title>
+	<meta name="description" content="MHD Žilina">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+	<link rel="manifest" href="/data/misc/site.webmanifest">
+	<meta name="msapplication-config" content="/data/misc/browserconfig_za.xml">
+	<link rel="shortcut icon" href="/data/misc/icon32x32_za.gif" type="image/gif">
+	<link rel="icon" href="/data/misc/icon32x32_za.png" type="image/png">
+	<link rel="apple-touch-icon" href="/data/misc/icon180x180_za.png">
+	<meta name="google-site-verification" content="48XdjRw-515O_jyZ0gPYVSpw2oSO7SMWzzYkQqD5PvM">
+	<meta name="twitter:card" content="summary_large_image">
+
+	<meta name="author" content="imhd.sk">
+	<meta name="copyright" content="imhd.sk">
+	<meta name="robots" content="all">
+	<link rel="search" type="application/opensearchdescription+xml" href="/za/api/sk/opensearch.xml" title="imhd.sk Žilina">
+
+	<meta property="twitter:site" content="@imhdsk">
+	<meta property="og:site_name" content="imhd.sk Žilina">
+
+	<link rel="alternate" type="application/rss+xml" title="RSS 2.0" href="/za/rss/dokumenty">
+	<meta property="og:image" content="https://imhd.sk/data/img/logo_imhd-sk_vertical.png">
+	<meta property="og:title" content="Cestovné poriadky">
+	<meta name="og:description" content="Mestská hromadná doprava a regionálna doprava na Slovensku">
+	
+	<meta property="twitter:image" content="https://imhd.sk/data/img/logo_imhd-sk_vertical.png">
+	<meta property="twitter:title" content="Cestovné poriadky">
+	<meta name="twitter:description" content="Mestská hromadná doprava a regionálna doprava na Slovensku">
+
+	<link rel="stylesheet" href="/data/css/core.css?1771271255">
+	<link rel="stylesheet" href="/data/css/vehicles.css?1630508300">
+	<link rel="stylesheet" href="/data/css/linky.css?1778569679">
+	<link rel="stylesheet" href="/data/css/core2.css?1770456451">
+	<link rel="stylesheet" media="print" href="/data/css/print.css?1721052238">
+	<link rel="stylesheet" href="https://use.typekit.net/usl0sqi.css">
+
+	<script src="/data/js/3rd/modernizr-3.6.0.min.js"></script>
+
+	<script src="https://code.jquery.com/jquery-3.5.1.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
+	<script>window.jQuery || document.write('<script src="/data/js/3rd/jquery-3.5.1.min.js"><\/script>')</script>
+
+	<script src="//cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+	<script>window.Popper || document.write('<script src="/data/js/3rd/popper.min.js"><\/script>')</script>
+	
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>	
+	<script>if (! $.fn.modal) {document.write('<script src="/data/js/3rd/bootstrap.min.js"><\/script>')}</script>
+	
+	<script src="/data/js/3rd/jquery.lazy/jquery.lazy.min.js"></script>
+	<script src="/data/js/3rd/jquery.lazy/jquery.lazy.plugins.min.js"></script>
+
+	<script src="/data/js/main.js?1675247273"></script>
+	<script>if ("serviceWorker" in navigator) {  navigator.serviceWorker.register("/data/js/sw.js"); }</script>
+
+	<link rel="stylesheet" type="text/css" media="screen" href="/data/css/themes/green-yellow.css">
+				
+	<link rel="stylesheet" href="/data/js/3rd/typeahead/typeaheadjs.custom.css?1">
+	<link rel="stylesheet" href="/data/css/3rd/weather/css/weather-icons.min.css">
+	<link rel="stylesheet" href="/data/css/cepo.css?1772796962">
+	<link rel="stylesheet" href="/data/js/3rd/bootstrap-ui/css/bootstrap-ui.custom.icons.css">
+	<link rel="stylesheet" href="/data/js/3rd/select2/css/select2.min.css">
+	<link rel="stylesheet" href="/data/js/3rd/select2/css/select2-bootstrap.min.css"><script src="/data/js/3rd/typeahead/typeahead.bundle.custom.js"></script>
+			<script src="/data/js/main_web.js?1725694318"></script>
+			<script src="/data/js/cepo/cepo.js?1755079933"></script>
+			<script src="/data/js/cepo/lineandstopsearch.js?1775044925"></script>
+			<script src="/data/js/3rd/select2/js/select2.min.js"></script>
+			<script src="/data/js/3rd/select2/js/i18n/sk.js"></script>
+			
+</head>
+
+<body><!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-P8Q9K35"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+  <header class="Header js-header">
+    <div class="container">
+      <div class="Header-topBar row row-sm">
+	
+        <div class="Header-mobileTopBar col-12 col-sm-7 col-md-8 col-lg-auto col-lg-4 d-flex align-items-center">
+          <a class="Header-logo Logo" href="/za/mhd">
+            <img class="Logo-img" src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==" alt="imhd.sk">
+            <span class="sr-only">imhd.sk</span>
+          </a>
+
+          <div class="Header-cityPicker CityPicker dropdown">
+            <button class="btn btn-block btn-white dropdown-toggle" type="button" id="HeaderCityPicker" data-toggle="dropdown" data-boundary="window" aria-haspopup="true" aria-expanded="false">
+              <span class="d-block text-truncate">Žilina</span>
+              <svg class="dropdown-chevron Icon small text-primary"><use xlink:href="/data/img/icons.svg#chevron-down"></use></svg>
+            </button>
+            <div class="dropdown-menu" role="menu" aria-labelledby="HeaderCityPicker">
+			
+				<a class="dropdown-item" href="/ba/mhd">Bratislava</a>
+				<a class="dropdown-item" href="/bb/mhd">Banská Bystrica</a>
+				<a class="dropdown-item" href="/hc/mhd">Hlohovec</a>
+				<a class="dropdown-item" href="/ke/mhd">Košice</a>
+				<a class="dropdown-item" href="/lm/mhd">Liptovský Mikuláš</a>
+				<a class="dropdown-item" href="/mt/mhd">Martin</a>
+				<a class="dropdown-item" href="/nr/mhd">Nitra</a>
+				<a class="dropdown-item" href="/nz/mhd">Nové Zámky</a>
+				<a class="dropdown-item" href="/pn/mhd">Piešťany</a>
+				<a class="dropdown-item" href="/tatry/mhd">Poprad-Tatry</a>
+				<a class="dropdown-item" href="/pb/mhd">Považská Bystrica</a>
+				<a class="dropdown-item" href="/po/mhd">Prešov</a>
+				<a class="dropdown-item" href="/pd/mhd">Prievidza</a>
+				<a class="dropdown-item" href="/rk/mhd">Ružomberok</a>
+				<a class="dropdown-item" href="/se/mhd">Senica</a>
+				<a class="dropdown-item" href="/si/mhd">Skalica</a>
+				<a class="dropdown-item" href="/sn/mhd">Spišská Nová Ves</a>
+				<a class="dropdown-item" href="/tn/mhd">Trenčín</a>
+				<a class="dropdown-item" href="/tt/mhd">Trnava</a>
+				<a class="dropdown-item" href="/zv/mhd">Zvolen</a>
+				<a class="dropdown-item" href="/transport/mhd">Slovensko a svet</a>
+            </div>
+          </div>
+        </div>
+        <div class="col col-lg-4 order-11 order-lg-0">
+          <form class="Header-search Search" id="search-main">
+			<div class="input-group">
+            <label for="search-main-input" class="sr-only">Nájdi linku, zastávku, vozidlo, text</label>
+            <input id="search-main-input" class="Search-input form-control pb-2" type="text" placeholder="Nájdi linku, zastávku, vozidlo, text" aria-label="Nájdi linku, zastávku, vozidlo, text">
+			  <div id="search-main-button" class="input-group-append">
+				<button id="search-main-submit" type="submit" class="btn btn-default btn-narrow" title="Nájdi">
+					<svg class="Icon Search-icon-top"><use xlink:href="/data/img/icons.svg#search"></use></svg>
+				</button>
+			  </div>
+			</div>
+		  </form>
+        </div>
+		  
+        <div class="col-auto order-12 order-lg-0 text-center d-lg-none">
+          <a class="Header-item Header-item--virtualStop text-muted" href="/za/online-zastavkova-tabula" aria-label="Najbližšia zastávka"><svg class="Header-itemIcon Icon text-primary mr-lg-1"><use href="/data/img/icons.svg#location3"></use></svg><strong class="Header-itemLabel d-none d-lg-inline-block">Najbližšia zastávka</strong></a>
+        </div>
+		  
+        <div class="col-12 col-sm-5 col-md-4 col-lg-auto col-lg-4 text-center text-sm-right d-none d-sm-block">
+          <div class="Header-user">
+		  
+            <a class="btn btn-sm btn-white d-lg-none" href="/za/registracia-pouzivatela" >Registrácia</a>
+            <a class="btn btn-sm btn-primary d-lg-none" href="/za/prihlasenie?target=cestovne-poriadky" >Prihlásenie</a>
+
+            <a class="btn btn-lg btn-white d-none d-lg-inline-block" href="/za/registracia-pouzivatela" >Registrácia</a>
+            <a class="btn btn-lg btn-primary d-none d-lg-inline-block" href="/za/prihlasenie?target=cestovne-poriadky" >Prihlásenie</a>
+          
+		  </div>
+        </div>
+      </div>
+
+      <nav id="headerNav" class="Header-nav js-headerNav">
+        <div class="Header-navInner">
+		  <div class="d-lg-none">
+			  <div class="row Header headerNavTitle--sm">
+				<div class="col-12">
+					<a class="Header-logo Logo ml-3" href="/za/mhd">
+						<img class="Logo-img" src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==" alt="imhd.sk">
+						<span class="sr-only">imhd.sk</span>
+					</a>
+				</div>
+				  <div class="Header-navClose btn btn-transparent is-active d-lg-none js-headerNavClose">
+					<div class="Hamburger">
+					  <div class="Hamburger-bar"></div>
+					  <div class="Hamburger-bar"></div>
+					  <div class="Hamburger-bar"></div>
+					</div>
+
+					<span class="sr-only">Menu</span>
+				  </div>
+			  </div>
+
+				<div class="row headerNavSubtitle--sm">
+					<div class="col-3 my-auto p-0 align-self-center text-left">
+                <button class="btn btn-narrow btn-transparent dropdown-toggle" type="button" id="dropdownMenu4Button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                  <span class="text-muted"><svg class="Header-itemIcon Icon text-primary mr-1"><use xlink:href="/data/img/icons.svg#globe"></use></svg> sk</span>
+                  <svg class="Icon dropdown-chevron text-primary"><use xlink:href="/data/img/icons.svg#chevron-down"></use></svg>
+                </button>
+                <div class="dropdown-menu dropdown-menu-right" role="menu" aria-labelledby="dropdownMenu4Button">
+				
+						<a class="dropdown-item" href="/za/schedules-timetables">English</a>
+                </div>
+			
+					</div>
+
+					<div class="col-9 my-auto p-0 text-right">
+					  <div class="Header-user m-0 p-0">
+						
+            <a class="btn btn-sm btn-white d-lg-none" href="/za/registracia-pouzivatela" >Registrácia</a>
+            <a class="btn btn-sm btn-primary d-lg-none" href="/za/prihlasenie?target=cestovne-poriadky" >Prihlásenie</a>
+
+            <a class="btn btn-lg btn-white d-none d-lg-inline-block" href="/za/registracia-pouzivatela" >Registrácia</a>
+            <a class="btn btn-lg btn-primary d-none d-lg-inline-block" href="/za/prihlasenie?target=cestovne-poriadky" >Prihlásenie</a>
+          
+					  </div>
+					</div>
+				</div>
+		  </div>
+
+          <div class="row row-no-gutter">
+            <div class="col-12 col-lg navbar navbar-default">
+			  					<ul class="Header-menu list-unstyled text-left text-lg-left">
+					<li>
+					<a href="/za/informacie">Aktuality</a>
+					</li>
+					
+					<li class="dropdown"><a href="#" class="dropdown-toggle" id="header-menu_1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Užitočné informácie</span><svg class="Icon small Header-menu-caret"><use xlink:href="/data/img/icons.svg#chevron-right"></use></svg></a>
+					<div class="dropdown-menu" role="menu" aria-labelledby="header-menu_1">
+												<a class="dropdown-item" href="/za/doc/sk/22188/22188">Doprava na letisko</a>
+						<a class="dropdown-item" href="/za/doc/sk/12778/12778">MHD na stanice</a>
+						<a class="dropdown-item" href="/za/doc/sk/13352/Bezbarierova-doprava">Bezbariérová doprava</a>
+						<a class="dropdown-item" href="/za/doc/sk/10228/Nocna-doprava">Nočná doprava</a>
+						<div class="dropdown-divider"></div>
+						<a class="dropdown-item" href="/za/doc/sk/10230/Zastavky-na-znamenie">Zastávky na znamenie</a>
+						<a class="dropdown-item" href="/za/doc/sk/10229/Preprava-zvierat-v-MHD">Preprava zvierat</a>
+						<a class="dropdown-item" href="/za/doc/sk/20346/Preprava-bicyklov-a-kolobežiek-v-prostriedkoch-hromadnej-osobnej-dopravy">Preprava bicyklov</a>
+						<div class="dropdown-divider"></div>
+						<a class="dropdown-item" href="/za/doc/sk/20328/20328">Straty a nálezy</a>
+						<a class="dropdown-item" href="/za/doc/sk/20089/Kde-sa-dá-sťažovať-na-mestskú-hromadnú-dopravu">Sťažnosti</a>
+						<a class="dropdown-item" href="/za/doc/sk/10157/Kontakt-na-majoritnych-dopravcov-v-zilinskom-regione">Kontakty na dopravcov</a>
+					</div>
+				  
+					</li>
+					<li>
+					<a href="/za/galerie">Fotky a médiá</a>
+					</li>
+					<li>
+					<a href="/za/diskusne-forum">Diskusia</a>
+					</li>
+					<li>
+					<a href="/za/vozidla-menu">Vozidlá</a>
+					</li>
+					<li>
+					<a href="/za/doc/sk/12368/Historia-mestskej-hromadnej-dopravy-v-Ziline">História</a>
+					</li>
+					
+					<li class="dropdown"><a href="#" class="dropdown-toggle" id="header-menu_6" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Zábava</span><svg class="Icon small Header-menu-caret"><use xlink:href="/data/img/icons.svg#chevron-right"></use></svg></a>
+					<div class="dropdown-menu" role="menu" aria-labelledby="header-menu_6">
+												<a class="dropdown-item" href="/za/sotolionar">Šotolionár</a>
+					</div>
+				  
+					</li>
+					</ul>
+            </div>
+
+            <div class="col-12 col-lg text-center text-lg-right Header-iconDiv">
+
+			  <a class="Header-item Header-item--virtualStop mr-3 text-muted" href="/za/online-zastavkova-tabula?st=%3B" ><svg class="Header-itemIcon Icon text-primary mr-1"><use xlink:href="/data/img/icons.svg#location3"></use></svg><strong class="Header-itemLabel">Najbližšia zastávka</strong></a>
+
+                
+	            <div class="Header-item Header-item--weather text-muted">
+					<a href="http://openweathermap.org/city/3056508" target="_blank" class="text-muted">
+						<span class="sr-only">Jasná obloha</span>
+						<i class="Header-itemIcon Icon text-primary mr-1 wi wi-owm-day-800" title="Jasná obloha" aria-hidden="true"></i>
+						<strong class="Header-itemLabel pl-3">13 &deg;C</strong>
+					</a>
+				</div>
+			  
+              <div class="Header-item Header-item--lang dropdown d-none d-lg-inline-block">
+                <button class="btn btn-narrow btn-transparent dropdown-toggle" type="button" id="dropdownMenu4Button-1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                  <span class="text-muted"><svg class="Header-itemIcon Icon text-primary mr-1"><use xlink:href="/data/img/icons.svg#globe"></use></svg> sk</span>
+                  <svg class="Icon dropdown-chevron text-primary"><use xlink:href="/data/img/icons.svg#chevron-down"></use></svg>
+                </button>
+                <div class="dropdown-menu dropdown-menu-right" role="menu" aria-labelledby="dropdownMenu4Button-1">
+				
+						<a class="dropdown-item" href="/za/schedules-timetables">English</a>
+                </div>
+			
+              </div>
+              <div class="d-lg-none">
+				<div class="bg-light my-3 py-3">
+            <div class="row">
+              <div class="col-12 col-lg text-center text-lg-left">
+                <a class="Footer-logo Logo" href="/za/mhd">
+					<img class="Logo-img" src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==" alt="imhd.sk">
+                </a>
+
+                <div class="Footer-cityPicker CityPicker dropdown">
+                  <button class="btn btn-light dropdown-toggle" type="button" id="FooterCityPicker" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+					Žilina
+                    <svg class="dropdown-chevron Icon small text-primary"><use xlink:href="/data/img/icons.svg#chevron-down"></use></svg>
+                  </button>
+                  <div class="dropdown-menu" role="menu" aria-labelledby="FooterCityPicker">
+			
+					<a class="dropdown-item" href="/ba/mhd">Bratislava</a>
+					<a class="dropdown-item" href="/bb/mhd">Banská Bystrica</a>
+					<a class="dropdown-item" href="/hc/mhd">Hlohovec</a>
+					<a class="dropdown-item" href="/ke/mhd">Košice</a>
+					<a class="dropdown-item" href="/lm/mhd">Liptovský Mikuláš</a>
+					<a class="dropdown-item" href="/mt/mhd">Martin</a>
+					<a class="dropdown-item" href="/nr/mhd">Nitra</a>
+					<a class="dropdown-item" href="/nz/mhd">Nové Zámky</a>
+					<a class="dropdown-item" href="/pn/mhd">Piešťany</a>
+					<a class="dropdown-item" href="/tatry/mhd">Poprad-Tatry</a>
+					<a class="dropdown-item" href="/pb/mhd">Považská Bystrica</a>
+					<a class="dropdown-item" href="/po/mhd">Prešov</a>
+					<a class="dropdown-item" href="/pd/mhd">Prievidza</a>
+					<a class="dropdown-item" href="/rk/mhd">Ružomberok</a>
+					<a class="dropdown-item" href="/se/mhd">Senica</a>
+					<a class="dropdown-item" href="/si/mhd">Skalica</a>
+					<a class="dropdown-item" href="/sn/mhd">Spišská Nová Ves</a>
+					<a class="dropdown-item" href="/tn/mhd">Trenčín</a>
+					<a class="dropdown-item" href="/tt/mhd">Trnava</a>
+					<a class="dropdown-item" href="/zv/mhd">Zvolen</a>
+					<a class="dropdown-item" href="/transport/mhd">Slovensko a svet</a>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-12 col-lg-auto text-right">
+                <form class="Footer-newsletter form-inline" action="/za/registracia-pouzivatela">
+                  <h3 class="Footer-newsletterHeading">Novinky e-mailom</h3>
+
+                  <div class="input-group">
+				  
+                    <label class="sr-only" for="newsletter-input">Zadajte váš e-mail</label>
+                    <input id="newsletter-input" name="email" type="text" class="form-control" placeholder="Zadajte váš e-mail" aria-label="Zadajte váš e-mail" aria-describedby="newsletter-button-submit">
+                    <div class="input-group-append">
+                      <button class="btn btn-primary" type="submit" id="newsletter-button-submit">Pridať</button>
+                    </div>
+                  </div>
+                </form>
+              </div>
+
+              <div class="col-12 col-lg-auto text-center">
+                <ul class="Footer-networks Networks list-unstyled">
+	
+                  <li>
+                    <a href="https://www.facebook.com/za.imhd.sk" target="facebook">
+                      <svg class="Icon"><use xlink:href="/data/img/icons.svg#facebook"></use></svg>
+                      <span class="sr-only">Facebook</span>
+                    </a>
+                  </li>
+	
+                  <li>
+                    <a href="https://twitter.com/imhdsk" target="twitter">
+                      <svg class="Icon"><use xlink:href="/data/img/icons.svg#twitter"></use></svg>
+                      <span class="sr-only">Twitter</span>
+                    </a>
+                  </li>
+	
+                  <li>
+                    <a href="https://www.instagram.com/imhd.sk/" target="instagram">
+                      <svg class="Icon"><use xlink:href="/data/img/icons.svg#instagram"></use></svg>
+                      <span class="sr-only">Instagram</span>
+                    </a>
+                  </li>
+	
+                  <li>
+                    <a href="/za/doc/sk/10810/Mobiln%C3%A1-aplik%C3%A1cia-imhd-sk">
+                      <svg class="Icon"><use xlink:href="/data/img/icons.svg#app"></use></svg>
+                      <span class="sr-only">Smartfónová appka</span>
+                    </a>
+                  </li>
+	
+                  <li>
+                    <a href="/za/rss/dokumenty">
+                      <svg class="Icon"><use xlink:href="/data/img/icons.svg#rss"></use></svg>
+                      <span class="sr-only">Smartfónová appka</span>
+                    </a>
+                  </li>
+	
+				</ul>
+              </div>
+            </div>
+			</div>
+      <div class="row">
+        <div class="col-12 col-md-auto text-center text-md-right order-md-12">
+          <ul class="CopyFooter-menu list-unstyled">
+			<li><a href="/za/doc/sk/10257/Autorsk%C3%A9-pr%C3%A1va" >Autorské práva</a></li>
+			<li><a href="/za/doc/sk/10260/Podmienky-pou%C5%BE%C3%ADvania" >Podmienky</a></li>
+			<li><a href="javascript:googlefc.showRevocationMessage();">Súkromie</a></li>
+			<li><a href="/za/doc/sk/10261/O-imhd-sk" >O imhd.sk</a></li>
+			<li><a href="/za/doc/sk/15866/Kontakt" >Kontakt</a></li>
+          </ul>
+        </div>
+
+        <div class="col-12 col-md text-center text-md-left">
+          <ul class="CopyFooter-menu list-unstyled">
+			<li>Powered by<a href="https://www.websupport.sk" target="_blank" aria-label="websupport.sk"><svg class="Icon Logo-websupport"><use href="/data/img/icons.svg#websupport"></use></svg></a></li>
+			<li>Copyright © imhd.sk, 2000 – 2026</li>
+	      </ul>
+        </div>
+      </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <div class="Layout">
+    <nav class="Nav Layout-nav js-nav">
+      <ul class="Nav-menu list-unstyled">					<li><a href="/za/cestovne-poriadky">
+					<svg class="Nav-icon Icon"><use xlink:href="/data/img/icons.svg#timetables"></use></svg>
+						<div class="Nav-label">Cestovné<br>poriadky</div>
+					</a>
+					<li><a href="/za/planovac-cesty">
+					<svg class="Nav-icon Icon"><use xlink:href="/data/img/icons.svg#route"></use></svg>
+						<div class="Nav-label">Plánovač<br>cesty</div>
+					</a>
+					<li><a href="/za/mapy-schemy">
+					<svg class="Nav-icon Icon"><use xlink:href="/data/img/icons.svg#map-location"></use></svg>
+						<div class="Nav-label">Mapy</div>
+					</a>
+					<li><a href="/za/doc/sk/24708/24708">
+					<svg class="Nav-icon Icon"><use xlink:href="/data/img/icons.svg#tickets"></use></svg>
+						<div class="Nav-label">Cestovné<br>lístky</div>
+					</a>
+        <li class="d-lg-none">
+          <a class="js-headerNavOpen" href="#" aria-label="Menu" aria-expanded="false" aria-controls="headerNav">
+            <svg class="Nav-icon Icon"><use xlink:href="/data/img/icons.svg#menu"></use></svg>
+            <div class="Nav-label">Menu</div>
+          </a>
+        </li>
+      </ul>
+    </nav>
+	
+    <div class="Layout-main bg-light">
+      <div class="Content">
+        <div class="container"><div class="d-print-none mb-4"><div class="d-none d-sm-block d-lg-none text-center">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9096168135415861"
+     crossorigin="anonymous"></script>
+<ins class="adsbygoogle"
+     style="display:inline-block;width:728px;height:90px"
+     data-ad-client="ca-pub-9096168135415861"
+     data-ad-slot="1824972319"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+</div></div><div class="d-print-none mb-4"><div class="d-none d-lg-block  text-center">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9096168135415861"
+     crossorigin="anonymous"></script>
+<ins class="adsbygoogle"
+     style="display:inline-block;width:970px;height:90px"
+     data-ad-client="ca-pub-9096168135415861"
+     data-ad-slot="6694155615"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+</div></div><h1 class="mb-3 mt-0">Cestovné poriadky</h1>
+			<section class="Module Box mb-4">
+				<div class="ModuleBody">
+					<div class="row">
+						<div class="col">
+			
+					<h3 class="h5 mb-3">Trolejbusy</h3>
+					<div class="Linky Linky--lg media mb-3">
+						<svg class="Linky-icon Icon"><use href="/data/img/vehicles.svg#trolleybus"></use></svg>
+						<div class="Linky-body media-body">
+					
+							<a class="Linka--lg Linka za l1" href="/za/linka/1/ca71bd718971827f7c7f7f7f7f7f807c8071cc">1</a>
+							<a class="Linka--lg Linka za l3" href="/za/linka/3/ca71bd718971827f7c7f7f7f7f7f827c8271cc">3</a>
+							<a class="Linka--lg Linka za l4" href="/za/linka/4/ca71bd718971827f7c7f7f7f7f7f837c8371cc">4</a>
+							<a class="Linka--lg Linka za l5" href="/za/linka/5/ca71bd718971827f7c7f7f7f7f7f847c8471cc">5</a>
+							<a class="Linka--lg Linka za l6" href="/za/linka/6/ca71bd718971827f7c7f7f7f7f7f857c8571cc">6</a>
+							<a class="Linka--lg Linka za l7" href="/za/linka/7/ca71bd718971827f7c7f7f7f7f7f867c8671cc">7</a>
+							<a class="Linka--lg Linka za l14" href="/za/linka/14/ca71bd718971827f7c7f7f7f7f80837c808371cc">14</a>
+							<a class="Linka--lg Linka za l16" href="/za/linka/16/ca71bd718971827f7c7f7f7f7f80857c808571cc">16</a>
+							</div>
+						</div>
+					<h3 class="h5 mb-3">Autobusy</h3>
+					<div class="Linky Linky--lg media mb-3">
+						<svg class="Linky-icon Icon"><use href="/data/img/vehicles.svg#bus"></use></svg>
+						<div class="Linky-body media-body">
+					
+							<a class="Linka--lg Linka za l20" href="/za/linka/20/ca71bd718971827f7c7f7f7f7f817f7c817f71cc">20</a>
+							<a class="Linka--lg Linka za l21" href="/za/linka/21/ca71bd718971827f7c7f7f7f7f81807c818071cc">21</a>
+							<a class="Linka--lg Linka za l22" href="/za/linka/22/ca71bd718971827f7c7f7f7f7f81817c818171cc">22</a>
+							<a class="Linka--lg Linka za l23" href="/za/linka/23/ca71bd718971827f7c7f7f7f7f81827c818271cc">23</a>
+							<a class="Linka--lg Linka za l24" href="/za/linka/24/ca71bd718971827f7c7f7f7f7f81837c818371cc">24</a>
+							<a class="Linka--lg Linka za l26" href="/za/linka/26/ca71bd718971827f7c7f7f7f7f81857c818571cc">26</a>
+							<a class="Linka--lg Linka za l27" href="/za/linka/27/ca71bd718971827f7c7f7f7f7f81867c818671cc">27</a>
+							<a class="Linka--lg Linka za l29" href="/za/linka/29/ca71bd718971827f7c7f7f7f7f81887c818871cc">29</a>
+							<a class="Linka--lg Linka za l30" href="/za/linka/30/ca71bd718971827f7c7f7f7f7f827f7c827f71cc">30</a>
+							<a class="Linka--lg Linka za l31" href="/za/linka/31/ca71bd718971827f7c7f7f7f7f82807c828071cc">31</a>
+							<a class="Linka--lg Linka za l67" href="/za/linka/67/ca71bd718971827f7c7f7f7f7f85867c858671cc">67</a>
+							</div>
+						</div><div class="d-print-none my-1"><div class="d-block d-lg-none text-center">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9096168135415861"
+     crossorigin="anonymous"></script>
+<ins class="adsbygoogle"
+     style="display:inline-block;width:320px;height:100px"
+     data-ad-client="ca-pub-9096168135415861"
+     data-ad-slot="7139675657"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+</div></div>
+					<h3 class="h5 mb-3">Vlaky</h3>
+					<div class="Linky Linky--lg media mb-3">
+						<svg class="Linky-icon Icon"><use href="/data/img/vehicles.svg#train"></use></svg>
+						<div class="Linky-body media-body">
+					
+							<a class="Linka--lg Linka za lR50" href="/za/linka/R50/ca71bd718971877f7c7f7fa3a1847f7ca1847f71cc">R50</a>
+							<a class="Linka--lg Linka za lS2" href="/za/linka/S2/ca71bd718971877f7c7f7fa38081867ca28171cc">S2</a>
+							<a class="Linka--lg Linka za lS4" href="/za/linka/S4/ca71bd718971877f7c7f7fa38081857ca28371cc">S4</a>
+							<a class="Linka--lg Linka za lS21" href="/za/linka/S21/ca71bd718971877f7c7f7fa38081877ca2818071cc">S21</a>
+							</div>
+						</div>
+					<h3 class="h5 mb-3">Nočné linky</h3>
+					<div class="Linky Linky--lg media mb-3">
+						<svg class="Linky-icon Icon"><use href="/data/img/vehicles.svg#nightline"></use></svg>
+						<div class="Linky-body media-body">
+					
+							<a class="Linka--lg Linka za l50" href="/za/linka/50/ca71bd718971827f7c7f7f7f7f847f7c847f71cc">50</a>
+							</div>
+						</div>
+					<h3 class="h5 mb-3">Kombinované linky</h3>
+					<div class="Linky Linky--lg media mb-3">
+						<svg class="Linky-icon Icon"><use href="/data/img/vehicles.svg#bus-trolleybus"></use></svg>
+						<div class="Linky-body media-body">
+					
+								<div class="d-inline-block text-nowrap"><a class="mr-4" href="/za/linka/5-6/ca71bc7189aa71827f7c7f7f7f7f7f847c84717b71827f7c7f7f7f7f7f857c8571accc"><span class="Linka--lg Linka za l5">5</span><span class="Linka--lg Linka za l6">6</span></a></div>
+								<div class="d-inline-block text-nowrap"><a class="mr-4" href="/za/linka/6-7-16/ca71bc7189aa71827f7c7f7f7f7f7f857c85717b71827f7c7f7f7f7f7f867c86717b71827f7c7f7f7f7f80857c808571accc"><span class="Linka--lg Linka za l6">6</span><span class="Linka--lg Linka za l7">7</span><span class="Linka--lg Linka za l16">16</span></a></div>
+								<div class="d-inline-block text-nowrap"><a class="mr-4" href="/za/linka/7-67/ca71bc7189aa71827f7c7f7f7f7f7f867c86717b71827f7c7f7f7f7f85867c858671accc"><span class="Linka--lg Linka za l7">7</span><span class="Linka--lg Linka za l67">67</span></a></div><div class="d-print-none my-1"><div class="d-block d-lg-none text-center">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9096168135415861"
+     crossorigin="anonymous"></script>
+<ins class="adsbygoogle"
+     style="display:inline-block;width:300px;height:600px"
+     data-ad-client="ca-pub-9096168135415861"
+     data-ad-slot="3528742706"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+</div></div>
+							</div>
+						</div>
+						</div>
+						<div class="col-auto"><div class="d-print-none "><div class="d-none d-lg-block  text-center">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9096168135415861"
+     crossorigin="anonymous"></script>
+<ins class="adsbygoogle"
+     style="display:inline-block;width:300px;height:600px"
+     data-ad-client="ca-pub-9096168135415861"
+     data-ad-slot="1226206518"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+</div></div></div>
+					</div>
+				</div>
+			</section>
+			<script>searchUrlLine = "/za/api/sk/vyhladavanie?a=line&q=";
+	searchDestUrlLine = "/za/linka";
+	searchUrlStop = "/za/api/sk/vyhladavanie?a=stop&q=";
+	searchDestUrlStop = "/za/zastavka";
+	filtersSearch = [];</script>
+			    <div class="row">
+		          <div class="col-12 col-xl-6 mb-4">
+		            <div class="Module Box">
+		              <div class="ModuleHeader">
+		                <div class="TimetableSearch">
+		                  <div class="row row-xs">
+		                    <div class="col-12 col-md">
+		                      <form class="Search Search--timetable" id="lineCombination" method="get">
+		                        <svg class="Search-icon Icon"><use href="/data/img/icons.svg#search"></use></svg>
+		                        <label for="combiBox" class="sr-only">Vyhľadanie linky alebo kombinácie liniek</label>
+		                        <input name="combiBox" id="combiBox" class="form-control Search-input" placeholder="Vyhľadanie linky alebo kombinácie liniek" autocomplete="off">
+		                      </form>
+		                    </div>
+
+		                    <div class="col-12 col-md-auto">
+		                      <button type="button" class="btn TimetableSearch-btn btn-primary" id="combiBoxSubmit" >Vyhľadať</button>
+		                    </div>
+		                  </div>
+		                </div>
+		              </div>
+
+		              <div class="ModuleBody ModuleBody--sm">
+		                <div class="small mb-2">
+		                  <svg class="Icon Icon--opticalAlign text-muted"><use href="/data/img/icons.svg#info"></use></svg>&nbsp;
+		                  Príklady: 1, 31+39, R1+R2+R3
+		                </div>
+		              </div>
+		            </div>
+		          </div>
+
+		          <div class="col-12 col-xl-6 mb-4">
+		            <div class="Module Box">
+		              <div class="ModuleHeader">
+		                <div class="TimetableSearch">
+		                  <div class="row row-xs">
+		                    <div class="col-12 col-md">
+		                      <form class="Search Search--timetable" id="stopNameSearch" method="get">
+		                        <svg class="Search-icon Icon"><use href="/data/img/icons.svg#search"></use></svg>
+		                        <label for="stop" class="sr-only">Vyhľadanie zastávky</label>
+		                        <input name="stop" id="stop" class="form-control Search-input" placeholder="Vyhľadanie zastávky" autocomplete="off">
+		                      </form>
+		                    </div>
+
+		                    <div class="col-12 col-md-auto">
+		                      <div class="TimetableSearch-select">
+		                        <select class="custom-select" name="stopSectionNames" id="stopSectionNames" >
+		<option value="-1">alebo vyberte</option>
+				<option value="%C4%8Cadca/ca71b6718983818588cc">Čadca</option>
+				<option value="%C4%8Cadca-mesto/ca71b671898381867fcc">Čadca mesto</option>
+				<option value="%C4%8Cadca-zast%C3%A1vka/ca71b671898383847fcc">Čadca zastávka</option>
+				<option value="%C4%8Cierne-pri-%C4%8Cadci/ca71b6718983848681cc">Čierne pri Čadci</option>
+				<option value="%C4%8Cierne-pri-%C4%8Cadci-zast%C3%A1vka/ca71b6718983848682cc">Čierne pri Čadci zastávka</option>
+				<option value="%C4%8Cierne-Polesie/ca71b6718983848683cc">Čierne-Polesie</option>
+				<option value="Dunajov/ca71b6718983818680cc">Dunajov</option>
+				<option value="K%C4%BEa%C4%8De/ca71b6718983818681cc">Kľače</option>
+				<option value="Konsk%C3%A1-pri-Rajci/ca71b6718983818682cc">Konská pri Rajci</option>
+				<option value="Kr%C3%A1sno-nad-Kysucou/ca71b6718983818683cc">Krásno nad Kysucou</option>
+				<option value="Kysuck%C3%A9-Nov%C3%A9-Mesto/ca71b6718983818684cc">Kysucké Nové Mesto</option>
+				<option value="Lietavsk%C3%A1-L%C3%BA%C4%8Dka/ca71b6718983818685cc">Lietavská Lúčka</option>
+				<option value="Makov/ca71b6718983838188cc">Makov</option>
+				<option value="Ni%C5%BEn%C3%BD-Kel%C4%8Dov/ca71b6718983838184cc">Nižný Kelčov</option>
+				<option value="Ochodnica/ca71b6718983818686cc">Ochodnica</option>
+				<option value="O%C5%A1%C4%8Dadnica/ca71b6718983818687cc">Oščadnica</option>
+				<option value="Podvysok%C3%A1/ca71b6718983838182cc">Podvysoká</option>
+				<option value="Poluvsie/ca71b6718983818688cc">Poluvsie</option>
+				<option value="Por%C3%BAbka/ca71b671898381877fcc">Porúbka</option>
+				<option value="Rajec/ca71b6718983818780cc">Rajec</option>
+				<option value="Rajeck%C3%A9-Teplice/ca71b6718983818781cc">Rajecké Teplice</option>
+				<option value="Rakov%C3%A1/ca71b6718983838180cc">Raková</option>
+				<option value="Rudina/ca71b6718983818782cc">Rudina</option>
+				<option value="Skalit%C3%A9/ca71b6718983848688cc">Skalité</option>
+				<option value="Skalit%C3%A9-pod-Po%C4%BEanou/ca71b671898384877fcc">Skalité pod Poľanou</option>
+				<option value="Skalit%C3%A9-zast%C3%A1vka/ca71b6718983848780cc">Skalité zastávka</option>
+				<option value="Skalit%C3%A9-Kudlov/ca71b6718983848781cc">Skalité-Kudlov</option>
+				<option value="Skalit%C3%A9-Seraf%C3%ADnov/ca71b6718983848782cc">Skalité-Serafínov</option>
+				<option value="Sta%C5%A1kov/ca71b6718983838083cc">Staškov</option>
+				<option value="Sta%C5%A1kov-zast%C3%A1vka/ca71b6718983838082cc">Staškov zastávka</option>
+				<option value="Svr%C4%8Dinovec/ca71b6718983848784cc">Svrčinovec</option>
+				<option value="Turzovka/ca71b6718983837f88cc">Turzovka</option>
+				<option value="Turzovka-zast%C3%A1vka/ca71b6718983837f87cc">Turzovka zastávka</option>
+				<option value="Vr%C3%BAtky-%C5%BEel-stanica/ca71b6718983818585cc">Vrútky, žel. stanica</option>
+				<option value="Vysok%C3%A1-nad-Kysucou/ca71b6718983837f84cc">Vysoká nad Kysucou</option>
+				<option value="Zby%C5%88ov/ca71b6718983818786cc">Zbyňov</option>
+				<option value="Zwardo%C5%84/ca71b671898388877fcc">Zwardoń</option>
+				<option value="%C5%BDilina-Solinky/ca71b6718983818784cc">Žilina-Solinky</option>
+				<option value="%C5%BDilina-Z%C3%A1rie%C4%8Die/ca71b6718983818785cc">Žilina-Záriečie</option>
+				<option value="%C5%BDilina-Antona-Bernol%C3%A1ka/ca71b671898088827fcc">Žilina, Antona Bernoláka</option>
+				<option value="%C5%BDilina-Asana%C4%8Dn%C3%BD-podnik/ca71b6718980878583cc">Žilina, Asanačný podnik</option>
+				<option value="%C5%BDilina-Bagarova/ca71b6718980878588cc">Žilina, Bagarova</option>
+				<option value="%C5%BDilina-B%C3%A1nov%C3%A1/ca71b6718980877f87cc">Žilina, Bánová</option>
+				<option value="%C5%BDilina-B%C3%A1novsk%C3%A1-cesta/ca71b6718980888180cc">Žilina, Bánovská cesta</option>
+				<option value="%C5%BDilina-Bratislavsk%C3%A1/ca71b6718980878186cc">Žilina, Bratislavská</option>
+				<option value="%C5%BDilina-Brod%C5%88ansk%C3%A1/ca71b6718980878086cc">Žilina, Brodňanská</option>
+				<option value="%C5%BDilina-Brodno/ca71b6718980878087cc">Žilina, Brodno</option>
+				<option value="%C5%BDilina-Brodno-%C5%BDSR/ca71b6718983818586cc">Žilina, Brodno (ŽSR)</option>
+				<option value="%C5%BDilina-Budat%C3%ADnska/ca71b6718980878887cc">Žilina, Budatínska</option>
+				<option value="%C5%BDilina-Budat%C3%ADnsky-hrad/ca71b6718980878182cc">Žilina, Budatínsky hrad</option>
+				<option value="%C5%BDilina-Byt%C4%8Dianska/ca71b6718980878386cc">Žilina, Bytčianska</option>
+				<option value="%C5%BDilina-Byt%C4%8Dica/ca71b6718980888183cc">Žilina, Bytčica</option>
+				<option value="%C5%BDilina-Byt%C4%8Dica-%C5%BDSR/ca71b6718983818587cc">Žilina, Bytčica (ŽSR)</option>
+				<option value="%C5%BDilina-Centr%C3%A1lna/ca71b6718980878685cc">Žilina, Centrálna</option>
+				<option value="%C5%BDilina-Cest%C3%A1rska/ca71b6718980878187cc">Žilina, Cestárska</option>
+				<option value="%C5%BDilina-Cintor%C3%ADnska/ca71b6718980878782cc">Žilina, Cintorínska</option>
+				<option value="%C5%BDilina-Doln%C3%A1/ca71b671898087817fcc">Žilina, Dolná</option>
+				<option value="%C5%BDilina-Doln%C3%A1-Trnovsk%C3%A1/ca71b6718980878783cc">Žilina, Dolná Trnovská</option>
+				<option value="%C5%BDilina-Dube%C5%88-obch-centrum/ca71b6718980888082cc">Žilina, Dubeň, obch. centrum</option>
+				<option value="%C5%BDilina-Elektrovod/ca71b6718980878485cc">Žilina, Elektrovod</option>
+				<option value="%C5%BDilina-Essensk%C3%A1/ca71b67189837f8683cc">Žilina, Essenská</option>
+				<option value="%C5%BDilina-eXtreme-park/ca71b6718980888181cc">Žilina, eXtreme park</option>
+				<option value="%C5%BDilina-Fakultn%C3%A1-nemocnica/ca71b6718980878380cc">Žilina, Fakultná nemocnica</option>
+				<option value="%C5%BDilina-Farebn%C3%A1/ca71b6718980888185cc">Žilina, Farebná</option>
+				<option value="%C5%BDilina-Fatransk%C3%A1/ca71b6718980878880cc">Žilina, Fatranská</option>
+				<option value="%C5%BDilina-Furdekova/ca71b6718980878586cc">Žilina, Furdekova</option>
+				<option value="%C5%BDilina-H%C3%A1lkova/ca71b6718980878188cc">Žilina, Hálkova</option>
+				<option value="%C5%BDilina-Hlinsk%C3%A1/ca71b6718980878482cc">Žilina, Hlinská</option>
+				<option value="%C5%BDilina-Holl%C3%A9ho/ca71b671898087827fcc">Žilina, Hollého</option>
+				<option value="%C5%BDilina-Horn%C3%A1-Trnovsk%C3%A1/ca71b6718980878784cc">Žilina, Horná Trnovská</option>
+				<option value="%C5%BDilina-H%C3%B4reck%C3%A1/ca71b6718980888085cc">Žilina, Hôrecká</option>
+				<option value="%C5%BDilina-Hri%C4%8Dovsk%C3%A1/ca71b671898087877fcc">Žilina, Hričovská</option>
+				<option value="%C5%BDilina-Hurbanova/ca71b6718980878280cc">Žilina, Hurbanova</option>
+				<option value="%C5%BDilina-Hviezdoslavova/ca71b671898088817fcc">Žilina, Hviezdoslavova</option>
+				<option value="%C5%BDilina-HYZA/ca71b6718980878584cc">Žilina, HYZA</option>
+				<option value="%C5%BDilina-Chlmeck%C3%A9-n%C3%A1mestie/ca71b6718980878387cc">Žilina, Chlmecké námestie</option>
+				<option value="%C5%BDilina-Jase%C5%88ov%C3%A1/ca71b6718980878686cc">Žilina, Jaseňová</option>
+				<option value="%C5%BDilina-Jastrabia/ca71b6718980878885cc">Žilina, Jastrabia</option>
+				<option value="%C5%BDilina-Jed%C4%BEov%C3%A1/ca71b6718980877f88cc">Žilina, Jedľová</option>
+				<option value="%C5%BDilina-K-cintor%C3%ADnu/ca71b671898087807fcc">Žilina, K cintorínu</option>
+				<option value="%C5%BDilina-Kamenn%C3%A1-dom%C3%A1ce-potreby/ca71b6718980878488cc">Žilina, Kamenná, domáce potreby</option>
+				<option value="%C5%BDilina-Kamenn%C3%A1-kovo%C5%A1rot/ca71b671898087857fcc">Žilina, Kamenná, kovošrot</option>
+				<option value="%C5%BDilina-Kamenn%C3%A1-obchodn%C3%A9-centrum/ca71b6718980878581cc">Žilina, Kamenná, obchodné centrum</option>
+				<option value="%C5%BDilina-Kamenn%C3%A1-PRIUS/ca71b6718980878580cc">Žilina, Kamenná, PRIUS</option>
+				<option value="%C5%BDilina-Komensk%C3%A9ho/ca71b6718980878281cc">Žilina, Komenského</option>
+				<option value="%C5%BDilina-Kortinsk%C3%A1/ca71b6718980887f80cc">Žilina, Kortinská</option>
+				<option value="%C5%BDilina-Ko%C5%A1ick%C3%A1-TESCO-hypermarket/ca71b6718980878282cc">Žilina, Košická, TESCO hypermarket</option>
+				<option value="%C5%BDilina-Kragujevsk%C3%A1/ca71b6718980878283cc">Žilina, Kragujevská</option>
+				<option value="%C5%BDilina-Kult%C3%BArny-dom/ca71b6718980878183cc">Žilina, Kultúrny dom</option>
+				<option value="%C5%BDilina-Kva%C4%8Dalova-DPM%C5%BD/ca71b6718980887f87cc">Žilina, Kvačalova, DPMŽ</option>
+				<option value="%C5%BDilina-Kysuck%C3%A1/ca71b6718980878284cc">Žilina, Kysucká</option>
+				<option value="%C5%BDilina-Letn%C3%A1/ca71b6718980878180cc">Žilina, Letná</option>
+				<option value="%C5%BDilina-Limbov%C3%A1/ca71b6718980878687cc">Žilina, Limbová</option>
+				<option value="%C5%BDilina-Mago%C4%8Dovsk%C3%A1/ca71b6718980878785cc">Žilina, Magočovská</option>
+				<option value="%C5%BDilina-Mateja-Bela/ca71b6718980888083cc">Žilina, Mateja Bela</option>
+				<option value="%C5%BDilina-Matice-slovenskej/ca71b6718980878881cc">Žilina, Matice slovenskej</option>
+				<option value="%C5%BDilina-Mostn%C3%A1/ca71b6718980878483cc">Žilina, Mostná</option>
+				<option value="%C5%BDilina-Motel-%C5%A0ibenice/ca71b671898087867fcc">Žilina, Motel Šibenice</option>
+				<option value="%C5%BDilina-Na-Horeva%C5%BE%C3%AD-TESCO-hypermarket/ca71b6718980878285cc">Žilina, Na Horevaží, TESCO hypermarket</option>
+				<option value="%C5%BDilina-Na-chot%C3%A1ri/ca71b6718980887f88cc">Žilina, Na chotári</option>
+				<option value="%C5%BDilina-Na-l%C3%A1ny/ca71b6718980878181cc">Žilina, Na lány</option>
+				<option value="%C5%BDilina-Na-stanicu/ca71b6718980878184cc">Žilina, Na stanicu</option>
+				<option value="%C5%BDilina-Na-Stran%C3%ADk/ca71b6718980887f85cc">Žilina, Na Straník</option>
+				<option value="%C5%BDilina-N%C3%A1mestie-Sv-J-Bosca/ca71b6718980878080cc">Žilina, Námestie Sv. J. Bosca</option>
+				<option value="%C5%BDilina-Nov%C3%A1-menza/ca71b6718980888184cc">Žilina, Nová menza</option>
+				<option value="%C5%BDilina-Obchodn%C3%A1/ca71b6718980878882cc">Žilina, Obchodná</option>
+				<option value="%C5%BDilina-Oceliarska/ca71b6718980878587cc">Žilina, Oceliarska</option>
+				<option value="%C5%BDilina-Oslobodenia/ca71b6718980878081cc">Žilina, Oslobodenia</option>
+				<option value="%C5%BDilina-Ovocin%C3%A1rska/ca71b6718980878786cc">Žilina, Ovocinárska</option>
+				<option value="%C5%BDilina-Park-%C4%BD-%C5%A0t%C3%BAra/ca71b6718980878083cc">Žilina, Park Ľ. Štúra</option>
+				<option value="%C5%BDilina-Pa%C5%BEite/ca71b6718980878185cc">Žilina, Pažite</option>
+				<option value="%C5%BDilina-Pietna-Kremat%C3%B3rium/ca71b671898088807fcc">Žilina, Pietna, Krematórium</option>
+				<option value="%C5%BDilina-Plav%C3%A1re%C5%88/ca71b6718980878085cc">Žilina, Plaváreň</option>
+				<option value="%C5%BDilina-Pod-h%C3%A1jom/ca71b6718980888088cc">Žilina, Pod hájom</option>
+				<option value="%C5%BDilina-Pod-Koz%C3%ADnom/ca71b6718980887f81cc">Žilina, Pod Kozínom</option>
+				<option value="%C5%BDilina-Pod-vinicou/ca71b6718980888081cc">Žilina, Pod vinicou</option>
+				<option value="%C5%BDilina-Pod-z%C3%A1hradkou/ca71b6718980887f82cc">Žilina, Pod záhradkou</option>
+				<option value="%C5%BDilina-Pol%C3%ADcia/ca71b6718980878286cc">Žilina, Polícia</option>
+				<option value="%C5%BDilina-Po%C4%BEn%C3%A1/ca71b6718980878484cc">Žilina, Poľná</option>
+				<option value="%C5%BDilina-Po%C5%A1tov%C3%A1/ca71b6718980878883cc">Žilina, Poštová</option>
+				<option value="%C5%BDilina-Potoky/ca71b6718980878787cc">Žilina, Potoky</option>
+				<option value="%C5%BDilina-Pova%C5%BEsk%C3%BD-Chlmec/ca71b6718980878388cc">Žilina, Považský Chlmec</option>
+				<option value="%C5%BDilina-Predmestsk%C3%A1/ca71b6718980878287cc">Žilina, Predmestská</option>
+				<option value="%C5%BDilina-Pri-celul%C3%B3zke/ca71b6718980878480cc">Žilina, Pri celulózke</option>
+				<option value="%C5%BDilina-Pri-Kysuci/ca71b671898087847fcc">Žilina, Pri Kysuci</option>
+				<option value="%C5%BDilina-Pri-V%C3%A1hu/ca71b67189837f8780cc">Žilina, Pri Váhu</option>
+				<option value="%C5%BDilina-Priehradn%C3%A1/ca71b6718980878780cc">Žilina, Priehradná</option>
+				<option value="%C5%BDilina-Prielo%C5%BEn%C3%A1/ca71b6718980878781cc">Žilina, Prieložná</option>
+				<option value="%C5%BDilina-Priemyseln%C3%A1/ca71b6718980878288cc">Žilina, Priemyselná</option>
+				<option value="%C5%BDilina-Pr%C3%ADpojn%C3%A1/ca71b6718980887f7fcc">Žilina, Prípojná</option>
+				<option value="%C5%BDilina-Rakov%C3%A9/ca71b6718980878788cc">Žilina, Rakové</option>
+				<option value="%C5%BDilina-R%C3%A1zcestie-Hri%C4%8Dov/ca71b6718980887f84cc">Žilina, Rázcestie Hričov</option>
+				<option value="%C5%BDilina-R%C3%A1zusova/ca71b671898087837fcc">Žilina, Rázusova</option>
+				<option value="%C5%BDilina-Rosinky/ca71b6718980878680cc">Žilina, Rosinky</option>
+				<option value="%C5%BDilina-Rosinsk%C3%A1-plemen%C3%A1rsky-podnik/ca71b6718980878682cc">Žilina, Rosinská, plemenársky podnik</option>
+				<option value="%C5%BDilina-Rosinsk%C3%A1-V%C3%BDskumn%C3%BD-%C3%BAstav-v%C3%BDpo%C4%8Dtovej-techniky/ca71b6718980878681cc">Žilina, Rosinská, Výskumný ústav výpočtovej techniky</option>
+				<option value="%C5%BDilina-Rudnayova/ca71b6718980878082cc">Žilina, Rudnayova</option>
+				<option value="%C5%BDilina-Rybn%C3%A9-n%C3%A1mestie/ca71b6718980878585cc">Žilina, Rybné námestie</option>
+				<option value="%C5%BDilina-Sala%C5%A1/ca71b6718980887f86cc">Žilina, Salaš</option>
+				<option value="%C5%BDilina-Salezi%C3%A1nska/ca71b6718980878487cc">Žilina, Saleziánska</option>
+				<option value="%C5%BDilina-Slne%C4%8Dn%C3%A9-n%C3%A1mestie/ca71b6718980888084cc">Žilina, Slnečné námestie</option>
+				<option value="%C5%BDilina-Smrekov%C3%A1/ca71b6718980878688cc">Žilina, Smreková</option>
+				<option value="%C5%BDilina-Stanica-Solinky/ca71b6718980878582cc">Žilina, Stanica Solinky</option>
+				<option value="%C5%BDilina-Stavomont%C3%A1%C5%BEe/ca71b6718980878486cc">Žilina, Stavomontáže</option>
+				<option value="%C5%BDilina-Stodolova/ca71b6718980878481cc">Žilina, Stodolova</option>
+				<option value="%C5%BDilina-Sv-Cyrila-a-Metoda/ca71b6718980878884cc">Žilina, Sv. Cyrila a Metoda</option>
+				<option value="%C5%BDilina-%C5%A0ibenice-STK/ca71b6718980878683cc">Žilina, Šibenice, STK</option>
+				<option value="%C5%BDilina-%C5%A0portov%C3%A9-centrum/ca71b6718983888188cc">Žilina, Športové centrum</option>
+				<option value="%C5%BDilina-%C5%A0tef%C3%A1nikovo-n%C3%A1mestie/ca71b6718980878381cc">Žilina, Štefánikovo námestie</option>
+				<option value="%C5%BDilina-Tulip%C3%A1nov%C3%A1/ca71b6718980878084cc">Žilina, Tulipánová</option>
+				<option value="%C5%BDilina-%C3%9Adoln%C3%A1/ca71b6718980878888cc">Žilina, Údolná</option>
+				<option value="%C5%BDilina-Univerzitn%C3%A1/ca71b6718980888282cc">Žilina, Univerzitná</option>
+				<option value="%C5%BDilina-Ve%C4%BEk%C3%A1-okru%C5%BEn%C3%A1/ca71b6718980878383cc">Žilina, Veľká okružná</option>
+				<option value="%C5%BDilina-Ve%C4%BEk%C3%A1-okru%C5%BEn%C3%A1-Aupark/ca71b6718980878382cc">Žilina, Veľká okružná, Aupark</option>
+				<option value="%C5%BDilina-Vodn%C3%A1-n%C3%A1dr%C5%BE-Hri%C4%8Dov/ca71b6718980887f83cc">Žilina, Vodná nádrž Hričov</option>
+				<option value="%C5%BDilina-Vodn%C3%A9-dielo/ca71b671898187887fcc">Žilina, Vodné dielo</option>
+				<option value="%C5%BDilina-Vranie/ca71b6718980878886cc">Žilina, Vranie</option>
+				<option value="%C5%BDilina-Z%C3%A1bre%C5%BEn%C3%A1/ca71b6718980878088cc">Žilina, Zábrežná</option>
+				<option value="%C5%BDilina-Z%C3%A1stranie/ca71b6718980888080cc">Žilina, Zástranie</option>
+				<option value="%C5%BDilina-Z%C3%A1vodsk%C3%A1/ca71b6718980878384cc">Žilina, Závodská</option>
+				<option value="%C5%BDilina-Z%C3%A1vodsk%C3%A9ho/ca71b6718980888086cc">Žilina, Závodského</option>
+				<option value="%C5%BDilina-Zvolensk%C3%A1/ca71b6718980878684cc">Žilina, Zvolenská</option>
+				<option value="%C5%BDilina-%C5%BDelezni%C4%8Dn%C3%A1-stanica/ca71b6718980878385cc">Žilina, Železničná stanica</option>
+				<option value="%C5%BDilina-%C5%BDilinsk%C3%A1-Lehota/ca71b6718980888182cc">Žilina, Žilinská Lehota</option>
+				<option value="%C5%BDilina-%C5%BDilinsk%C3%A1-univerzita/ca71b671898087887fcc">Žilina, Žilinská univerzita</option>
+				<option value="%C5%BDilina-%C5%BDitn%C3%A1/ca71b6718980888087cc">Žilina, Žitná</option>
+				</select>
+		                      </div>
+		                    </div>
+
+		                    <div class="col-12 col-md-auto">
+		                      <button type="button" class="btn TimetableSearch-btn btn-primary" id="stopSubmit" >Vyhľadať</button>
+		                    </div>
+		                  </div>
+		                </div>
+		              </div>
+
+		              <div class="ModuleBody ModuleBody--sm">
+		                <div class="small mb-2">
+		                  <svg class="Icon Icon--opticalAlign text-muted"><use href="/data/img/icons.svg#info"></use></svg>&nbsp;
+		                  Napíšte alebo vyhľadajte názov zastávky
+		                </div>
+		              </div>
+		            </div>
+		          </div>
+		        </div>
+		<script>searchUrl = "/za/api/sk/vyhladavanie?q="; searchDestUrl = "/za/vyhladavanie?q=";</script></div> <!-- Container --><div class="d-print-none mt-4"><div class="d-block d-sm-none text-center">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9096168135415861"
+     crossorigin="anonymous"></script>
+<ins class="adsbygoogle"
+     style="display:inline-block;width:300px;height:600px"
+     data-ad-client="ca-pub-9096168135415861"
+     data-ad-slot="3528742706"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+</div></div><div class="d-print-none m-0"><div class="d-none d-sm-block d-lg-none text-center">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9096168135415861"
+     crossorigin="anonymous"></script>
+<ins class="adsbygoogle"
+     style="display:inline-block;width:728px;height:90px"
+     data-ad-client="ca-pub-9096168135415861"
+     data-ad-slot="9919084758"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+</div></div><div class="d-print-none mt-4"><div class="d-none d-lg-block  text-center">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9096168135415861"
+     crossorigin="anonymous"></script>
+<ins class="adsbygoogle"
+     style="display:inline-block;width:970px;height:90px"
+     data-ad-client="ca-pub-9096168135415861"
+     data-ad-slot="8781069381"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+</div></div></div>
+		
+      <footer class="Footer Footer--primary">
+			
+        <div class="container">
+								<nav class="Footer-nav">
+					<div class="row">
+					
+					<div class="col-6 col-md-4 col-lg">
+					<h2>Cestovanie</h2>
+					
+					<ul class="Footer-navMenu list-unstyled">
+											<li><a href="/za/planovac-cesty">
+						Plánovač cesty
+						</a>
+						
+					</li>
+						<li><a href="/za/cestovne-poriadky">
+						Cestovné poriadky
+						</a>
+						
+					</li>
+						<li><a href="/za/mapy-schemy">
+						Mapy
+						</a>
+						
+					</li>
+						<li><a href="/za/mhd">
+						Aktuality
+						</a>
+						
+					</li>
+						<li><a href="/za/doc/sk/22188/22188">
+						Doprava na letisko
+						</a>
+						
+					</li>
+						<li><a href="/za/doc/sk/12778/12778">
+						MHD na stanice
+						</a>
+						
+					</li>
+					</ul>
+					
+					</div>
+					
+					<div class="col-6 col-md-4 col-lg">
+					<h2>Cestovné lístky</h2>
+					
+					<ul class="Footer-navMenu list-unstyled">
+											<li><a href="/za/doc/sk/24708/24708">
+						Ceny a typy lístkov
+						</a>
+						
+					</li>
+						<li><a href="/za/doc/sk/24708/24708#zlavy">
+						Zľavy
+						</a>
+						
+					</li>
+						<li><a href="/za/doc/sk/24708/24708#predaj">
+						Predajne a e-shop
+						</a>
+						
+					</li>
+						<li><a href="/za/doc/sk/24708/24708#pokuty">
+						Pokuty
+						</a>
+						
+					</li>
+					</ul>
+					
+					</div>
+					
+					<div class="col-6 col-md-4 col-lg">
+					<h2>Informácie</h2>
+					
+					<ul class="Footer-navMenu list-unstyled">
+											<li><a href="/za/doc/sk/20328/20328">
+						Straty a nálezy
+						</a>
+						
+					</li>
+						<li><a href="/za/doc/sk/10229/Preprava-zvierat-v-MHD">
+						Preprava zvierat
+						</a>
+						
+					</li>
+						<li><a href="/za/doc/sk/20346/Preprava-bicyklov-a-kolobežiek-v-prostriedkoch-hromadnej-osobnej-dopravy">
+						Preprava bicyklov
+						</a>
+						
+					</li>
+						<li><a href="/za/doc/sk/10228/Nocna-doprava">
+						Nočná doprava
+						</a>
+						
+					</li>
+						<li><a href="/za/doc/sk/13352/Bezbarierova-doprava">
+						Bezbariérová doprava
+						</a>
+						
+					</li>
+						<li><a href="/za/doc/sk/10230/Zastavky-na-znamenie">
+						Zastávky na znamenie
+						</a>
+						
+					</li>
+						<li><a href="/za/doc/sk/20089/Kde-sa-dá-sťažovať-na-mestskú-hromadnú-dopravu">
+						Sťažnosti
+						</a>
+						
+					</li>
+						<li><a href="/za/doc/sk/10157/Kontakt-na-majoritnych-dopravcov-v-zilinskom-regione">
+						Kontakty na dopravcov
+						</a>
+						
+					</li>
+						<li><a href="/za/informacie">
+						Ďalšie informácie
+						</a>
+						
+					</li>
+					</ul>
+					
+					</div>
+					
+					<div class="col-6 col-md-4 col-lg">
+					<h2>Vozidlá</h2>
+					
+					<ul class="Footer-navMenu list-unstyled">
+											<li><a href="/za/vozidla/13/trolejbusy">
+						Trolejbusy
+						</a>
+						
+					</li>
+						<li><a href="/za/vozidla/12/autobusy">
+						Autobusy
+						</a>
+						
+					</li>
+						<li><a href="/za/vozidla/92/Pr%C3%ADvesy">
+						Prívesy
+						</a>
+						
+					</li>
+						<li><a href="/za/vozidla/98/Testované-autobusy">
+						Testované autobusy
+						</a>
+						
+					</li>
+						<li><a href="/za/vozidla/vozidlovy-park">
+						Vyhľadávanie
+						</a>
+						
+					</li>
+						<li><a href="/za/vozidla/evidencny-stav">
+						Evidenčný stav
+						</a>
+						
+					</li>
+					</ul>
+					
+					</div>
+					
+					<div class="col-6 col-md-4 col-lg">
+					<h2>I <svg class="Icon Icon--opticalAlign text-primary"><use xlink:href="/data/img/icons.svg#heart"></use></svg> MHD</h2>
+					
+					<ul class="Footer-navMenu list-unstyled">
+											<li><a href="/za/galerie">
+						Fotky a médiá
+						</a>
+						
+					</li>
+						<li><a href="/za/diskusne-forum">
+						Diskusia
+						</a>
+						
+					</li>
+						<li><a href="/za/doc/sk/12368/Historia-mestskej-hromadnej-dopravy-v-Ziline">
+						História
+						</a>
+						
+					</li>
+						<li><a href="/za/kalendar-udalosti">
+						Historický kalendár
+						</a>
+						
+					</li>
+						<li><a href="/za/sotolionar">
+						Šotolionár
+						</a>
+						
+					</li>
+					</ul>
+					
+					</div>
+					</div>
+					</nav>
+          <div class="Footer-main">
+			
+            <div class="row">
+              <div class="col-12 col-lg text-center text-lg-left">
+                <a class="Footer-logo Logo" href="/za/mhd">
+					<img class="Logo-img" src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==" alt="imhd.sk">
+                </a>
+
+                <div class="Footer-cityPicker CityPicker dropdown">
+                  <button class="btn btn-light dropdown-toggle" type="button" id="FooterCityPicker-1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+					Žilina
+                    <svg class="dropdown-chevron Icon small text-primary"><use xlink:href="/data/img/icons.svg#chevron-down"></use></svg>
+                  </button>
+                  <div class="dropdown-menu" role="menu" aria-labelledby="FooterCityPicker-1">
+			
+					<a class="dropdown-item" href="/ba/mhd">Bratislava</a>
+					<a class="dropdown-item" href="/bb/mhd">Banská Bystrica</a>
+					<a class="dropdown-item" href="/hc/mhd">Hlohovec</a>
+					<a class="dropdown-item" href="/ke/mhd">Košice</a>
+					<a class="dropdown-item" href="/lm/mhd">Liptovský Mikuláš</a>
+					<a class="dropdown-item" href="/mt/mhd">Martin</a>
+					<a class="dropdown-item" href="/nr/mhd">Nitra</a>
+					<a class="dropdown-item" href="/nz/mhd">Nové Zámky</a>
+					<a class="dropdown-item" href="/pn/mhd">Piešťany</a>
+					<a class="dropdown-item" href="/tatry/mhd">Poprad-Tatry</a>
+					<a class="dropdown-item" href="/pb/mhd">Považská Bystrica</a>
+					<a class="dropdown-item" href="/po/mhd">Prešov</a>
+					<a class="dropdown-item" href="/pd/mhd">Prievidza</a>
+					<a class="dropdown-item" href="/rk/mhd">Ružomberok</a>
+					<a class="dropdown-item" href="/se/mhd">Senica</a>
+					<a class="dropdown-item" href="/si/mhd">Skalica</a>
+					<a class="dropdown-item" href="/sn/mhd">Spišská Nová Ves</a>
+					<a class="dropdown-item" href="/tn/mhd">Trenčín</a>
+					<a class="dropdown-item" href="/tt/mhd">Trnava</a>
+					<a class="dropdown-item" href="/zv/mhd">Zvolen</a>
+					<a class="dropdown-item" href="/transport/mhd">Slovensko a svet</a>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-12 col-lg-auto text-right">
+                <form class="Footer-newsletter form-inline" action="/za/registracia-pouzivatela">
+                  <h3 class="Footer-newsletterHeading">Novinky e-mailom</h3>
+
+                  <div class="input-group">
+				  
+                    <label class="sr-only" for="newsletter-input-1">Zadajte váš e-mail</label>
+                    <input id="newsletter-input-1" name="email" type="text" class="form-control" placeholder="Zadajte váš e-mail" aria-label="Zadajte váš e-mail" aria-describedby="newsletter-button-submit-1">
+                    <div class="input-group-append">
+                      <button class="btn btn-primary" type="submit" id="newsletter-button-submit-1">Pridať</button>
+                    </div>
+                  </div>
+                </form>
+              </div>
+
+              <div class="col-12 col-lg-auto text-center">
+                <ul class="Footer-networks Networks list-unstyled">
+	
+                  <li>
+                    <a href="https://www.facebook.com/za.imhd.sk" target="facebook">
+                      <svg class="Icon"><use xlink:href="/data/img/icons.svg#facebook"></use></svg>
+                      <span class="sr-only">Facebook</span>
+                    </a>
+                  </li>
+	
+                  <li>
+                    <a href="https://twitter.com/imhdsk" target="twitter">
+                      <svg class="Icon"><use xlink:href="/data/img/icons.svg#twitter"></use></svg>
+                      <span class="sr-only">Twitter</span>
+                    </a>
+                  </li>
+	
+                  <li>
+                    <a href="https://www.instagram.com/imhd.sk/" target="instagram">
+                      <svg class="Icon"><use xlink:href="/data/img/icons.svg#instagram"></use></svg>
+                      <span class="sr-only">Instagram</span>
+                    </a>
+                  </li>
+	
+                  <li>
+                    <a href="/za/doc/sk/10810/Mobiln%C3%A1-aplik%C3%A1cia-imhd-sk">
+                      <svg class="Icon"><use xlink:href="/data/img/icons.svg#app"></use></svg>
+                      <span class="sr-only">Smartfónová appka</span>
+                    </a>
+                  </li>
+	
+                  <li>
+                    <a href="/za/rss/dokumenty">
+                      <svg class="Icon"><use xlink:href="/data/img/icons.svg#rss"></use></svg>
+                      <span class="sr-only">Smartfónová appka</span>
+                    </a>
+                  </li>
+	
+				</ul>
+              </div>
+            </div>
+			
+          </div>
+        </div>
+      </footer>
+    </div>
+  </div>
+  <footer class="CopyFooter">
+    <div class="container">
+	
+      <div class="row">
+        <div class="col-12 col-md-auto text-center text-md-right order-md-12">
+          <ul class="CopyFooter-menu list-unstyled">
+			<li><a href="/za/doc/sk/10257/Autorsk%C3%A9-pr%C3%A1va" >Autorské práva</a></li>
+			<li><a href="/za/doc/sk/10260/Podmienky-pou%C5%BE%C3%ADvania" >Podmienky</a></li>
+			<li><a href="javascript:googlefc.showRevocationMessage();">Súkromie</a></li>
+			<li><a href="/za/doc/sk/10261/O-imhd-sk" >O imhd.sk</a></li>
+			<li><a href="/za/doc/sk/15866/Kontakt" >Kontakt</a></li>
+          </ul>
+        </div>
+
+        <div class="col-12 col-md text-center text-md-left">
+          <ul class="CopyFooter-menu list-unstyled">
+			<li>Powered by<a href="https://www.websupport.sk" target="_blank" aria-label="websupport.sk"><svg class="Icon Logo-websupport"><use href="/data/img/icons.svg#websupport"></use></svg></a></li>
+			<li>Copyright © imhd.sk, 2000 – 2026</li>
+	      </ul>
+        </div>
+      </div>
+    </div>
+  </footer>
+	</body>
+
+</html>
+<!-- WEBINFO OK 59ms imhdsk.novalocal -->
