@@ -250,6 +250,12 @@ internal class RoutePlannerViewModel(
         invalidateRoutePreviewIfAllowed()
     }
 
+    fun updateStartDateTime(value: LocalDateTime) {
+        startDateTime = value.truncatedTo(ChronoUnit.MINUTES)
+        hasNoGeneratedStops = false
+        invalidateRoutePreviewIfAllowed()
+    }
+
     fun generateRoute() {
         viewModelScope.launch {
             if (!repository.isNetworkAvailable()) {

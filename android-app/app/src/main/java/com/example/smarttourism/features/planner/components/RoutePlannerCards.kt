@@ -3,11 +3,14 @@ package com.example.smarttourism.features.planner
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
+import android.app.DatePickerDialog
+import android.app.TimePickerDialog
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Build
 import android.os.Looper
+import android.text.format.DateFormat
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.animateContentSize
@@ -388,11 +391,45 @@ internal fun RouteParametersCard(
     allowPublicTransport: Boolean,
     onAllowPublicTransportChange: (Boolean) -> Unit,
     startDateTime: LocalDateTime,
+    onStartDateTimeChange: (LocalDateTime) -> Unit,
     onUseCurrentTime: () -> Unit,
     isEditingEnabled: Boolean,
     isGenerating: Boolean,
     onGenerateRoute: () -> Unit
 ) {
+    val context = LocalContext.current
+    val datePickerDialog = remember(context, startDateTime, onStartDateTimeChange) {
+        DatePickerDialog(
+            context,
+            { _, year, month, dayOfMonth ->
+                onStartDateTimeChange(
+                    startDateTime
+                        .withYear(year)
+                        .withMonth(month + 1)
+                        .withDayOfMonth(dayOfMonth)
+                )
+            },
+            startDateTime.year,
+            startDateTime.monthValue - 1,
+            startDateTime.dayOfMonth
+        )
+    }
+    val timePickerDialog = remember(context, startDateTime, onStartDateTimeChange) {
+        TimePickerDialog(
+            context,
+            { _, hourOfDay, minute ->
+                onStartDateTimeChange(
+                    startDateTime
+                        .withHour(hourOfDay)
+                        .withMinute(minute)
+                )
+            },
+            startDateTime.hour,
+            startDateTime.minute,
+            DateFormat.is24HourFormat(context)
+        )
+    }
+
     ElevatedCard {
         Column(
             modifier = Modifier
@@ -406,11 +443,15 @@ internal fun RouteParametersCard(
                 fontWeight = FontWeight.SemiBold
             )
 
-            Row(
+            Column(
                 modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Column(modifier = Modifier.weight(1f)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     Text(
                         text = stringResource(R.string.route_start_time_label),
                         style = MaterialTheme.typography.labelLarge
@@ -420,12 +461,28 @@ internal fun RouteParametersCard(
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }
-                Spacer(modifier = Modifier.width(12.dp))
-                OutlinedButton(
-                    onClick = onUseCurrentTime,
-                    enabled = isEditingEnabled
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Text(stringResource(R.string.action_use_now))
+                    OutlinedButton(
+                        onClick = { datePickerDialog.show() },
+                        enabled = isEditingEnabled
+                    ) {
+                        Text(stringResource(R.string.action_pick_date))
+                    }
+                    OutlinedButton(
+                        onClick = { timePickerDialog.show() },
+                        enabled = isEditingEnabled
+                    ) {
+                        Text(stringResource(R.string.action_pick_time))
+                    }
+                    TextButton(
+                        onClick = onUseCurrentTime,
+                        enabled = isEditingEnabled
+                    ) {
+                        Text(stringResource(R.string.action_use_now))
+                    }
                 }
             }
 

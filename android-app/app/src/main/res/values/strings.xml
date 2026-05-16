@@ -80,6 +80,8 @@
 
     <string name="route_parameters_title">Route parameters</string>
     <string name="route_start_time_label">Route start time</string>
+    <string name="action_pick_date">Date</string>
+    <string name="action_pick_time">Time</string>
     <string name="action_use_now">Use now</string>
     <string name="respect_opening_hours_label">Respect opening hours</string>
     <string name="respect_opening_hours_body">Skip POIs that are closed for the planned arrival and visit window.</string>
