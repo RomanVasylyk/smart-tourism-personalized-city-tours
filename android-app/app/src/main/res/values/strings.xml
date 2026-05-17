@@ -11,6 +11,11 @@
     <string name="planner_mode_active_body">Keep the map in view and manage progress from the next stop.</string>
     <string name="planner_mode_completed_title">Route complete</string>
     <string name="planner_mode_completed_body">Review the completed route and leave feedback.</string>
+    <string name="app_menu_label">Menu</string>
+    <string name="app_destination_planner">Planner</string>
+    <string name="language_selector_label">Language</string>
+    <string name="language_english">English</string>
+    <string name="language_slovak">Slovak</string>
 
     <string name="status_location_unavailable">Location unavailable</string>
     <string name="status_poi_preview_unavailable">POI preview unavailable</string>

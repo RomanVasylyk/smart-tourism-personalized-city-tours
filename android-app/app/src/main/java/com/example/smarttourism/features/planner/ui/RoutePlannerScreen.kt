@@ -19,12 +19,17 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -45,6 +50,7 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.smarttourism.R
+import com.example.smarttourism.core.i18n.AppLanguage
 import com.example.smarttourism.data.model.RouteHistoryEntry
 import com.example.smarttourism.data.remote.dto.RouteItemDto
 import com.example.smarttourism.data.remote.dto.RouteResponse
@@ -53,7 +59,10 @@ import com.example.smarttourism.features.map.PoiMapScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RoutePlannerScreen() {
+fun RoutePlannerScreen(
+    selectedLanguage: AppLanguage,
+    onLanguageSelected: (AppLanguage) -> Unit
+) {
     val context = LocalContext.current
     val plannerViewModel: RoutePlannerViewModel = viewModel()
     val locationPermissionDeniedMessage = stringResource(R.string.error_location_permission_denied)
@@ -115,9 +124,8 @@ fun RoutePlannerScreen() {
     var isMapFullScreen by remember { mutableStateOf(false) }
     var isParameterSheetOpen by remember { mutableStateOf(false) }
     var isStopsSheetOpen by remember { mutableStateOf(false) }
-    var isBookmarksSheetOpen by remember { mutableStateOf(false) }
-    var isHistorySheetOpen by remember { mutableStateOf(false) }
     var isFeedbackDialogOpen by remember { mutableStateOf(false) }
+    var currentDestination by remember { mutableStateOf(PlannerDestination.PLANNER) }
     var selectedHistoryEntry by remember { mutableStateOf<RouteHistoryEntry?>(null) }
     var replacingPoiId by remember { mutableStateOf<Int?>(null) }
     var locationError by remember { mutableStateOf<String?>(null) }
@@ -140,12 +148,17 @@ fun RoutePlannerScreen() {
             isStopsSheetOpen = false
         }
         if (plannerMode == PlannerMode.ACTIVE) {
-            isBookmarksSheetOpen = false
+            currentDestination = PlannerDestination.PLANNER
         }
         if (plannerMode != PlannerMode.COMPLETED) {
             isFeedbackDialogOpen = false
         }
-        if (!isHistorySheetOpen) {
+    }
+
+    LaunchedEffect(currentDestination) {
+        if (currentDestination == PlannerDestination.HISTORY) {
+            plannerViewModel.loadRouteHistory(forceRefresh = true)
+        } else {
             selectedHistoryEntry = null
         }
     }
@@ -350,35 +363,31 @@ fun RoutePlannerScreen() {
             )
         }
     } else {
-        LazyColumn(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .statusBarsPadding(),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .statusBarsPadding()
         ) {
-            item {
-                PlannerModeHeader(mode = plannerMode)
-            }
+            PlannerTopBar(
+                currentDestination = currentDestination,
+                selectedLanguage = selectedLanguage,
+                routeBookmarkCount = routeBookmarks.size,
+                onDestinationSelected = { destination -> currentDestination = destination },
+                onLanguageSelected = onLanguageSelected
+            )
 
-            when (plannerMode) {
-                PlannerMode.PLANNING -> {
-                    if (routeBookmarks.isNotEmpty()) {
-                        item {
-                            OutlinedButton(
-                                onClick = { isBookmarksSheetOpen = true },
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Text(
-                                    stringResource(
-                                        R.string.action_open_route_bookmarks_with_count,
-                                        routeBookmarks.size
-                                    )
-                                )
-                            }
-                        }
+            when (currentDestination) {
+                PlannerDestination.PLANNER -> LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    item {
+                        PlannerModeHeader(mode = plannerMode)
                     }
 
+                    when (plannerMode) {
+                PlannerMode.PLANNING -> {
                     item {
                         CitySelectorCard(
                             cities = cities,
@@ -391,18 +400,6 @@ fun RoutePlannerScreen() {
                                 plannerViewModel.selectCity(city)
                             }
                         )
-                    }
-
-                    item {
-                        OutlinedButton(
-                            onClick = {
-                                plannerViewModel.loadRouteHistory(forceRefresh = true)
-                                isHistorySheetOpen = true
-                            },
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text(stringResource(R.string.action_open_route_history))
-                        }
                     }
 
                     item {
@@ -483,20 +480,6 @@ fun RoutePlannerScreen() {
                     }
 
                     plannerAlertItems(plannerAlerts)
-
-                    item {
-                        OfflineSupportCard(
-                            selectedCity = selectedCity,
-                            offlineStatusMessage = offlineStatusMessage,
-                            pendingSyncOperationCount = pendingSyncOperationCount,
-                            offlineRegionAvailable = offlineStoredRegion != null,
-                            isOfflineMapBusy = isOfflineMapBusy,
-                            offlineMapProgress = offlineMapProgress,
-                            offlineMapMessage = offlineMapMessage,
-                            onDownloadOfflineMap = { plannerViewModel.downloadOfflineMap() },
-                            onDeleteOfflineMap = { plannerViewModel.deleteOfflineMap() }
-                        )
-                    }
                 }
 
                 PlannerMode.PREVIEW -> {
@@ -536,42 +519,19 @@ fun RoutePlannerScreen() {
                     }
 
                     item {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(12.dp)
-                        ) {
-                            Button(
-                                onClick = { plannerViewModel.saveCurrentRouteBookmark() },
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                Text(
-                                    stringResource(
-                                        if (isCurrentRouteBookmarked) {
-                                            R.string.action_update_route_bookmark
-                                        } else {
-                                            R.string.action_save_route_bookmark
-                                        }
-                                    )
-                                )
-                            }
-                            OutlinedButton(
-                                onClick = { isBookmarksSheetOpen = true },
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                Text(stringResource(R.string.action_open_route_bookmarks))
-                            }
-                        }
-                    }
-
-                    item {
-                        OutlinedButton(
-                            onClick = {
-                                plannerViewModel.loadRouteHistory(forceRefresh = true)
-                                isHistorySheetOpen = true
-                            },
+                        Button(
+                            onClick = { plannerViewModel.saveCurrentRouteBookmark() },
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Text(stringResource(R.string.action_open_route_history))
+                            Text(
+                                stringResource(
+                                    if (isCurrentRouteBookmarked) {
+                                        R.string.action_update_route_bookmark
+                                    } else {
+                                        R.string.action_save_route_bookmark
+                                    }
+                                )
+                            )
                         }
                     }
 
@@ -627,42 +587,19 @@ fun RoutePlannerScreen() {
                     }
 
                     item {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(12.dp)
-                        ) {
-                            Button(
-                                onClick = { plannerViewModel.saveCurrentRouteBookmark() },
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                Text(
-                                    stringResource(
-                                        if (isCurrentRouteBookmarked) {
-                                            R.string.action_update_route_bookmark
-                                        } else {
-                                            R.string.action_save_route_bookmark
-                                        }
-                                    )
-                                )
-                            }
-                            OutlinedButton(
-                                onClick = { isBookmarksSheetOpen = true },
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                Text(stringResource(R.string.action_open_route_bookmarks))
-                            }
-                        }
-                    }
-
-                    item {
-                        OutlinedButton(
-                            onClick = {
-                                plannerViewModel.loadRouteHistory(forceRefresh = true)
-                                isHistorySheetOpen = true
-                            },
+                        Button(
+                            onClick = { plannerViewModel.saveCurrentRouteBookmark() },
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Text(stringResource(R.string.action_open_route_history))
+                            Text(
+                                stringResource(
+                                    if (isCurrentRouteBookmarked) {
+                                        R.string.action_update_route_bookmark
+                                    } else {
+                                        R.string.action_save_route_bookmark
+                                    }
+                                )
+                            )
                         }
                     }
 
@@ -703,6 +640,63 @@ fun RoutePlannerScreen() {
                 }
 
                 PlannerMode.ACTIVE -> Unit
+                    }
+                }
+
+                PlannerDestination.SAVED_ROUTES -> LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    item {
+                        RouteBookmarksSheetContent(
+                            bookmarks = routeBookmarks,
+                            activeBookmarkId = activeBookmarkId,
+                            onOpenBookmark = { bookmarkId ->
+                                plannerViewModel.openRouteBookmark(bookmarkId)
+                                currentDestination = PlannerDestination.PLANNER
+                            },
+                            onDeleteBookmark = { bookmarkId ->
+                                plannerViewModel.deleteRouteBookmark(bookmarkId)
+                            }
+                        )
+                    }
+                }
+
+                PlannerDestination.HISTORY -> Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp)
+                ) {
+                    RouteHistorySheetContent(
+                        historyEntries = routeHistory,
+                        currentRouteId = routeId,
+                        isLoading = isRouteHistoryLoading,
+                        errorMessage = routeHistoryError,
+                        onRefresh = { plannerViewModel.loadRouteHistory(forceRefresh = true) },
+                        onOpenEntry = { entry -> selectedHistoryEntry = entry }
+                    )
+                }
+
+                PlannerDestination.OFFLINE -> LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    item {
+                        OfflineSupportCard(
+                            selectedCity = selectedCity,
+                            offlineStatusMessage = offlineStatusMessage,
+                            pendingSyncOperationCount = pendingSyncOperationCount,
+                            offlineRegionAvailable = offlineStoredRegion != null,
+                            isOfflineMapBusy = isOfflineMapBusy,
+                            offlineMapProgress = offlineMapProgress,
+                            offlineMapMessage = offlineMapMessage,
+                            onDownloadOfflineMap = { plannerViewModel.downloadOfflineMap() },
+                            onDeleteOfflineMap = { plannerViewModel.deleteOfflineMap() }
+                        )
+                    }
+                }
             }
         }
     }
@@ -792,54 +786,6 @@ fun RoutePlannerScreen() {
                         }
                     )
                 }
-            }
-        }
-    }
-
-    if (isBookmarksSheetOpen) {
-        ModalBottomSheet(
-            onDismissRequest = { isBookmarksSheetOpen = false }
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 16.dp, end = 16.dp, bottom = 32.dp)
-            ) {
-                RouteBookmarksSheetContent(
-                    bookmarks = routeBookmarks,
-                    activeBookmarkId = activeBookmarkId,
-                    onOpenBookmark = { bookmarkId ->
-                        plannerViewModel.openRouteBookmark(bookmarkId)
-                        isBookmarksSheetOpen = false
-                    },
-                    onDeleteBookmark = { bookmarkId ->
-                        plannerViewModel.deleteRouteBookmark(bookmarkId)
-                    }
-                )
-            }
-        }
-    }
-
-    if (isHistorySheetOpen) {
-        ModalBottomSheet(
-            onDismissRequest = {
-                isHistorySheetOpen = false
-                selectedHistoryEntry = null
-            }
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 16.dp, end = 16.dp, bottom = 32.dp)
-            ) {
-                RouteHistorySheetContent(
-                    historyEntries = routeHistory,
-                    currentRouteId = routeId,
-                    isLoading = isRouteHistoryLoading,
-                    errorMessage = routeHistoryError,
-                    onRefresh = { plannerViewModel.loadRouteHistory(forceRefresh = true) },
-                    onOpenEntry = { entry -> selectedHistoryEntry = entry }
-                )
             }
         }
     }
@@ -986,8 +932,129 @@ fun RoutePlannerScreen() {
     }
 }
 
+private enum class PlannerDestination {
+    PLANNER,
+    SAVED_ROUTES,
+    HISTORY,
+    OFFLINE
+}
+
 @Composable
-private fun PlannerModeHeader(mode: PlannerMode) {
+private fun PlannerTopBar(
+    currentDestination: PlannerDestination,
+    selectedLanguage: AppLanguage,
+    routeBookmarkCount: Int,
+    onDestinationSelected: (PlannerDestination) -> Unit,
+    onLanguageSelected: (AppLanguage) -> Unit
+) {
+    var isAppMenuOpen by remember { mutableStateOf(false) }
+    var isLanguageMenuOpen by remember { mutableStateOf(false) }
+
+    Surface(tonalElevation = 3.dp) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(2.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.app_name),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Text(
+                    text = destinationLabel(currentDestination, routeBookmarkCount),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            Box {
+                TextButton(onClick = { isLanguageMenuOpen = true }) {
+                    Text(languageShortLabel(selectedLanguage))
+                }
+                DropdownMenu(
+                    expanded = isLanguageMenuOpen,
+                    onDismissRequest = { isLanguageMenuOpen = false }
+                ) {
+                    AppLanguage.entries.forEach { language ->
+                        DropdownMenuItem(
+                            text = { Text(languageLabel(language)) },
+                            enabled = selectedLanguage != language,
+                            onClick = {
+                                isLanguageMenuOpen = false
+                                onLanguageSelected(language)
+                            }
+                        )
+                    }
+                }
+            }
+
+            Box {
+                TextButton(onClick = { isAppMenuOpen = true }) {
+                    Text(stringResource(R.string.app_menu_label))
+                }
+                DropdownMenu(
+                    expanded = isAppMenuOpen,
+                    onDismissRequest = { isAppMenuOpen = false }
+                ) {
+                    DropdownMenuItem(
+                        text = { Text(destinationLabel(PlannerDestination.PLANNER, routeBookmarkCount)) },
+                        enabled = currentDestination != PlannerDestination.PLANNER,
+                        onClick = {
+                            isAppMenuOpen = false
+                            onDestinationSelected(PlannerDestination.PLANNER)
+                        }
+                    )
+                    HorizontalDivider()
+                    listOf(
+                        PlannerDestination.SAVED_ROUTES,
+                        PlannerDestination.HISTORY,
+                        PlannerDestination.OFFLINE
+                    ).forEach { destination ->
+                        DropdownMenuItem(
+                            text = { Text(destinationLabel(destination, routeBookmarkCount)) },
+                            enabled = currentDestination != destination,
+                            onClick = {
+                                isAppMenuOpen = false
+                                onDestinationSelected(destination)
+                            }
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun destinationLabel(destination: PlannerDestination, routeBookmarkCount: Int): String =
+    when (destination) {
+        PlannerDestination.PLANNER -> stringResource(R.string.app_destination_planner)
+        PlannerDestination.SAVED_ROUTES -> if (routeBookmarkCount > 0) {
+            stringResource(R.string.action_open_route_bookmarks_with_count, routeBookmarkCount)
+        } else {
+            stringResource(R.string.action_open_route_bookmarks)
+        }
+        PlannerDestination.HISTORY -> stringResource(R.string.action_open_route_history)
+        PlannerDestination.OFFLINE -> stringResource(R.string.offline_support_title)
+    }
+
+private fun languageShortLabel(language: AppLanguage): String =
+    when (language) {
+        AppLanguage.ENGLISH -> "EN"
+        AppLanguage.SLOVAK -> "SK"
+    }
+
+@Composable
+private fun PlannerModeHeader(
+    mode: PlannerMode
+) {
     val title = when (mode) {
         PlannerMode.PLANNING -> stringResource(R.string.planner_mode_planning_title)
         PlannerMode.PREVIEW -> stringResource(R.string.planner_mode_preview_title)
@@ -1001,7 +1068,7 @@ private fun PlannerModeHeader(mode: PlannerMode) {
         PlannerMode.COMPLETED -> stringResource(R.string.planner_mode_completed_body)
     }
 
-    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(
             text = stringResource(R.string.screen_title),
             style = MaterialTheme.typography.labelLarge,
@@ -1020,6 +1087,13 @@ private fun PlannerModeHeader(mode: PlannerMode) {
         )
     }
 }
+
+@Composable
+private fun languageLabel(language: AppLanguage): String =
+    when (language) {
+        AppLanguage.ENGLISH -> stringResource(R.string.language_english)
+        AppLanguage.SLOVAK -> stringResource(R.string.language_slovak)
+    }
 
 @Composable
 private fun PlannerMapPanel(
