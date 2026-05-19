@@ -13,6 +13,7 @@
     <string name="planner_mode_completed_body">Review the completed route and leave feedback.</string>
     <string name="app_menu_label">Menu</string>
     <string name="app_destination_planner">Planner</string>
+    <string name="app_city_select">Choose city</string>
     <string name="language_selector_label">Language</string>
     <string name="language_english">English</string>
     <string name="language_slovak">Slovak</string>

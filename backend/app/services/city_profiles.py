@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from pathlib import Path
+import re
+import unicodedata
 
 import yaml
 
@@ -25,26 +27,42 @@ def load_city_profiles() -> list[dict]:
     return cities
 
 
+def normalized_city_token(value: str | None) -> str:
+    if not value:
+        return ""
+
+    ascii_value = unicodedata.normalize("NFKD", value).encode("ascii", "ignore").decode("ascii")
+    return re.sub(r"[^a-z0-9]+", "-", ascii_value.strip().lower()).strip("-")
+
+
+def city_profile_tokens(city: dict) -> set[str]:
+    return {
+        token
+        for token in {
+            normalized_city_token(str(city.get("slug", ""))),
+            normalized_city_token(str(city.get("name", ""))),
+        }
+        if token
+    }
+
+
 def city_profile_by_token(city_token: str | None) -> dict | None:
-    if not city_token:
+    normalized_token = normalized_city_token(city_token)
+    if not normalized_token:
         return None
 
-    normalized_token = city_token.strip().lower()
     for city in load_city_profiles():
-        if normalized_token in {
-            str(city.get("slug", "")).lower(),
-            str(city.get("name", "")).lower(),
-        }:
+        if normalized_token in city_profile_tokens(city):
             return city
     return None
 
 
 def city_profile_by_name(city_name: str | None) -> dict | None:
-    if not city_name:
+    normalized_name = normalized_city_token(city_name)
+    if not normalized_name:
         return None
 
-    normalized_name = city_name.strip().lower()
     for city in load_city_profiles():
-        if str(city.get("name", "")).lower() == normalized_name:
+        if normalized_city_token(str(city.get("name", ""))) == normalized_name:
             return city
     return None

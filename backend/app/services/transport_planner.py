@@ -9,6 +9,7 @@ from itertools import count
 from psycopg import Error as PsycopgError
 
 from app.db.database import get_connection
+from app.services.city_lookup import find_city_row
 from app.services.routing_service import RoutePoint, RoutingLeg, RoutingService, haversine_km, walking_speed_kmh
 
 TRANSPORT_MODE_WALK = "walk"
@@ -857,18 +858,7 @@ def load_transport_graph(city_profile: dict) -> TransportGraph | None:
     try:
         with get_connection() as conn:
             with conn.cursor() as cur:
-                cur.execute(
-                    """
-                    SELECT id
-                    FROM cities
-                    WHERE lower(name) = lower(%s)
-                      AND lower(country) = lower(%s)
-                    ORDER BY id
-                    LIMIT 1;
-                    """,
-                    (city_name, country),
-                )
-                city_row = cur.fetchone()
+                city_row = find_city_row(cur, city_name, country=country)
                 if not city_row:
                     return None
 

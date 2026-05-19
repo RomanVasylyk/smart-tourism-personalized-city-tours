@@ -52,6 +52,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.smarttourism.R
 import com.example.smarttourism.core.i18n.AppLanguage
 import com.example.smarttourism.data.model.RouteHistoryEntry
+import com.example.smarttourism.data.remote.dto.CityDto
 import com.example.smarttourism.data.remote.dto.RouteItemDto
 import com.example.smarttourism.data.remote.dto.RouteResponse
 import com.example.smarttourism.data.remote.dto.RouteStartDto
@@ -371,8 +372,16 @@ fun RoutePlannerScreen(
             PlannerTopBar(
                 currentDestination = currentDestination,
                 selectedLanguage = selectedLanguage,
+                cities = cities,
+                selectedCity = selectedCity,
                 routeBookmarkCount = routeBookmarks.size,
+                isCitySelectionEnabled = !isPlannerEditingLocked,
                 onDestinationSelected = { destination -> currentDestination = destination },
+                onCitySelected = { city ->
+                    if (selectedCity?.slug != city.slug) {
+                        plannerViewModel.selectCity(city)
+                    }
+                },
                 onLanguageSelected = onLanguageSelected
             )
 
@@ -388,20 +397,6 @@ fun RoutePlannerScreen(
 
                     when (plannerMode) {
                 PlannerMode.PLANNING -> {
-                    item {
-                        CitySelectorCard(
-                            cities = cities,
-                            selectedCity = selectedCity,
-                            enabled = !isPlannerEditingLocked,
-                            onCitySelected = { city ->
-                                if (selectedCity?.slug == city.slug) {
-                                    return@CitySelectorCard
-                                }
-                                plannerViewModel.selectCity(city)
-                            }
-                        )
-                    }
-
                     item {
                         PlannerMapPanel(
                             pois = pois,
@@ -943,14 +938,27 @@ private enum class PlannerDestination {
 private fun PlannerTopBar(
     currentDestination: PlannerDestination,
     selectedLanguage: AppLanguage,
+    cities: List<CityDto>,
+    selectedCity: CityDto?,
     routeBookmarkCount: Int,
+    isCitySelectionEnabled: Boolean,
     onDestinationSelected: (PlannerDestination) -> Unit,
+    onCitySelected: (CityDto) -> Unit,
     onLanguageSelected: (AppLanguage) -> Unit
 ) {
     var isAppMenuOpen by remember { mutableStateOf(false) }
+    var isCityMenuOpen by remember { mutableStateOf(false) }
     var isLanguageMenuOpen by remember { mutableStateOf(false) }
 
     Surface(tonalElevation = 3.dp) {
+        val cityLabel = selectedCity?.name ?: stringResource(
+            if (cities.isEmpty()) {
+                R.string.city_selector_empty
+            } else {
+                R.string.app_city_select
+            }
+        )
+
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -972,6 +980,30 @@ private fun PlannerTopBar(
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+            }
+
+            Box {
+                TextButton(
+                    onClick = { isCityMenuOpen = true },
+                    enabled = isCitySelectionEnabled && cities.isNotEmpty()
+                ) {
+                    Text(cityLabel)
+                }
+                DropdownMenu(
+                    expanded = isCityMenuOpen,
+                    onDismissRequest = { isCityMenuOpen = false }
+                ) {
+                    cities.forEach { city ->
+                        DropdownMenuItem(
+                            text = { Text(city.name) },
+                            enabled = selectedCity?.slug != city.slug,
+                            onClick = {
+                                isCityMenuOpen = false
+                                onCitySelected(city)
+                            }
+                        )
+                    }
+                }
             }
 
             Box {

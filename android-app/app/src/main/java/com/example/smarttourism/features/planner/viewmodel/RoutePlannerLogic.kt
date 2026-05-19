@@ -88,6 +88,7 @@ import java.time.OffsetDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
+import java.text.Normalizer
 import java.util.Locale
 import java.util.UUID
 import kotlin.math.ceil
@@ -272,9 +273,18 @@ internal fun RouteSessionStatus.isTerminal(): Boolean =
     this == RouteSessionStatus.COMPLETED || this == RouteSessionStatus.CANCELLED
 
 internal fun CityDto.matchesToken(token: String?): Boolean {
-    val normalizedToken = token?.trim()?.lowercase().orEmpty()
+    val normalizedToken = normalizedCityToken(token)
     return normalizedToken.isNotBlank() &&
-        normalizedToken in setOf(slug.lowercase(), name.lowercase())
+        normalizedToken in setOf(normalizedCityToken(slug), normalizedCityToken(name))
+}
+
+private fun normalizedCityToken(value: String?): String {
+    val asciiValue = Normalizer.normalize(value.orEmpty().trim(), Normalizer.Form.NFD)
+        .replace(Regex("\\p{Mn}+"), "")
+    return asciiValue
+        .lowercase(Locale.getDefault())
+        .replace(Regex("[^a-z0-9]+"), "-")
+        .trim('-')
 }
 
 internal fun CityDto.availableCategories(): List<String> =

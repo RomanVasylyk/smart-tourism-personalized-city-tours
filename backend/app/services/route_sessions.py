@@ -7,7 +7,7 @@ from pydantic import BaseModel, Field
 from psycopg.types.json import Jsonb
 
 from app.db.database import get_connection
-from app.services.city_profiles import city_profile_by_token
+from app.services.city_lookup import find_city_row
 
 SESSION_STATUSES = {"not_started", "in_progress", "paused", "completed", "cancelled"}
 
@@ -373,20 +373,7 @@ def upsert_session_pois(cur, session_id: UUID, route_snapshot_json: dict[str, An
 
 
 def get_city_id(cur, city: str) -> int:
-    city_profile = city_profile_by_token(city) or {}
-    city_name = city_profile.get("name") or city
-
-    cur.execute(
-        """
-        SELECT id
-        FROM cities
-        WHERE lower(name) = lower(%s)
-        ORDER BY id
-        LIMIT 1
-        """,
-        (city_name,),
-    )
-    city_row = cur.fetchone()
+    city_row = find_city_row(cur, city)
     if city_row is None:
         raise HTTPException(status_code=404, detail="City not found.")
 

@@ -878,7 +878,7 @@ internal class RoutePlannerViewModel(
                     RouteSessionCreateRequest(
                         id = activeRouteId,
                         device_id = deviceId,
-                        city = response.city,
+                        city = snapshot.request.city.ifBlank { response.city },
                         status = RouteSessionStatus.CANCELLED.rawValue,
                         start_lat = response.start.lat,
                         start_lon = response.start.lon,
@@ -907,7 +907,7 @@ internal class RoutePlannerViewModel(
         routeHistory = sortRouteHistoryEntries(repository.loadRouteHistoryEntries())
         val activeSession = repository.loadActiveSession()
         val savedSnapshot = activeSession?.snapshot ?: repository.loadSnapshot()
-        var restoredCityToken = savedSnapshot?.request?.city
+        var restoredCityToken = savedSnapshot?.request?.city ?: savedSnapshot?.response?.city
         pendingSyncOperationCount = repository.getPendingSyncOperationCount()
 
         savedSnapshot?.let { snapshot ->
@@ -946,7 +946,7 @@ internal class RoutePlannerViewModel(
 
             if (remoteSession != null) {
                 remoteSession.toSavedRouteSnapshot()?.let { snapshot ->
-                    restoredCityToken = snapshot.request.city
+                    restoredCityToken = snapshot.request.city.ifBlank { snapshot.response.city }
                     restoreSnapshot(snapshot)
                     routeId = remoteSession.id
                     routeStartedAt = remoteSession.started_at
@@ -1004,9 +1004,8 @@ internal class RoutePlannerViewModel(
             }
         }
 
-        refreshRouteHistory(forceRefresh = true)
-
         loadCities(restoredCityToken)
+        refreshRouteHistory(forceRefresh = true)
     }
 
     private fun restoreSnapshot(snapshot: SavedRouteSnapshot) {
@@ -1058,29 +1057,60 @@ internal class RoutePlannerViewModel(
     }
 
     private suspend fun loadCities(restoredCityToken: String?) {
+        val cachedCities = repository.getCachedCities()
+        if (cachedCities.isNotEmpty()) {
+            cities = cachedCities
+            selectLoadedCity(restoredCityToken)
+            offlineStatusMessage = offlineCitiesFallbackMessage
+            selectedCity?.let { city ->
+                loadPoisForCity(city)
+            }
+        }
+
         try {
             val remoteCities = repository.fetchCities()
             repository.cacheCities(remoteCities)
             cities = remoteCities
+            selectLoadedCity(restoredCityToken)
             offlineStatusMessage = null
             refreshPendingSyncOperationCount()
         } catch (_: Exception) {
-            cities = repository.getCachedCities()
-            offlineStatusMessage = if (cities.isNotEmpty()) offlineCitiesFallbackMessage else null
+            if (cachedCities.isEmpty()) {
+                cities = repository.getCachedCities()
+                selectLoadedCity(restoredCityToken)
+            }
+            offlineStatusMessage = if (cities.isNotEmpty()) {
+                offlineCitiesFallbackMessage
+            } else {
+                null
+            }
         }
 
+        if (cachedCities.isEmpty()) {
+            selectedCity?.let { city ->
+                loadPoisForCity(city)
+            }
+        }
+    }
+
+    private fun selectLoadedCity(restoredCityToken: String?) {
         selectedCity = cities.firstOrNull { city -> city.matchesToken(restoredCityToken) }
+            ?: cities.firstOrNull { city -> city.matchesToken(routeResponse?.city) }
+            ?: selectedCity?.let { previousCity ->
+                cities.firstOrNull { city -> city.matchesToken(previousCity.slug) }
+            }
             ?: cities.firstOrNull { city -> city.matchesToken(DefaultCitySlug) }
             ?: cities.firstOrNull()
+
+        selectedCity?.let { city ->
+            currentRouteRequest = currentRouteRequest?.copy(city = city.slug)
+            routeResponse = routeResponse?.copy(city = city.slug)
+        }
 
         if (routeResponse == null) {
             selectedCity?.let { city ->
                 startPoint = city.toStartPoint()
             }
-        }
-
-        selectedCity?.let { city ->
-            loadPoisForCity(city)
         }
     }
 
@@ -1106,6 +1136,12 @@ internal class RoutePlannerViewModel(
             allowPublicTransport = false
         }
 
+        val cachedPois = repository.getCachedPois(city.slug)
+        if (cachedPois.isNotEmpty()) {
+            pois = cachedPois
+            poiError = null
+        }
+
         try {
             val remotePois = repository.fetchPois(city.slug)
             repository.cachePois(city.slug, remotePois)
@@ -1114,8 +1150,6 @@ internal class RoutePlannerViewModel(
             offlineStatusMessage = null
             refreshPendingSyncOperationCount()
         } catch (e: Exception) {
-            val cachedPois = repository.getCachedPois(city.slug)
-            pois = cachedPois
             poiError = if (cachedPois.isEmpty()) {
                 e.toUserMessage(poiPreviewFailedMessage)
             } else {
@@ -1218,7 +1252,7 @@ internal class RoutePlannerViewModel(
         return RouteSessionCreateRequest(
             id = sessionRouteId,
             device_id = deviceId,
-            city = response.city,
+            city = snapshot.request.city.ifBlank { response.city },
             status = status.rawValue,
             start_lat = response.start.lat,
             start_lon = response.start.lon,

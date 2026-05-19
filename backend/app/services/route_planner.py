@@ -7,6 +7,7 @@ from pydantic import BaseModel, Field
 from psycopg import Error as PsycopgError
 
 from app.db.database import get_connection
+from app.services.city_lookup import find_city_row
 from app.services.city_profiles import city_profile_by_token
 from app.services.feedback_stats import load_planner_feedback_profile
 from app.services.route_planning.opening_hours import is_poi_open_for_visit
@@ -73,7 +74,6 @@ def parse_start_datetime(raw_value: str | None) -> datetime:
 
 def get_route_candidates(request: RouteGenerateRequest) -> list[dict]:
     city_profile = city_profile_by_token(request.city) or {}
-    city_name = city_profile.get("name") or request.city
     routing_limits = city_profile.get("routing_limits") or {}
     limit = int(routing_limits.get("max_poi_candidates") or 300)
 
@@ -125,17 +125,17 @@ def get_route_candidates(request: RouteGenerateRequest) -> list[dict]:
         cfs.completed_session_count AS category_feedback_completed_session_count
     """
 
-    def build_sql(include_feedback: bool) -> tuple[str, list]:
+    def build_sql(include_feedback: bool, city_id: int) -> tuple[str, list]:
         sql = base_select
         if include_feedback:
             sql = sql.replace("p.wikipedia_url", f"p.wikipedia_url{feedback_columns}")
             sql += feedback_joins
 
         sql += """
-            WHERE lower(c.name) = lower(%s)
+            WHERE c.id = %s
               AND p.is_active = TRUE
         """
-        params: list = [city_name]
+        params: list = [city_id]
 
         if request.interests:
             sql += " AND p.category = ANY(%s)"
@@ -154,11 +154,16 @@ def get_route_candidates(request: RouteGenerateRequest) -> list[dict]:
 
     with get_connection() as conn:
         with conn.cursor() as cur:
-            sql, params = build_sql(include_feedback=True)
+            city_row = find_city_row(cur, city_profile.get("name") or request.city)
+            if city_row is None:
+                return []
+
+            city_id = int(city_row["id"])
+            sql, params = build_sql(include_feedback=True, city_id=city_id)
             try:
                 cur.execute(sql, params)
             except PsycopgError:
-                fallback_sql, fallback_params = build_sql(include_feedback=False)
+                fallback_sql, fallback_params = build_sql(include_feedback=False, city_id=city_id)
                 cur.execute(fallback_sql, fallback_params)
             rows = cur.fetchall()
 
@@ -175,11 +180,11 @@ def get_route_candidates(request: RouteGenerateRequest) -> list[dict]:
             preferred_sql += feedback_joins
             preferred_sql = preferred_sql.replace("p.wikipedia_url", f"p.wikipedia_url{feedback_columns}")
             preferred_sql += """
-                WHERE lower(c.name) = lower(%s)
+                WHERE c.id = %s
                   AND p.is_active = TRUE
                   AND p.id = ANY(%s)
             """
-            cur.execute(preferred_sql, (city_name, missing_preferred_ids))
+            cur.execute(preferred_sql, (city_id, missing_preferred_ids))
             preferred_rows = cur.fetchall()
             return rows + preferred_rows
 

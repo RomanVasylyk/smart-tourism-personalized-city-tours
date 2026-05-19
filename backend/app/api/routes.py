@@ -3,7 +3,8 @@ from uuid import UUID
 from fastapi import APIRouter
 
 from app.db.database import get_connection
-from app.services.city_profiles import city_profile_by_token, load_city_profiles
+from app.services.city_lookup import find_city_row
+from app.services.city_profiles import city_profile_by_token, load_city_profiles, normalized_city_token
 from app.services.route_planner import RouteGenerateRequest, RouteLegRequest, generate_route, generate_route_leg
 from app.services.route_sessions import (
     RouteFeedbackRequest,
@@ -41,12 +42,12 @@ def get_cities():
 
     rows_by_name = {}
     for row in rows:
-        rows_by_name.setdefault(row["name"].strip().lower(), row)
+        rows_by_name.setdefault(normalized_city_token(row["name"]), row)
     city_profiles = load_city_profiles()
     ordered_rows = []
 
     for profile in city_profiles:
-        row = rows_by_name.get(str(profile.get("name", "")).strip().lower())
+        row = rows_by_name.get(normalized_city_token(str(profile.get("name", ""))))
         if row is None:
             continue
 
@@ -68,10 +69,13 @@ def get_cities():
 @router.get("/pois")
 def get_pois(city: str = "nitra"):
     city_profile = city_profile_by_token(city) or {}
-    city_name = city_profile.get("name") or city
 
     with get_connection() as conn:
         with conn.cursor() as cur:
+            city_row = find_city_row(cur, city_profile.get("name") or city)
+            if city_row is None:
+                return []
+
             cur.execute(
                 """
                 SELECT
@@ -85,11 +89,10 @@ def get_pois(city: str = "nitra"):
                     p.base_score,
                     p.wikipedia_url
                 FROM pois p
-                         JOIN cities c ON c.id = p.city_id
-                WHERE lower(c.name) = lower(%s)
+                WHERE p.city_id = %s
                 ORDER BY p.base_score DESC NULLS LAST, p.name
                 """,
-                (city_name,),
+                (city_row["id"],),
             )
             return cur.fetchall()
 
