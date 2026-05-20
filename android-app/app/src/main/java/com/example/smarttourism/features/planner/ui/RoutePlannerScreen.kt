@@ -1081,6 +1081,7 @@ private fun languageShortLabel(language: AppLanguage): String =
     when (language) {
         AppLanguage.ENGLISH -> "EN"
         AppLanguage.SLOVAK -> "SK"
+        AppLanguage.UKRAINIAN -> "UK"
     }
 
 @Composable
@@ -1125,6 +1126,7 @@ private fun languageLabel(language: AppLanguage): String =
     when (language) {
         AppLanguage.ENGLISH -> stringResource(R.string.language_english)
         AppLanguage.SLOVAK -> stringResource(R.string.language_slovak)
+        AppLanguage.UKRAINIAN -> stringResource(R.string.language_ukrainian)
     }
 
 @Composable

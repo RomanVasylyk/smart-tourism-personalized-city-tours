@@ -17,6 +17,7 @@
     <string name="language_selector_label">Jazyk</string>
     <string name="language_english">Angličtina</string>
     <string name="language_slovak">Slovenčina</string>
+    <string name="language_ukrainian">Ukrajinčina</string>
 
     <string name="status_location_unavailable">Poloha nie je dostupná</string>
     <string name="status_poi_preview_unavailable">Náhľad miest nie je dostupný</string>
