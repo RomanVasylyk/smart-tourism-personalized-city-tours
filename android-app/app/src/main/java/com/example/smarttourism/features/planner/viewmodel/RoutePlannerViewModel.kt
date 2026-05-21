@@ -137,6 +137,8 @@ internal class RoutePlannerViewModel(
 
     var selectedInterests by mutableStateOf<List<String>>(emptyList())
         private set
+    var requiredPoiIds by mutableStateOf<List<Int>>(emptyList())
+        private set
     var visitedPoiIds by mutableStateOf<List<Int>>(emptyList())
         private set
     var skippedPoiIds by mutableStateOf<List<Int>>(emptyList())
@@ -190,6 +192,7 @@ internal class RoutePlannerViewModel(
         selectedCity = city
         activeBookmarkId = null
         currentRouteRequest = null
+        requiredPoiIds = emptyList()
         clearRouteMessages()
         clearDisplayedRoute()
         startPoint = city.toStartPoint()
@@ -256,6 +259,40 @@ internal class RoutePlannerViewModel(
         invalidateRoutePreviewIfAllowed()
     }
 
+    fun toggleRequiredPoi(poiId: Int) {
+        if (routeSessionStatus == RouteSessionStatus.IN_PROGRESS || routeSessionStatus == RouteSessionStatus.PAUSED) {
+            return
+        }
+        requiredPoiIds = if (poiId in requiredPoiIds) {
+            requiredPoiIds.filterNot { selectedPoiId -> selectedPoiId == poiId }
+        } else {
+            (requiredPoiIds + poiId).distinct()
+        }
+        currentRouteRequest = currentRouteRequest?.copy(preferred_poi_ids = requiredPoiIds)
+        hasNoGeneratedStops = false
+        invalidateRoutePreviewIfAllowed()
+    }
+
+    fun removeRequiredPoi(poiId: Int) {
+        if (poiId !in requiredPoiIds) {
+            return
+        }
+        requiredPoiIds = requiredPoiIds.filterNot { selectedPoiId -> selectedPoiId == poiId }
+        currentRouteRequest = currentRouteRequest?.copy(preferred_poi_ids = requiredPoiIds)
+        hasNoGeneratedStops = false
+        invalidateRoutePreviewIfAllowed()
+    }
+
+    fun clearRequiredPois() {
+        if (requiredPoiIds.isEmpty()) {
+            return
+        }
+        requiredPoiIds = emptyList()
+        currentRouteRequest = currentRouteRequest?.copy(preferred_poi_ids = emptyList())
+        hasNoGeneratedStops = false
+        invalidateRoutePreviewIfAllowed()
+    }
+
     fun generateRoute() {
         viewModelScope.launch {
             if (!repository.isNetworkAvailable()) {
@@ -281,8 +318,7 @@ internal class RoutePlannerViewModel(
                 return_to_start = returnToStart,
                 start_datetime = startDateTime.truncatedTo(ChronoUnit.MINUTES).toString(),
                 respect_opening_hours = respectOpeningHours,
-                preferred_poi_ids = currentRouteRequest?.preferred_poi_ids
-                    .orEmpty()
+                preferred_poi_ids = requiredPoiIds
                     .filterNot { poiId -> poiId in visitedPoiIds || poiId in skippedPoiIds },
                 transport_mode = if (allowPublicTransport && isPublicTransportAvailable) {
                     "walk_or_mhd"
@@ -543,6 +579,7 @@ internal class RoutePlannerViewModel(
                 .orEmpty()
                 .filterNot { preferredPoiId -> preferredPoiId == poiId }
         )
+        requiredPoiIds = requiredPoiIds.filterNot { requiredPoiId -> requiredPoiId == poiId }
         val nextPendingPoi = nextPendingPoi(routeItems, visitedPoiIds, updatedSkipped)
         currentTargetPoiId = nextPendingPoi?.poi_id
         currentRouteSnapshot()?.let { snapshot ->
@@ -601,6 +638,7 @@ internal class RoutePlannerViewModel(
             exclude_poi_ids = (request.exclude_poi_ids.orEmpty() + poiId).distinct(),
             preferred_poi_ids = request.preferred_poi_ids.orEmpty().filterNot { preferredPoiId -> preferredPoiId == poiId }
         )
+        requiredPoiIds = requiredPoiIds.filterNot { requiredPoiId -> requiredPoiId == poiId }
         val updatedResponse = removePreviewRoutePoi(response, poiId)
 
         currentRouteRequest = updatedRequest
@@ -661,6 +699,7 @@ internal class RoutePlannerViewModel(
                     return@launch
                 }
                 currentRouteRequest = updatedRequest
+                requiredPoiIds = updatedPreferredPoiIds
                 routeResponse = generatedRoute
                 hasPendingRouteChanges = false
                 repository.saveSnapshot(
@@ -1034,6 +1073,7 @@ internal class RoutePlannerViewModel(
         allowPublicTransport = snapshot.request.transport_mode == "walk_or_mhd"
         startDateTime = parseRouteStartDateTime(snapshot.request.start_datetime)
         selectedInterests = snapshot.request.interests
+        requiredPoiIds = snapshot.request.preferred_poi_ids.orEmpty().distinct()
     }
 
     private fun restoreActiveSession(session: ActiveRouteSession) {

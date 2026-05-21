@@ -34,6 +34,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -366,6 +367,186 @@ internal fun StartPointCard(
                             stringResource(R.string.action_use_my_location)
                         }
                     )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+@OptIn(ExperimentalLayoutApi::class)
+internal fun RequiredPlacesCard(
+    selectedPois: List<PoiDto>,
+    availablePoiCount: Int,
+    isEditingEnabled: Boolean,
+    onChooseOnMap: () -> Unit,
+    onChooseFromList: () -> Unit,
+    onRemovePoi: (Int) -> Unit,
+    onClearAll: () -> Unit
+) {
+    ElevatedCard {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Text(
+                text = stringResource(R.string.route_required_places_title),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold
+            )
+            Text(
+                text = stringResource(R.string.route_required_places_body),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
+            if (selectedPois.isEmpty()) {
+                Text(
+                    text = stringResource(R.string.route_required_places_empty),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            } else {
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    selectedPois.sortedBy { poi -> poi.name }.forEach { poi ->
+                        Surface(
+                            shape = RoundedCornerShape(999.dp),
+                            color = MaterialTheme.colorScheme.primaryContainer
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(start = 12.dp, end = 6.dp, top = 6.dp, bottom = 6.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                Column {
+                                    Text(
+                                        text = poi.name,
+                                        style = MaterialTheme.typography.labelLarge,
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                    Text(
+                                        text = categoryLabel(poi.category),
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                                    )
+                                }
+                                TextButton(
+                                    onClick = { onRemovePoi(poi.id) },
+                                    enabled = isEditingEnabled
+                                ) {
+                                    Text(stringResource(R.string.action_remove_stop))
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                OutlinedButton(
+                    onClick = onChooseOnMap,
+                    enabled = isEditingEnabled && availablePoiCount > 0,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(stringResource(R.string.action_choose_required_places_on_map))
+                }
+                Button(
+                    onClick = onChooseFromList,
+                    enabled = isEditingEnabled && availablePoiCount > 0,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(stringResource(R.string.action_choose_required_places_from_list))
+                }
+            }
+
+            if (selectedPois.isNotEmpty()) {
+                TextButton(
+                    onClick = onClearAll,
+                    enabled = isEditingEnabled,
+                    modifier = Modifier.align(Alignment.End)
+                ) {
+                    Text(stringResource(R.string.action_clear_required_places))
+                }
+            }
+        }
+    }
+}
+
+@Composable
+internal fun RequiredPlacesPickerSheetContent(
+    pois: List<PoiDto>,
+    selectedPoiIds: List<Int>,
+    isEditingEnabled: Boolean,
+    onTogglePoi: (Int) -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text(
+                text = stringResource(R.string.route_required_places_picker_title),
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.SemiBold
+            )
+            Text(
+                text = stringResource(R.string.route_required_places_picker_body),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+
+        if (pois.isEmpty()) {
+            Text(
+                text = stringResource(R.string.route_required_places_picker_empty),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        } else {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 480.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(
+                    items = pois.sortedWith(compareBy<PoiDto> { poi -> poi.category }.thenBy { poi -> poi.name }),
+                    key = { poi -> poi.id }
+                ) { poi ->
+                    val selected = poi.id in selectedPoiIds
+                    SelectableRow(
+                        enabled = isEditingEnabled,
+                        onClick = { onTogglePoi(poi.id) }
+                    ) {
+                        Checkbox(
+                            checked = selected,
+                            onCheckedChange = null,
+                            enabled = isEditingEnabled
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = poi.name,
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                            Text(
+                                text = categoryLabel(poi.category),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
                 }
             }
         }

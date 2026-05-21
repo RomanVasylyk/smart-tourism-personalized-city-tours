@@ -83,6 +83,11 @@ private const val VisitedStopIconHeightDp = 44
 private const val VisitedStopOuterColor = "#FFFFFF"
 private const val VisitedStopFillColor = "#16A34A"
 private const val VisitedStopCheckColor = "#FFFFFF"
+private const val SelectedPoiIconWidthDp = 38
+private const val SelectedPoiIconHeightDp = 44
+private const val SelectedPoiOuterColor = "#FFFFFF"
+private const val SelectedPoiFillColor = "#0F766E"
+private const val SelectedPoiCheckColor = "#FFFFFF"
 private const val StartPointIconWidthDp = 60
 private const val StartPointIconHeightDp = 66
 private const val StartPointOuterColor = "#FFFFFF"
@@ -131,6 +136,7 @@ private data class MapTextResources(
     val routeStopTitleFormat: String,
     val visitedRouteStopTitleFormat: String,
     val routeStopSnippetFormat: String,
+    val selectedPoiSnippetFormat: String,
     val categoryLabels: Map<String, String>
 )
 
@@ -148,7 +154,10 @@ fun PoiMapScreen(
     isLoading: Boolean,
     isFullScreen: Boolean = false,
     isSelectingStart: Boolean,
+    isSelectingRoutePois: Boolean = false,
+    selectedRoutePoiIds: Set<Int> = emptySet(),
     onStartPointSelected: (Double, Double) -> Unit,
+    onRoutePoiSelected: (PoiDto) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -162,6 +171,8 @@ fun PoiMapScreen(
     }
     val currentLocationIcon = remember(context) { createCurrentLocationIcon(context) }
     val visitedRouteStopIcon = remember(context) { createVisitedRouteStopIcon(context) }
+    val selectedPoiIcon = remember(context) { createSelectedPoiIcon(context) }
+    var selectablePoiMarkers by remember(mapView) { mutableStateOf<Map<Long, PoiDto>>(emptyMap()) }
 
     Box(modifier = modifier) {
         AndroidView(
@@ -179,7 +190,7 @@ fun PoiMapScreen(
             modifier = Modifier.fillMaxSize()
         )
 
-        DisposableEffect(map, isSelectingStart, onStartPointSelected) {
+        DisposableEffect(map, isSelectingStart, isSelectingRoutePois, selectablePoiMarkers, onStartPointSelected, onRoutePoiSelected) {
             val mapInstance = map
             if (mapInstance == null) {
                 onDispose { }
@@ -193,9 +204,20 @@ fun PoiMapScreen(
                     true
                 }
 
+                val markerClickListener = MapLibreMap.OnMarkerClickListener { marker ->
+                    if (!isSelectingRoutePois) {
+                        return@OnMarkerClickListener false
+                    }
+                    val poi = selectablePoiMarkers[marker.id] ?: return@OnMarkerClickListener false
+                    onRoutePoiSelected(poi)
+                    true
+                }
+
                 mapInstance.addOnMapClickListener(clickListener)
+                mapInstance.setOnMarkerClickListener(markerClickListener)
                 onDispose {
                     mapInstance.removeOnMapClickListener(clickListener)
+                    mapInstance.setOnMarkerClickListener(null)
                 }
             }
         }
@@ -212,16 +234,18 @@ fun PoiMapScreen(
             visitedPoiIds,
             skippedPoiIds,
             isRouteActive,
+            isSelectingRoutePois,
+            selectedRoutePoiIds,
             textResources
         ) {
             val mapInstance = map ?: return@LaunchedEffect
             if (!isStyleLoaded) return@LaunchedEffect
 
-            renderMapContent(
+            selectablePoiMarkers = renderMapContent(
                 context = context,
                 map = mapInstance,
                 pois = pois,
-                routeResponse = routeResponse,
+                routeResponse = if (isSelectingRoutePois) null else routeResponse,
                 startLat = startLat,
                 startLon = startLon,
                 startPointIcon = startPointIcon,
@@ -231,6 +255,9 @@ fun PoiMapScreen(
                 isRouteActive = isRouteActive,
                 currentLocationIcon = currentLocationIcon,
                 visitedRouteStopIcon = visitedRouteStopIcon,
+                selectedPoiIcon = selectedPoiIcon,
+                isSelectingRoutePois = isSelectingRoutePois,
+                selectedRoutePoiIds = selectedRoutePoiIds,
                 textResources = textResources
             )
         }
@@ -244,6 +271,7 @@ fun PoiMapScreen(
             defaultZoom,
             pois,
             isSelectingStart,
+            isSelectingRoutePois,
             visitedPoiIds,
             skippedPoiIds,
             isRouteActive
@@ -252,7 +280,7 @@ fun PoiMapScreen(
             if (!isStyleLoaded) return@LaunchedEffect
 
             val cameraTarget = when {
-                isSelectingStart -> AutoCameraTarget(
+                isSelectingStart || isSelectingRoutePois -> AutoCameraTarget(
                     key = "select:$startLat:$startLon:${defaultZoom ?: DefaultZoom}",
                     lat = startLat,
                     lon = startLon,
@@ -323,6 +351,19 @@ fun PoiMapScreen(
             }
         }
 
+        if (isSelectingRoutePois) {
+            Surface(
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .padding(12.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.map_poi_selection_hint, selectedRoutePoiIds.size),
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
+                )
+            }
+        }
+
         MapLocationButton(
             enabled = currentLocation != null,
             onClick = {
@@ -384,6 +425,7 @@ private fun mapTextResources(): MapTextResources =
         routeStopTitleFormat = stringResource(R.string.route_stop_title),
         visitedRouteStopTitleFormat = stringResource(R.string.map_visited_route_stop_title),
         routeStopSnippetFormat = stringResource(R.string.map_route_stop_snippet),
+        selectedPoiSnippetFormat = stringResource(R.string.map_poi_selected_snippet),
         categoryLabels = mapOf(
             "attraction" to stringResource(R.string.category_attraction),
             "museum" to stringResource(R.string.category_museum),
@@ -410,9 +452,13 @@ private fun renderMapContent(
     isRouteActive: Boolean,
     currentLocationIcon: Icon,
     visitedRouteStopIcon: Icon,
+    selectedPoiIcon: Icon,
+    isSelectingRoutePois: Boolean,
+    selectedRoutePoiIds: Set<Int>,
     textResources: MapTextResources
-) {
+): Map<Long, PoiDto> {
     map.clear()
+    val selectablePoiMarkers = mutableMapOf<Long, PoiDto>()
 
     val startPoint = LatLng(startLat, startLon)
     map.addMarker(
@@ -522,14 +568,35 @@ private fun renderMapContent(
         }
 
         pois.isNotEmpty() -> {
-            map.addMarkers(
+            val poiMarkers = map.addMarkers(
                 pois.map { poi ->
+                    val isSelected = poi.id in selectedRoutePoiIds
                     MarkerOptions()
                         .position(LatLng(poi.lat, poi.lon))
+                        .apply {
+                            if (isSelected) {
+                                icon(selectedPoiIcon)
+                            }
+                        }
                         .title(poi.name)
-                        .snippet(poi.category.toDisplayLabel(textResources.categoryLabels))
+                        .snippet(
+                            if (isSelected) {
+                                String.format(
+                                    Locale.getDefault(),
+                                    textResources.selectedPoiSnippetFormat,
+                                    poi.category.toDisplayLabel(textResources.categoryLabels)
+                                )
+                            } else {
+                                poi.category.toDisplayLabel(textResources.categoryLabels)
+                            }
+                        )
                 }
             )
+            if (isSelectingRoutePois) {
+                poiMarkers.forEachIndexed { index, marker ->
+                    selectablePoiMarkers[marker.id] = pois[index]
+                }
+            }
         }
     }
 
@@ -542,6 +609,8 @@ private fun renderMapContent(
                 .snippet("${formatCoordinate(currentLocation.lat)}, ${formatCoordinate(currentLocation.lon)}")
         )
     }
+
+    return selectablePoiMarkers
 }
 
 private fun drawRoutePaths(
@@ -985,6 +1054,64 @@ private fun createVisitedRouteStopIcon(context: Context): Icon {
 
     paint.apply {
         color = Color.parseColor(VisitedStopCheckColor)
+        style = Paint.Style.STROKE
+        strokeCap = Paint.Cap.ROUND
+        strokeJoin = Paint.Join.ROUND
+        strokeWidth = 3f * density
+    }
+    canvas.drawPath(
+        Path().apply {
+            moveTo(centerX - 5f * density, circleY)
+            lineTo(centerX - 1f * density, circleY + 4f * density)
+            lineTo(centerX + 6f * density, circleY - 5f * density)
+        },
+        paint
+    )
+
+    return IconFactory.getInstance(context).fromBitmap(bitmap)
+}
+
+private fun createSelectedPoiIcon(context: Context): Icon {
+    val density = context.resources.displayMetrics.density
+    val width = (SelectedPoiIconWidthDp * density).roundToInt()
+    val height = (SelectedPoiIconHeightDp * density).roundToInt()
+    val centerX = width / 2f
+    val circleY = 15f * density
+
+    val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+    val canvas = Canvas(bitmap)
+    val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        style = Paint.Style.FILL
+    }
+
+    paint.color = Color.parseColor(SelectedPoiOuterColor)
+    canvas.drawPath(
+        locationPinPath(
+            centerX = centerX,
+            circleY = circleY,
+            circleRadius = 16f * density,
+            tipY = height - 2f * density,
+            shoulderY = 28f * density,
+            shoulderHalfWidth = 8f * density
+        ),
+        paint
+    )
+
+    paint.color = Color.parseColor(SelectedPoiFillColor)
+    canvas.drawPath(
+        locationPinPath(
+            centerX = centerX,
+            circleY = circleY,
+            circleRadius = 12f * density,
+            tipY = height - 7f * density,
+            shoulderY = 25f * density,
+            shoulderHalfWidth = 5.8f * density
+        ),
+        paint
+    )
+
+    paint.apply {
+        color = Color.parseColor(SelectedPoiCheckColor)
         style = Paint.Style.STROKE
         strokeCap = Paint.Cap.ROUND
         strokeJoin = Paint.Join.ROUND

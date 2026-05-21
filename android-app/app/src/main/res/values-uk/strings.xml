@@ -81,6 +81,9 @@
     <string name="action_update_route_bookmark">Оновити закладку</string>
     <string name="action_replace_with_best">Найкраща заміна</string>
     <string name="action_choose_stop">Вибрати</string>
+    <string name="action_choose_required_places_on_map">Карта</string>
+    <string name="action_choose_required_places_from_list">Список</string>
+    <string name="action_clear_required_places">Очистити вибрані місця</string>
     <string name="action_leave_feedback">Залишити відгук</string>
     <string name="action_edit_feedback">Редагувати відгук</string>
     <string name="action_done">Готово</string>
@@ -133,6 +136,12 @@
     <string name="route_replace_stop_title">Замінити точку</string>
     <string name="route_replace_stop_body">Виберіть, чим замінити %1$s, або дозвольте планувальнику запропонувати найкращий варіант.</string>
     <string name="route_replace_candidates_empty">Для поточних фільтрів немає доступних ручних варіантів.</string>
+    <string name="route_required_places_title">Місця, які точно хочеться відвідати</string>
+    <string name="route_required_places_body">Виберіть POI, які згенерований маршрут має спробувати включити. Якщо часу замало, збільште доступний час.</string>
+    <string name="route_required_places_empty">Обов’язкові місця не вибрані.</string>
+    <string name="route_required_places_picker_title">Вибрати місця</string>
+    <string name="route_required_places_picker_body">Виберіть одне або кілька місць, які треба пріоритезувати в наступному згенерованому маршруті.</string>
+    <string name="route_required_places_picker_empty">Для цього міста поки немає доступних POI.</string>
     <string name="action_start_route">Почати маршрут</string>
     <string name="action_pause_route">Пауза</string>
     <string name="action_resume_route">Продовжити</string>
@@ -223,6 +232,8 @@
     <string name="map_route_stop_snippet">%1$s &#8226; пішки %2$d хв &#8226; відвідування %3$d хв</string>
     <string name="map_current_location_title">Поточне GPS-місцезнаходження</string>
     <string name="map_visited_route_stop_title">Відвідано: %1$s</string>
+    <string name="map_poi_selection_hint">Натискайте на маркери POI, щоб додати їх у маршрут. Вибрано: %1$d</string>
+    <string name="map_poi_selected_snippet">%1$s &#8226; вибрано для маршруту</string>
 
     <string name="category_attraction">Атракція</string>
     <string name="category_museum">Музей</string>

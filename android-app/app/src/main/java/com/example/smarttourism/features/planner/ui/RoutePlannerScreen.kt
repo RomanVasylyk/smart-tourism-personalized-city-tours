@@ -53,6 +53,7 @@ import com.example.smarttourism.R
 import com.example.smarttourism.core.i18n.AppLanguage
 import com.example.smarttourism.data.model.RouteHistoryEntry
 import com.example.smarttourism.data.remote.dto.CityDto
+import com.example.smarttourism.data.remote.dto.PoiDto
 import com.example.smarttourism.data.remote.dto.RouteItemDto
 import com.example.smarttourism.data.remote.dto.RouteResponse
 import com.example.smarttourism.data.remote.dto.RouteStartDto
@@ -102,6 +103,7 @@ fun RoutePlannerScreen(
     val trackingError = plannerViewModel.trackingError
     val routeFeedback = plannerViewModel.routeFeedback
     val selectedInterests = plannerViewModel.selectedInterests
+    val requiredPoiIds = plannerViewModel.requiredPoiIds
     val visitedPoiIds = plannerViewModel.visitedPoiIds
     val skippedPoiIds = plannerViewModel.skippedPoiIds
     val routeItems = plannerViewModel.routeItems
@@ -121,10 +123,12 @@ fun RoutePlannerScreen(
             routeSessionStatus != RouteSessionStatus.CANCELLED
 
     var isSelectingStart by remember { mutableStateOf(false) }
+    var isSelectingRequiredPlacesOnMap by remember { mutableStateOf(false) }
     var isLocating by remember { mutableStateOf(false) }
     var isMapFullScreen by remember { mutableStateOf(false) }
     var isParameterSheetOpen by remember { mutableStateOf(false) }
     var isStopsSheetOpen by remember { mutableStateOf(false) }
+    var isRequiredPlacesSheetOpen by remember { mutableStateOf(false) }
     var isFeedbackDialogOpen by remember { mutableStateOf(false) }
     var currentDestination by remember { mutableStateOf(PlannerDestination.PLANNER) }
     var selectedHistoryEntry by remember { mutableStateOf<RouteHistoryEntry?>(null) }
@@ -144,6 +148,7 @@ fun RoutePlannerScreen(
         }
         if (plannerMode == PlannerMode.ACTIVE || plannerMode == PlannerMode.COMPLETED) {
             isSelectingStart = false
+            isSelectingRequiredPlacesOnMap = false
         }
         if (plannerMode != PlannerMode.ACTIVE) {
             isStopsSheetOpen = false
@@ -179,8 +184,21 @@ fun RoutePlannerScreen(
     fun updateStartPoint(lat: Double, lon: Double) {
         plannerViewModel.updateStartPoint(lat, lon)
         isSelectingStart = false
+        isSelectingRequiredPlacesOnMap = false
         isMapFullScreen = false
         locationError = null
+    }
+
+    fun openRequiredPlacesMapPicker() {
+        isSelectingStart = false
+        isSelectingRequiredPlacesOnMap = true
+        isMapFullScreen = true
+        locationError = null
+    }
+
+    fun selectedRequiredPois(): List<PoiDto> {
+        val selectedIds = requiredPoiIds.toSet()
+        return pois.filter { poi -> poi.id in selectedIds }
     }
 
     fun requestCurrentDeviceLocation() {
@@ -316,7 +334,10 @@ fun RoutePlannerScreen(
                 isRouteActive = routeSessionStatus == RouteSessionStatus.IN_PROGRESS,
                 isPoiLoading = isPoiLoading,
                 isSelectingStart = false,
+                isSelectingRoutePois = false,
+                selectedRoutePoiIds = requiredPoiIds,
                 onStartPointSelected = ::updateStartPoint,
+                onRoutePoiSelected = {},
                 onOpenFullScreenMap = ::openFullScreenMap,
                 modifier = Modifier.fillMaxSize()
             )
@@ -409,7 +430,10 @@ fun RoutePlannerScreen(
                             isRouteActive = false,
                             isPoiLoading = isPoiLoading,
                             isSelectingStart = isSelectingStart,
+                            isSelectingRoutePois = false,
+                            selectedRoutePoiIds = requiredPoiIds,
                             onStartPointSelected = ::updateStartPoint,
+                            onRoutePoiSelected = {},
                             onOpenFullScreenMap = ::openFullScreenMap,
                             fixedHeight = 280.dp
                         )
@@ -443,6 +467,18 @@ fun RoutePlannerScreen(
                                     locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
                                 }
                             }
+                        )
+                    }
+
+                    item {
+                        RequiredPlacesCard(
+                            selectedPois = selectedRequiredPois(),
+                            availablePoiCount = pois.size,
+                            isEditingEnabled = !isPlannerEditingLocked,
+                            onChooseOnMap = ::openRequiredPlacesMapPicker,
+                            onChooseFromList = { isRequiredPlacesSheetOpen = true },
+                            onRemovePoi = { poiId -> plannerViewModel.removeRequiredPoi(poiId) },
+                            onClearAll = { plannerViewModel.clearRequiredPois() }
                         )
                     }
 
@@ -490,7 +526,10 @@ fun RoutePlannerScreen(
                             isRouteActive = false,
                             isPoiLoading = isPoiLoading,
                             isSelectingStart = false,
+                            isSelectingRoutePois = false,
+                            selectedRoutePoiIds = requiredPoiIds,
                             onStartPointSelected = ::updateStartPoint,
+                            onRoutePoiSelected = {},
                             onOpenFullScreenMap = ::openFullScreenMap,
                             fixedHeight = 360.dp
                         )
@@ -560,7 +599,10 @@ fun RoutePlannerScreen(
                             isRouteActive = false,
                             isPoiLoading = isPoiLoading,
                             isSelectingStart = false,
+                            isSelectingRoutePois = false,
+                            selectedRoutePoiIds = requiredPoiIds,
                             onStartPointSelected = ::updateStartPoint,
+                            onRoutePoiSelected = {},
                             onOpenFullScreenMap = ::openFullScreenMap,
                             fixedHeight = 320.dp
                         )
@@ -729,6 +771,7 @@ fun RoutePlannerScreen(
                         onToggleMapSelection = {
                             val isEnteringSelection = !isSelectingStart
                             isSelectingStart = isEnteringSelection
+                            isSelectingRequiredPlacesOnMap = false
                             if (isEnteringSelection) {
                                 openFullScreenMap()
                             }
@@ -748,6 +791,18 @@ fun RoutePlannerScreen(
                                 locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
                             }
                         }
+                    )
+                }
+
+                item {
+                    RequiredPlacesCard(
+                        selectedPois = selectedRequiredPois(),
+                        availablePoiCount = pois.size,
+                        isEditingEnabled = !isPlannerEditingLocked,
+                        onChooseOnMap = ::openRequiredPlacesMapPicker,
+                        onChooseFromList = { isRequiredPlacesSheetOpen = true },
+                        onRemovePoi = { poiId -> plannerViewModel.removeRequiredPoi(poiId) },
+                        onClearAll = { plannerViewModel.clearRequiredPois() }
                     )
                 }
 
@@ -781,6 +836,25 @@ fun RoutePlannerScreen(
                         }
                     )
                 }
+            }
+        }
+    }
+
+    if (isRequiredPlacesSheetOpen) {
+        ModalBottomSheet(
+            onDismissRequest = { isRequiredPlacesSheetOpen = false }
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 16.dp, end = 16.dp, bottom = 32.dp)
+            ) {
+                RequiredPlacesPickerSheetContent(
+                    pois = pois,
+                    selectedPoiIds = requiredPoiIds,
+                    isEditingEnabled = !isPlannerEditingLocked,
+                    onTogglePoi = { poiId -> plannerViewModel.toggleRequiredPoi(poiId) }
+                )
             }
         }
     }
@@ -885,6 +959,9 @@ fun RoutePlannerScreen(
                 if (isSelectingStart) {
                     isSelectingStart = false
                 }
+                if (isSelectingRequiredPlacesOnMap) {
+                    isSelectingRequiredPlacesOnMap = false
+                }
             },
             properties = DialogProperties(
                 usePlatformDefaultWidth = false,
@@ -905,7 +982,10 @@ fun RoutePlannerScreen(
                     isLoading = isPoiLoading,
                     isFullScreen = true,
                     isSelectingStart = isSelectingStart,
+                    isSelectingRoutePois = isSelectingRequiredPlacesOnMap,
+                    selectedRoutePoiIds = requiredPoiIds.toSet(),
                     onStartPointSelected = ::updateStartPoint,
+                    onRoutePoiSelected = { poi -> plannerViewModel.toggleRequiredPoi(poi.id) },
                     modifier = Modifier.fillMaxSize()
                 )
                 OutlinedButton(
@@ -913,6 +993,9 @@ fun RoutePlannerScreen(
                         isMapFullScreen = false
                         if (isSelectingStart) {
                             isSelectingStart = false
+                        }
+                        if (isSelectingRequiredPlacesOnMap) {
+                            isSelectingRequiredPlacesOnMap = false
                         }
                     },
                     modifier = Modifier
@@ -1141,7 +1224,10 @@ private fun PlannerMapPanel(
     isRouteActive: Boolean,
     isPoiLoading: Boolean,
     isSelectingStart: Boolean,
+    isSelectingRoutePois: Boolean,
+    selectedRoutePoiIds: List<Int>,
     onStartPointSelected: (Double, Double) -> Unit,
+    onRoutePoiSelected: (PoiDto) -> Unit,
     onOpenFullScreenMap: () -> Unit,
     modifier: Modifier = Modifier,
     fixedHeight: Dp? = null
@@ -1170,7 +1256,10 @@ private fun PlannerMapPanel(
             isLoading = isPoiLoading,
             isFullScreen = false,
             isSelectingStart = isSelectingStart,
+            isSelectingRoutePois = isSelectingRoutePois,
+            selectedRoutePoiIds = selectedRoutePoiIds.toSet(),
             onStartPointSelected = onStartPointSelected,
+            onRoutePoiSelected = onRoutePoiSelected,
             modifier = Modifier.fillMaxSize()
         )
         OutlinedButton(

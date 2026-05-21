@@ -81,6 +81,9 @@
     <string name="action_update_route_bookmark">Update bookmark</string>
     <string name="action_replace_with_best">Best suggestion</string>
     <string name="action_choose_stop">Choose</string>
+    <string name="action_choose_required_places_on_map">Map</string>
+    <string name="action_choose_required_places_from_list">List</string>
+    <string name="action_clear_required_places">Clear selected places</string>
     <string name="action_leave_feedback">Leave feedback</string>
     <string name="action_edit_feedback">Edit feedback</string>
     <string name="action_done">Done</string>
@@ -133,6 +136,12 @@
     <string name="route_replace_stop_title">Replace stop</string>
     <string name="route_replace_stop_body">Choose what should replace %1$s, or let the planner suggest the best option.</string>
     <string name="route_replace_candidates_empty">No manual candidates are available for the current filters.</string>
+    <string name="route_required_places_title">Must-see places</string>
+    <string name="route_required_places_body">Choose POIs that the generated route should try to include. If the time budget is too short, increase available time.</string>
+    <string name="route_required_places_empty">No required places selected.</string>
+    <string name="route_required_places_picker_title">Choose places</string>
+    <string name="route_required_places_picker_body">Select one or more places to prioritize in the next generated route.</string>
+    <string name="route_required_places_picker_empty">No POIs are available for this city yet.</string>
     <string name="action_start_route">Start route</string>
     <string name="action_pause_route">Pause</string>
     <string name="action_resume_route">Resume</string>
@@ -223,6 +232,8 @@
     <string name="map_route_stop_snippet">%1$s &#8226; walk %2$d min &#8226; visit %3$d min</string>
     <string name="map_current_location_title">Current GPS location</string>
     <string name="map_visited_route_stop_title">Visited: %1$s</string>
+    <string name="map_poi_selection_hint">Tap POI markers to include them in the route. Selected: %1$d</string>
+    <string name="map_poi_selected_snippet">%1$s &#8226; selected for route</string>
 
     <string name="category_attraction">Attraction</string>
     <string name="category_museum">Museum</string>

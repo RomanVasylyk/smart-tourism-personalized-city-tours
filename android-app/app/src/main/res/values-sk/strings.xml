@@ -81,6 +81,9 @@
     <string name="action_update_route_bookmark">Aktualizovať záložku</string>
     <string name="action_replace_with_best">Najlepší návrh</string>
     <string name="action_choose_stop">Vybrať</string>
+    <string name="action_choose_required_places_on_map">Mapa</string>
+    <string name="action_choose_required_places_from_list">Zoznam</string>
+    <string name="action_clear_required_places">Vymazať vybrané miesta</string>
     <string name="action_leave_feedback">Pridať spätnú väzbu</string>
     <string name="action_edit_feedback">Upraviť spätnú väzbu</string>
     <string name="action_done">Hotovo</string>
@@ -133,6 +136,12 @@
     <string name="route_replace_stop_title">Nahradiť zastávku</string>
     <string name="route_replace_stop_body">Vyberte, čo má nahradiť %1$s, alebo nechajte plánovač navrhnúť najlepšiu možnosť.</string>
     <string name="route_replace_candidates_empty">Pre aktuálne filtre nie sú dostupné žiadne ručné návrhy.</string>
+    <string name="route_required_places_title">Miesta, ktoré chcete navštíviť</string>
+    <string name="route_required_places_body">Vyberte miesta, ktoré sa má vygenerovaná trasa pokúsiť zahrnúť. Ak je čas príliš krátky, zvýšte dostupný čas.</string>
+    <string name="route_required_places_empty">Nie sú vybrané žiadne povinné miesta.</string>
+    <string name="route_required_places_picker_title">Vybrať miesta</string>
+    <string name="route_required_places_picker_body">Vyberte jedno alebo viac miest, ktoré sa majú uprednostniť v ďalšej vygenerovanej trase.</string>
+    <string name="route_required_places_picker_empty">Pre toto mesto zatiaľ nie sú dostupné žiadne miesta.</string>
     <string name="action_start_route">Spustiť trasu</string>
     <string name="action_pause_route">Pozastaviť</string>
     <string name="action_resume_route">Pokračovať</string>
@@ -223,6 +232,8 @@
     <string name="map_route_stop_snippet">%1$s &#8226; pešo %2$d min &#8226; návšteva %3$d min</string>
     <string name="map_current_location_title">Aktuálna GPS poloha</string>
     <string name="map_visited_route_stop_title">Navštívené: %1$s</string>
+    <string name="map_poi_selection_hint">Ťuknutím na značky miest ich pridáte do trasy. Vybrané: %1$d</string>
+    <string name="map_poi_selected_snippet">%1$s &#8226; vybrané pre trasu</string>
 
     <string name="category_attraction">Atrakcia</string>
     <string name="category_museum">Múzeum</string>

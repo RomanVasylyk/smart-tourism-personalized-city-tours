@@ -14,6 +14,7 @@ from app.services.route_planning.opening_hours import is_poi_open_for_visit
 from app.services.route_planning.response import append_geometry, leg_dict, point_dict
 from app.services.route_planning.scoring import (
     BASE_SCORE_MULTIPLIER,
+    PREFERRED_POI_BONUS,
     REPEAT_CATEGORY_PENALTY,
     TRAVEL_MINUTE_PENALTY,
     rounded_score_breakdown,
@@ -296,7 +297,7 @@ def approximate_candidate_priority(
     base_component = float(poi["base_score"] or 0.0) * BASE_SCORE_MULTIPLIER
     repeat_penalty = REPEAT_CATEGORY_PENALTY * category_counts.get(poi["category"], 0)
     travel_penalty = approx_travel_minutes * TRAVEL_MINUTE_PENALTY
-    preferred_bonus = 24.0 if int(poi["id"]) in preferred_poi_ids else 0.0
+    preferred_bonus = PREFERRED_POI_BONUS if int(poi["id"]) in preferred_poi_ids else 0.0
     return base_component + preferred_bonus - repeat_penalty - travel_penalty
 
 
@@ -355,7 +356,14 @@ def shortlist_route_candidates(
         return []
 
     scored_candidates.sort(key=lambda item: (item[0], item[1], -item[2]["id"]), reverse=True)
-    return [poi for _, _, poi in scored_candidates[:exact_limit]]
+    preferred_candidates = [poi for poi in remaining_candidates if int(poi["id"]) in preferred_poi_ids]
+    preferred_candidate_ids = {int(poi["id"]) for poi in preferred_candidates}
+    shortlisted = preferred_candidates + [
+        poi
+        for _, _, poi in scored_candidates
+        if int(poi["id"]) not in preferred_candidate_ids
+    ]
+    return shortlisted[: max(exact_limit, len(preferred_candidates))]
 
 
 def generate_route(request: RouteGenerateRequest) -> dict:
