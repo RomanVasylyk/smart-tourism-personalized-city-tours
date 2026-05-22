@@ -549,6 +549,19 @@ internal fun finalizedHandledRouteResponse(
 internal fun removePreviewRoutePoi(
     previousResponse: RouteResponse,
     poiId: Int,
+): RouteResponse =
+    rebuildPreviewRouteAfterRemovingPoi(
+        previousResponse = previousResponse,
+        poiId = poiId,
+        replacementLegToNext = null,
+        replacementReturnLeg = null
+    )
+
+internal fun rebuildPreviewRouteAfterRemovingPoi(
+    previousResponse: RouteResponse,
+    poiId: Int,
+    replacementLegToNext: RouteLegDto?,
+    replacementReturnLeg: RouteLegDto?
 ): RouteResponse {
     val remainingItems = previousResponse.route
         .filterNot { item -> item.poi_id == poiId }
@@ -567,30 +580,49 @@ internal fun removePreviewRoutePoi(
         )
     }
 
-    val keptPoiIds = remainingItems.map { item -> item.poi_id }.toSet()
-    val remainingLegs = previousResponse.legs
+    val existingLegs = previousResponse.legs
         .orEmpty()
-        .filter { leg ->
-            when {
-                leg.to.poi_id in keptPoiIds -> true
-                leg.to.type == "start" && leg.from.poi_id in keptPoiIds -> true
-                else -> false
-            }
-        }
         .sortedBy { leg -> leg.order }
-
-    val renumberedItems = remainingItems.mapIndexed { index, item ->
-        item.copy(order = index + 1)
+    val replacementLegToNextPoiId = replacementLegToNext?.to?.poi_id
+    val poiLegs = remainingItems.mapNotNull { item ->
+        if (item.poi_id == replacementLegToNextPoiId) {
+            replacementLegToNext
+        } else {
+            existingLegs.firstOrNull { leg -> leg.to.poi_id == item.poi_id }
+        }
     }
-    val renumberedLegs = remainingLegs.mapIndexed { index, leg ->
+    val lastRemainingPoiId = remainingItems.lastOrNull()?.poi_id
+    val returnLeg = if (previousResponse.return_to_start) {
+        replacementReturnLeg
+            ?: existingLegs.firstOrNull { leg ->
+                leg.to.type == "start" && leg.from.poi_id == lastRemainingPoiId
+            }
+    } else {
+        null
+    }
+
+    val renumberedLegs = (poiLegs + listOfNotNull(returnLeg)).mapIndexed { index, leg ->
         leg.copy(order = index + 1)
     }
-    val returnLegMinutes = renumberedLegs.lastOrNull()
+    var elapsedMinutes = 0
+    val renumberedItems = remainingItems.mapIndexed { index, item ->
+        val incomingLeg = renumberedLegs.firstOrNull { leg -> leg.to.poi_id == item.poi_id }
+        val travelMinutes = incomingLeg?.duration_minutes ?: item.travel_minutes_from_previous
+        elapsedMinutes += travelMinutes
+        val arrivalMinutes = elapsedMinutes
+        elapsedMinutes += item.visit_duration_min
+        item.copy(
+            order = index + 1,
+            travel_minutes_from_previous = travelMinutes,
+            arrival_after_min = arrivalMinutes,
+            departure_after_min = elapsedMinutes
+        )
+    }
+    val returnLegMinutes = returnLeg
         ?.takeIf { leg -> leg.to.type == "start" }
         ?.duration_minutes
         ?: 0
-    val lastDepartureMinutes = renumberedItems.maxOfOrNull { item -> item.departure_after_min } ?: 0
-    val usedMinutes = lastDepartureMinutes + returnLegMinutes
+    val usedMinutes = elapsedMinutes + returnLegMinutes
     val totalVisitMinutes = renumberedItems.sumOf { item -> item.visit_duration_min }
 
     return previousResponse.copy(

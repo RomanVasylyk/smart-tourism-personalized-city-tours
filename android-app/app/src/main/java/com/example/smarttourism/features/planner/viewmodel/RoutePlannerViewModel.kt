@@ -17,6 +17,8 @@ import com.example.smarttourism.data.remote.dto.CityDto
 import com.example.smarttourism.data.remote.dto.PoiDto
 import com.example.smarttourism.data.remote.dto.RouteFeedbackRequest
 import com.example.smarttourism.data.remote.dto.RouteItemDto
+import com.example.smarttourism.data.remote.dto.RouteLegDto
+import com.example.smarttourism.data.remote.dto.RouteLegEndpointDto
 import com.example.smarttourism.data.remote.dto.RouteLegRequest
 import com.example.smarttourism.data.remote.dto.RouteRequest
 import com.example.smarttourism.data.remote.dto.RouteResponse
@@ -542,15 +544,20 @@ internal class RoutePlannerViewModel(
             )
         } else {
             persistRouteSession(visitedIds = updatedVisited)
+            val rerouteLocation = rerouteStartPoint(
+                routeItems = routeItems,
+                visitedPoiIds = updatedVisited,
+                currentLocation = locationAtVisit,
+                fallbackStart = startPoint
+            )
             if (
                 statusAtVisit == RouteSessionStatus.IN_PROGRESS &&
                 responseBeforeVisit != null &&
-                locationAtVisit != null &&
                 repository.isNetworkAvailable()
             ) {
                 refreshActiveRouteApproachLeg(
                     previousResponse = responseBeforeVisit,
-                    currentLocation = locationAtVisit,
+                    currentLocation = rerouteLocation,
                     nextTarget = nextPendingPoi
                 )
             } else {
@@ -606,12 +613,17 @@ internal class RoutePlannerViewModel(
         if (
             statusAtSkip == RouteSessionStatus.IN_PROGRESS &&
             responseBeforeSkip != null &&
-            locationAtSkip != null &&
             repository.isNetworkAvailable()
         ) {
+            val rerouteLocation = rerouteStartPoint(
+                routeItems = routeItems,
+                visitedPoiIds = visitedPoiIds,
+                currentLocation = locationAtSkip,
+                fallbackStart = startPoint
+            )
             refreshActiveRouteApproachLeg(
                 previousResponse = responseBeforeSkip,
-                currentLocation = locationAtSkip,
+                currentLocation = rerouteLocation,
                 nextTarget = nextPendingPoi
             )
         } else {
@@ -634,29 +646,45 @@ internal class RoutePlannerViewModel(
         }
         val response = routeResponse ?: return
         val request = currentRouteRequest ?: return
+        if (!repository.isNetworkAvailable()) {
+            routeError = offlineRouteGenerationMessage
+            return
+        }
         val updatedRequest = request.copy(
             exclude_poi_ids = (request.exclude_poi_ids.orEmpty() + poiId).distinct(),
             preferred_poi_ids = request.preferred_poi_ids.orEmpty().filterNot { preferredPoiId -> preferredPoiId == poiId }
         )
-        requiredPoiIds = requiredPoiIds.filterNot { requiredPoiId -> requiredPoiId == poiId }
-        val updatedResponse = removePreviewRoutePoi(response, poiId)
+        val updatedRequiredPoiIds = requiredPoiIds.filterNot { requiredPoiId -> requiredPoiId == poiId }
 
-        currentRouteRequest = updatedRequest
-        if (updatedResponse.route.isEmpty()) {
-            routeResponse = null
-            hasPendingRouteChanges = false
-            hasNoGeneratedStops = true
-        } else {
-            routeResponse = updatedResponse
-            hasPendingRouteChanges = false
-            hasNoGeneratedStops = false
-            viewModelScope.launch {
-                repository.saveSnapshot(
-                    SavedRouteSnapshot(
-                        request = updatedRequest,
-                        response = updatedResponse
-                    )
+        viewModelScope.launch {
+            isRerouting = true
+            clearRouteMessages()
+            try {
+                val updatedResponse = rebuildPreviewRouteAfterStopRemoval(
+                    previousResponse = response,
+                    poiId = poiId
                 )
+                currentRouteRequest = updatedRequest
+                requiredPoiIds = updatedRequiredPoiIds
+                if (updatedResponse.route.isEmpty()) {
+                    routeResponse = null
+                    hasPendingRouteChanges = false
+                    hasNoGeneratedStops = true
+                } else {
+                    routeResponse = updatedResponse
+                    hasPendingRouteChanges = false
+                    hasNoGeneratedStops = false
+                    repository.saveSnapshot(
+                        SavedRouteSnapshot(
+                            request = updatedRequest,
+                            response = updatedResponse
+                        )
+                    )
+                }
+            } catch (e: Exception) {
+                routeError = e.toUserMessage(routeGenerationFailedMessage)
+            } finally {
+                isRerouting = false
             }
         }
     }
@@ -1634,6 +1662,75 @@ internal class RoutePlannerViewModel(
         }
     }
 
+    private suspend fun rebuildPreviewRouteAfterStopRemoval(
+        previousResponse: RouteResponse,
+        poiId: Int
+    ): RouteResponse {
+        val originalItems = previousResponse.route.sortedBy { item -> item.order }
+        val removedIndex = originalItems.indexOfFirst { item -> item.poi_id == poiId }
+        if (removedIndex == -1) {
+            return previousResponse
+        }
+
+        val remainingItems = originalItems.filterNot { item -> item.poi_id == poiId }
+        if (remainingItems.isEmpty()) {
+            return removePreviewRoutePoi(previousResponse, poiId)
+        }
+
+        val startEndpoint = previousResponse.start.toLegEndpoint()
+        val previousItem = originalItems.getOrNull(removedIndex - 1)
+        val nextItem = originalItems.getOrNull(removedIndex + 1)
+        val replacementLegToNext = nextItem?.let { nextStop ->
+            generatePreviewRouteLeg(
+                previousResponse = previousResponse,
+                fromEndpoint = previousItem?.toLegEndpoint() ?: startEndpoint,
+                toEndpoint = nextStop.toLegEndpoint()
+            )
+        }
+        val replacementReturnLeg = if (nextItem == null && previousResponse.return_to_start) {
+            remainingItems.lastOrNull()?.let { lastStop ->
+                generatePreviewRouteLeg(
+                    previousResponse = previousResponse,
+                    fromEndpoint = lastStop.toLegEndpoint(),
+                    toEndpoint = startEndpoint
+                )
+            }
+        } else {
+            null
+        }
+
+        return rebuildPreviewRouteAfterRemovingPoi(
+            previousResponse = previousResponse,
+            poiId = poiId,
+            replacementLegToNext = replacementLegToNext,
+            replacementReturnLeg = replacementReturnLeg
+        )
+    }
+
+    private suspend fun generatePreviewRouteLeg(
+        previousResponse: RouteResponse,
+        fromEndpoint: RouteLegEndpointDto,
+        toEndpoint: RouteLegEndpointDto
+    ): RouteLegDto {
+        val routeLegRequest = RouteLegRequest(
+            city = currentRouteRequest?.city ?: selectedCity?.slug ?: previousResponse.city,
+            start_lat = fromEndpoint.lat,
+            start_lon = fromEndpoint.lon,
+            end_lat = toEndpoint.lat,
+            end_lon = toEndpoint.lon,
+            end_poi_id = toEndpoint.poi_id ?: -1,
+            end_name = toEndpoint.name,
+            pace = currentRouteRequest?.pace ?: previousResponse.pace,
+            start_datetime = currentRouteRequest?.start_datetime ?: previousResponse.start_datetime,
+            transport_mode = currentRouteRequest?.transport_mode ?: previousResponse.transport_mode ?: "walk"
+        )
+
+        return repository.generateRouteLeg(routeLegRequest).copy(
+            from = fromEndpoint,
+            to = toEndpoint
+        )
+    }
+
     private fun recalculateRouteFromPoint(
         currentLocation: RouteStartDto,
         autoTriggered: Boolean,
@@ -1778,3 +1875,21 @@ internal class RoutePlannerViewModel(
         }
     }
 }
+
+private fun RouteStartDto.toLegEndpoint(): RouteLegEndpointDto =
+    RouteLegEndpointDto(
+        type = "start",
+        poi_id = null,
+        name = null,
+        lat = lat,
+        lon = lon
+    )
+
+private fun RouteItemDto.toLegEndpoint(): RouteLegEndpointDto =
+    RouteLegEndpointDto(
+        type = "poi",
+        poi_id = poi_id,
+        name = name,
+        lat = lat,
+        lon = lon
+    )
