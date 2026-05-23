@@ -638,6 +638,97 @@ internal fun rebuildPreviewRouteAfterRemovingPoi(
     )
 }
 
+internal fun rebuildPreviewRouteAfterReplacingPoi(
+    previousResponse: RouteResponse,
+    targetPoiId: Int,
+    replacementPoi: PoiDto,
+    replacementLegToReplacement: RouteLegDto,
+    replacementLegToNext: RouteLegDto?,
+    replacementReturnLeg: RouteLegDto?
+): RouteResponse {
+    val originalItems = previousResponse.route.sortedBy { item -> item.order }
+    val targetIndex = originalItems.indexOfFirst { item -> item.poi_id == targetPoiId }
+    if (targetIndex == -1) {
+        return previousResponse
+    }
+
+    val targetItem = originalItems[targetIndex]
+    val replacementVisitMinutes = replacementPoi.visit_duration_min ?: targetItem.visit_duration_min
+    val replacedItems = originalItems.map { item ->
+        if (item.poi_id == targetPoiId) {
+            item.copy(
+                poi_id = replacementPoi.id,
+                name = replacementPoi.name,
+                category = replacementPoi.category,
+                lat = replacementPoi.lat,
+                lon = replacementPoi.lon,
+                visit_duration_min = replacementVisitMinutes,
+                base_score = replacementPoi.base_score,
+                wikipedia_url = replacementPoi.wikipedia_url,
+                opening_hours_raw = replacementPoi.opening_hours_raw
+            )
+        } else {
+            item
+        }
+    }
+
+    val existingLegs = previousResponse.legs.orEmpty().sortedBy { leg -> leg.order }
+    val nextOriginalItem = originalItems.getOrNull(targetIndex + 1)
+    val poiLegs = replacedItems.mapNotNull { item ->
+        when {
+            item.poi_id == replacementPoi.id -> replacementLegToReplacement
+            item.poi_id == nextOriginalItem?.poi_id -> replacementLegToNext
+            else -> existingLegs.firstOrNull { leg -> leg.to.poi_id == item.poi_id }
+        }
+    }
+    val returnLeg = if (previousResponse.return_to_start) {
+        if (targetIndex == originalItems.lastIndex) {
+            replacementReturnLeg
+        } else {
+            val lastPoiId = replacedItems.lastOrNull()?.poi_id
+            existingLegs.firstOrNull { leg -> leg.to.type == "start" && leg.from.poi_id == lastPoiId }
+        }
+    } else {
+        null
+    }
+
+    val renumberedLegs = (poiLegs + listOfNotNull(returnLeg)).mapIndexed { index, leg ->
+        leg.copy(order = index + 1)
+    }
+    var elapsedMinutes = 0
+    val renumberedItems = replacedItems.mapIndexed { index, item ->
+        val incomingLeg = renumberedLegs.firstOrNull { leg -> leg.to.poi_id == item.poi_id }
+        val travelMinutes = incomingLeg?.duration_minutes ?: item.travel_minutes_from_previous
+        elapsedMinutes += travelMinutes
+        val arrivalMinutes = elapsedMinutes
+        elapsedMinutes += item.visit_duration_min
+        item.copy(
+            order = index + 1,
+            travel_minutes_from_previous = travelMinutes,
+            arrival_after_min = arrivalMinutes,
+            departure_after_min = elapsedMinutes
+        )
+    }
+    val returnLegMinutes = returnLeg
+        ?.takeIf { leg -> leg.to.type == "start" }
+        ?.duration_minutes
+        ?: 0
+    val usedMinutes = elapsedMinutes + returnLegMinutes
+    val totalVisitMinutes = renumberedItems.sumOf { item -> item.visit_duration_min }
+
+    return previousResponse.copy(
+        used_minutes = usedMinutes,
+        remaining_minutes = maxOf(0, previousResponse.available_minutes - usedMinutes),
+        total_visit_minutes = totalVisitMinutes,
+        total_walk_minutes = maxOf(0, usedMinutes - totalVisitMinutes),
+        return_to_start_minutes = returnLegMinutes,
+        poi_count = renumberedItems.size,
+        route = renumberedItems,
+        legs = renumberedLegs.ifEmpty { null },
+        full_geometry = mergeLegGeometries(renumberedLegs)
+    )
+}
+
 internal fun replaceActiveRouteApproachLeg(
     previousResponse: RouteResponse,
     nextPoiId: Int,
