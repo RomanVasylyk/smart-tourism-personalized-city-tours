@@ -34,13 +34,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
@@ -57,6 +60,7 @@ import com.example.smarttourism.data.remote.dto.PoiDto
 import com.example.smarttourism.data.remote.dto.RouteItemDto
 import com.example.smarttourism.data.remote.dto.RouteResponse
 import com.example.smarttourism.data.remote.dto.RouteStartDto
+import com.example.smarttourism.features.map.MapLocationButton
 import com.example.smarttourism.features.map.PoiMapScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -136,6 +140,8 @@ fun RoutePlannerScreen(
     var locationError by remember { mutableStateOf<String?>(null) }
     var trackingPermissionAction by remember { mutableStateOf(TrackingPermissionAction.START) }
     var autoOpenedFeedbackToken by remember { mutableStateOf<String?>(null) }
+    var activeMapRecenterRequest by remember { mutableIntStateOf(0) }
+    var activeRoutePanelHeightPx by remember { mutableIntStateOf(0) }
 
     LaunchedEffect(Unit) {
         plannerViewModel.initialize()
@@ -318,6 +324,22 @@ fun RoutePlannerScreen(
     )
 
     if (plannerMode == PlannerMode.ACTIVE) {
+        val density = LocalDensity.current
+        val activeLocationButtonBottomPadding = with(density) {
+            if (activeRoutePanelHeightPx > 0) {
+                activeRoutePanelHeightPx.toDp() + 28.dp
+            } else {
+                340.dp
+            }
+        }
+        val activeCurrentLocationCameraYOffset = with(density) {
+            if (activeRoutePanelHeightPx > 0) {
+                (activeRoutePanelHeightPx / 2f).toDp() + 16.dp
+            } else {
+                180.dp
+            }
+        }
+
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -339,6 +361,10 @@ fun RoutePlannerScreen(
                 onStartPointSelected = ::updateStartPoint,
                 onRoutePoiSelected = {},
                 onOpenFullScreenMap = ::openFullScreenMap,
+                preferCurrentLocationCamera = true,
+                showLocationButton = false,
+                recenterLocationRequestKey = activeMapRecenterRequest,
+                currentLocationCameraYOffset = activeCurrentLocationCameraYOffset,
                 modifier = Modifier.fillMaxSize()
             )
 
@@ -382,6 +408,17 @@ fun RoutePlannerScreen(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .padding(16.dp)
+                    .onGloballyPositioned { coordinates ->
+                        activeRoutePanelHeightPx = coordinates.size.height
+                    }
+            )
+
+            MapLocationButton(
+                enabled = currentRouteLocation != null,
+                onClick = { activeMapRecenterRequest += 1 },
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(end = 20.dp, bottom = activeLocationButtonBottomPadding)
             )
         }
     } else {
@@ -1229,6 +1266,11 @@ private fun PlannerMapPanel(
     onStartPointSelected: (Double, Double) -> Unit,
     onRoutePoiSelected: (PoiDto) -> Unit,
     onOpenFullScreenMap: () -> Unit,
+    preferCurrentLocationCamera: Boolean = false,
+    locationButtonBottomPadding: Dp? = null,
+    showLocationButton: Boolean = true,
+    recenterLocationRequestKey: Int = 0,
+    currentLocationCameraYOffset: Dp = 0.dp,
     modifier: Modifier = Modifier,
     fixedHeight: Dp? = null
 ) {
@@ -1258,6 +1300,11 @@ private fun PlannerMapPanel(
             isSelectingStart = isSelectingStart,
             isSelectingRoutePois = isSelectingRoutePois,
             selectedRoutePoiIds = selectedRoutePoiIds.toSet(),
+            preferCurrentLocationCamera = preferCurrentLocationCamera,
+            locationButtonBottomPadding = locationButtonBottomPadding,
+            showLocationButton = showLocationButton,
+            recenterLocationRequestKey = recenterLocationRequestKey,
+            currentLocationCameraYOffset = currentLocationCameraYOffset,
             onStartPointSelected = onStartPointSelected,
             onRoutePoiSelected = onRoutePoiSelected,
             modifier = Modifier.fillMaxSize()

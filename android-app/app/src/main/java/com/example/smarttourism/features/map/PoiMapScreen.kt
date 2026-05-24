@@ -6,6 +6,7 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Path
+import android.graphics.PointF
 import android.graphics.RectF
 import android.graphics.Typeface
 import androidx.compose.foundation.Canvas
@@ -39,7 +40,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.DefaultLifecycleObserver
@@ -156,11 +159,18 @@ fun PoiMapScreen(
     isSelectingStart: Boolean,
     isSelectingRoutePois: Boolean = false,
     selectedRoutePoiIds: Set<Int> = emptySet(),
+    preferCurrentLocationCamera: Boolean = false,
+    locationButtonBottomPadding: Dp? = null,
+    showLocationButton: Boolean = true,
+    recenterLocationRequestKey: Int = 0,
+    currentLocationCameraYOffset: Dp = 0.dp,
     onStartPointSelected: (Double, Double) -> Unit,
     onRoutePoiSelected: (PoiDto) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+    val density = LocalDensity.current
+    val currentLocationCameraYOffsetPx = with(density) { currentLocationCameraYOffset.toPx() }
     val mapView = rememberMapViewWithLifecycle(context)
     var map by remember(mapView) { mutableStateOf<MapLibreMap?>(null) }
     var isStyleLoaded by remember(mapView) { mutableStateOf(false) }
@@ -274,7 +284,9 @@ fun PoiMapScreen(
             isSelectingRoutePois,
             visitedPoiIds,
             skippedPoiIds,
-            isRouteActive
+            isRouteActive,
+            preferCurrentLocationCamera,
+            currentLocationCameraYOffsetPx
         ) {
             val mapInstance = map ?: return@LaunchedEffect
             if (!isStyleLoaded) return@LaunchedEffect
@@ -284,6 +296,23 @@ fun PoiMapScreen(
                     key = "select:$startLat:$startLon:${defaultZoom ?: DefaultZoom}",
                     lat = startLat,
                     lon = startLon,
+                )
+
+                preferCurrentLocationCamera && currentLocation != null -> AutoCameraTarget(
+                    key = buildString {
+                        append("current-location:")
+                        append(routeResponse?.start_datetime.orEmpty())
+                        append(':')
+                        append(isRouteActive)
+                        append(':')
+                        append(visitedPoiIds.sorted().joinToString(","))
+                        append(':')
+                        append(skippedPoiIds.sorted().joinToString(","))
+                        append(":offset:")
+                        append(currentLocationCameraYOffsetPx)
+                    },
+                    lat = currentLocation.lat,
+                    lon = currentLocation.lon
                 )
 
                 routeResponse?.route.orEmpty().isNotEmpty() -> {
@@ -329,9 +358,34 @@ fun PoiMapScreen(
             }
 
             if (cameraTarget.key != lastAutoCameraKey) {
-                moveCamera(mapInstance, cameraTarget.lat, cameraTarget.lon, defaultZoom)
+                val cameraYOffsetPx = if (cameraTarget.key.startsWith("current-location:")) {
+                    currentLocationCameraYOffsetPx
+                } else {
+                    0f
+                }
+                moveCamera(
+                    map = mapInstance,
+                    lat = cameraTarget.lat,
+                    lon = cameraTarget.lon,
+                    zoom = defaultZoom,
+                    verticalOffsetPx = cameraYOffsetPx
+                )
                 lastAutoCameraKey = cameraTarget.key
             }
+        }
+
+        LaunchedEffect(map, isStyleLoaded, recenterLocationRequestKey) {
+            val mapInstance = map ?: return@LaunchedEffect
+            if (!isStyleLoaded || recenterLocationRequestKey <= 0) return@LaunchedEffect
+
+            val location = currentLocation ?: return@LaunchedEffect
+            moveCamera(
+                map = mapInstance,
+                lat = location.lat,
+                lon = location.lon,
+                zoom = defaultZoom,
+                verticalOffsetPx = currentLocationCameraYOffsetPx
+            )
         }
 
         if (isLoading && pois.isEmpty() && routeResponse == null) {
@@ -364,23 +418,31 @@ fun PoiMapScreen(
             }
         }
 
-        MapLocationButton(
-            enabled = currentLocation != null,
-            onClick = {
-                val mapInstance = map ?: return@MapLocationButton
-                val location = currentLocation ?: return@MapLocationButton
-                moveCamera(mapInstance, location.lat, location.lon, defaultZoom)
-            },
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .windowInsetsPadding(
-                    WindowInsets.safeDrawing.only(WindowInsetsSides.End)
-                )
-                .padding(
-                    end = if (isFullScreen) 24.dp else 20.dp,
-                    bottom = if (isFullScreen) 104.dp else 20.dp
-                )
-        )
+        if (showLocationButton) {
+            MapLocationButton(
+                enabled = currentLocation != null,
+                onClick = {
+                    val mapInstance = map ?: return@MapLocationButton
+                    val location = currentLocation ?: return@MapLocationButton
+                    moveCamera(
+                        map = mapInstance,
+                        lat = location.lat,
+                        lon = location.lon,
+                        zoom = defaultZoom,
+                        verticalOffsetPx = currentLocationCameraYOffsetPx
+                    )
+                },
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .windowInsetsPadding(
+                        WindowInsets.safeDrawing.only(WindowInsetsSides.End)
+                    )
+                    .padding(
+                        end = if (isFullScreen) 24.dp else 20.dp,
+                        bottom = locationButtonBottomPadding ?: if (isFullScreen) 104.dp else 20.dp
+                    )
+            )
+        }
     }
 }
 
@@ -838,7 +900,7 @@ private fun routeLineAlpha(
     }
 
 @Composable
-private fun MapLocationButton(
+internal fun MapLocationButton(
     enabled: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
@@ -1459,12 +1521,29 @@ private fun moveCamera(
     map: MapLibreMap,
     lat: Double,
     lon: Double,
-    zoom: Double? = null
+    zoom: Double? = null,
+    verticalOffsetPx: Float = 0f
 ) {
+    val target = LatLng(lat, lon)
     map.moveCamera(
         CameraUpdateFactory.newCameraPosition(
             CameraPosition.Builder()
-                .target(LatLng(lat, lon))
+                .target(target)
+                .zoom(zoom ?: DefaultZoom)
+                .build()
+        )
+    )
+
+    if (verticalOffsetPx <= 0f) return
+
+    val targetScreenPoint = map.projection.toScreenLocation(target)
+    val shiftedCameraTarget = map.projection.fromScreenLocation(
+        PointF(targetScreenPoint.x, targetScreenPoint.y + verticalOffsetPx)
+    )
+    map.moveCamera(
+        CameraUpdateFactory.newCameraPosition(
+            CameraPosition.Builder()
+                .target(shiftedCameraTarget)
                 .zoom(zoom ?: DefaultZoom)
                 .build()
         )
