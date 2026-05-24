@@ -1645,8 +1645,16 @@ internal fun ReplaceRouteStopSheetContent(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         } else {
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                candidates.forEach { poi ->
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 420.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                items(
+                    items = candidates,
+                    key = { poi -> poi.id }
+                ) { poi ->
                     Surface(
                         shape = RoundedCornerShape(18.dp),
                         tonalElevation = 2.dp,
