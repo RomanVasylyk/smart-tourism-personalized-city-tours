@@ -137,11 +137,13 @@
     <string name="route_replace_stop_body">Vyberte, čo má nahradiť %1$s, alebo nechajte plánovač navrhnúť najlepšiu možnosť.</string>
     <string name="route_replace_candidates_empty">Pre aktuálne filtre nie sú dostupné žiadne ručné návrhy.</string>
     <string name="route_required_places_title">Miesta, ktoré chcete navštíviť</string>
-    <string name="route_required_places_body">Vyberte miesta, ktoré sa má vygenerovaná trasa pokúsiť zahrnúť. Ak je čas príliš krátky, zvýšte dostupný čas.</string>
+    <string name="route_required_places_body">Vyberte miesta, ktoré sa má vygenerovaná trasa pokúsiť zahrnúť. Tlačidlami Hore a Dole nastavíte ich poradie.</string>
     <string name="route_required_places_empty">Nie sú vybrané žiadne povinné miesta.</string>
     <string name="route_required_places_picker_title">Vybrať miesta</string>
     <string name="route_required_places_picker_body">Vyberte jedno alebo viac miest, ktoré sa majú uprednostniť v ďalšej vygenerovanej trase.</string>
     <string name="route_required_places_picker_empty">Pre toto mesto zatiaľ nie sú dostupné žiadne miesta.</string>
+    <string name="action_move_up">Hore</string>
+    <string name="action_move_down">Dole</string>
     <string name="action_start_route">Spustiť trasu</string>
     <string name="action_pause_route">Pozastaviť</string>
     <string name="action_resume_route">Pokračovať</string>

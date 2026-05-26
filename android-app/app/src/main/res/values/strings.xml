@@ -137,11 +137,13 @@
     <string name="route_replace_stop_body">Choose what should replace %1$s, or let the planner suggest the best option.</string>
     <string name="route_replace_candidates_empty">No manual candidates are available for the current filters.</string>
     <string name="route_required_places_title">Must-see places</string>
-    <string name="route_required_places_body">Choose POIs that the generated route should try to include. If the time budget is too short, increase available time.</string>
+    <string name="route_required_places_body">Choose POIs that the generated route should try to include. Use Up and Down to set their order.</string>
     <string name="route_required_places_empty">No required places selected.</string>
     <string name="route_required_places_picker_title">Choose places</string>
     <string name="route_required_places_picker_body">Select one or more places to prioritize in the next generated route.</string>
     <string name="route_required_places_picker_empty">No POIs are available for this city yet.</string>
+    <string name="action_move_up">Up</string>
+    <string name="action_move_down">Down</string>
     <string name="action_start_route">Start route</string>
     <string name="action_pause_route">Pause</string>
     <string name="action_resume_route">Resume</string>

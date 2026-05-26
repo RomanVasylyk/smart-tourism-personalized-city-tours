@@ -315,7 +315,7 @@ def shortlist_route_candidates(
     exact_limit: int,
     preferred_poi_ids: set[int],
 ) -> list[dict]:
-    remaining_candidates = [poi for poi in candidates if poi["id"] not in used_ids]
+    remaining_candidates = [poi for poi in candidates if int(poi["id"]) not in used_ids]
     if len(remaining_candidates) <= exact_limit:
         return remaining_candidates
 
@@ -386,7 +386,15 @@ def generate_route(request: RouteGenerateRequest) -> dict:
     current_endpoint = start_endpoint
 
     used_ids: set[int] = set()
-    preferred_poi_ids = {poi_id for poi_id in request.preferred_poi_ids if poi_id not in request.exclude_poi_ids}
+    ordered_preferred_poi_ids = list(
+        dict.fromkeys(
+            int(poi_id)
+            for poi_id in request.preferred_poi_ids
+            if poi_id not in request.exclude_poi_ids
+        )
+    )
+    preferred_poi_ids = set(ordered_preferred_poi_ids)
+    candidates_by_id = {int(poi["id"]): poi for poi in candidates}
     category_counts: dict[str, int] = {}
     route_items: list[dict] = []
     legs: list[dict] = []
@@ -402,19 +410,30 @@ def generate_route(request: RouteGenerateRequest) -> dict:
         best_score_breakdown = None
         best_utility = -10**9
         departure_dt = start_dt + timedelta(seconds=elapsed_actual_seconds)
-        evaluation_candidates = shortlist_route_candidates(
-            candidates=candidates,
-            used_ids=used_ids,
-            current_point=current_point,
-            start_point=start_point,
-            pace=request.pace,
-            return_to_start=request.return_to_start,
-            category_counts=category_counts,
-            city_profile=city_profile,
-            effective_transport_mode=effective_transport_mode,
-            exact_limit=exact_candidate_limit,
-            preferred_poi_ids=preferred_poi_ids,
+        forced_preferred_poi = next(
+            (
+                candidates_by_id[poi_id]
+                for poi_id in ordered_preferred_poi_ids
+                if poi_id not in used_ids and poi_id in candidates_by_id
+            ),
+            None,
         )
+        if forced_preferred_poi is not None:
+            evaluation_candidates = [forced_preferred_poi]
+        else:
+            evaluation_candidates = shortlist_route_candidates(
+                candidates=candidates,
+                used_ids=used_ids,
+                current_point=current_point,
+                start_point=start_point,
+                pace=request.pace,
+                return_to_start=request.return_to_start,
+                category_counts=category_counts,
+                city_profile=city_profile,
+                effective_transport_mode=effective_transport_mode,
+                exact_limit=exact_candidate_limit,
+                preferred_poi_ids=preferred_poi_ids,
+            )
 
         if not evaluation_candidates:
             break
@@ -476,11 +495,14 @@ def generate_route(request: RouteGenerateRequest) -> dict:
                 best_score_breakdown = score_breakdown
 
         if best_poi is None:
+            if forced_preferred_poi is not None:
+                used_ids.add(int(forced_preferred_poi["id"]))
+                continue
             break
 
         elapsed_actual_seconds += best_travel_leg.duration_seconds + (best_visit_minutes * 60)
         elapsed_minutes += best_travel_leg.duration_minutes + best_visit_minutes
-        used_ids.add(best_poi["id"])
+        used_ids.add(int(best_poi["id"]))
         category_counts[best_poi["category"]] = category_counts.get(best_poi["category"], 0) + 1
         next_endpoint = point_dict("poi", best_poi["lat"], best_poi["lon"], best_poi)
 

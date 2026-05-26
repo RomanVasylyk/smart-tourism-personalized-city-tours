@@ -285,6 +285,31 @@ internal class RoutePlannerViewModel(
         invalidateRoutePreviewIfAllowed()
     }
 
+    fun moveRequiredPoi(poiId: Int, direction: Int) {
+        if (routeSessionStatus == RouteSessionStatus.IN_PROGRESS || routeSessionStatus == RouteSessionStatus.PAUSED) {
+            return
+        }
+
+        val currentIndex = requiredPoiIds.indexOf(poiId)
+        if (currentIndex == -1) {
+            return
+        }
+
+        val targetIndex = (currentIndex + direction).coerceIn(0, requiredPoiIds.lastIndex)
+        if (targetIndex == currentIndex) {
+            return
+        }
+
+        val reorderedIds = requiredPoiIds.toMutableList()
+        val movedPoiId = reorderedIds.removeAt(currentIndex)
+        reorderedIds.add(targetIndex, movedPoiId)
+
+        requiredPoiIds = reorderedIds
+        currentRouteRequest = currentRouteRequest?.copy(preferred_poi_ids = requiredPoiIds)
+        hasNoGeneratedStops = false
+        invalidateRoutePreviewIfAllowed()
+    }
+
     fun clearRequiredPois() {
         if (requiredPoiIds.isEmpty()) {
             return

@@ -381,6 +381,7 @@ internal fun RequiredPlacesCard(
     isEditingEnabled: Boolean,
     onChooseOnMap: () -> Unit,
     onChooseFromList: () -> Unit,
+    onMovePoi: (Int, Int) -> Unit,
     onRemovePoi: (Int) -> Unit,
     onClearAll: () -> Unit
 ) {
@@ -409,21 +410,35 @@ internal fun RequiredPlacesCard(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             } else {
-                FlowRow(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                Column(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    selectedPois.sortedBy { poi -> poi.name }.forEach { poi ->
+                    selectedPois.forEachIndexed { index, poi ->
                         Surface(
-                            shape = RoundedCornerShape(999.dp),
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(16.dp),
                             color = MaterialTheme.colorScheme.primaryContainer
                         ) {
                             Row(
-                                modifier = Modifier.padding(start = 12.dp, end = 6.dp, top = 6.dp, bottom = 6.dp),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(start = 12.dp, end = 8.dp, top = 8.dp, bottom = 8.dp),
                                 verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                horizontalArrangement = Arrangement.spacedBy(10.dp)
                             ) {
-                                Column {
+                                Surface(
+                                    shape = CircleShape,
+                                    color = MaterialTheme.colorScheme.primary
+                                ) {
+                                    Text(
+                                        text = "${index + 1}",
+                                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                                        style = MaterialTheme.typography.labelLarge,
+                                        color = MaterialTheme.colorScheme.onPrimary,
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                }
+                                Column(modifier = Modifier.weight(1f)) {
                                     Text(
                                         text = poi.name,
                                         style = MaterialTheme.typography.labelLarge,
@@ -435,11 +450,27 @@ internal fun RequiredPlacesCard(
                                         color = MaterialTheme.colorScheme.onPrimaryContainer
                                     )
                                 }
-                                TextButton(
-                                    onClick = { onRemovePoi(poi.id) },
-                                    enabled = isEditingEnabled
+                                Column(
+                                    horizontalAlignment = Alignment.CenterHorizontally
                                 ) {
-                                    Text(stringResource(R.string.action_remove_stop))
+                                    TextButton(
+                                        onClick = { onMovePoi(poi.id, -1) },
+                                        enabled = isEditingEnabled && index > 0
+                                    ) {
+                                        Text(stringResource(R.string.action_move_up))
+                                    }
+                                    TextButton(
+                                        onClick = { onMovePoi(poi.id, 1) },
+                                        enabled = isEditingEnabled && index < selectedPois.lastIndex
+                                    ) {
+                                        Text(stringResource(R.string.action_move_down))
+                                    }
+                                    TextButton(
+                                        onClick = { onRemovePoi(poi.id) },
+                                        enabled = isEditingEnabled
+                                    ) {
+                                        Text(stringResource(R.string.action_remove_stop))
+                                    }
                                 }
                             }
                         }

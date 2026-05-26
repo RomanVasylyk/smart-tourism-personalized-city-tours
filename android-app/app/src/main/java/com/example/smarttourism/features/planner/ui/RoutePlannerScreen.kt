@@ -203,8 +203,8 @@ fun RoutePlannerScreen(
     }
 
     fun selectedRequiredPois(): List<PoiDto> {
-        val selectedIds = requiredPoiIds.toSet()
-        return pois.filter { poi -> poi.id in selectedIds }
+        val poisById = pois.associateBy { poi -> poi.id }
+        return requiredPoiIds.mapNotNull { poiId -> poisById[poiId] }
     }
 
     fun requestCurrentDeviceLocation() {
@@ -514,6 +514,7 @@ fun RoutePlannerScreen(
                             isEditingEnabled = !isPlannerEditingLocked,
                             onChooseOnMap = ::openRequiredPlacesMapPicker,
                             onChooseFromList = { isRequiredPlacesSheetOpen = true },
+                            onMovePoi = { poiId, direction -> plannerViewModel.moveRequiredPoi(poiId, direction) },
                             onRemovePoi = { poiId -> plannerViewModel.removeRequiredPoi(poiId) },
                             onClearAll = { plannerViewModel.clearRequiredPois() }
                         )
@@ -838,6 +839,7 @@ fun RoutePlannerScreen(
                         isEditingEnabled = !isPlannerEditingLocked,
                         onChooseOnMap = ::openRequiredPlacesMapPicker,
                         onChooseFromList = { isRequiredPlacesSheetOpen = true },
+                        onMovePoi = { poiId, direction -> plannerViewModel.moveRequiredPoi(poiId, direction) },
                         onRemovePoi = { poiId -> plannerViewModel.removeRequiredPoi(poiId) },
                         onClearAll = { plannerViewModel.clearRequiredPois() }
                     )

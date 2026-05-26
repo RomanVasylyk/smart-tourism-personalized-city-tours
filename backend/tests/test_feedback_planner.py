@@ -315,3 +315,27 @@ def test_preferred_poi_ids_can_override_best_scored_default(monkeypatch):
     assert default_route["route"][0]["poi_id"] == 401
     assert preferred_route["route"][0]["poi_id"] == 402
     assert preferred_route["route"][0]["planner_score_breakdown"]["preferred_bonus"] > 0
+
+
+def test_preferred_poi_ids_keep_manual_order(monkeypatch):
+    neutral_profile = PlannerFeedbackProfile()
+    candidates = [
+        make_candidate(411, "Castle", "historical_site", 48.3172, 18.0861, 0.95, 5),
+        make_candidate(412, "Museum", "museum", 48.3200, 18.0900, 0.70, 5),
+        make_candidate(413, "Gallery", "gallery", 48.3210, 18.0910, 0.65, 5),
+    ]
+    travel_plans = {
+        411: make_travel_plan("walk", 2, 300),
+        412: make_travel_plan("walk", 2, 320),
+        413: make_travel_plan("walk", 2, 340),
+    }
+
+    route = run_route(
+        monkeypatch,
+        candidates=candidates,
+        profile=neutral_profile,
+        travel_plans=travel_plans,
+        preferred_poi_ids=[413, 412],
+    )
+
+    assert [item["poi_id"] for item in route["route"][:2]] == [413, 412]
