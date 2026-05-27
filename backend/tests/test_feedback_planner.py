@@ -1,3 +1,6 @@
+import pytest
+from fastapi import HTTPException
+
 from app.services.feedback_stats import PlannerFeedbackProfile, PlannerFeedbackStats
 from app.services.route_planner import RouteGenerateRequest, generate_route
 from app.services.transport_planner import TravelPlan, TravelSegment
@@ -57,6 +60,7 @@ def run_route(
     travel_plans: dict[int, TravelPlan],
     transport_enabled: bool = False,
     preferred_poi_ids: list[int] | None = None,
+    available_minutes: int = 45,
 ) -> dict:
     plan_by_coords = {(candidate["lat"], candidate["lon"]): travel_plans[candidate["id"]] for candidate in candidates}
 
@@ -77,7 +81,7 @@ def run_route(
         city="nitra",
         start_lat=48.3076,
         start_lon=18.0845,
-        available_minutes=45,
+        available_minutes=available_minutes,
         interests=[],
         pace="normal",
         return_to_start=False,
@@ -339,3 +343,49 @@ def test_preferred_poi_ids_keep_manual_order(monkeypatch):
     )
 
     assert [item["poi_id"] for item in route["route"][:2]] == [413, 412]
+
+
+def test_preferred_poi_ids_are_mandatory_even_when_over_budget(monkeypatch):
+    neutral_profile = PlannerFeedbackProfile()
+    candidates = [
+        make_candidate(421, "Distant Castle", "historical_site", 48.3500, 18.1200, 0.95, 20),
+        make_candidate(422, "Distant Museum", "museum", 48.3600, 18.1300, 0.90, 20),
+    ]
+    travel_plans = {
+        421: make_travel_plan("walk", 20, 2_000),
+        422: make_travel_plan("walk", 20, 2_000),
+    }
+
+    route = run_route(
+        monkeypatch,
+        candidates=candidates,
+        profile=neutral_profile,
+        travel_plans=travel_plans,
+        preferred_poi_ids=[421, 422],
+        available_minutes=30,
+    )
+
+    assert [item["poi_id"] for item in route["route"]] == [421, 422]
+    assert route["used_minutes"] > route["available_minutes"]
+
+
+def test_missing_required_poi_ids_fail_loudly(monkeypatch):
+    neutral_profile = PlannerFeedbackProfile()
+    candidates = [
+        make_candidate(431, "Castle", "historical_site", 48.3172, 18.0861, 0.95, 20),
+    ]
+    travel_plans = {
+        431: make_travel_plan("walk", 5, 500),
+    }
+
+    with pytest.raises(HTTPException) as exc_info:
+        run_route(
+            monkeypatch,
+            candidates=candidates,
+            profile=neutral_profile,
+            travel_plans=travel_plans,
+            preferred_poi_ids=[431, 999],
+        )
+
+    assert exc_info.value.status_code == 422
+    assert "999" in str(exc_info.value.detail)

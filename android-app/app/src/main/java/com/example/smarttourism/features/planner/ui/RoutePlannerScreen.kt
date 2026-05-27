@@ -616,10 +616,12 @@ fun RoutePlannerScreen(
                         isRouteActive = false,
                         canSkip = canSkipStops,
                         canReplace = true,
+                        canMove = true,
                         isActionInProgress = isRerouting,
                         highlightedPoiId = progressMetrics.nextTarget?.poi_id,
                         onMarkVisited = { poiId -> plannerViewModel.markRouteStopVisited(poiId) },
                         onSkip = { poiId -> plannerViewModel.removePreviewStop(poiId) },
+                        onMove = { poiId, direction -> plannerViewModel.movePreviewStop(poiId, direction) },
                         onReplace = { poiId -> replacingPoiId = poiId }
                     )
                 }
@@ -706,10 +708,12 @@ fun RoutePlannerScreen(
                         isRouteActive = false,
                         canSkip = false,
                         canReplace = false,
+                        canMove = false,
                         isActionInProgress = false,
                         highlightedPoiId = null,
                         onMarkVisited = {},
                         onSkip = {},
+                        onMove = { _, _ -> },
                         onReplace = {}
                     )
                 }
@@ -952,10 +956,12 @@ fun RoutePlannerScreen(
                     isRouteActive = routeSessionStatus == RouteSessionStatus.IN_PROGRESS,
                     canSkip = canSkipStops,
                     canReplace = false,
+                    canMove = false,
                     isActionInProgress = isRerouting,
                     highlightedPoiId = progressMetrics.nextTarget?.poi_id,
                     onMarkVisited = { poiId -> plannerViewModel.markRouteStopVisited(poiId) },
                     onSkip = { poiId -> plannerViewModel.skipRouteStop(poiId) },
+                    onMove = { _, _ -> },
                     onReplace = {}
                 )
             }
@@ -1440,10 +1446,12 @@ private fun LazyListScope.routeStopItems(
     isRouteActive: Boolean,
     canSkip: Boolean,
     canReplace: Boolean,
+    canMove: Boolean,
     isActionInProgress: Boolean,
     highlightedPoiId: Int?,
     onMarkVisited: (Int) -> Unit,
     onSkip: (Int) -> Unit,
+    onMove: (Int, Int) -> Unit,
     onReplace: (Int) -> Unit
 ) {
     if (routeStops.isEmpty()) {
@@ -1478,9 +1486,13 @@ private fun LazyListScope.routeStopItems(
             isRouteActive = isRouteActive,
             canSkip = canSkip,
             canReplace = canReplace,
+            canMoveUp = canMove && index > 0,
+            canMoveDown = canMove && index < routeStops.lastIndex,
             isActionInProgress = isActionInProgress,
             onMarkVisited = { onMarkVisited(item.poi_id) },
             onSkip = { onSkip(item.poi_id) },
+            onMoveUp = { onMove(item.poi_id, -1) },
+            onMoveDown = { onMove(item.poi_id, 1) },
             onReplace = { onReplace(item.poi_id) }
         )
     }

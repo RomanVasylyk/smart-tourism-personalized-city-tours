@@ -38,6 +38,7 @@
     <string name="error_current_location_unavailable">Aktuálna poloha nie je dostupná.</string>
     <string name="error_poi_preview_failed">Nepodarilo sa načítať náhľad miest.</string>
     <string name="error_route_generation_failed_default">Nepodarilo sa vygenerovať trasu.</string>
+    <string name="error_required_places_missing">Vo vygenerovanej trase chýbajú povinné miesta: %1$s.</string>
     <string name="offline_route_generation_unavailable">Generovanie trasy vyžaduje internet. Zobrazujú sa iba uložené dáta.</string>
 
     <string name="offline_support_title">Offline prístup</string>
@@ -137,10 +138,10 @@
     <string name="route_replace_stop_body">Vyberte, čo má nahradiť %1$s, alebo nechajte plánovač navrhnúť najlepšiu možnosť.</string>
     <string name="route_replace_candidates_empty">Pre aktuálne filtre nie sú dostupné žiadne ručné návrhy.</string>
     <string name="route_required_places_title">Miesta, ktoré chcete navštíviť</string>
-    <string name="route_required_places_body">Vyberte miesta, ktoré sa má vygenerovaná trasa pokúsiť zahrnúť. Tlačidlami Hore a Dole nastavíte ich poradie.</string>
+    <string name="route_required_places_body">Vyberte miesta, ktoré musia byť v trase. Tlačidlami Hore a Dole nastavíte ich poradie; trasa môže v prípade potreby prekročiť časový limit.</string>
     <string name="route_required_places_empty">Nie sú vybrané žiadne povinné miesta.</string>
     <string name="route_required_places_picker_title">Vybrať miesta</string>
-    <string name="route_required_places_picker_body">Vyberte jedno alebo viac miest, ktoré sa majú uprednostniť v ďalšej vygenerovanej trase.</string>
+    <string name="route_required_places_picker_body">Vyberte jedno alebo viac miest, ktoré musia byť v ďalšej vygenerovanej trase.</string>
     <string name="route_required_places_picker_empty">Pre toto mesto zatiaľ nie sú dostupné žiadne miesta.</string>
     <string name="action_move_up">Hore</string>
     <string name="action_move_down">Dole</string>

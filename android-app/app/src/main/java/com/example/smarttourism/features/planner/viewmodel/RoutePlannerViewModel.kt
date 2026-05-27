@@ -44,6 +44,7 @@ internal class RoutePlannerViewModel(
 
     private val poiPreviewFailedMessage = appContext.getString(R.string.error_poi_preview_failed)
     private val routeGenerationFailedMessage = appContext.getString(R.string.error_route_generation_failed_default)
+    private val requiredPlacesMissingMessage = appContext.getString(R.string.error_required_places_missing)
     private val offlineCitiesFallbackMessage = appContext.getString(R.string.offline_cities_cache_used)
     private val offlinePoisFallbackMessage = appContext.getString(R.string.offline_pois_cache_used)
     internal val offlineRouteGenerationMessage = appContext.getString(R.string.offline_route_generation_unavailable)
@@ -356,6 +357,22 @@ internal class RoutePlannerViewModel(
 
             try {
                 val generatedRoute = repository.generateRoute(request)
+                val missingRequiredPlaces = missingRequiredPoiLabels(
+                    request = request,
+                    response = generatedRoute
+                )
+                if (missingRequiredPlaces.isNotEmpty()) {
+                    routeResponse = null
+                    currentRouteRequest = request
+                    hasPendingRouteChanges = false
+                    hasNoGeneratedStops = false
+                    routeError = String.format(
+                        Locale.getDefault(),
+                        requiredPlacesMissingMessage,
+                        missingRequiredPlaces.joinToString(", ")
+                    )
+                    return@launch
+                }
                 if (generatedRoute.route.isEmpty()) {
                     routeResponse = null
                     currentRouteRequest = null
@@ -706,6 +723,60 @@ internal class RoutePlannerViewModel(
                         )
                     )
                 }
+            } catch (e: Exception) {
+                routeError = e.toUserMessage(routeGenerationFailedMessage)
+            } finally {
+                isRerouting = false
+            }
+        }
+    }
+
+    fun movePreviewStop(poiId: Int, direction: Int) {
+        if (routeSessionStatus != RouteSessionStatus.NOT_STARTED) {
+            return
+        }
+        val response = routeResponse ?: return
+        val request = currentRouteRequest ?: return
+        val originalItems = response.route.sortedBy { item -> item.order }
+        val currentIndex = originalItems.indexOfFirst { item -> item.poi_id == poiId }
+        if (currentIndex == -1) {
+            return
+        }
+        val targetIndex = (currentIndex + direction).coerceIn(0, originalItems.lastIndex)
+        if (targetIndex == currentIndex) {
+            return
+        }
+        if (!repository.isNetworkAvailable()) {
+            routeError = offlineRouteGenerationMessage
+            return
+        }
+
+        val reorderedPoiIds = originalItems.toMutableList().also { mutableItems ->
+            val movedItem = mutableItems.removeAt(currentIndex)
+            mutableItems.add(targetIndex, movedItem)
+        }.map { item -> item.poi_id }
+        val updatedRequest = request.copy(preferred_poi_ids = reorderedPoiIds)
+
+        viewModelScope.launch {
+            isRerouting = true
+            clearRouteMessages()
+            try {
+                val updatedResponse = rebuildPreviewRouteAfterStopMove(
+                    previousResponse = response,
+                    poiId = poiId,
+                    direction = direction
+                )
+                currentRouteRequest = updatedRequest
+                requiredPoiIds = reorderedPoiIds
+                routeResponse = updatedResponse
+                hasPendingRouteChanges = false
+                hasNoGeneratedStops = false
+                repository.saveSnapshot(
+                    SavedRouteSnapshot(
+                        request = updatedRequest,
+                        response = updatedResponse
+                    )
+                )
             } catch (e: Exception) {
                 routeError = e.toUserMessage(routeGenerationFailedMessage)
             } finally {
@@ -1306,6 +1377,22 @@ internal class RoutePlannerViewModel(
         hasNoGeneratedStops = false
     }
 
+    private fun missingRequiredPoiLabels(
+        request: RouteRequest,
+        response: RouteResponse
+    ): List<String> {
+        val requiredIds = request.preferred_poi_ids.orEmpty().distinct()
+        if (requiredIds.isEmpty()) {
+            return emptyList()
+        }
+
+        val generatedIds = response.route.map { item -> item.poi_id }.toSet()
+        val poisById = pois.associateBy { poi -> poi.id }
+        return requiredIds
+            .filterNot { poiId -> poiId in generatedIds }
+            .map { poiId -> poisById[poiId]?.name ?: "#$poiId" }
+    }
+
     private fun resetRouteSession(clearStoredSession: Boolean = true) {
         routeSessionStatus = RouteSessionStatus.NOT_STARTED
         routeId = null
@@ -1801,6 +1888,83 @@ internal class RoutePlannerViewModel(
             replacementLegToReplacement = replacementLegToReplacement,
             replacementLegToNext = replacementLegToNext,
             replacementReturnLeg = replacementReturnLeg
+        )
+    }
+
+    private suspend fun rebuildPreviewRouteAfterStopMove(
+        previousResponse: RouteResponse,
+        poiId: Int,
+        direction: Int
+    ): RouteResponse {
+        val originalItems = previousResponse.route.sortedBy { item -> item.order }
+        val currentIndex = originalItems.indexOfFirst { item -> item.poi_id == poiId }
+        if (currentIndex == -1) {
+            return previousResponse
+        }
+
+        val targetIndex = (currentIndex + direction).coerceIn(0, originalItems.lastIndex)
+        if (targetIndex == currentIndex) {
+            return previousResponse
+        }
+
+        val reorderedItems = originalItems.toMutableList().also { mutableItems ->
+            val movedItem = mutableItems.removeAt(currentIndex)
+            mutableItems.add(targetIndex, movedItem)
+        }
+        val startEndpoint = previousResponse.start.toLegEndpoint()
+        val poiLegs = mutableListOf<RouteLegDto>()
+        var fromEndpoint = startEndpoint
+        reorderedItems.forEach { item ->
+            val toEndpoint = item.toLegEndpoint()
+            poiLegs.add(
+                generatePreviewRouteLeg(
+                    previousResponse = previousResponse,
+                    fromEndpoint = fromEndpoint,
+                    toEndpoint = toEndpoint
+                )
+            )
+            fromEndpoint = toEndpoint
+        }
+        val returnLeg = if (previousResponse.return_to_start && reorderedItems.isNotEmpty()) {
+            generatePreviewRouteLeg(
+                previousResponse = previousResponse,
+                fromEndpoint = reorderedItems.last().toLegEndpoint(),
+                toEndpoint = startEndpoint
+            )
+        } else {
+            null
+        }
+
+        val renumberedLegs = (poiLegs + listOfNotNull(returnLeg)).mapIndexed { index, leg ->
+            leg.copy(order = index + 1)
+        }
+        var elapsedMinutes = 0
+        val renumberedItems = reorderedItems.mapIndexed { index, item ->
+            val incomingLeg = poiLegs[index]
+            elapsedMinutes += incomingLeg.duration_minutes
+            val arrivalMinutes = elapsedMinutes
+            elapsedMinutes += item.visit_duration_min
+            item.copy(
+                order = index + 1,
+                travel_minutes_from_previous = incomingLeg.duration_minutes,
+                arrival_after_min = arrivalMinutes,
+                departure_after_min = elapsedMinutes
+            )
+        }
+        val returnLegMinutes = returnLeg?.duration_minutes ?: 0
+        val usedMinutes = elapsedMinutes + returnLegMinutes
+        val totalVisitMinutes = renumberedItems.sumOf { item -> item.visit_duration_min }
+
+        return previousResponse.copy(
+            used_minutes = usedMinutes,
+            remaining_minutes = maxOf(0, previousResponse.available_minutes - usedMinutes),
+            total_visit_minutes = totalVisitMinutes,
+            total_walk_minutes = maxOf(0, usedMinutes - totalVisitMinutes),
+            return_to_start_minutes = returnLegMinutes,
+            poi_count = renumberedItems.size,
+            route = renumberedItems,
+            legs = renumberedLegs.ifEmpty { null },
+            full_geometry = mergeLegGeometries(renumberedLegs)
         )
     }
 

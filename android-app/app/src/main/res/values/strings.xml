@@ -38,6 +38,7 @@
     <string name="error_current_location_unavailable">Current location is unavailable.</string>
     <string name="error_poi_preview_failed">Failed to load POI preview.</string>
     <string name="error_route_generation_failed_default">Failed to generate route.</string>
+    <string name="error_required_places_missing">Generated route is missing required places: %1$s.</string>
     <string name="offline_route_generation_unavailable">Route generation requires internet. Showing cached data only.</string>
 
     <string name="offline_support_title">Offline access</string>
@@ -137,10 +138,10 @@
     <string name="route_replace_stop_body">Choose what should replace %1$s, or let the planner suggest the best option.</string>
     <string name="route_replace_candidates_empty">No manual candidates are available for the current filters.</string>
     <string name="route_required_places_title">Must-see places</string>
-    <string name="route_required_places_body">Choose POIs that the generated route should try to include. Use Up and Down to set their order.</string>
+    <string name="route_required_places_body">Choose POIs that must be included. Use Up and Down to set their order; the route may exceed the time budget if needed.</string>
     <string name="route_required_places_empty">No required places selected.</string>
     <string name="route_required_places_picker_title">Choose places</string>
-    <string name="route_required_places_picker_body">Select one or more places to prioritize in the next generated route.</string>
+    <string name="route_required_places_picker_body">Select one or more places that must be included in the next generated route.</string>
     <string name="route_required_places_picker_empty">No POIs are available for this city yet.</string>
     <string name="action_move_up">Up</string>
     <string name="action_move_down">Down</string>

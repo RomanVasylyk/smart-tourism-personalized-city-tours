@@ -1544,9 +1544,13 @@ internal fun RouteHistoryDetailsDialog(
                         isRouteActive = false,
                         canSkip = false,
                         canReplace = false,
+                        canMoveUp = false,
+                        canMoveDown = false,
                         isActionInProgress = false,
                         onMarkVisited = {},
                         onSkip = {},
+                        onMoveUp = {},
+                        onMoveDown = {},
                         onReplace = {}
                     )
                 }
@@ -2147,9 +2151,13 @@ internal fun RouteStopTimelineItem(
     isRouteActive: Boolean,
     canSkip: Boolean,
     canReplace: Boolean,
+    canMoveUp: Boolean,
+    canMoveDown: Boolean,
     isActionInProgress: Boolean,
     onMarkVisited: () -> Unit,
     onSkip: () -> Unit,
+    onMoveUp: () -> Unit,
+    onMoveDown: () -> Unit,
     onReplace: () -> Unit
 ) {
     var expanded by remember(item.poi_id) { mutableStateOf(isNext) }
@@ -2274,6 +2282,28 @@ internal fun RouteStopTimelineItem(
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
+                }
+                if (!isVisited && !isSkipped && (canMoveUp || canMoveDown)) {
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        OutlinedButton(
+                            onClick = onMoveUp,
+                            enabled = canMoveUp && !isActionInProgress,
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text(stringResource(R.string.action_move_up))
+                        }
+                        OutlinedButton(
+                            onClick = onMoveDown,
+                            enabled = canMoveDown && !isActionInProgress,
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text(stringResource(R.string.action_move_down))
+                        }
+                    }
                 }
                 if (!isVisited && !isSkipped && (canSkip || canReplace || isRouteActive)) {
                     Spacer(modifier = Modifier.height(10.dp))

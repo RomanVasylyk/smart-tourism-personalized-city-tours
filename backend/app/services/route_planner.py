@@ -168,7 +168,12 @@ def get_route_candidates(request: RouteGenerateRequest) -> list[dict]:
                 cur.execute(fallback_sql, fallback_params)
             rows = cur.fetchall()
 
-            preferred_ids = [poi_id for poi_id in request.preferred_poi_ids if poi_id not in request.exclude_poi_ids]
+            excluded_ids = {int(poi_id) for poi_id in request.exclude_poi_ids}
+            preferred_ids = [
+                int(poi_id)
+                for poi_id in request.preferred_poi_ids
+                if int(poi_id) not in excluded_ids
+            ]
             if not preferred_ids:
                 return rows
 
@@ -386,15 +391,22 @@ def generate_route(request: RouteGenerateRequest) -> dict:
     current_endpoint = start_endpoint
 
     used_ids: set[int] = set()
+    excluded_poi_ids = {int(poi_id) for poi_id in request.exclude_poi_ids}
     ordered_preferred_poi_ids = list(
         dict.fromkeys(
             int(poi_id)
             for poi_id in request.preferred_poi_ids
-            if poi_id not in request.exclude_poi_ids
+            if int(poi_id) not in excluded_poi_ids
         )
     )
     preferred_poi_ids = set(ordered_preferred_poi_ids)
     candidates_by_id = {int(poi["id"]): poi for poi in candidates}
+    unavailable_preferred_ids = [poi_id for poi_id in ordered_preferred_poi_ids if poi_id not in candidates_by_id]
+    if unavailable_preferred_ids:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Required POIs are not available for this city: {unavailable_preferred_ids}",
+        )
     category_counts: dict[str, int] = {}
     route_items: list[dict] = []
     legs: list[dict] = []
@@ -439,6 +451,7 @@ def generate_route(request: RouteGenerateRequest) -> dict:
             break
 
         for poi in evaluation_candidates:
+            is_forced_preferred = forced_preferred_poi is not None and int(poi["id"]) == int(forced_preferred_poi["id"])
             poi_point = RoutePoint(lat=poi["lat"], lon=poi["lon"])
             travel_plan = plan_travel(
                 start=current_point,
@@ -453,7 +466,7 @@ def generate_route(request: RouteGenerateRequest) -> dict:
             visit_minutes = poi["visit_duration_min"] or 20
             arrival_dt = departure_dt + timedelta(seconds=travel_plan.duration_seconds)
 
-            if request.respect_opening_hours and not is_poi_open_for_visit(
+            if not is_forced_preferred and request.respect_opening_hours and not is_poi_open_for_visit(
                 poi.get("opening_hours_raw"),
                 arrival_dt,
                 visit_minutes,
@@ -475,7 +488,7 @@ def generate_route(request: RouteGenerateRequest) -> dict:
                 return_minutes = return_plan.duration_minutes
 
             projected_total = elapsed_minutes + travel_minutes + visit_minutes + return_minutes
-            if projected_total > request.available_minutes:
+            if not is_forced_preferred and projected_total > request.available_minutes:
                 continue
 
             utility, score_breakdown = score_candidate(
@@ -569,6 +582,13 @@ def generate_route(request: RouteGenerateRequest) -> dict:
 
     total_visit_minutes = sum(item["visit_duration_min"] for item in route_items)
     total_walk_minutes = elapsed_minutes - total_visit_minutes
+    generated_poi_ids = {int(item["poi_id"]) for item in route_items}
+    missing_preferred_ids = [poi_id for poi_id in ordered_preferred_poi_ids if poi_id not in generated_poi_ids]
+    if missing_preferred_ids:
+        raise HTTPException(
+            status_code=409,
+            detail=f"Required POIs were not included in generated route: {missing_preferred_ids}",
+        )
 
     return {
         "city": request.city,

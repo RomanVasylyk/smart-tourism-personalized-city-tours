@@ -38,6 +38,7 @@
     <string name="error_current_location_unavailable">Поточне місцезнаходження недоступне.</string>
     <string name="error_poi_preview_failed">Не вдалося завантажити перегляд місць.</string>
     <string name="error_route_generation_failed_default">Не вдалося згенерувати маршрут.</string>
+    <string name="error_required_places_missing">У згенерованому маршруті немає обов’язкових місць: %1$s.</string>
     <string name="offline_route_generation_unavailable">Для генерації маршруту потрібен інтернет. Показуються лише кешовані дані.</string>
 
     <string name="offline_support_title">Офлайн-доступ</string>
@@ -137,10 +138,10 @@
     <string name="route_replace_stop_body">Виберіть, чим замінити %1$s, або дозвольте планувальнику запропонувати найкращий варіант.</string>
     <string name="route_replace_candidates_empty">Для поточних фільтрів немає доступних ручних варіантів.</string>
     <string name="route_required_places_title">Місця, які точно хочеться відвідати</string>
-    <string name="route_required_places_body">Виберіть POI, які згенерований маршрут має спробувати включити. Кнопками Вгору і Вниз задайте їхній порядок.</string>
+    <string name="route_required_places_body">Виберіть POI, які обов’язково мають бути в маршруті. Кнопками Вгору і Вниз задайте їхній порядок; якщо треба, маршрут може перевищити ліміт часу.</string>
     <string name="route_required_places_empty">Обов’язкові місця не вибрані.</string>
     <string name="route_required_places_picker_title">Вибрати місця</string>
-    <string name="route_required_places_picker_body">Виберіть одне або кілька місць, які треба пріоритезувати в наступному згенерованому маршруті.</string>
+    <string name="route_required_places_picker_body">Виберіть одне або кілька місць, які обов’язково мають бути в наступному згенерованому маршруті.</string>
     <string name="route_required_places_picker_empty">Для цього міста поки немає доступних POI.</string>
     <string name="action_move_up">Вгору</string>
     <string name="action_move_down">Вниз</string>
