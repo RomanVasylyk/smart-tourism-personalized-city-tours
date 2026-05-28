@@ -1981,59 +1981,48 @@ private fun RouteFeedbackContent(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+            .padding(18.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Text(
-            text = stringResource(R.string.route_feedback_title),
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.SemiBold
-        )
-        Text(
-            text = stringResource(R.string.route_feedback_rating_label),
-            style = MaterialTheme.typography.labelLarge
-        )
-        Text(
-            text = stringResource(R.string.route_feedback_rating_body),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            (1..5).forEach { rating ->
-                val selected = currentFeedback.rating == rating
-                if (selected) {
-                    Button(
-                        onClick = {
-                            onFeedbackChange(currentFeedback.copy(rating = rating))
-                        },
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text(rating.toString())
-                    }
-                } else {
-                    OutlinedButton(
-                        onClick = {
-                            onFeedbackChange(currentFeedback.copy(rating = rating))
-                        },
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text(rating.toString())
-                    }
-                }
-            }
-        }
-        if (currentFeedback.rating > 0) {
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(
-                text = stringResource(
-                    R.string.route_feedback_rating_selected,
-                    currentFeedback.rating
-                ),
-                style = MaterialTheme.typography.bodySmall,
+                text = stringResource(R.string.route_feedback_title),
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.SemiBold
+            )
+            Text(
+                text = if (currentFeedback.rating > 0) {
+                    stringResource(R.string.route_feedback_rating_selected, currentFeedback.rating)
+                } else {
+                    stringResource(R.string.route_feedback_rating_body)
+                },
+                style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
+        }
+
+        Surface(
+            shape = RoundedCornerShape(18.dp),
+            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(14.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.route_feedback_rating_label),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                FeedbackRatingSelector(
+                    selectedRating = currentFeedback.rating,
+                    onRatingSelected = { rating ->
+                        onFeedbackChange(currentFeedback.copy(rating = rating))
+                    }
+                )
+            }
         }
 
         FeedbackSwitchRow(
@@ -2061,21 +2050,108 @@ private fun RouteFeedbackContent(
 }
 
 @Composable
+private fun FeedbackRatingSelector(
+    selectedRating: Int,
+    onRatingSelected: (Int) -> Unit
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        (1..5).forEach { rating ->
+            val selected = selectedRating == rating
+            val shape = RoundedCornerShape(14.dp)
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .height(48.dp)
+                    .border(
+                        width = 1.dp,
+                        color = if (selected) {
+                            MaterialTheme.colorScheme.primary
+                        } else {
+                            MaterialTheme.colorScheme.outlineVariant
+                        },
+                        shape = shape
+                    )
+                    .clip(shape)
+                    .background(
+                        if (selected) {
+                            MaterialTheme.colorScheme.primaryContainer
+                        } else {
+                            MaterialTheme.colorScheme.surface
+                        }
+                    )
+                    .clickable { onRatingSelected(rating) },
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = rating.toString(),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = if (selected) {
+                        MaterialTheme.colorScheme.onPrimaryContainer
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    },
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+        }
+    }
+}
+
+@Composable
 internal fun FeedbackSwitchRow(
     title: String,
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit
 ) {
+    val shape = RoundedCornerShape(16.dp)
+    val containerColor = if (checked) {
+        MaterialTheme.colorScheme.primaryContainer
+    } else {
+        MaterialTheme.colorScheme.surface
+    }
+    val borderColor = if (checked) {
+        MaterialTheme.colorScheme.primary
+    } else {
+        MaterialTheme.colorScheme.outlineVariant
+    }
+
     Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(1.dp, borderColor, shape)
+            .clip(shape)
+            .background(containerColor)
+            .clickable { onCheckedChange(!checked) }
+            .padding(horizontal = 14.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
+        Box(
+            modifier = Modifier
+                .size(10.dp)
+                .clip(CircleShape)
+                .background(
+                    if (checked) {
+                        MaterialTheme.colorScheme.primary
+                    } else {
+                        MaterialTheme.colorScheme.outline
+                    }
+                )
+        )
         Text(
             text = title,
             modifier = Modifier.weight(1f),
-            style = MaterialTheme.typography.bodyMedium
+            style = MaterialTheme.typography.bodyMedium,
+            color = if (checked) {
+                MaterialTheme.colorScheme.onPrimaryContainer
+            } else {
+                MaterialTheme.colorScheme.onSurface
+            },
+            fontWeight = if (checked) FontWeight.SemiBold else FontWeight.Normal
         )
-        Spacer(modifier = Modifier.width(12.dp))
         Switch(
             checked = checked,
             onCheckedChange = onCheckedChange
