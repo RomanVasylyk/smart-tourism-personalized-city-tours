@@ -72,9 +72,18 @@ import kotlin.math.roundToInt
 private const val DefaultZoom = 13.0
 private const val RoutePrimaryLineColor = "#2563EB"
 private const val RouteSecondaryLineColor = "#94A3B8"
-private const val TransitPrimaryLineColor = "#F97316"
-private const val TransitSecondaryLineColor = "#FDBA74"
-private const val TransitCompletedLineColor = "#FED7AA"
+private const val TransitCompletedLineColor = "#CBD5E1"
+private val TransitLineColors = listOf(
+    "#EA580C",
+    "#0284C7",
+    "#7C3AED",
+    "#059669",
+    "#DC2626",
+    "#C026D3",
+    "#0D9488",
+    "#4F46E5",
+    "#B45309"
+)
 private const val RouteTrimMaxSnapDistanceMeters = 200.0
 private const val CurrentLocationIconWidthDp = 42
 private const val CurrentLocationIconHeightDp = 48
@@ -91,8 +100,8 @@ private const val SelectedPoiIconHeightDp = 44
 private const val SelectedPoiOuterColor = "#FFFFFF"
 private const val SelectedPoiFillColor = "#0F766E"
 private const val SelectedPoiCheckColor = "#FFFFFF"
-private const val StartPointIconWidthDp = 60
-private const val StartPointIconHeightDp = 66
+private const val StartPointIconWidthDp = 40
+private const val StartPointIconHeightDp = 46
 private const val StartPointOuterColor = "#FFFFFF"
 private const val StartPointFillColor = "#F97316"
 private const val StartPointTextColor = "#FFFFFF"
@@ -117,12 +126,14 @@ private enum class RoutePathStage {
 private data class RenderedRoutePath(
     val points: List<LatLng>,
     val mode: String,
+    val colorKey: String?,
     val stage: RoutePathStage
 )
 
 private data class RenderedRouteLabel(
     val point: LatLng,
     val text: String,
+    val colorKey: String?,
     val stage: RoutePathStage
 )
 
@@ -694,7 +705,7 @@ private fun drawRoutePaths(
             map.addPolyline(
                 PolylineOptions()
                     .addAll(path.points)
-                    .color(Color.parseColor(routeLineColor(path.mode, path.stage, isRouteActive)))
+                    .color(Color.parseColor(routeLineColor(path.mode, path.colorKey, path.stage, isRouteActive)))
                     .width(routeLineWidth(path.stage, isRouteActive))
                     .alpha(routeLineAlpha(path.stage, isRouteActive))
             )
@@ -718,9 +729,15 @@ private fun drawTransitLineLabels(
     labels
         .sortedWith(compareBy({ stagePriority[it.stage] ?: 0 }, { it.text }))
         .forEach { label ->
-            val iconKey = "${label.text}:${label.stage}:${isRouteActive}"
+            val iconKey = "${label.text}:${label.colorKey}:${label.stage}:${isRouteActive}"
             val icon = iconCache.getOrPut(iconKey) {
-                createTransitLineLabelIcon(iconFactory, context, label.text, label.stage, isRouteActive)
+                createTransitLineLabelIcon(
+                    iconFactory = iconFactory,
+                    context = context,
+                    label = label.text,
+                    colorKey = label.colorKey,
+                    stage = label.stage
+                )
             }
             map.addMarker(
                 MarkerOptions()
@@ -764,6 +781,8 @@ private fun buildRenderedRoutePaths(
         }
 
         segmentDtosForLeg(leg).mapNotNull { segment ->
+            val mode = segment.mode ?: leg.mode ?: "walk"
+            val colorKey = transitColorKey(mode, leg.order, segment)
             val points = segment.geometry
                 .orEmpty()
                 .map { coordinate -> LatLng(coordinate.lat, coordinate.lon) }
@@ -773,7 +792,8 @@ private fun buildRenderedRoutePaths(
             } else {
                 RenderedRoutePath(
                     points = points,
-                    mode = segment.mode ?: leg.mode ?: "walk",
+                    mode = mode,
+                    colorKey = colorKey,
                     stage = stage
                 )
             }
@@ -828,6 +848,7 @@ private fun buildTransitLineLabels(
             RenderedRouteLabel(
                 point = midpoint,
                 text = lineText,
+                colorKey = transitColorKey("transit", leg.order, segment),
                 stage = stage
             )
         }
@@ -858,16 +879,13 @@ private fun segmentDtosForLeg(leg: RouteLegDto): List<RouteSegmentDto> =
 
 private fun routeLineColor(
     mode: String,
+    colorKey: String?,
     stage: RoutePathStage,
     isRouteActive: Boolean
 ): String {
     val normalizedMode = mode.lowercase(Locale.ROOT)
     if (normalizedMode == "transit") {
-        return when (stage) {
-            RoutePathStage.COMPLETED -> TransitCompletedLineColor
-            RoutePathStage.ACTIVE -> TransitPrimaryLineColor
-            RoutePathStage.UPCOMING -> if (isRouteActive) TransitSecondaryLineColor else TransitPrimaryLineColor
-        }
+        return transitLineColor(colorKey, stage)
     }
 
     return when (stage) {
@@ -875,6 +893,48 @@ private fun routeLineColor(
         RoutePathStage.ACTIVE -> RoutePrimaryLineColor
         RoutePathStage.UPCOMING -> if (isRouteActive) RouteSecondaryLineColor else RoutePrimaryLineColor
     }
+}
+
+private fun transitColorKey(
+    mode: String,
+    legOrder: Int,
+    segment: RouteSegmentDto
+): String? {
+    if (mode.lowercase(Locale.ROOT) != "transit") {
+        return null
+    }
+
+    val lineName = segment.line_name?.trim()
+    return if (lineName.isNullOrBlank()) {
+        "transit:$legOrder:${segment.order}"
+    } else {
+        lineName
+    }
+}
+
+private fun transitLineColor(
+    colorKey: String?,
+    stage: RoutePathStage
+): String {
+    if (stage == RoutePathStage.COMPLETED) {
+        return TransitCompletedLineColor
+    }
+
+    val key = colorKey?.takeIf { it.isNotBlank() } ?: "transit"
+    val baseColor = TransitLineColors[stableColorIndex(key, TransitLineColors.size)]
+    return when (stage) {
+        RoutePathStage.COMPLETED -> TransitCompletedLineColor
+        RoutePathStage.ACTIVE -> baseColor
+        RoutePathStage.UPCOMING -> baseColor
+    }
+}
+
+private fun stableColorIndex(value: String, size: Int): Int {
+    var hash = 0
+    value.forEach { character ->
+        hash = (hash * 31) + character.code
+    }
+    return (hash and Int.MAX_VALUE) % size
 }
 
 private fun routeLineWidth(
@@ -983,7 +1043,7 @@ private fun createStartPointIcon(context: Context, label: String): Icon {
     val width = (StartPointIconWidthDp * density).roundToInt()
     val height = (StartPointIconHeightDp * density).roundToInt()
     val centerX = width / 2f
-    val circleY = 20f * density
+    val circleY = 16f * density
 
     val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
     val canvas = Canvas(bitmap)
@@ -996,10 +1056,10 @@ private fun createStartPointIcon(context: Context, label: String): Icon {
         locationPinPath(
             centerX = centerX,
             circleY = circleY,
-            circleRadius = 21f * density,
+            circleRadius = 16f * density,
             tipY = height - 2f * density,
-            shoulderY = 37f * density,
-            shoulderHalfWidth = 10f * density
+            shoulderY = 29f * density,
+            shoulderHalfWidth = 7.5f * density
         ),
         paint
     )
@@ -1009,10 +1069,10 @@ private fun createStartPointIcon(context: Context, label: String): Icon {
         locationPinPath(
             centerX = centerX,
             circleY = circleY,
-            circleRadius = 17f * density,
-            tipY = height - 8f * density,
-            shoulderY = 33f * density,
-            shoulderHalfWidth = 6.8f * density
+            circleRadius = 12.5f * density,
+            tipY = height - 7f * density,
+            shoulderY = 26f * density,
+            shoulderHalfWidth = 5.2f * density
         ),
         paint
     )
@@ -1021,7 +1081,7 @@ private fun createStartPointIcon(context: Context, label: String): Icon {
         color = Color.parseColor(StartPointTextColor)
         style = Paint.Style.FILL
         textAlign = Paint.Align.CENTER
-        textSize = 10f * density
+        textSize = 8.5f * density
         typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
     }
     val baseline = circleY - ((paint.descent() + paint.ascent()) / 2f)
@@ -1195,8 +1255,8 @@ private fun createTransitLineLabelIcon(
     iconFactory: IconFactory,
     context: Context,
     label: String,
-    stage: RoutePathStage,
-    isRouteActive: Boolean
+    colorKey: String?,
+    stage: RoutePathStage
 ): Icon {
     val density = context.resources.displayMetrics.density
     val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
@@ -1217,13 +1277,7 @@ private fun createTransitLineLabelIcon(
     val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
     val canvas = Canvas(bitmap)
     val backgroundPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.parseColor(
-            when (stage) {
-                RoutePathStage.COMPLETED -> TransitCompletedLineColor
-                RoutePathStage.ACTIVE -> TransitPrimaryLineColor
-                RoutePathStage.UPCOMING -> if (isRouteActive) TransitSecondaryLineColor else TransitPrimaryLineColor
-            }
-        )
+        color = Color.parseColor(transitLineColor(colorKey, stage))
     }
     canvas.drawRoundRect(
         RectF(0f, 0f, width.toFloat(), height.toFloat()),
