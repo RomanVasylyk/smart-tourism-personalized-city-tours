@@ -18,6 +18,7 @@
     <string name="language_english">English</string>
     <string name="language_slovak">Slovak</string>
     <string name="language_ukrainian">Ukrainian</string>
+    <string name="language_czech">Czech</string>
 
     <string name="status_location_unavailable">Location unavailable</string>
     <string name="status_poi_preview_unavailable">POI preview unavailable</string>

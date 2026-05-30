@@ -8,7 +8,8 @@ import java.util.Locale
 enum class AppLanguage(val tag: String) {
     ENGLISH("en"),
     SLOVAK("sk"),
-    UKRAINIAN("uk");
+    UKRAINIAN("uk"),
+    CZECH("cs");
 
     companion object {
         fun fromTag(tag: String?): AppLanguage =

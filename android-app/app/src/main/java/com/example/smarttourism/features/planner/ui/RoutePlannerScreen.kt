@@ -1210,6 +1210,7 @@ private fun languageShortLabel(language: AppLanguage): String =
         AppLanguage.ENGLISH -> "EN"
         AppLanguage.SLOVAK -> "SK"
         AppLanguage.UKRAINIAN -> "UK"
+        AppLanguage.CZECH -> "CS"
     }
 
 @Composable
@@ -1255,6 +1256,7 @@ private fun languageLabel(language: AppLanguage): String =
         AppLanguage.ENGLISH -> stringResource(R.string.language_english)
         AppLanguage.SLOVAK -> stringResource(R.string.language_slovak)
         AppLanguage.UKRAINIAN -> stringResource(R.string.language_ukrainian)
+        AppLanguage.CZECH -> stringResource(R.string.language_czech)
     }
 
 @Composable
