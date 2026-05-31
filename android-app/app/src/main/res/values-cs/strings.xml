@@ -19,6 +19,7 @@
     <string name="language_slovak">Slovenština</string>
     <string name="language_ukrainian">Ukrajinština</string>
     <string name="language_czech">Čeština</string>
+    <string name="language_german">Němčina</string>
 
     <string name="status_location_unavailable">Poloha není dostupná</string>
     <string name="status_poi_preview_unavailable">Náhled míst není dostupný</string>
