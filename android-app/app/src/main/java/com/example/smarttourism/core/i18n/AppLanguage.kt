@@ -10,7 +10,8 @@ enum class AppLanguage(val tag: String) {
     SLOVAK("sk"),
     UKRAINIAN("uk"),
     CZECH("cs"),
-    GERMAN("de");
+    GERMAN("de"),
+    POLISH("pl");
 
     companion object {
         fun fromTag(tag: String?): AppLanguage =

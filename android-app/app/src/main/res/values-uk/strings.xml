@@ -20,6 +20,7 @@
     <string name="language_ukrainian">Українська</string>
     <string name="language_czech">Чеська</string>
     <string name="language_german">Німецька</string>
+    <string name="language_polish">Польська</string>
 
     <string name="status_location_unavailable">Місцезнаходження недоступне</string>
     <string name="status_poi_preview_unavailable">Перегляд місць недоступний</string>
