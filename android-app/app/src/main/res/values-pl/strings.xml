@@ -21,6 +21,7 @@
     <string name="language_czech">Czeski</string>
     <string name="language_german">Niemiecki</string>
     <string name="language_polish">Polski</string>
+    <string name="language_hungarian">Węgierski</string>
 
     <string name="status_location_unavailable">Lokalizacja niedostępna</string>
     <string name="status_poi_preview_unavailable">Podgląd miejsc niedostępny</string>
