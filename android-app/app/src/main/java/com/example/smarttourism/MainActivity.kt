@@ -6,7 +6,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import com.example.smarttourism.core.i18n.AppLanguageStore
 import com.example.smarttourism.sync.OfflineSyncScheduler
-import com.example.smarttourism.features.planner.RoutePlannerScreen
+import com.example.smarttourism.features.planner.ui.RoutePlannerScreen
 import com.example.smarttourism.ui.theme.SmartTourismTheme
 import org.maplibre.android.MapLibre
 

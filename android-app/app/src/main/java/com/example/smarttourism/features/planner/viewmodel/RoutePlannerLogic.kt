@@ -1,4 +1,4 @@
-package com.example.smarttourism.features.planner
+package com.example.smarttourism.features.planner.viewmodel
 
 import android.Manifest
 import android.content.Context
@@ -82,6 +82,15 @@ import com.example.smarttourism.features.map.StreetStyleUrl
 import com.example.smarttourism.features.map.offline.OfflineCityRegion
 import com.example.smarttourism.features.map.offline.OfflineMapManager
 import com.example.smarttourism.features.map.offline.OfflineStoredRegion
+import com.example.smarttourism.features.planner.state.DefaultInterestCategories
+import com.example.smarttourism.features.planner.state.OffRouteDistanceMeters
+import com.example.smarttourism.features.planner.state.PoiVisitedRadiusMeters
+import com.example.smarttourism.features.planner.state.RouteClockFormatter
+import com.example.smarttourism.features.planner.state.RouteProgressMetrics
+import com.example.smarttourism.features.planner.state.RouteSessionStatus
+import com.example.smarttourism.features.planner.state.RouteTimeFormatter
+import com.example.smarttourism.features.planner.state.RouteTrackingMinDistanceMeters
+import com.example.smarttourism.features.planner.state.RouteTrackingMinTimeMs
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import java.time.OffsetDateTime

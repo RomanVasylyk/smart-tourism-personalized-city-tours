@@ -1,4 +1,4 @@
-package com.example.smarttourism.features.planner
+package com.example.smarttourism.features.planner.state
 
 import com.example.smarttourism.data.remote.dto.RouteItemDto
 import com.example.smarttourism.data.remote.dto.RouteStartDto

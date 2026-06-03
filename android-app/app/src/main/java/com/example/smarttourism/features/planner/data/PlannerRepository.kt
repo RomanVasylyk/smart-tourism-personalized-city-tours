@@ -1,4 +1,4 @@
-package com.example.smarttourism.features.planner
+package com.example.smarttourism.features.planner.data
 
 import android.content.Context
 import com.example.smarttourism.core.network.ApiModule
