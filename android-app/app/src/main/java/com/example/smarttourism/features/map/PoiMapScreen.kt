@@ -49,12 +49,12 @@ import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.example.smarttourism.R
-import com.example.smarttourism.data.remote.dto.PoiDto
-import com.example.smarttourism.data.remote.dto.RouteLegDto
-import com.example.smarttourism.data.remote.dto.RouteItemDto
-import com.example.smarttourism.data.remote.dto.RouteResponse
-import com.example.smarttourism.data.remote.dto.RouteSegmentDto
-import com.example.smarttourism.data.remote.dto.RouteStartDto
+import com.example.smarttourism.features.planner.domain.model.Poi
+import com.example.smarttourism.features.planner.domain.model.RouteLeg
+import com.example.smarttourism.features.planner.domain.model.RouteStop
+import com.example.smarttourism.features.planner.domain.model.RoutePlan
+import com.example.smarttourism.features.planner.domain.model.RouteSegment
+import com.example.smarttourism.features.planner.domain.model.RoutePoint
 import org.maplibre.android.annotations.Icon
 import org.maplibre.android.annotations.IconFactory
 import org.maplibre.android.annotations.MarkerOptions
@@ -156,12 +156,12 @@ private data class MapTextResources(
 
 @Composable
 fun PoiMapScreen(
-    pois: List<PoiDto>,
-    routeResponse: RouteResponse?,
+    pois: List<Poi>,
+    routeResponse: RoutePlan?,
     startLat: Double,
     startLon: Double,
     defaultZoom: Double? = null,
-    currentLocation: RouteStartDto?,
+    currentLocation: RoutePoint?,
     visitedPoiIds: Set<Int>,
     skippedPoiIds: Set<Int>,
     isRouteActive: Boolean,
@@ -176,7 +176,7 @@ fun PoiMapScreen(
     recenterLocationRequestKey: Int = 0,
     currentLocationCameraYOffset: Dp = 0.dp,
     onStartPointSelected: (Double, Double) -> Unit,
-    onRoutePoiSelected: (PoiDto) -> Unit = {},
+    onRoutePoiSelected: (Poi) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -193,7 +193,7 @@ fun PoiMapScreen(
     val currentLocationIcon = remember(context) { createCurrentLocationIcon(context) }
     val visitedRouteStopIcon = remember(context) { createVisitedRouteStopIcon(context) }
     val selectedPoiIcon = remember(context) { createSelectedPoiIcon(context) }
-    var selectablePoiMarkers by remember(mapView) { mutableStateOf<Map<Long, PoiDto>>(emptyMap()) }
+    var selectablePoiMarkers by remember(mapView) { mutableStateOf<Map<Long, Poi>>(emptyMap()) }
 
     Box(modifier = modifier) {
         AndroidView(
@@ -312,7 +312,7 @@ fun PoiMapScreen(
                 preferCurrentLocationCamera && currentLocation != null -> AutoCameraTarget(
                     key = buildString {
                         append("current-location:")
-                        append(routeResponse?.start_datetime.orEmpty())
+                        append(routeResponse?.startDateTime.orEmpty())
                         append(':')
                         append(isRouteActive)
                         append(':')
@@ -330,7 +330,7 @@ fun PoiMapScreen(
                     val activeRoute = routeResponse!!
                     val firstStop = if (isRouteActive) {
                         activeRoute.route.firstOrNull { stop ->
-                            stop.poi_id !in visitedPoiIds && stop.poi_id !in skippedPoiIds
+                            stop.poiId !in visitedPoiIds && stop.poiId !in skippedPoiIds
                         } ?: activeRoute.route.first()
                     } else {
                         activeRoute.route.first()
@@ -342,11 +342,11 @@ fun PoiMapScreen(
                             append(':')
                             append(activeRoute.start.lon)
                             append(':')
-                            append(activeRoute.start_datetime.orEmpty())
+                            append(activeRoute.startDateTime.orEmpty())
                             append(':')
-                            append(activeRoute.poi_count)
+                            append(activeRoute.poiCount)
                             append(':')
-                            append(activeRoute.used_minutes)
+                            append(activeRoute.usedMinutes)
                             append(':')
                             append(isRouteActive)
                             append(':')
@@ -354,7 +354,7 @@ fun PoiMapScreen(
                             append(':')
                             append(skippedPoiIds.sorted().joinToString(","))
                             append(':')
-                            append(firstStop.poi_id)
+                            append(firstStop.poiId)
                         },
                         lat = firstStop.lat,
                         lon = firstStop.lon,
@@ -514,12 +514,12 @@ private fun mapTextResources(): MapTextResources =
 private fun renderMapContent(
     context: Context,
     map: MapLibreMap,
-    pois: List<PoiDto>,
-    routeResponse: RouteResponse?,
+    pois: List<Poi>,
+    routeResponse: RoutePlan?,
     startLat: Double,
     startLon: Double,
     startPointIcon: Icon,
-    currentLocation: RouteStartDto?,
+    currentLocation: RoutePoint?,
     visitedPoiIds: Set<Int>,
     skippedPoiIds: Set<Int>,
     isRouteActive: Boolean,
@@ -529,9 +529,9 @@ private fun renderMapContent(
     isSelectingRoutePois: Boolean,
     selectedRoutePoiIds: Set<Int>,
     textResources: MapTextResources
-): Map<Long, PoiDto> {
+): Map<Long, Poi> {
     map.clear()
-    val selectablePoiMarkers = mutableMapOf<Long, PoiDto>()
+    val selectablePoiMarkers = mutableMapOf<Long, Poi>()
 
     val startPoint = LatLng(startLat, startLon)
     map.addMarker(
@@ -601,8 +601,8 @@ private fun renderMapContent(
 
             map.addMarkers(
                 routeItems.map { item ->
-                    val isVisited = item.poi_id in visitedPoiIds
-                    val isSkipped = item.poi_id in skippedPoiIds
+                    val isVisited = item.poiId in visitedPoiIds
+                    val isSkipped = item.poiId in skippedPoiIds
                     val routeStopTitle = String.format(
                         Locale.getDefault(),
                         textResources.routeStopTitleFormat,
@@ -632,8 +632,8 @@ private fun renderMapContent(
                                 Locale.getDefault(),
                                 textResources.routeStopSnippetFormat,
                                 item.category.toDisplayLabel(textResources.categoryLabels),
-                                item.travel_minutes_from_previous,
-                                item.visit_duration_min
+                                item.travelMinutesFromPrevious,
+                                item.visitDurationMin
                             )
                         )
                 }
@@ -748,8 +748,8 @@ private fun drawTransitLineLabels(
 }
 
 private fun buildRenderedRoutePaths(
-    routeResponse: RouteResponse?,
-    routeItems: List<RouteItemDto>,
+    routeResponse: RoutePlan?,
+    routeItems: List<RouteStop>,
     visitedPoiIds: Set<Int>,
     skippedPoiIds: Set<Int>,
     isRouteActive: Boolean
@@ -760,9 +760,9 @@ private fun buildRenderedRoutePaths(
     }
 
     val handledPoiIds = visitedPoiIds + skippedPoiIds
-    val allPoisHandled = routeItems.isNotEmpty() && routeItems.all { item -> item.poi_id in handledPoiIds }
+    val allPoisHandled = routeItems.isNotEmpty() && routeItems.all { item -> item.poiId in handledPoiIds }
     val activeLegOrder = if (isRouteActive) {
-        legs.firstOrNull { leg -> leg.to.type == "poi" && leg.to.poi_id !in handledPoiIds }?.order
+        legs.firstOrNull { leg -> leg.to.type == "poi" && leg.to.poiId !in handledPoiIds }?.order
             ?: if (allPoisHandled) {
                 legs.firstOrNull { leg -> leg.to.type == "start" }?.order
             } else {
@@ -775,7 +775,7 @@ private fun buildRenderedRoutePaths(
     return legs.flatMap { leg ->
         val stage = when {
             !isRouteActive -> RoutePathStage.ACTIVE
-            leg.to.type == "poi" && leg.to.poi_id in handledPoiIds -> RoutePathStage.COMPLETED
+            leg.to.type == "poi" && leg.to.poiId in handledPoiIds -> RoutePathStage.COMPLETED
             activeLegOrder != null && leg.order == activeLegOrder -> RoutePathStage.ACTIVE
             else -> RoutePathStage.UPCOMING
         }
@@ -802,8 +802,8 @@ private fun buildRenderedRoutePaths(
 }
 
 private fun buildTransitLineLabels(
-    routeResponse: RouteResponse?,
-    routeItems: List<RouteItemDto>,
+    routeResponse: RoutePlan?,
+    routeItems: List<RouteStop>,
     visitedPoiIds: Set<Int>,
     skippedPoiIds: Set<Int>,
     isRouteActive: Boolean
@@ -814,9 +814,9 @@ private fun buildTransitLineLabels(
     }
 
     val handledPoiIds = visitedPoiIds + skippedPoiIds
-    val allPoisHandled = routeItems.isNotEmpty() && routeItems.all { item -> item.poi_id in handledPoiIds }
+    val allPoisHandled = routeItems.isNotEmpty() && routeItems.all { item -> item.poiId in handledPoiIds }
     val activeLegOrder = if (isRouteActive) {
-        legs.firstOrNull { leg -> leg.to.type == "poi" && leg.to.poi_id !in handledPoiIds }?.order
+        legs.firstOrNull { leg -> leg.to.type == "poi" && leg.to.poiId !in handledPoiIds }?.order
             ?: if (allPoisHandled) {
                 legs.firstOrNull { leg -> leg.to.type == "start" }?.order
             } else {
@@ -829,7 +829,7 @@ private fun buildTransitLineLabels(
     return legs.flatMap { leg ->
         val stage = when {
             !isRouteActive -> RoutePathStage.ACTIVE
-            leg.to.type == "poi" && leg.to.poi_id in handledPoiIds -> RoutePathStage.COMPLETED
+            leg.to.type == "poi" && leg.to.poiId in handledPoiIds -> RoutePathStage.COMPLETED
             activeLegOrder != null && leg.order == activeLegOrder -> RoutePathStage.ACTIVE
             else -> RoutePathStage.UPCOMING
         }
@@ -839,7 +839,7 @@ private fun buildTransitLineLabels(
                 return@mapNotNull null
             }
 
-            val lineText = transitLineBadgeText(segment.line_name) ?: return@mapNotNull null
+            val lineText = transitLineBadgeText(segment.lineName) ?: return@mapNotNull null
             val points = segment.geometry
                 .orEmpty()
                 .map { coordinate -> LatLng(coordinate.lat, coordinate.lon) }
@@ -855,24 +855,24 @@ private fun buildTransitLineLabels(
     }
 }
 
-private fun segmentDtosForLeg(leg: RouteLegDto): List<RouteSegmentDto> =
+private fun segmentDtosForLeg(leg: RouteLeg): List<RouteSegment> =
     leg.segments.orEmpty().ifEmpty {
         listOf(
-            RouteSegmentDto(
+            RouteSegment(
                 order = 1,
                 mode = leg.mode,
-                duration_seconds = leg.duration_seconds,
-                duration_minutes = leg.duration_minutes,
-                distance_meters = leg.distance_meters,
+                durationSeconds = leg.durationSeconds,
+                durationMinutes = leg.durationMinutes,
+                distanceMeters = leg.distanceMeters,
                 geometry = leg.geometry,
-                source = leg.routing_source,
-                line_name = null,
-                from_stop_name = null,
-                to_stop_name = null,
-                departure_time = leg.departure_time,
-                arrival_time = leg.arrival_time,
-                wait_minutes_before_departure = null,
-                in_vehicle_minutes = null
+                source = leg.routingSource,
+                lineName = null,
+                fromStopName = null,
+                toStopName = null,
+                departureTime = leg.departureTime,
+                arrivalTime = leg.arrivalTime,
+                waitMinutesBeforeDeparture = null,
+                inVehicleMinutes = null
             )
         )
     }
@@ -898,13 +898,13 @@ private fun routeLineColor(
 private fun transitColorKey(
     mode: String,
     legOrder: Int,
-    segment: RouteSegmentDto
+    segment: RouteSegment
 ): String? {
     if (mode.lowercase(Locale.ROOT) != "transit") {
         return null
     }
 
-    val lineName = segment.line_name?.trim()
+    val lineName = segment.lineName?.trim()
     return if (lineName.isNullOrBlank()) {
         "transit:$legOrder:${segment.order}"
     } else {
@@ -1309,8 +1309,8 @@ private fun locationPinPath(
 
 private fun buildVisibleRoutePolylinePoints(
     polylinePoints: List<LatLng>,
-    routeItems: List<RouteItemDto>,
-    currentLocation: RouteStartDto?,
+    routeItems: List<RouteStop>,
+    currentLocation: RoutePoint?,
     visitedPoiIds: Set<Int>,
     skippedPoiIds: Set<Int>,
     shouldTrimPassedPath: Boolean
@@ -1343,8 +1343,8 @@ private fun buildVisibleRoutePolylinePoints(
 
 private fun buildVisibleRouteSegments(
     polylinePoints: List<LatLng>,
-    routeItems: List<RouteItemDto>,
-    currentLocation: RouteStartDto?,
+    routeItems: List<RouteStop>,
+    currentLocation: RoutePoint?,
     visitedPoiIds: Set<Int>,
     skippedPoiIds: Set<Int>,
     shouldHighlightActiveSegment: Boolean
@@ -1357,7 +1357,7 @@ private fun buildVisibleRouteSegments(
     }
 
     val nextTarget = routeItems
-        .filter { item -> item.poi_id !in visitedPoiIds && item.poi_id !in skippedPoiIds }
+        .filter { item -> item.poiId !in visitedPoiIds && item.poiId !in skippedPoiIds }
         .minByOrNull { item -> item.order }
         ?: return VisibleRouteSegments(emptyList(), emptyList())
 
@@ -1409,13 +1409,13 @@ private fun buildVisibleRouteSegments(
 
 private fun firstRemainingSegmentIndex(
     polylinePoints: List<LatLng>,
-    routeItems: List<RouteItemDto>,
+    routeItems: List<RouteStop>,
     visitedPoiIds: Set<Int>,
     skippedPoiIds: Set<Int>
 ): Int {
     val handledPoiIds = visitedPoiIds + skippedPoiIds
     val lastHandledItem = routeItems
-        .filter { item -> item.poi_id in handledPoiIds }
+        .filter { item -> item.poiId in handledPoiIds }
         .maxByOrNull { item -> item.order }
         ?: return 0
 
@@ -1430,7 +1430,7 @@ private fun firstRemainingSegmentIndex(
 
 private fun closestProjectionOnRoute(
     polylinePoints: List<LatLng>,
-    currentLocation: RouteStartDto,
+    currentLocation: RoutePoint,
     firstSearchSegmentIndex: Int
 ): RouteProjection? {
     var closestProjection: RouteProjection? = null
@@ -1547,12 +1547,12 @@ private fun longitudeToMeters(
     longitudeDelta * 111_320.0 * cos(referenceLatRadians)
 
 private fun buildRoutePolylinePoints(
-    routeResponse: RouteResponse?,
+    routeResponse: RoutePlan?,
     startPoint: LatLng,
-    routeItems: List<RouteItemDto>
+    routeItems: List<RouteStop>
 ): List<LatLng> {
     val routedGeometry = routeResponse
-        ?.full_geometry
+        ?.fullGeometry
         .orEmpty()
         .map { coordinate -> LatLng(coordinate.lat, coordinate.lon) }
 
@@ -1565,7 +1565,7 @@ private fun buildRoutePolylinePoints(
         routeItems.forEach { item ->
             add(LatLng(item.lat, item.lon))
         }
-        if (routeResponse?.return_to_start == true) {
+        if (routeResponse?.returnToStart == true) {
             add(startPoint)
         }
     }

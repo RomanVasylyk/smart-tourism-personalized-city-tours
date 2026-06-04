@@ -13,17 +13,14 @@ import com.example.smarttourism.data.model.RouteBookmark
 import com.example.smarttourism.data.model.RouteFeedback
 import com.example.smarttourism.data.model.RouteHistoryEntry
 import com.example.smarttourism.data.model.SavedRouteSnapshot
-import com.example.smarttourism.data.remote.dto.CityDto
-import com.example.smarttourism.data.remote.dto.PoiDto
-import com.example.smarttourism.data.remote.dto.RouteFeedbackRequest
-import com.example.smarttourism.data.remote.dto.RouteItemDto
-import com.example.smarttourism.data.remote.dto.RouteLegRequest
-import com.example.smarttourism.data.remote.dto.RouteRequest
-import com.example.smarttourism.data.remote.dto.RouteResponse
-import com.example.smarttourism.data.remote.dto.RouteSessionCreateRequest
-import com.example.smarttourism.data.remote.dto.RouteSessionDto
-import com.example.smarttourism.data.remote.dto.RouteSessionPoiVisitRequest
-import com.example.smarttourism.data.remote.dto.RouteStartDto
+import com.example.smarttourism.features.planner.domain.model.City
+import com.example.smarttourism.features.planner.domain.model.Poi
+import com.example.smarttourism.features.planner.domain.model.RouteStop
+import com.example.smarttourism.features.planner.domain.model.RouteLegQuery
+import com.example.smarttourism.features.planner.domain.model.PlannerPreferences
+import com.example.smarttourism.features.planner.domain.model.RoutePlan
+import com.example.smarttourism.features.planner.domain.model.RouteSession
+import com.example.smarttourism.features.planner.domain.model.RoutePoint
 import com.example.smarttourism.features.map.offline.OfflineMapManager
 import com.example.smarttourism.features.map.offline.OfflineStoredRegion
 import com.example.smarttourism.features.planner.data.PlannerRepository
@@ -68,11 +65,11 @@ internal class RoutePlannerViewModel(
 
     private var initialized = false
 
-    var cities by mutableStateOf<List<CityDto>>(emptyList())
+    var cities by mutableStateOf<List<City>>(emptyList())
         private set
-    var selectedCity by mutableStateOf<CityDto?>(null)
+    var selectedCity by mutableStateOf<City?>(null)
         private set
-    var pois by mutableStateOf<List<PoiDto>>(emptyList())
+    var pois by mutableStateOf<List<Poi>>(emptyList())
         private set
     var isPoiLoading by mutableStateOf(true)
         private set
@@ -91,13 +88,13 @@ internal class RoutePlannerViewModel(
     var offlineMapMessage by mutableStateOf<String?>(null)
         private set
 
-    var routeResponse by mutableStateOf<RouteResponse?>(null)
+    var routeResponse by mutableStateOf<RoutePlan?>(null)
         private set
     var routeBookmarks by mutableStateOf<List<RouteBookmark>>(emptyList())
         private set
     var routeHistory by mutableStateOf<List<RouteHistoryEntry>>(emptyList())
         private set
-    var currentRouteRequest by mutableStateOf<RouteRequest?>(null)
+    var currentRouteRequest by mutableStateOf<PlannerPreferences?>(null)
         private set
     var activeBookmarkId by mutableStateOf<String?>(null)
         private set
@@ -138,7 +135,7 @@ internal class RoutePlannerViewModel(
         private set
     var currentTargetPoiId by mutableStateOf<Int?>(null)
         private set
-    var currentRouteLocation by mutableStateOf<RouteStartDto?>(null)
+    var currentRouteLocation by mutableStateOf<RoutePoint?>(null)
         private set
     var trackingError by mutableStateOf<String?>(null)
         private set
@@ -158,7 +155,7 @@ internal class RoutePlannerViewModel(
     var skippedPoiIds by mutableStateOf<List<Int>>(emptyList())
         private set
 
-    val routeItems: List<RouteItemDto>
+    val routeItems: List<RouteStop>
         get() = routeResponse?.route.orEmpty()
 
     val progressMetrics: RouteProgressMetrics
@@ -199,7 +196,7 @@ internal class RoutePlannerViewModel(
         }
     }
 
-    fun selectCity(city: CityDto) {
+    fun selectCity(city: City) {
         if (selectedCity?.slug == city.slug) {
             return
         }
@@ -216,7 +213,7 @@ internal class RoutePlannerViewModel(
     }
 
     fun updateStartPoint(lat: Double, lon: Double) {
-        startPoint = RouteStartDto(lat = lat, lon = lon)
+        startPoint = RoutePoint(lat = lat, lon = lon)
         hasNoGeneratedStops = false
         invalidateRoutePreviewIfAllowed()
     }
@@ -282,7 +279,7 @@ internal class RoutePlannerViewModel(
         } else {
             (requiredPoiIds + poiId).distinct()
         }
-        currentRouteRequest = currentRouteRequest?.copy(preferred_poi_ids = requiredPoiIds)
+        currentRouteRequest = currentRouteRequest?.copy(preferredPoiIds = requiredPoiIds)
         hasNoGeneratedStops = false
         invalidateRoutePreviewIfAllowed()
     }
@@ -292,7 +289,7 @@ internal class RoutePlannerViewModel(
             return
         }
         requiredPoiIds = requiredPoiIds.filterNot { selectedPoiId -> selectedPoiId == poiId }
-        currentRouteRequest = currentRouteRequest?.copy(preferred_poi_ids = requiredPoiIds)
+        currentRouteRequest = currentRouteRequest?.copy(preferredPoiIds = requiredPoiIds)
         hasNoGeneratedStops = false
         invalidateRoutePreviewIfAllowed()
     }
@@ -317,7 +314,7 @@ internal class RoutePlannerViewModel(
         reorderedIds.add(targetIndex, movedPoiId)
 
         requiredPoiIds = reorderedIds
-        currentRouteRequest = currentRouteRequest?.copy(preferred_poi_ids = requiredPoiIds)
+        currentRouteRequest = currentRouteRequest?.copy(preferredPoiIds = requiredPoiIds)
         hasNoGeneratedStops = false
         invalidateRoutePreviewIfAllowed()
     }
@@ -327,7 +324,7 @@ internal class RoutePlannerViewModel(
             return
         }
         requiredPoiIds = emptyList()
-        currentRouteRequest = currentRouteRequest?.copy(preferred_poi_ids = emptyList())
+        currentRouteRequest = currentRouteRequest?.copy(preferredPoiIds = emptyList())
         hasNoGeneratedStops = false
         invalidateRoutePreviewIfAllowed()
     }
@@ -347,19 +344,19 @@ internal class RoutePlannerViewModel(
             val existingStatus = routeSessionStatus
             val existingStartedAt = routeStartedAt ?: defaultRouteStartDateTime().toString()
 
-            val request = RouteRequest(
+            val request = PlannerPreferences(
                 city = selectedCity?.slug ?: DefaultCitySlug,
-                start_lat = startPoint.lat,
-                start_lon = startPoint.lon,
-                available_minutes = availableMinutes,
+                startLat = startPoint.lat,
+                startLon = startPoint.lon,
+                availableMinutes = availableMinutes,
                 interests = selectedInterests,
                 pace = pace,
-                return_to_start = returnToStart,
-                start_datetime = startDateTime.truncatedTo(ChronoUnit.MINUTES).toString(),
-                respect_opening_hours = respectOpeningHours,
-                preferred_poi_ids = requiredPoiIds
+                returnToStart = returnToStart,
+                startDateTime = startDateTime.truncatedTo(ChronoUnit.MINUTES).toString(),
+                respectOpeningHours = respectOpeningHours,
+                preferredPoiIds = requiredPoiIds
                     .filterNot { poiId -> poiId in visitedPoiIds || poiId in skippedPoiIds },
-                transport_mode = if (allowPublicTransport && isPublicTransportAvailable) {
+                transportMode = if (allowPublicTransport && isPublicTransportAvailable) {
                     "walk_or_mhd"
                 } else {
                     "walk"
@@ -396,16 +393,13 @@ internal class RoutePlannerViewModel(
                     existingSnapshot != null &&
                     existingStatus.isRestorable()
                 ) {
-                    repository.enqueuePendingRouteSession(
-                        buildRouteSessionSyncRequest(
-                            sessionRouteId = existingRouteId,
-                            status = RouteSessionStatus.CANCELLED,
-                            startedAtValue = existingStartedAt,
-                            snapshot = existingSnapshot,
-                            finishedAt = defaultRouteStartDateTime().toString()
-                        )
+                    enqueueRouteSessionSync(
+                        sessionRouteId = existingRouteId,
+                        status = RouteSessionStatus.CANCELLED,
+                        startedAtValue = existingStartedAt,
+                        snapshot = existingSnapshot,
+                        finishedAt = defaultRouteStartDateTime().toString()
                     )
-                    repository.scheduleImmediateSync()
                 }
                 resetRouteSession()
                 currentRouteRequest = request
@@ -475,13 +469,13 @@ internal class RoutePlannerViewModel(
         }
     }
 
-    fun previewReplacementCandidates(poiId: Int): List<PoiDto> =
+    fun previewReplacementCandidates(poiId: Int): List<Poi> =
         buildPreviewReplacementCandidates(
             targetPoiId = poiId,
             routeItems = routeItems,
             pois = pois,
             selectedInterests = selectedInterests,
-            excludePoiIds = currentRouteRequest?.exclude_poi_ids.orEmpty()
+            excludePoiIds = currentRouteRequest?.excludedPoiIds.orEmpty()
         )
 
     fun activateRouteTracking() {
@@ -517,7 +511,7 @@ internal class RoutePlannerViewModel(
 
         routeId = activeRouteId
         routeStartedAt = activeStartedAt
-        currentTargetPoiId = nextPendingPoi(response!!.route, visitedPoiIds, skippedPoiIds)?.poi_id
+        currentTargetPoiId = nextPendingPoi(response!!.route, visitedPoiIds, skippedPoiIds)?.poiId
         trackingError = null
         offRouteDetectedAtMs = null
         lastAutoRerouteAtMs = null
@@ -587,7 +581,7 @@ internal class RoutePlannerViewModel(
         visitedPoiIds = updatedVisited
         syncVisitedPoisToBackend(listOf(poiId))
         val nextPendingPoi = nextPendingPoi(routeItems, updatedVisited, skippedPoiIds)
-        currentTargetPoiId = nextPendingPoi?.poi_id
+        currentTargetPoiId = nextPendingPoi?.poiId
 
         if (nextPendingPoi == null) {
             routeSessionStatus = RouteSessionStatus.COMPLETED
@@ -634,14 +628,14 @@ internal class RoutePlannerViewModel(
         val updatedSkipped = (skippedPoiIds + poiId).distinct()
         skippedPoiIds = updatedSkipped
         currentRouteRequest = currentRouteRequest?.copy(
-            exclude_poi_ids = (currentRouteRequest?.exclude_poi_ids.orEmpty() + poiId).distinct(),
-            preferred_poi_ids = currentRouteRequest?.preferred_poi_ids
+            excludedPoiIds = (currentRouteRequest?.excludedPoiIds.orEmpty() + poiId).distinct(),
+            preferredPoiIds = currentRouteRequest?.preferredPoiIds
                 .orEmpty()
                 .filterNot { preferredPoiId -> preferredPoiId == poiId }
         )
         requiredPoiIds = requiredPoiIds.filterNot { requiredPoiId -> requiredPoiId == poiId }
         val nextPendingPoi = nextPendingPoi(routeItems, visitedPoiIds, updatedSkipped)
-        currentTargetPoiId = nextPendingPoi?.poi_id
+        currentTargetPoiId = nextPendingPoi?.poiId
         currentRouteSnapshot()?.let { snapshot ->
             viewModelScope.launch {
                 repository.saveSnapshot(snapshot)
@@ -704,8 +698,8 @@ internal class RoutePlannerViewModel(
             return
         }
         val updatedRequest = request.copy(
-            exclude_poi_ids = (request.exclude_poi_ids.orEmpty() + poiId).distinct(),
-            preferred_poi_ids = request.preferred_poi_ids.orEmpty().filterNot { preferredPoiId -> preferredPoiId == poiId }
+            excludedPoiIds = (request.excludedPoiIds.orEmpty() + poiId).distinct(),
+            preferredPoiIds = request.preferredPoiIds.orEmpty().filterNot { preferredPoiId -> preferredPoiId == poiId }
         )
         val updatedRequiredPoiIds = requiredPoiIds.filterNot { requiredPoiId -> requiredPoiId == poiId }
 
@@ -750,7 +744,7 @@ internal class RoutePlannerViewModel(
         val response = routeResponse ?: return
         val request = currentRouteRequest ?: return
         val originalItems = response.route.sortedBy { item -> item.order }
-        val currentIndex = originalItems.indexOfFirst { item -> item.poi_id == poiId }
+        val currentIndex = originalItems.indexOfFirst { item -> item.poiId == poiId }
         if (currentIndex == -1) {
             return
         }
@@ -766,8 +760,8 @@ internal class RoutePlannerViewModel(
         val reorderedPoiIds = originalItems.toMutableList().also { mutableItems ->
             val movedItem = mutableItems.removeAt(currentIndex)
             mutableItems.add(targetIndex, movedItem)
-        }.map { item -> item.poi_id }
-        val updatedRequest = request.copy(preferred_poi_ids = reorderedPoiIds)
+        }.map { item -> item.poiId }
+        val updatedRequest = request.copy(preferredPoiIds = reorderedPoiIds)
 
         viewModelScope.launch {
             isRerouting = true
@@ -822,12 +816,12 @@ internal class RoutePlannerViewModel(
             isRerouting = true
             clearRouteMessages()
             val updatedPreferredPoiIds = buildList {
-                addAll(request.preferred_poi_ids.orEmpty().filterNot { preferredId -> preferredId == poiId })
+                addAll(request.preferredPoiIds.orEmpty().filterNot { preferredId -> preferredId == poiId })
                 add(replacementPoi.id)
             }.distinct()
             val updatedRequest = request.copy(
-                exclude_poi_ids = (request.exclude_poi_ids.orEmpty() + poiId).distinct(),
-                preferred_poi_ids = updatedPreferredPoiIds
+                excludedPoiIds = (request.excludedPoiIds.orEmpty() + poiId).distinct(),
+                preferredPoiIds = updatedPreferredPoiIds
             )
 
             try {
@@ -855,7 +849,7 @@ internal class RoutePlannerViewModel(
         }
     }
 
-    fun handleTrackedLocation(routeLocation: RouteStartDto) {
+    fun handleTrackedLocation(routeLocation: RoutePoint) {
         currentRouteLocation = routeLocation
         trackingError = null
         var approachLegRefreshed = false
@@ -869,11 +863,11 @@ internal class RoutePlannerViewModel(
         )
         visitedPoiIds = mutableVisited.distinct()
         val nextTarget = nextPendingPoi(routeItems, visitedPoiIds, skippedPoiIds)
-        currentTargetPoiId = nextTarget?.poi_id
+        currentTargetPoiId = nextTarget?.poiId
 
         val isCurrentlyOffRoute = routeResponse != null &&
             nextTarget != null &&
-            distanceToNextRouteSegmentMeters(routeResponse, nextTarget.poi_id, routeLocation) > OffRouteDistanceMeters
+            distanceToNextRouteSegmentMeters(routeResponse, nextTarget.poiId, routeLocation) > OffRouteDistanceMeters
 
         val nowMs = System.currentTimeMillis()
         if (isCurrentlyOffRoute) {
@@ -1051,29 +1045,13 @@ internal class RoutePlannerViewModel(
             viewModelScope.launch {
                 repository.saveRouteHistoryEntry(cancelledHistoryEntry)
                 routeHistory = upsertRouteHistoryEntry(routeHistory, cancelledHistoryEntry)
-                val response = snapshot.response
-                repository.enqueuePendingRouteSession(
-                    RouteSessionCreateRequest(
-                        id = activeRouteId,
-                        device_id = deviceId,
-                        city = snapshot.request.city.ifBlank { response.city },
-                        status = RouteSessionStatus.CANCELLED.rawValue,
-                        start_lat = response.start.lat,
-                        start_lon = response.start.lon,
-                        available_minutes = response.available_minutes,
-                        pace = response.pace,
-                        return_to_start = response.return_to_start,
-                        opening_hours_enabled = response.respect_opening_hours,
-                        started_at = activeStartedAt,
-                        finished_at = cancelledFinishedAt,
-                        used_minutes = response.used_minutes,
-                        total_walk_minutes = response.total_walk_minutes,
-                        total_visit_minutes = response.total_visit_minutes,
-                        route_snapshot_json = response
-                    )
+                enqueueRouteSessionSync(
+                    sessionRouteId = activeRouteId,
+                    status = RouteSessionStatus.CANCELLED,
+                    startedAtValue = activeStartedAt,
+                    snapshot = snapshot,
+                    finishedAt = cancelledFinishedAt
                 )
-                pendingSyncOperationCount = repository.getPendingSyncOperationCount()
-                repository.scheduleImmediateSync()
             }
         }
 
@@ -1127,24 +1105,24 @@ internal class RoutePlannerViewModel(
                     restoredCityToken = snapshot.request.city.ifBlank { snapshot.response.city }
                     restoreSnapshot(snapshot)
                     routeId = remoteSession.id
-                    routeStartedAt = remoteSession.started_at
+                    routeStartedAt = remoteSession.startedAt
                     val restoredStatus = RouteSessionStatus.fromRawValue(remoteSession.status)
                     routeFeedback = remoteSession.toRouteFeedback()
                     visitedPoiIds = remoteSession.pois
                         .orEmpty()
                         .filter { poi -> poi.visited && !poi.skipped }
-                        .map { poi -> poi.poi_id }
+                        .map { poi -> poi.poiId }
                         .distinct()
                     skippedPoiIds = remoteSession.pois
                         .orEmpty()
                         .filter { poi -> poi.skipped }
-                        .map { poi -> poi.poi_id }
+                        .map { poi -> poi.poiId }
                         .distinct()
                     val nextPendingPoiId = nextPendingPoi(
                         snapshot.response.route,
                         visitedPoiIds,
                         skippedPoiIds
-                    )?.poi_id
+                    )?.poiId
                     currentTargetPoiId = nextPendingPoiId
                     val normalizedStatus = if (restoredStatus.isRestorable() && nextPendingPoiId == null) {
                         RouteSessionStatus.COMPLETED
@@ -1157,7 +1135,7 @@ internal class RoutePlannerViewModel(
                         ActiveRouteSession(
                             route_id = remoteSession.id,
                             status = normalizedStatus.rawValue,
-                            started_at = remoteSession.started_at,
+                            started_at = remoteSession.startedAt,
                             current_target_poi_id = currentTargetPoiId,
                             visited_poi_ids = visitedPoiIds,
                             skipped_poi_ids = skippedPoiIds,
@@ -1171,7 +1149,7 @@ internal class RoutePlannerViewModel(
                         persistRouteSession(
                             status = normalizedStatus,
                             routeIdValue = remoteSession.id,
-                            startedAtValue = remoteSession.started_at,
+                            startedAtValue = remoteSession.startedAt,
                             visitedIds = visitedPoiIds,
                             skippedIds = skippedPoiIds,
                             feedback = routeFeedback,
@@ -1189,30 +1167,30 @@ internal class RoutePlannerViewModel(
     private fun restoreSnapshot(snapshot: SavedRouteSnapshot) {
         hasPendingRouteChanges = false
         hasNoGeneratedStops = false
-        currentRouteRequest = RouteRequest(
+        currentRouteRequest = PlannerPreferences(
             city = snapshot.request.city,
-            start_lat = snapshot.request.start_lat,
-            start_lon = snapshot.request.start_lon,
-            available_minutes = snapshot.request.available_minutes,
+            startLat = snapshot.request.startLat,
+            startLon = snapshot.request.startLon,
+            availableMinutes = snapshot.request.availableMinutes,
             interests = snapshot.request.interests,
             pace = snapshot.request.pace,
-            return_to_start = snapshot.request.return_to_start,
-            start_datetime = snapshot.request.start_datetime,
-            respect_opening_hours = snapshot.request.respect_opening_hours,
-            exclude_poi_ids = snapshot.request.exclude_poi_ids.orEmpty(),
-            preferred_poi_ids = snapshot.request.preferred_poi_ids.orEmpty(),
-            transport_mode = snapshot.request.transport_mode ?: "walk"
+            returnToStart = snapshot.request.returnToStart,
+            startDateTime = snapshot.request.startDateTime,
+            respectOpeningHours = snapshot.request.respectOpeningHours,
+            excludedPoiIds = snapshot.request.excludedPoiIds.orEmpty(),
+            preferredPoiIds = snapshot.request.preferredPoiIds.orEmpty(),
+            transportMode = snapshot.request.transportMode ?: "walk"
         )
         routeResponse = snapshot.response
-        startPoint = RouteStartDto(snapshot.request.start_lat, snapshot.request.start_lon)
-        availableMinutes = clampAvailableMinutes(snapshot.request.available_minutes, city = null)
+        startPoint = RoutePoint(snapshot.request.startLat, snapshot.request.startLon)
+        availableMinutes = clampAvailableMinutes(snapshot.request.availableMinutes, city = null)
         pace = snapshot.request.pace
-        returnToStart = snapshot.request.return_to_start
-        respectOpeningHours = snapshot.request.respect_opening_hours
-        allowPublicTransport = snapshot.request.transport_mode == "walk_or_mhd"
-        startDateTime = parseRouteStartDateTime(snapshot.request.start_datetime)
+        returnToStart = snapshot.request.returnToStart
+        respectOpeningHours = snapshot.request.respectOpeningHours
+        allowPublicTransport = snapshot.request.transportMode == "walk_or_mhd"
+        startDateTime = parseRouteStartDateTime(snapshot.request.startDateTime)
         selectedInterests = snapshot.request.interests
-        requiredPoiIds = snapshot.request.preferred_poi_ids.orEmpty().distinct()
+        requiredPoiIds = snapshot.request.preferredPoiIds.orEmpty().distinct()
     }
 
     private fun restoreActiveSession(session: ActiveRouteSession) {
@@ -1226,7 +1204,7 @@ internal class RoutePlannerViewModel(
             session.snapshot.response.route,
             visitedPoiIds,
             skippedPoiIds
-        )?.poi_id
+        )?.poiId
         currentTargetPoiId = nextPendingPoiId ?: session.current_target_poi_id
         routeSessionStatus = if (restoredStatus.isRestorable() && nextPendingPoiId == null) {
             RouteSessionStatus.COMPLETED
@@ -1293,7 +1271,7 @@ internal class RoutePlannerViewModel(
         }
     }
 
-    private suspend fun loadPoisForCity(city: CityDto) {
+    private suspend fun loadPoisForCity(city: City) {
         selectedCity = city
         isPoiLoading = true
         offlineMapProgress = null
@@ -1346,12 +1324,12 @@ internal class RoutePlannerViewModel(
         offlineStoredRegion = offlineMapManager.findRegionBySlug(city.slug)
     }
 
-    private fun maxAvailableMinutesFor(city: CityDto?): Int =
-        city?.routing_limits?.max_available_minutes
+    private fun maxAvailableMinutesFor(city: City?): Int =
+        city?.routingLimits?.maxAvailableMinutes
             ?.coerceIn(MinimumAvailableMinutes, MaximumAvailableMinutes)
             ?: MaximumAvailableMinutes
 
-    private fun clampAvailableMinutes(value: Int, city: CityDto? = selectedCity): Int {
+    private fun clampAvailableMinutes(value: Int, city: City? = selectedCity): Int {
         val maxAllowedMinutes = maxAvailableMinutesFor(city)
         val clampedValue = value.coerceIn(MinimumAvailableMinutes, maxAllowedMinutes)
         val relativeMinutes = clampedValue - MinimumAvailableMinutes
@@ -1392,15 +1370,15 @@ internal class RoutePlannerViewModel(
     }
 
     private fun missingRequiredPoiLabels(
-        request: RouteRequest,
-        response: RouteResponse
+        request: PlannerPreferences,
+        response: RoutePlan
     ): List<String> {
-        val requiredIds = request.preferred_poi_ids.orEmpty().distinct()
+        val requiredIds = request.preferredPoiIds.orEmpty().distinct()
         if (requiredIds.isEmpty()) {
             return emptyList()
         }
 
-        val generatedIds = response.route.map { item -> item.poi_id }.toSet()
+        val generatedIds = response.route.map { item -> item.poiId }.toSet()
         val poisById = pois.associateBy { poi -> poi.id }
         return requiredIds
             .filterNot { poiId -> poiId in generatedIds }
@@ -1440,37 +1418,9 @@ internal class RoutePlannerViewModel(
         RoutePreviewMutationContext(
             city = currentRouteRequest?.city ?: selectedCity?.slug,
             pace = currentRouteRequest?.pace,
-            startDateTime = currentRouteRequest?.start_datetime,
-            transportMode = currentRouteRequest?.transport_mode
+            startDateTime = currentRouteRequest?.startDateTime,
+            transportMode = currentRouteRequest?.transportMode
         )
-
-    private fun buildRouteSessionSyncRequest(
-        sessionRouteId: String,
-        status: RouteSessionStatus,
-        startedAtValue: String,
-        snapshot: SavedRouteSnapshot,
-        finishedAt: String? = null
-    ): RouteSessionCreateRequest {
-        val response = snapshot.response
-        return RouteSessionCreateRequest(
-            id = sessionRouteId,
-            device_id = deviceId,
-            city = snapshot.request.city.ifBlank { response.city },
-            status = status.rawValue,
-            start_lat = response.start.lat,
-            start_lon = response.start.lon,
-            available_minutes = response.available_minutes,
-            pace = response.pace,
-            return_to_start = response.return_to_start,
-            opening_hours_enabled = response.respect_opening_hours,
-            started_at = startedAtValue,
-            finished_at = finishedAt,
-            used_minutes = response.used_minutes,
-            total_walk_minutes = response.total_walk_minutes,
-            total_visit_minutes = response.total_visit_minutes,
-            route_snapshot_json = response
-        )
-    }
 
     private suspend fun enqueueRouteSessionSync(
         sessionRouteId: String,
@@ -1480,13 +1430,12 @@ internal class RoutePlannerViewModel(
         finishedAt: String? = null
     ) {
         repository.enqueuePendingRouteSession(
-            buildRouteSessionSyncRequest(
-                sessionRouteId = sessionRouteId,
-                status = status,
-                startedAtValue = startedAtValue,
-                snapshot = snapshot,
-                finishedAt = finishedAt
-            )
+            sessionRouteId = sessionRouteId,
+            deviceId = deviceId,
+            status = status.rawValue,
+            startedAt = startedAtValue,
+            snapshot = snapshot,
+            finishedAt = finishedAt
         )
         pendingSyncOperationCount = repository.getPendingSyncOperationCount()
         repository.scheduleImmediateSync()
@@ -1504,7 +1453,7 @@ internal class RoutePlannerViewModel(
         val snapshot = snapshotOverride ?: currentRouteSnapshot() ?: return
         val savedRouteId = routeIdValue ?: return
         val savedStartedAt = startedAtValue ?: defaultRouteStartDateTime().toString()
-        val nextTargetId = nextPendingPoi(snapshot.response.route, visitedIds, skippedIds)?.poi_id
+        val nextTargetId = nextPendingPoi(snapshot.response.route, visitedIds, skippedIds)?.poiId
         val totalCount = progressTotalCount(snapshot.response.route, skippedIds)
         val existingHistoryEntry = routeHistory.firstOrNull { entry -> entry.routeId == savedRouteId }
         val finishedAt = if (status == RouteSessionStatus.COMPLETED || status == RouteSessionStatus.CANCELLED) {
@@ -1735,10 +1684,8 @@ internal class RoutePlannerViewModel(
                 repository.enqueuePendingPoiVisit(
                     sessionId = sessionRouteId,
                     poiId = poiId,
-                    request = RouteSessionPoiVisitRequest(
-                        visited_at = defaultRouteStartDateTime().toString(),
-                        skipped = false
-                    )
+                    visitedAt = defaultRouteStartDateTime().toString(),
+                    skipped = false
                 )
             }
             pendingSyncOperationCount = repository.getPendingSyncOperationCount()
@@ -1757,10 +1704,8 @@ internal class RoutePlannerViewModel(
                 repository.enqueuePendingPoiVisit(
                     sessionId = sessionRouteId,
                     poiId = poiId,
-                    request = RouteSessionPoiVisitRequest(
-                        visited_at = defaultRouteStartDateTime().toString(),
-                        skipped = true
-                    )
+                    visitedAt = defaultRouteStartDateTime().toString(),
+                    skipped = true
                 )
             }
             pendingSyncOperationCount = repository.getPendingSyncOperationCount()
@@ -1774,18 +1719,10 @@ internal class RoutePlannerViewModel(
             return
         }
 
-        val feedbackRequest = RouteFeedbackRequest(
-            rating = feedback.rating,
-            was_convenient = feedback.route_was_comfortable,
-            too_much_walking = feedback.too_much_walking,
-            pois_were_interesting = feedback.pois_were_interesting,
-            comment = null
-        )
-
         viewModelScope.launch {
             repository.enqueuePendingFeedback(
                 sessionId = sessionRouteId,
-                request = feedbackRequest
+                feedback = feedback
             )
             pendingSyncOperationCount = repository.getPendingSyncOperationCount()
             repository.scheduleImmediateSync()
@@ -1798,7 +1735,7 @@ internal class RoutePlannerViewModel(
     }
 
     private fun recalculateRouteFromPoint(
-        currentLocation: RouteStartDto,
+        currentLocation: RoutePoint,
         autoTriggered: Boolean,
         additionalExcludedPoiIds: List<Int>
     ) {
@@ -1819,22 +1756,22 @@ internal class RoutePlannerViewModel(
                 skippedPoiIds = effectiveSkippedPoiIds,
                 currentLocation = currentLocation,
                 nextTarget = nextTarget
-            ).coerceIn(30, maxOf(30, baseRequest.available_minutes))
+            ).coerceIn(30, maxOf(30, baseRequest.availableMinutes))
             val request = baseRequest.copy(
-                start_lat = currentLocation.lat,
-                start_lon = currentLocation.lon,
-                available_minutes = remainingMinutes,
-                start_datetime = defaultRouteStartDateTime().toString(),
-                exclude_poi_ids = (visitedPoiIds + effectiveSkippedPoiIds).distinct(),
-                preferred_poi_ids = baseRequest.preferred_poi_ids
+                startLat = currentLocation.lat,
+                startLon = currentLocation.lon,
+                availableMinutes = remainingMinutes,
+                startDateTime = defaultRouteStartDateTime().toString(),
+                excludedPoiIds = (visitedPoiIds + effectiveSkippedPoiIds).distinct(),
+                preferredPoiIds = baseRequest.preferredPoiIds
                     .orEmpty()
                     .filterNot { poiId -> poiId in visitedPoiIds || poiId in effectiveSkippedPoiIds },
-                transport_mode = baseRequest.transport_mode ?: "walk"
+                transportMode = baseRequest.transportMode ?: "walk"
             )
 
             try {
                 val generatedRoute = repository.generateRoute(request)
-                val mergedRoute = mergeReroutedRouteResponse(
+                val mergedRoute = mergeReroutedRoutePlan(
                     previousResponse = response,
                     reroutedResponse = generatedRoute,
                     visitedPoiIds = visitedPoiIds
@@ -1843,9 +1780,9 @@ internal class RoutePlannerViewModel(
                     mergedRoute.route,
                     visitedPoiIds,
                     effectiveSkippedPoiIds
-                )?.poi_id
+                )?.poiId
                 val finalizedRoute = if (nextPendingPoiId == null) {
-                    finalizedHandledRouteResponse(
+                    finalizedHandledRoutePlan(
                         previousResponse = mergedRoute,
                         visitedPoiIds = visitedPoiIds,
                         skippedPoiIds = effectiveSkippedPoiIds
@@ -1860,7 +1797,7 @@ internal class RoutePlannerViewModel(
 
                 currentRouteRequest = request
                 routeResponse = finalizedRoute
-                startPoint = RouteStartDto(currentLocation.lat, currentLocation.lon)
+                startPoint = RoutePoint(currentLocation.lat, currentLocation.lon)
                 currentTargetPoiId = nextPendingPoiId
                 val updatedStatus = if (nextPendingPoiId == null) {
                     RouteSessionStatus.COMPLETED
@@ -1889,23 +1826,23 @@ internal class RoutePlannerViewModel(
     }
 
     private fun refreshActiveRouteApproachLeg(
-        previousResponse: RouteResponse,
-        currentLocation: RouteStartDto,
-        nextTarget: RouteItemDto,
+        previousResponse: RoutePlan,
+        currentLocation: RoutePoint,
+        nextTarget: RouteStop,
         autoTriggered: Boolean = false
     ) {
         val cityToken = currentRouteRequest?.city ?: selectedCity?.slug ?: previousResponse.city
-        val routeLegRequest = RouteLegRequest(
+        val routeLegRequest = RouteLegQuery(
             city = cityToken,
-            start_lat = currentLocation.lat,
-            start_lon = currentLocation.lon,
-            end_lat = nextTarget.lat,
-            end_lon = nextTarget.lon,
-            end_poi_id = nextTarget.poi_id,
-            end_name = nextTarget.name,
+            startLat = currentLocation.lat,
+            startLon = currentLocation.lon,
+            endLat = nextTarget.lat,
+            endLon = nextTarget.lon,
+            endPoiId = nextTarget.poiId,
+            endName = nextTarget.name,
             pace = currentRouteRequest?.pace ?: previousResponse.pace,
-            start_datetime = defaultRouteStartDateTime().toString(),
-            transport_mode = currentRouteRequest?.transport_mode ?: previousResponse.transport_mode ?: "walk"
+            startDateTime = defaultRouteStartDateTime().toString(),
+            transportMode = currentRouteRequest?.transportMode ?: previousResponse.transportMode ?: "walk"
         )
 
         viewModelScope.launch {
@@ -1914,7 +1851,7 @@ internal class RoutePlannerViewModel(
                 val replacementLeg = repository.generateRouteLeg(routeLegRequest)
                 val updatedResponse = replaceActiveRouteApproachLeg(
                     previousResponse = previousResponse,
-                    nextPoiId = nextTarget.poi_id,
+                    nextPoiId = nextTarget.poiId,
                     replacementLeg = replacementLeg
                 )
                 routeResponse = updatedResponse

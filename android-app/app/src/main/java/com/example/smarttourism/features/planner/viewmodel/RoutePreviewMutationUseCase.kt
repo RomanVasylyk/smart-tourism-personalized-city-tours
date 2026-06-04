@@ -1,12 +1,12 @@
 package com.example.smarttourism.features.planner.viewmodel
 
-import com.example.smarttourism.data.remote.dto.PoiDto
-import com.example.smarttourism.data.remote.dto.RouteItemDto
-import com.example.smarttourism.data.remote.dto.RouteLegDto
-import com.example.smarttourism.data.remote.dto.RouteLegEndpointDto
-import com.example.smarttourism.data.remote.dto.RouteLegRequest
-import com.example.smarttourism.data.remote.dto.RouteResponse
-import com.example.smarttourism.data.remote.dto.RouteStartDto
+import com.example.smarttourism.features.planner.domain.model.Poi
+import com.example.smarttourism.features.planner.domain.model.RouteStop
+import com.example.smarttourism.features.planner.domain.model.RouteLeg
+import com.example.smarttourism.features.planner.domain.model.RouteLegEndpoint
+import com.example.smarttourism.features.planner.domain.model.RouteLegQuery
+import com.example.smarttourism.features.planner.domain.model.RoutePlan
+import com.example.smarttourism.features.planner.domain.model.RoutePoint
 import com.example.smarttourism.features.planner.data.PlannerRepository
 
 internal data class RoutePreviewMutationContext(
@@ -20,17 +20,17 @@ internal class RoutePreviewMutationUseCase(
     private val repository: PlannerRepository
 ) {
     suspend fun removeStop(
-        previousResponse: RouteResponse,
+        previousResponse: RoutePlan,
         poiId: Int,
         context: RoutePreviewMutationContext
-    ): RouteResponse {
+    ): RoutePlan {
         val originalItems = previousResponse.route.sortedBy { item -> item.order }
-        val removedIndex = originalItems.indexOfFirst { item -> item.poi_id == poiId }
+        val removedIndex = originalItems.indexOfFirst { item -> item.poiId == poiId }
         if (removedIndex == -1) {
             return previousResponse
         }
 
-        val remainingItems = originalItems.filterNot { item -> item.poi_id == poiId }
+        val remainingItems = originalItems.filterNot { item -> item.poiId == poiId }
         if (remainingItems.isEmpty()) {
             return removePreviewRoutePoi(previousResponse, poiId)
         }
@@ -46,7 +46,7 @@ internal class RoutePreviewMutationUseCase(
                 context = context
             )
         }
-        val replacementReturnLeg = if (nextItem == null && previousResponse.return_to_start) {
+        val replacementReturnLeg = if (nextItem == null && previousResponse.returnToStart) {
             remainingItems.lastOrNull()?.let { lastStop ->
                 generatePreviewRouteLeg(
                     previousResponse = previousResponse,
@@ -68,13 +68,13 @@ internal class RoutePreviewMutationUseCase(
     }
 
     suspend fun replaceStop(
-        previousResponse: RouteResponse,
+        previousResponse: RoutePlan,
         targetPoiId: Int,
-        replacementPoi: PoiDto,
+        replacementPoi: Poi,
         context: RoutePreviewMutationContext
-    ): RouteResponse {
+    ): RoutePlan {
         val originalItems = previousResponse.route.sortedBy { item -> item.order }
-        val targetIndex = originalItems.indexOfFirst { item -> item.poi_id == targetPoiId }
+        val targetIndex = originalItems.indexOfFirst { item -> item.poiId == targetPoiId }
         if (targetIndex == -1) {
             return previousResponse
         }
@@ -97,7 +97,7 @@ internal class RoutePreviewMutationUseCase(
                 context = context
             )
         }
-        val replacementReturnLeg = if (nextItem == null && previousResponse.return_to_start) {
+        val replacementReturnLeg = if (nextItem == null && previousResponse.returnToStart) {
             generatePreviewRouteLeg(
                 previousResponse = previousResponse,
                 fromEndpoint = replacementEndpoint,
@@ -119,13 +119,13 @@ internal class RoutePreviewMutationUseCase(
     }
 
     suspend fun moveStop(
-        previousResponse: RouteResponse,
+        previousResponse: RoutePlan,
         poiId: Int,
         direction: Int,
         context: RoutePreviewMutationContext
-    ): RouteResponse {
+    ): RoutePlan {
         val originalItems = previousResponse.route.sortedBy { item -> item.order }
-        val currentIndex = originalItems.indexOfFirst { item -> item.poi_id == poiId }
+        val currentIndex = originalItems.indexOfFirst { item -> item.poiId == poiId }
         if (currentIndex == -1) {
             return previousResponse
         }
@@ -140,7 +140,7 @@ internal class RoutePreviewMutationUseCase(
             mutableItems.add(targetIndex, movedItem)
         }
         val startEndpoint = previousResponse.start.toLegEndpoint()
-        val poiLegs = mutableListOf<RouteLegDto>()
+        val poiLegs = mutableListOf<RouteLeg>()
         var fromEndpoint = startEndpoint
         reorderedItems.forEach { item ->
             val toEndpoint = item.toLegEndpoint()
@@ -154,7 +154,7 @@ internal class RoutePreviewMutationUseCase(
             )
             fromEndpoint = toEndpoint
         }
-        val returnLeg = if (previousResponse.return_to_start && reorderedItems.isNotEmpty()) {
+        val returnLeg = if (previousResponse.returnToStart && reorderedItems.isNotEmpty()) {
             generatePreviewRouteLeg(
                 previousResponse = previousResponse,
                 fromEndpoint = reorderedItems.last().toLegEndpoint(),
@@ -171,50 +171,50 @@ internal class RoutePreviewMutationUseCase(
         var elapsedMinutes = 0
         val renumberedItems = reorderedItems.mapIndexed { index, item ->
             val incomingLeg = poiLegs[index]
-            elapsedMinutes += incomingLeg.duration_minutes
+            elapsedMinutes += incomingLeg.durationMinutes
             val arrivalMinutes = elapsedMinutes
-            elapsedMinutes += item.visit_duration_min
+            elapsedMinutes += item.visitDurationMin
             item.copy(
                 order = index + 1,
-                travel_minutes_from_previous = incomingLeg.duration_minutes,
-                arrival_after_min = arrivalMinutes,
-                departure_after_min = elapsedMinutes
+                travelMinutesFromPrevious = incomingLeg.durationMinutes,
+                arrivalAfterMin = arrivalMinutes,
+                departureAfterMin = elapsedMinutes
             )
         }
-        val returnLegMinutes = returnLeg?.duration_minutes ?: 0
+        val returnLegMinutes = returnLeg?.durationMinutes ?: 0
         val usedMinutes = elapsedMinutes + returnLegMinutes
-        val totalVisitMinutes = renumberedItems.sumOf { item -> item.visit_duration_min }
+        val totalVisitMinutes = renumberedItems.sumOf { item -> item.visitDurationMin }
 
         return previousResponse.copy(
-            used_minutes = usedMinutes,
-            remaining_minutes = maxOf(0, previousResponse.available_minutes - usedMinutes),
-            total_visit_minutes = totalVisitMinutes,
-            total_walk_minutes = maxOf(0, usedMinutes - totalVisitMinutes),
-            return_to_start_minutes = returnLegMinutes,
-            poi_count = renumberedItems.size,
+            usedMinutes = usedMinutes,
+            remainingMinutes = maxOf(0, previousResponse.availableMinutes - usedMinutes),
+            totalVisitMinutes = totalVisitMinutes,
+            totalWalkMinutes = maxOf(0, usedMinutes - totalVisitMinutes),
+            returnToStartMinutes = returnLegMinutes,
+            poiCount = renumberedItems.size,
             route = renumberedItems,
             legs = renumberedLegs.ifEmpty { null },
-            full_geometry = mergeLegGeometries(renumberedLegs)
+            fullGeometry = mergeLegGeometries(renumberedLegs)
         )
     }
 
     private suspend fun generatePreviewRouteLeg(
-        previousResponse: RouteResponse,
-        fromEndpoint: RouteLegEndpointDto,
-        toEndpoint: RouteLegEndpointDto,
+        previousResponse: RoutePlan,
+        fromEndpoint: RouteLegEndpoint,
+        toEndpoint: RouteLegEndpoint,
         context: RoutePreviewMutationContext
-    ): RouteLegDto {
-        val routeLegRequest = RouteLegRequest(
+    ): RouteLeg {
+        val routeLegRequest = RouteLegQuery(
             city = context.city ?: previousResponse.city,
-            start_lat = fromEndpoint.lat,
-            start_lon = fromEndpoint.lon,
-            end_lat = toEndpoint.lat,
-            end_lon = toEndpoint.lon,
-            end_poi_id = toEndpoint.poi_id ?: -1,
-            end_name = toEndpoint.name,
+            startLat = fromEndpoint.lat,
+            startLon = fromEndpoint.lon,
+            endLat = toEndpoint.lat,
+            endLon = toEndpoint.lon,
+            endPoiId = toEndpoint.poiId ?: -1,
+            endName = toEndpoint.name,
             pace = context.pace ?: previousResponse.pace,
-            start_datetime = context.startDateTime ?: previousResponse.start_datetime,
-            transport_mode = context.transportMode ?: previousResponse.transport_mode ?: "walk"
+            startDateTime = context.startDateTime ?: previousResponse.startDateTime,
+            transportMode = context.transportMode ?: previousResponse.transportMode ?: "walk"
         )
 
         return repository.generateRouteLeg(routeLegRequest).copy(
@@ -224,28 +224,28 @@ internal class RoutePreviewMutationUseCase(
     }
 }
 
-private fun RouteStartDto.toLegEndpoint(): RouteLegEndpointDto =
-    RouteLegEndpointDto(
+private fun RoutePoint.toLegEndpoint(): RouteLegEndpoint =
+    RouteLegEndpoint(
         type = "start",
-        poi_id = null,
+        poiId = null,
         name = null,
         lat = lat,
         lon = lon
     )
 
-private fun RouteItemDto.toLegEndpoint(): RouteLegEndpointDto =
-    RouteLegEndpointDto(
+private fun RouteStop.toLegEndpoint(): RouteLegEndpoint =
+    RouteLegEndpoint(
         type = "poi",
-        poi_id = poi_id,
+        poiId = poiId,
         name = name,
         lat = lat,
         lon = lon
     )
 
-private fun PoiDto.toLegEndpoint(): RouteLegEndpointDto =
-    RouteLegEndpointDto(
+private fun Poi.toLegEndpoint(): RouteLegEndpoint =
+    RouteLegEndpoint(
         type = "poi",
-        poi_id = id,
+        poiId = id,
         name = name,
         lat = lat,
         lon = lon

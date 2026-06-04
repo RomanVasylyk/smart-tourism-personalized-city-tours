@@ -55,11 +55,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.smarttourism.R
 import com.example.smarttourism.core.i18n.AppLanguage
 import com.example.smarttourism.data.model.RouteHistoryEntry
-import com.example.smarttourism.data.remote.dto.CityDto
-import com.example.smarttourism.data.remote.dto.PoiDto
-import com.example.smarttourism.data.remote.dto.RouteItemDto
-import com.example.smarttourism.data.remote.dto.RouteResponse
-import com.example.smarttourism.data.remote.dto.RouteStartDto
+import com.example.smarttourism.features.planner.domain.model.City
+import com.example.smarttourism.features.planner.domain.model.Poi
+import com.example.smarttourism.features.planner.domain.model.RouteStop
+import com.example.smarttourism.features.planner.domain.model.RoutePlan
+import com.example.smarttourism.features.planner.domain.model.RoutePoint
 import com.example.smarttourism.features.map.MapLocationButton
 import com.example.smarttourism.features.map.PoiMapScreen
 import com.example.smarttourism.features.planner.components.ActiveRouteBottomPanel
@@ -97,12 +97,12 @@ internal enum class PlannerDestination {
 internal fun PlannerTopBar(
     currentDestination: PlannerDestination,
     selectedLanguage: AppLanguage,
-    cities: List<CityDto>,
-    selectedCity: CityDto?,
+    cities: List<City>,
+    selectedCity: City?,
     routeBookmarkCount: Int,
     isCitySelectionEnabled: Boolean,
     onDestinationSelected: (PlannerDestination) -> Unit,
-    onCitySelected: (CityDto) -> Unit,
+    onCitySelected: (City) -> Unit,
     onLanguageSelected: (AppLanguage) -> Unit
 ) {
     var isAppMenuOpen by remember { mutableStateOf(false) }
@@ -298,11 +298,11 @@ private fun languageLabel(language: AppLanguage): String =
 
 @Composable
 internal fun PlannerMapPanel(
-    pois: List<com.example.smarttourism.data.remote.dto.PoiDto>,
-    routeResponse: RouteResponse?,
-    startPoint: RouteStartDto,
+    pois: List<Poi>,
+    routeResponse: RoutePlan?,
+    startPoint: RoutePoint,
     defaultZoom: Double?,
-    currentRouteLocation: RouteStartDto?,
+    currentRouteLocation: RoutePoint?,
     visitedPoiIds: List<Int>,
     skippedPoiIds: List<Int>,
     isRouteActive: Boolean,
@@ -311,7 +311,7 @@ internal fun PlannerMapPanel(
     isSelectingRoutePois: Boolean,
     selectedRoutePoiIds: List<Int>,
     onStartPointSelected: (Double, Double) -> Unit,
-    onRoutePoiSelected: (PoiDto) -> Unit,
+    onRoutePoiSelected: (Poi) -> Unit,
     onOpenFullScreenMap: () -> Unit,
     preferCurrentLocationCamera: Boolean = false,
     locationButtonBottomPadding: Dp? = null,
@@ -478,8 +478,8 @@ internal fun LazyListScope.plannerAlertItems(alerts: PlannerAlerts) {
 
 internal fun LazyListScope.routeStopItems(
     titleRes: Int,
-    routeStops: List<RouteItemDto>,
-    routeResponse: RouteResponse?,
+    routeStops: List<RouteStop>,
+    routeResponse: RoutePlan?,
     visitedPoiIds: List<Int>,
     skippedPoiIds: List<Int>,
     isRouteActive: Boolean,
@@ -513,14 +513,14 @@ internal fun LazyListScope.routeStopItems(
 
     itemsIndexed(
         items = routeStops,
-        key = { _, item -> item.poi_id }
+        key = { _, item -> item.poiId }
     ) { index, item ->
         RouteStopTimelineItem(
             item = item,
-            incomingLeg = routeResponse?.legs.orEmpty().firstOrNull { leg -> leg.to.poi_id == item.poi_id },
-            isVisited = item.poi_id in visitedPoiIds,
-            isSkipped = item.poi_id in skippedPoiIds,
-            isNext = highlightedPoiId == item.poi_id,
+            incomingLeg = routeResponse?.legs.orEmpty().firstOrNull { leg -> leg.to.poiId == item.poiId },
+            isVisited = item.poiId in visitedPoiIds,
+            isSkipped = item.poiId in skippedPoiIds,
+            isNext = highlightedPoiId == item.poiId,
             isLast = index == routeStops.lastIndex,
             isRouteActive = isRouteActive,
             canSkip = canSkip,
@@ -528,17 +528,17 @@ internal fun LazyListScope.routeStopItems(
             canMoveUp = canMove && index > 0,
             canMoveDown = canMove && index < routeStops.lastIndex,
             isActionInProgress = isActionInProgress,
-            onMarkVisited = { onMarkVisited(item.poi_id) },
-            onSkip = { onSkip(item.poi_id) },
-            onMoveUp = { onMove(item.poi_id, -1) },
-            onMoveDown = { onMove(item.poi_id, 1) },
-            onReplace = { onReplace(item.poi_id) }
+            onMarkVisited = { onMarkVisited(item.poiId) },
+            onSkip = { onSkip(item.poiId) },
+            onMoveUp = { onMove(item.poiId, -1) },
+            onMoveDown = { onMove(item.poiId, 1) },
+            onReplace = { onReplace(item.poiId) }
         )
     }
 }
 
 internal fun plannerModeFor(
-    routeResponse: RouteResponse?,
+    routeResponse: RoutePlan?,
     status: RouteSessionStatus
 ): PlannerMode =
     when {

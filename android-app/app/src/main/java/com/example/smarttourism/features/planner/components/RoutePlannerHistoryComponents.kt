@@ -80,23 +80,20 @@ import androidx.core.content.ContextCompat
 import com.example.smarttourism.data.model.ActiveRouteSession
 import com.example.smarttourism.data.model.RouteBookmark
 import com.example.smarttourism.core.network.ApiModule
-import com.example.smarttourism.data.remote.dto.CityDto
+import com.example.smarttourism.features.planner.domain.model.City
 import com.example.smarttourism.core.platform.NetworkMonitor
 import com.example.smarttourism.data.repository.OfflineCacheRepository
-import com.example.smarttourism.data.remote.dto.PoiDto
+import com.example.smarttourism.features.planner.domain.model.Poi
 import com.example.smarttourism.data.model.RouteFeedback
 import com.example.smarttourism.data.model.RouteHistoryEntry
-import com.example.smarttourism.data.remote.dto.RouteFeedbackRequest
-import com.example.smarttourism.data.remote.dto.RouteLegDto
-import com.example.smarttourism.data.remote.dto.RouteRequest
-import com.example.smarttourism.data.remote.dto.RouteResponse
-import com.example.smarttourism.data.remote.dto.RouteSegmentDto
-import com.example.smarttourism.data.remote.dto.RouteSessionDto
-import com.example.smarttourism.data.remote.dto.RouteSessionCreateRequest
-import com.example.smarttourism.data.remote.dto.RouteSessionPoiVisitRequest
-import com.example.smarttourism.data.remote.dto.RouteStartDto
+import com.example.smarttourism.features.planner.domain.model.RouteLeg
+import com.example.smarttourism.features.planner.domain.model.PlannerPreferences
+import com.example.smarttourism.features.planner.domain.model.RoutePlan
+import com.example.smarttourism.features.planner.domain.model.RouteSegment
+import com.example.smarttourism.features.planner.domain.model.RouteSession
+import com.example.smarttourism.features.planner.domain.model.RoutePoint
 import com.example.smarttourism.data.repository.RouteStorage
-import com.example.smarttourism.data.remote.dto.RouteItemDto
+import com.example.smarttourism.features.planner.domain.model.RouteStop
 import com.example.smarttourism.data.model.SavedRouteSnapshot
 import com.example.smarttourism.sync.OfflineSyncScheduler
 import com.example.smarttourism.R
@@ -191,7 +188,7 @@ internal fun RouteBookmarksSheetContent(
                                         text = stringResource(
                                             R.string.route_bookmark_meta,
                                             bookmark.snapshot.response.city,
-                                            bookmark.snapshot.response.poi_count
+                                            bookmark.snapshot.response.poiCount
                                         ),
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -380,8 +377,8 @@ internal fun RouteHistorySheetContent(
                                 Text(
                                     text = stringResource(
                                         R.string.route_history_meta,
-                                        response.poi_count,
-                                        entry.usedMinutes ?: response.used_minutes,
+                                        response.poiCount,
+                                        entry.usedMinutes ?: response.usedMinutes,
                                         ratingLabel
                                     ),
                                     style = MaterialTheme.typography.bodyMedium,
@@ -502,9 +499,9 @@ internal fun RouteHistoryDetailsDialog(
                     val item = routeResponse.route[index]
                     RouteStopTimelineItem(
                         item = item,
-                        incomingLeg = routeResponse.legs.orEmpty().firstOrNull { leg -> leg.to.poi_id == item.poi_id },
-                        isVisited = item.poi_id in entry.visitedPoiIds,
-                        isSkipped = item.poi_id in entry.skippedPoiIds,
+                        incomingLeg = routeResponse.legs.orEmpty().firstOrNull { leg -> leg.to.poiId == item.poiId },
+                        isVisited = item.poiId in entry.visitedPoiIds,
+                        isSkipped = item.poiId in entry.skippedPoiIds,
                         isNext = false,
                         isLast = index == routeResponse.route.lastIndex,
                         isRouteActive = false,
@@ -607,7 +604,7 @@ private fun FeedbackSummaryRow(
 @Composable
 internal fun ReplaceRouteStopSheetContent(
     targetStopName: String,
-    candidates: List<PoiDto>,
+    candidates: List<Poi>,
     isActionInProgress: Boolean,
     onUseBestSuggestion: () -> Unit,
     onChooseCandidate: (Int) -> Unit

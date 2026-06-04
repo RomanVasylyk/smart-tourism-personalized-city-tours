@@ -1,12 +1,12 @@
 package com.example.smarttourism.features.planner.state
 
-import com.example.smarttourism.data.remote.dto.RouteItemDto
-import com.example.smarttourism.data.remote.dto.RouteStartDto
+import com.example.smarttourism.features.planner.domain.model.RoutePoint
+import com.example.smarttourism.features.planner.domain.model.RouteStop
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 internal const val DefaultCitySlug = "nitra"
-internal val EmptyStartPoint = RouteStartDto(lat = 48.3076, lon = 18.0845)
+internal val EmptyStartPoint = RoutePoint(lat = 48.3076, lon = 18.0845)
 internal const val MinimumAvailableMinutes = 30
 internal const val MaximumAvailableMinutes = 720
 internal const val AvailableMinutesStepMinutes = 15
@@ -58,7 +58,7 @@ internal enum class PlannerMode {
 internal data class RouteProgressMetrics(
     val visitedCount: Int,
     val totalCount: Int,
-    val nextTarget: RouteItemDto?,
+    val nextTarget: RouteStop?,
     val distanceToNextTargetMeters: Float?,
     val estimatedRemainingMinutes: Int,
     val isOffRoute: Boolean,

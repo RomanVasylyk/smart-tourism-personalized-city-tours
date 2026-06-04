@@ -1,9 +1,9 @@
 package com.example.smarttourism.data.model
 
-import com.example.smarttourism.data.remote.dto.RouteRequest
-import com.example.smarttourism.data.remote.dto.RouteResponse
+import com.example.smarttourism.features.planner.domain.model.PlannerPreferences
+import com.example.smarttourism.features.planner.domain.model.RoutePlan
 
 data class SavedRouteSnapshot(
-    val request: RouteRequest,
-    val response: RouteResponse
+    val request: PlannerPreferences,
+    val response: RoutePlan
 )

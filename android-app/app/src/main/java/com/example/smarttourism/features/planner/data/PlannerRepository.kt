@@ -5,21 +5,24 @@ import com.example.smarttourism.core.network.ApiModule
 import com.example.smarttourism.core.platform.NetworkMonitor
 import com.example.smarttourism.data.model.ActiveRouteSession
 import com.example.smarttourism.data.model.RouteBookmark
+import com.example.smarttourism.data.model.RouteFeedback
 import com.example.smarttourism.data.model.RouteHistoryEntry
 import com.example.smarttourism.data.model.SavedRouteSnapshot
 import com.example.smarttourism.data.remote.api.PoiApi
-import com.example.smarttourism.data.remote.dto.CityDto
-import com.example.smarttourism.data.remote.dto.PoiDto
 import com.example.smarttourism.data.remote.dto.RouteFeedbackRequest
-import com.example.smarttourism.data.remote.dto.RouteLegDto
-import com.example.smarttourism.data.remote.dto.RouteLegRequest
-import com.example.smarttourism.data.remote.dto.RouteRequest
-import com.example.smarttourism.data.remote.dto.RouteResponse
 import com.example.smarttourism.data.remote.dto.RouteSessionCreateRequest
-import com.example.smarttourism.data.remote.dto.RouteSessionDto
 import com.example.smarttourism.data.remote.dto.RouteSessionPoiVisitRequest
 import com.example.smarttourism.data.repository.OfflineCacheRepository
 import com.example.smarttourism.data.repository.RouteStorage
+import com.example.smarttourism.features.planner.domain.mapper.toDomain
+import com.example.smarttourism.features.planner.domain.mapper.toDto
+import com.example.smarttourism.features.planner.domain.model.City
+import com.example.smarttourism.features.planner.domain.model.PlannerPreferences
+import com.example.smarttourism.features.planner.domain.model.Poi
+import com.example.smarttourism.features.planner.domain.model.RouteLeg
+import com.example.smarttourism.features.planner.domain.model.RouteLegQuery
+import com.example.smarttourism.features.planner.domain.model.RoutePlan
+import com.example.smarttourism.features.planner.domain.model.RouteSession
 import com.example.smarttourism.sync.OfflineSyncScheduler
 
 internal class PlannerRepository(
@@ -32,37 +35,37 @@ internal class PlannerRepository(
     fun isNetworkAvailable(): Boolean =
         NetworkMonitor.isNetworkAvailable(context)
 
-    suspend fun fetchCities(): List<CityDto> =
-        api.getCities()
+    suspend fun fetchCities(): List<City> =
+        api.getCities().map { city -> city.toDomain() }
 
-    suspend fun fetchPois(citySlug: String): List<PoiDto> =
-        api.getPois(citySlug)
+    suspend fun fetchPois(citySlug: String): List<Poi> =
+        api.getPois(citySlug).map { poi -> poi.toDomain() }
 
-    suspend fun generateRoute(request: RouteRequest): RouteResponse =
-        api.generateRoute(request)
+    suspend fun generateRoute(request: PlannerPreferences): RoutePlan =
+        api.generateRoute(request.toDto()).toDomain()
 
-    suspend fun generateRouteLeg(request: RouteLegRequest): RouteLegDto =
-        api.generateRouteLeg(request)
+    suspend fun generateRouteLeg(request: RouteLegQuery): RouteLeg =
+        api.generateRouteLeg(request.toDto()).toDomain()
 
-    suspend fun getRouteSession(routeId: String): RouteSessionDto =
-        api.getRouteSession(routeId)
+    suspend fun getRouteSession(routeId: String): RouteSession =
+        api.getRouteSession(routeId).toDomain()
 
-    suspend fun getRouteSessions(deviceId: String): List<RouteSessionDto> =
-        api.getRouteSessions(deviceId)
+    suspend fun getRouteSessions(deviceId: String): List<RouteSession> =
+        api.getRouteSessions(deviceId).map { session -> session.toDomain() }
 
-    suspend fun cacheCities(cities: List<CityDto>) {
-        OfflineCacheRepository.cacheCities(context, cities)
+    suspend fun cacheCities(cities: List<City>) {
+        OfflineCacheRepository.cacheCities(context, cities.map { city -> city.toDto() })
     }
 
-    suspend fun getCachedCities(): List<CityDto> =
-        OfflineCacheRepository.getCachedCities(context)
+    suspend fun getCachedCities(): List<City> =
+        OfflineCacheRepository.getCachedCities(context).map { city -> city.toDomain() }
 
-    suspend fun cachePois(citySlug: String, pois: List<PoiDto>) {
-        OfflineCacheRepository.cachePois(context, citySlug, pois)
+    suspend fun cachePois(citySlug: String, pois: List<Poi>) {
+        OfflineCacheRepository.cachePois(context, citySlug, pois.map { poi -> poi.toDto() })
     }
 
-    suspend fun getCachedPois(citySlug: String): List<PoiDto> =
-        OfflineCacheRepository.getCachedPois(context, citySlug)
+    suspend fun getCachedPois(citySlug: String): List<Poi> =
+        OfflineCacheRepository.getCachedPois(context, citySlug).map { poi -> poi.toDomain() }
 
     suspend fun saveSnapshot(snapshot: SavedRouteSnapshot) {
         RouteStorage.save(context, snapshot)
@@ -110,31 +113,69 @@ internal class PlannerRepository(
     suspend fun getPendingSyncOperationCount(): Int =
         OfflineCacheRepository.getPendingSyncOperationCount(context)
 
-    suspend fun enqueuePendingRouteSession(request: RouteSessionCreateRequest) {
-        OfflineCacheRepository.enqueuePendingRouteSession(context, request)
+    suspend fun enqueuePendingRouteSession(
+        sessionRouteId: String,
+        deviceId: String,
+        status: String,
+        startedAt: String,
+        snapshot: SavedRouteSnapshot,
+        finishedAt: String? = null
+    ) {
+        val response = snapshot.response
+        OfflineCacheRepository.enqueuePendingRouteSession(
+            context,
+            RouteSessionCreateRequest(
+                id = sessionRouteId,
+                device_id = deviceId,
+                city = snapshot.request.city.ifBlank { response.city },
+                status = status,
+                start_lat = response.start.lat,
+                start_lon = response.start.lon,
+                available_minutes = response.availableMinutes,
+                pace = response.pace,
+                return_to_start = response.returnToStart,
+                opening_hours_enabled = response.respectOpeningHours,
+                started_at = startedAt,
+                finished_at = finishedAt,
+                used_minutes = response.usedMinutes,
+                total_walk_minutes = response.totalWalkMinutes,
+                total_visit_minutes = response.totalVisitMinutes,
+                route_snapshot_json = response.toDto()
+            )
+        )
     }
 
     suspend fun enqueuePendingPoiVisit(
         sessionId: String,
         poiId: Int,
-        request: RouteSessionPoiVisitRequest
+        visitedAt: String,
+        skipped: Boolean
     ) {
         OfflineCacheRepository.enqueuePendingPoiVisit(
             context = context,
             sessionId = sessionId,
             poiId = poiId,
-            request = request
+            request = RouteSessionPoiVisitRequest(
+                visited_at = visitedAt,
+                skipped = skipped
+            )
         )
     }
 
     suspend fun enqueuePendingFeedback(
         sessionId: String,
-        request: RouteFeedbackRequest
+        feedback: RouteFeedback
     ) {
         OfflineCacheRepository.enqueuePendingFeedback(
             context = context,
             sessionId = sessionId,
-            request = request
+            request = RouteFeedbackRequest(
+                rating = feedback.rating,
+                was_convenient = feedback.route_was_comfortable,
+                too_much_walking = feedback.too_much_walking,
+                pois_were_interesting = feedback.pois_were_interesting,
+                comment = null
+            )
         )
     }
 

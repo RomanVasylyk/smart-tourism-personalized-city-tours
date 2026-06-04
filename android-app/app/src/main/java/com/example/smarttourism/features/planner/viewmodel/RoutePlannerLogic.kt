@@ -56,32 +56,22 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
-import com.example.smarttourism.data.model.ActiveRouteSession
-import com.example.smarttourism.core.network.ApiModule
-import com.example.smarttourism.data.remote.dto.CityDto
-import com.example.smarttourism.core.platform.NetworkMonitor
-import com.example.smarttourism.data.repository.OfflineCacheRepository
-import com.example.smarttourism.data.remote.dto.PoiDto
+import com.example.smarttourism.features.planner.domain.model.City
+import com.example.smarttourism.features.planner.domain.model.Poi
 import com.example.smarttourism.data.model.RouteFeedback
 import com.example.smarttourism.data.model.RouteHistoryEntry
-import com.example.smarttourism.data.remote.dto.RouteFeedbackRequest
-import com.example.smarttourism.data.remote.dto.RouteLegDto
-import com.example.smarttourism.data.remote.dto.RouteRequest
-import com.example.smarttourism.data.remote.dto.RouteResponse
-import com.example.smarttourism.data.remote.dto.RouteSegmentDto
-import com.example.smarttourism.data.remote.dto.RouteSessionDto
-import com.example.smarttourism.data.remote.dto.RouteSessionCreateRequest
-import com.example.smarttourism.data.remote.dto.RouteSessionPoiVisitRequest
-import com.example.smarttourism.data.remote.dto.RouteStartDto
-import com.example.smarttourism.data.repository.RouteStorage
-import com.example.smarttourism.data.remote.dto.RouteItemDto
+import com.example.smarttourism.features.planner.domain.model.RouteLeg
+import com.example.smarttourism.features.planner.domain.model.PlannerPreferences
+import com.example.smarttourism.features.planner.domain.model.RouteCoordinate
+import com.example.smarttourism.features.planner.domain.model.RoutePlan
+import com.example.smarttourism.features.planner.domain.model.RouteSegment
+import com.example.smarttourism.features.planner.domain.model.RouteSession
+import com.example.smarttourism.features.planner.domain.model.RoutePoint
+import com.example.smarttourism.features.planner.domain.model.RouteStop
 import com.example.smarttourism.data.model.SavedRouteSnapshot
-import com.example.smarttourism.sync.OfflineSyncScheduler
 import com.example.smarttourism.R
 import com.example.smarttourism.features.map.StreetStyleUrl
 import com.example.smarttourism.features.map.offline.OfflineCityRegion
-import com.example.smarttourism.features.map.offline.OfflineMapManager
-import com.example.smarttourism.features.map.offline.OfflineStoredRegion
 import com.example.smarttourism.features.planner.state.DefaultInterestCategories
 import com.example.smarttourism.features.planner.state.OffRouteDistanceMeters
 import com.example.smarttourism.features.planner.state.PoiVisitedRadiusMeters
@@ -106,8 +96,8 @@ import androidx.compose.ui.window.DialogProperties
 
 internal fun applySavedSnapshot(
     snapshot: SavedRouteSnapshot,
-    onRouteRestored: (RouteResponse) -> Unit,
-    onStartPointRestored: (RouteStartDto) -> Unit,
+    onRouteRestored: (RoutePlan) -> Unit,
+    onStartPointRestored: (RoutePoint) -> Unit,
     onAvailableMinutesRestored: (Int) -> Unit,
     onPaceRestored: (String) -> Unit,
     onReturnToStartRestored: (Boolean) -> Unit,
@@ -117,37 +107,37 @@ internal fun applySavedSnapshot(
     selectedInterests: MutableList<String>
 ) {
     onRouteRestored(snapshot.response)
-    onStartPointRestored(RouteStartDto(snapshot.request.start_lat, snapshot.request.start_lon))
-    onAvailableMinutesRestored(snapshot.request.available_minutes)
+    onStartPointRestored(RoutePoint(snapshot.request.startLat, snapshot.request.startLon))
+    onAvailableMinutesRestored(snapshot.request.availableMinutes)
     onPaceRestored(snapshot.request.pace)
-    onReturnToStartRestored(snapshot.request.return_to_start)
-    onRespectOpeningHoursRestored(snapshot.request.respect_opening_hours)
-    onAllowPublicTransportRestored(snapshot.request.transport_mode == "walk_or_mhd")
-    onStartDateTimeRestored(parseRouteStartDateTime(snapshot.request.start_datetime))
+    onReturnToStartRestored(snapshot.request.returnToStart)
+    onRespectOpeningHoursRestored(snapshot.request.respectOpeningHours)
+    onAllowPublicTransportRestored(snapshot.request.transportMode == "walk_or_mhd")
+    onStartDateTimeRestored(parseRouteStartDateTime(snapshot.request.startDateTime))
 
     selectedInterests.clear()
     selectedInterests.addAll(snapshot.request.interests)
 }
 
-internal fun RouteSessionDto.toSavedRouteSnapshot(): SavedRouteSnapshot? {
-    val response = route_snapshot_json ?: return null
+internal fun RouteSession.toSavedRouteSnapshot(): SavedRouteSnapshot? {
+    val response = routeSnapshot ?: return null
     val skippedPoiIds = pois
         .orEmpty()
         .filter { poi -> poi.skipped }
-        .map { poi -> poi.poi_id }
+        .map { poi -> poi.poiId }
         .distinct()
-    val request = RouteRequest(
-        city = city_name ?: response.city,
-        start_lat = start_lat,
-        start_lon = start_lon,
-        available_minutes = available_minutes,
+    val request = PlannerPreferences(
+        city = cityName ?: response.city,
+        startLat = startLat,
+        startLon = startLon,
+        availableMinutes = availableMinutes,
         interests = response.interests,
         pace = pace,
-        return_to_start = return_to_start,
-        start_datetime = response.start_datetime,
-        respect_opening_hours = opening_hours_enabled,
-        exclude_poi_ids = skippedPoiIds,
-        transport_mode = response.transport_mode ?: "walk"
+        returnToStart = returnToStart,
+        startDateTime = response.startDateTime,
+        respectOpeningHours = openingHoursEnabled,
+        excludedPoiIds = skippedPoiIds,
+        transportMode = response.transportMode ?: "walk"
     )
 
     return SavedRouteSnapshot(
@@ -156,44 +146,44 @@ internal fun RouteSessionDto.toSavedRouteSnapshot(): SavedRouteSnapshot? {
     )
 }
 
-internal fun RouteSessionDto.toRouteFeedback(): RouteFeedback? {
+internal fun RouteSession.toRouteFeedback(): RouteFeedback? {
     val latestFeedback = feedback.orEmpty().firstOrNull() ?: return null
     return RouteFeedback(
         rating = latestFeedback.rating,
-        route_was_comfortable = latestFeedback.was_convenient,
-        too_much_walking = latestFeedback.too_much_walking,
-        pois_were_interesting = latestFeedback.pois_were_interesting
+        route_was_comfortable = latestFeedback.wasConvenient ?: false,
+        too_much_walking = latestFeedback.tooMuchWalking ?: false,
+        pois_were_interesting = latestFeedback.poisWereInteresting ?: false
     )
 }
 
-internal fun RouteSessionDto.toRouteHistoryEntry(): RouteHistoryEntry? {
+internal fun RouteSession.toRouteHistoryEntry(): RouteHistoryEntry? {
     val snapshot = toSavedRouteSnapshot() ?: return null
     val visitedPoiIds = pois
         .orEmpty()
         .filter { poi -> poi.visited && !poi.skipped }
-        .map { poi -> poi.poi_id }
+        .map { poi -> poi.poiId }
         .distinct()
     val skippedPoiIds = pois
         .orEmpty()
         .filter { poi -> poi.skipped }
-        .map { poi -> poi.poi_id }
+        .map { poi -> poi.poiId }
         .distinct()
 
     return RouteHistoryEntry(
         routeId = id,
-        cityName = city_name ?: snapshot.response.city,
+        cityName = cityName ?: snapshot.response.city,
         status = status,
-        startedAt = started_at,
-        finishedAt = finished_at,
-        availableMinutes = available_minutes,
-        usedMinutes = used_minutes ?: snapshot.response.used_minutes,
-        totalWalkMinutes = total_walk_minutes ?: snapshot.response.total_walk_minutes,
-        totalVisitMinutes = total_visit_minutes ?: snapshot.response.total_visit_minutes,
+        startedAt = startedAt,
+        finishedAt = finishedAt,
+        availableMinutes = availableMinutes,
+        usedMinutes = usedMinutes ?: snapshot.response.usedMinutes,
+        totalWalkMinutes = totalWalkMinutes ?: snapshot.response.totalWalkMinutes,
+        totalVisitMinutes = totalVisitMinutes ?: snapshot.response.totalVisitMinutes,
         snapshot = snapshot,
         visitedPoiIds = visitedPoiIds,
         skippedPoiIds = skippedPoiIds,
         feedback = toRouteFeedback(),
-        updatedAtEpochMs = routeHistoryTimestamp(finished_at ?: started_at)
+        updatedAtEpochMs = routeHistoryTimestamp(finishedAt ?: startedAt)
     )
 }
 
@@ -215,10 +205,10 @@ internal fun buildRouteHistoryEntry(
         status = status.rawValue,
         startedAt = startedAt,
         finishedAt = finishedAt,
-        availableMinutes = snapshot.request.available_minutes,
-        usedMinutes = snapshot.response.used_minutes,
-        totalWalkMinutes = snapshot.response.total_walk_minutes,
-        totalVisitMinutes = snapshot.response.total_visit_minutes,
+        availableMinutes = snapshot.request.availableMinutes,
+        usedMinutes = snapshot.response.usedMinutes,
+        totalWalkMinutes = snapshot.response.totalWalkMinutes,
+        totalVisitMinutes = snapshot.response.totalVisitMinutes,
         snapshot = snapshot,
         visitedPoiIds = visitedPoiIds.distinct(),
         skippedPoiIds = skippedPoiIds.distinct(),
@@ -250,14 +240,14 @@ internal fun defaultRouteBookmarkTitle(
 
 internal fun buildPreviewReplacementCandidates(
     targetPoiId: Int,
-    routeItems: List<RouteItemDto>,
-    pois: List<PoiDto>,
+    routeItems: List<RouteStop>,
+    pois: List<Poi>,
     selectedInterests: List<String>,
     excludePoiIds: List<Int>,
     limit: Int = 12
-): List<PoiDto> {
-    val targetItem = routeItems.firstOrNull { item -> item.poi_id == targetPoiId } ?: return emptyList()
-    val blockedIds = (routeItems.map { item -> item.poi_id } + excludePoiIds + targetPoiId).toSet()
+): List<Poi> {
+    val targetItem = routeItems.firstOrNull { item -> item.poiId == targetPoiId } ?: return emptyList()
+    val blockedIds = (routeItems.map { item -> item.poiId } + excludePoiIds + targetPoiId).toSet()
     val allowedCategories = selectedInterests.toSet()
 
     return pois
@@ -265,8 +255,8 @@ internal fun buildPreviewReplacementCandidates(
         .filter { poi -> poi.id !in blockedIds }
         .filter { poi -> allowedCategories.isEmpty() || poi.category in allowedCategories }
         .sortedWith(
-            compareByDescending<PoiDto> { poi -> poi.category == targetItem.category }
-                .thenByDescending { poi -> poi.base_score ?: 0.0 }
+            compareByDescending<Poi> { poi -> poi.category == targetItem.category }
+                .thenByDescending { poi -> poi.baseScore ?: 0.0 }
                 .thenBy { poi -> poi.name.lowercase(Locale.getDefault()) }
         )
         .take(limit)
@@ -281,7 +271,7 @@ internal fun RouteSessionStatus.isRestorable(): Boolean =
 internal fun RouteSessionStatus.isTerminal(): Boolean =
     this == RouteSessionStatus.COMPLETED || this == RouteSessionStatus.CANCELLED
 
-internal fun CityDto.matchesToken(token: String?): Boolean {
+internal fun City.matchesToken(token: String?): Boolean {
     val normalizedToken = normalizedCityToken(token)
     return normalizedToken.isNotBlank() &&
         normalizedToken in setOf(normalizedCityToken(slug), normalizedCityToken(name))
@@ -296,21 +286,21 @@ private fun normalizedCityToken(value: String?): String {
         .trim('-')
 }
 
-internal fun CityDto.availableCategories(): List<String> =
-    available_categories
+internal fun City.availableCategories(): List<String> =
+    availableCategories
         ?.map(String::trim)
         ?.filter(String::isNotBlank)
         ?.distinct()
         .orEmpty()
         .ifEmpty { DefaultInterestCategories }
 
-internal fun CityDto.supportsPublicTransport(): Boolean =
-    transport?.mhd_enabled == true
+internal fun City.supportsPublicTransport(): Boolean =
+    transport?.mhdEnabled == true
 
-internal fun CityDto.toStartPoint(): RouteStartDto =
-    RouteStartDto(center_lat, center_lon)
+internal fun City.toStartPoint(): RoutePoint =
+    RoutePoint(centerLat, centerLon)
 
-internal fun CityDto.toOfflineCityRegion(): OfflineCityRegion? {
+internal fun City.toOfflineCityRegion(): OfflineCityRegion? {
     val cityBbox = bbox ?: return null
     return OfflineCityRegion(
         slug = slug,
@@ -324,11 +314,11 @@ internal fun CityDto.toOfflineCityRegion(): OfflineCityRegion? {
 }
 
 @Composable
-internal fun routeSegmentLabel(segment: RouteSegmentDto): String {
-    val durationMinutes = segment.duration_minutes ?: 0
+internal fun routeSegmentLabel(segment: RouteSegment): String {
+    val durationMinutes = segment.durationMinutes ?: 0
     return when (segment.mode) {
         "transit" -> {
-            val lineName = segment.line_name
+            val lineName = segment.lineName
             if (!lineName.isNullOrBlank()) {
                 stringResource(R.string.route_stop_segment_transit_line, lineName, durationMinutes)
             } else {
@@ -380,11 +370,11 @@ internal fun routeSessionStatusLabel(status: RouteSessionStatus): String =
     }
 
 internal fun routeProgressMetrics(
-    routeResponse: RouteResponse?,
-    routeItems: List<RouteItemDto>,
+    routeResponse: RoutePlan?,
+    routeItems: List<RouteStop>,
     visitedPoiIds: List<Int>,
     skippedPoiIds: List<Int>,
-    currentLocation: RouteStartDto?,
+    currentLocation: RoutePoint?,
     isTracking: Boolean
 ): RouteProgressMetrics {
     val visitedIds = visitedPoiIds.distinct()
@@ -405,7 +395,7 @@ internal fun routeProgressMetrics(
     val isOffRoute = isTracking &&
         currentLocation != null &&
         nextTarget != null &&
-        distanceToNextRouteSegmentMeters(routeResponse, nextTarget.poi_id, currentLocation) > OffRouteDistanceMeters
+        distanceToNextRouteSegmentMeters(routeResponse, nextTarget.poiId, currentLocation) > OffRouteDistanceMeters
 
     return RouteProgressMetrics(
         visitedCount = visitedCount,
@@ -426,53 +416,53 @@ internal fun routeProgressMetrics(
 }
 
 internal fun progressTotalCount(
-    routeItems: List<RouteItemDto>,
+    routeItems: List<RouteStop>,
     skippedPoiIds: List<Int>
 ): Int =
-    routeItems.count { item -> item.poi_id !in skippedPoiIds }
+    routeItems.count { item -> item.poiId !in skippedPoiIds }
 
 internal fun requiredCompletionCount(totalCount: Int): Int =
     ceil(totalCount / 2.0).toInt().coerceAtLeast(1)
 
 internal fun nextPendingPoi(
-    routeItems: List<RouteItemDto>,
+    routeItems: List<RouteStop>,
     visitedPoiIds: List<Int>,
     skippedPoiIds: List<Int>
-): RouteItemDto? =
-    routeItems.firstOrNull { item -> item.poi_id !in visitedPoiIds && item.poi_id !in skippedPoiIds }
+): RouteStop? =
+    routeItems.firstOrNull { item -> item.poiId !in visitedPoiIds && item.poiId !in skippedPoiIds }
 
-internal fun mergeReroutedRouteResponse(
-    previousResponse: RouteResponse,
-    reroutedResponse: RouteResponse,
+internal fun mergeReroutedRoutePlan(
+    previousResponse: RoutePlan,
+    reroutedResponse: RoutePlan,
     visitedPoiIds: List<Int>
-): RouteResponse {
+): RoutePlan {
     val visitedIds = visitedPoiIds.distinct()
     if (visitedIds.isEmpty()) {
         return reroutedResponse
     }
 
     val visitedItems = previousResponse.route
-        .filter { item -> item.poi_id in visitedIds }
+        .filter { item -> item.poiId in visitedIds }
         .sortedBy { item -> item.order }
     if (visitedItems.isEmpty()) {
         return reroutedResponse
     }
 
-    val visitedElapsedMinutes = visitedItems.maxOfOrNull { item -> item.departure_after_min } ?: 0
+    val visitedElapsedMinutes = visitedItems.maxOfOrNull { item -> item.departureAfterMin } ?: 0
     val renumberedVisitedItems = visitedItems.mapIndexed { index, item ->
         item.copy(order = index + 1)
     }
     val renumberedRemainingItems = reroutedResponse.route.mapIndexed { index, item ->
         item.copy(
             order = renumberedVisitedItems.size + index + 1,
-            arrival_after_min = visitedElapsedMinutes + item.arrival_after_min,
-            departure_after_min = visitedElapsedMinutes + item.departure_after_min
+            arrivalAfterMin = visitedElapsedMinutes + item.arrivalAfterMin,
+            departureAfterMin = visitedElapsedMinutes + item.departureAfterMin
         )
     }
 
     val visitedLegs = previousResponse.legs
         .orEmpty()
-        .filter { leg -> leg.to.poi_id in visitedIds }
+        .filter { leg -> leg.to.poiId in visitedIds }
         .sortedBy { leg -> leg.order }
     val renumberedVisitedLegs = visitedLegs.mapIndexed { index, leg ->
         leg.copy(order = index + 1)
@@ -485,52 +475,52 @@ internal fun mergeReroutedRouteResponse(
 
     val mergedRouteItems = renumberedVisitedItems + renumberedRemainingItems
     val mergedLegs = (renumberedVisitedLegs + renumberedRemainingLegs).ifEmpty { null }
-    val mergedVisitMinutes = mergedRouteItems.sumOf { item -> item.visit_duration_min }
-    val mergedUsedMinutes = visitedElapsedMinutes + reroutedResponse.used_minutes
-    val mergedAvailableMinutes = maxOf(previousResponse.available_minutes, mergedUsedMinutes)
+    val mergedVisitMinutes = mergedRouteItems.sumOf { item -> item.visitDurationMin }
+    val mergedUsedMinutes = visitedElapsedMinutes + reroutedResponse.usedMinutes
+    val mergedAvailableMinutes = maxOf(previousResponse.availableMinutes, mergedUsedMinutes)
     val mergedRemainingMinutes = maxOf(0, mergedAvailableMinutes - mergedUsedMinutes)
 
     return reroutedResponse.copy(
         start = previousResponse.start,
-        start_datetime = previousResponse.start_datetime,
-        available_minutes = mergedAvailableMinutes,
-        used_minutes = mergedUsedMinutes,
-        remaining_minutes = mergedRemainingMinutes,
-        total_visit_minutes = mergedVisitMinutes,
-        total_walk_minutes = maxOf(0, mergedUsedMinutes - mergedVisitMinutes),
-        poi_count = mergedRouteItems.size,
+        startDateTime = previousResponse.startDateTime,
+        availableMinutes = mergedAvailableMinutes,
+        usedMinutes = mergedUsedMinutes,
+        remainingMinutes = mergedRemainingMinutes,
+        totalVisitMinutes = mergedVisitMinutes,
+        totalWalkMinutes = maxOf(0, mergedUsedMinutes - mergedVisitMinutes),
+        poiCount = mergedRouteItems.size,
         route = mergedRouteItems,
         legs = mergedLegs,
-        full_geometry = mergeLegGeometries(mergedLegs.orEmpty())
+        fullGeometry = mergeLegGeometries(mergedLegs.orEmpty())
     )
 }
 
-internal fun finalizedHandledRouteResponse(
-    previousResponse: RouteResponse,
+internal fun finalizedHandledRoutePlan(
+    previousResponse: RoutePlan,
     visitedPoiIds: List<Int>,
     skippedPoiIds: List<Int>
-): RouteResponse {
+): RoutePlan {
     val handledPoiIds = (visitedPoiIds + skippedPoiIds).distinct()
     if (handledPoiIds.isEmpty()) {
         return previousResponse.copy(
-            used_minutes = 0,
-            remaining_minutes = previousResponse.available_minutes,
-            total_visit_minutes = 0,
-            total_walk_minutes = 0,
-            return_to_start_minutes = 0,
-            poi_count = 0,
+            usedMinutes = 0,
+            remainingMinutes = previousResponse.availableMinutes,
+            totalVisitMinutes = 0,
+            totalWalkMinutes = 0,
+            returnToStartMinutes = 0,
+            poiCount = 0,
             route = emptyList(),
             legs = null,
-            full_geometry = emptyList()
+            fullGeometry = emptyList()
         )
     }
 
     val handledItems = previousResponse.route
-        .filter { item -> item.poi_id in handledPoiIds }
+        .filter { item -> item.poiId in handledPoiIds }
         .sortedBy { item -> item.order }
     val handledLegs = previousResponse.legs
         .orEmpty()
-        .filter { leg -> leg.to.poi_id in handledPoiIds }
+        .filter { leg -> leg.to.poiId in handledPoiIds }
         .sortedBy { leg -> leg.order }
 
     val renumberedItems = handledItems.mapIndexed { index, item ->
@@ -539,26 +529,26 @@ internal fun finalizedHandledRouteResponse(
     val renumberedLegs = handledLegs.mapIndexed { index, leg ->
         leg.copy(order = index + 1)
     }
-    val usedMinutes = renumberedItems.maxOfOrNull { item -> item.departure_after_min } ?: 0
-    val totalVisitMinutes = renumberedItems.sumOf { item -> item.visit_duration_min }
+    val usedMinutes = renumberedItems.maxOfOrNull { item -> item.departureAfterMin } ?: 0
+    val totalVisitMinutes = renumberedItems.sumOf { item -> item.visitDurationMin }
 
     return previousResponse.copy(
-        used_minutes = usedMinutes,
-        remaining_minutes = maxOf(0, previousResponse.available_minutes - usedMinutes),
-        total_visit_minutes = totalVisitMinutes,
-        total_walk_minutes = maxOf(0, usedMinutes - totalVisitMinutes),
-        return_to_start_minutes = 0,
-        poi_count = renumberedItems.size,
+        usedMinutes = usedMinutes,
+        remainingMinutes = maxOf(0, previousResponse.availableMinutes - usedMinutes),
+        totalVisitMinutes = totalVisitMinutes,
+        totalWalkMinutes = maxOf(0, usedMinutes - totalVisitMinutes),
+        returnToStartMinutes = 0,
+        poiCount = renumberedItems.size,
         route = renumberedItems,
         legs = renumberedLegs.ifEmpty { null },
-        full_geometry = mergeLegGeometries(renumberedLegs)
+        fullGeometry = mergeLegGeometries(renumberedLegs)
     )
 }
 
 internal fun removePreviewRoutePoi(
-    previousResponse: RouteResponse,
+    previousResponse: RoutePlan,
     poiId: Int,
-): RouteResponse =
+): RoutePlan =
     rebuildPreviewRouteAfterRemovingPoi(
         previousResponse = previousResponse,
         poiId = poiId,
@@ -567,44 +557,44 @@ internal fun removePreviewRoutePoi(
     )
 
 internal fun rebuildPreviewRouteAfterRemovingPoi(
-    previousResponse: RouteResponse,
+    previousResponse: RoutePlan,
     poiId: Int,
-    replacementLegToNext: RouteLegDto?,
-    replacementReturnLeg: RouteLegDto?
-): RouteResponse {
+    replacementLegToNext: RouteLeg?,
+    replacementReturnLeg: RouteLeg?
+): RoutePlan {
     val remainingItems = previousResponse.route
-        .filterNot { item -> item.poi_id == poiId }
+        .filterNot { item -> item.poiId == poiId }
         .sortedBy { item -> item.order }
     if (remainingItems.isEmpty()) {
         return previousResponse.copy(
-            used_minutes = 0,
-            remaining_minutes = previousResponse.available_minutes,
-            total_visit_minutes = 0,
-            total_walk_minutes = 0,
-            return_to_start_minutes = 0,
-            poi_count = 0,
+            usedMinutes = 0,
+            remainingMinutes = previousResponse.availableMinutes,
+            totalVisitMinutes = 0,
+            totalWalkMinutes = 0,
+            returnToStartMinutes = 0,
+            poiCount = 0,
             route = emptyList(),
             legs = null,
-            full_geometry = emptyList()
+            fullGeometry = emptyList()
         )
     }
 
     val existingLegs = previousResponse.legs
         .orEmpty()
         .sortedBy { leg -> leg.order }
-    val replacementLegToNextPoiId = replacementLegToNext?.to?.poi_id
+    val replacementLegToNextPoiId = replacementLegToNext?.to?.poiId
     val poiLegs = remainingItems.mapNotNull { item ->
-        if (item.poi_id == replacementLegToNextPoiId) {
+        if (item.poiId == replacementLegToNextPoiId) {
             replacementLegToNext
         } else {
-            existingLegs.firstOrNull { leg -> leg.to.poi_id == item.poi_id }
+            existingLegs.firstOrNull { leg -> leg.to.poiId == item.poiId }
         }
     }
-    val lastRemainingPoiId = remainingItems.lastOrNull()?.poi_id
-    val returnLeg = if (previousResponse.return_to_start) {
+    val lastRemainingPoiId = remainingItems.lastOrNull()?.poiId
+    val returnLeg = if (previousResponse.returnToStart) {
         replacementReturnLeg
             ?: existingLegs.firstOrNull { leg ->
-                leg.to.type == "start" && leg.from.poi_id == lastRemainingPoiId
+                leg.to.type == "start" && leg.from.poiId == lastRemainingPoiId
             }
     } else {
         null
@@ -615,66 +605,66 @@ internal fun rebuildPreviewRouteAfterRemovingPoi(
     }
     var elapsedMinutes = 0
     val renumberedItems = remainingItems.mapIndexed { index, item ->
-        val incomingLeg = renumberedLegs.firstOrNull { leg -> leg.to.poi_id == item.poi_id }
-        val travelMinutes = incomingLeg?.duration_minutes ?: item.travel_minutes_from_previous
+        val incomingLeg = renumberedLegs.firstOrNull { leg -> leg.to.poiId == item.poiId }
+        val travelMinutes = incomingLeg?.durationMinutes ?: item.travelMinutesFromPrevious
         elapsedMinutes += travelMinutes
         val arrivalMinutes = elapsedMinutes
-        elapsedMinutes += item.visit_duration_min
+        elapsedMinutes += item.visitDurationMin
         item.copy(
             order = index + 1,
-            travel_minutes_from_previous = travelMinutes,
-            arrival_after_min = arrivalMinutes,
-            departure_after_min = elapsedMinutes
+            travelMinutesFromPrevious = travelMinutes,
+            arrivalAfterMin = arrivalMinutes,
+            departureAfterMin = elapsedMinutes
         )
     }
     val returnLegMinutes = returnLeg
         ?.takeIf { leg -> leg.to.type == "start" }
-        ?.duration_minutes
+        ?.durationMinutes
         ?: 0
     val usedMinutes = elapsedMinutes + returnLegMinutes
-    val totalVisitMinutes = renumberedItems.sumOf { item -> item.visit_duration_min }
+    val totalVisitMinutes = renumberedItems.sumOf { item -> item.visitDurationMin }
 
     return previousResponse.copy(
-        used_minutes = usedMinutes,
-        remaining_minutes = maxOf(0, previousResponse.available_minutes - usedMinutes),
-        total_visit_minutes = totalVisitMinutes,
-        total_walk_minutes = maxOf(0, usedMinutes - totalVisitMinutes),
-        return_to_start_minutes = returnLegMinutes,
-        poi_count = renumberedItems.size,
+        usedMinutes = usedMinutes,
+        remainingMinutes = maxOf(0, previousResponse.availableMinutes - usedMinutes),
+        totalVisitMinutes = totalVisitMinutes,
+        totalWalkMinutes = maxOf(0, usedMinutes - totalVisitMinutes),
+        returnToStartMinutes = returnLegMinutes,
+        poiCount = renumberedItems.size,
         route = renumberedItems,
         legs = renumberedLegs.ifEmpty { null },
-        full_geometry = mergeLegGeometries(renumberedLegs)
+        fullGeometry = mergeLegGeometries(renumberedLegs)
     )
 }
 
 internal fun rebuildPreviewRouteAfterReplacingPoi(
-    previousResponse: RouteResponse,
+    previousResponse: RoutePlan,
     targetPoiId: Int,
-    replacementPoi: PoiDto,
-    replacementLegToReplacement: RouteLegDto,
-    replacementLegToNext: RouteLegDto?,
-    replacementReturnLeg: RouteLegDto?
-): RouteResponse {
+    replacementPoi: Poi,
+    replacementLegToReplacement: RouteLeg,
+    replacementLegToNext: RouteLeg?,
+    replacementReturnLeg: RouteLeg?
+): RoutePlan {
     val originalItems = previousResponse.route.sortedBy { item -> item.order }
-    val targetIndex = originalItems.indexOfFirst { item -> item.poi_id == targetPoiId }
+    val targetIndex = originalItems.indexOfFirst { item -> item.poiId == targetPoiId }
     if (targetIndex == -1) {
         return previousResponse
     }
 
     val targetItem = originalItems[targetIndex]
-    val replacementVisitMinutes = replacementPoi.visit_duration_min ?: targetItem.visit_duration_min
+    val replacementVisitMinutes = replacementPoi.visitDurationMin ?: targetItem.visitDurationMin
     val replacedItems = originalItems.map { item ->
-        if (item.poi_id == targetPoiId) {
+        if (item.poiId == targetPoiId) {
             item.copy(
-                poi_id = replacementPoi.id,
+                poiId = replacementPoi.id,
                 name = replacementPoi.name,
                 category = replacementPoi.category,
                 lat = replacementPoi.lat,
                 lon = replacementPoi.lon,
-                visit_duration_min = replacementVisitMinutes,
-                base_score = replacementPoi.base_score,
-                wikipedia_url = replacementPoi.wikipedia_url,
-                opening_hours_raw = replacementPoi.opening_hours_raw
+                visitDurationMin = replacementVisitMinutes,
+                baseScore = replacementPoi.baseScore,
+                wikipediaUrl = replacementPoi.wikipediaUrl,
+                openingHoursRaw = replacementPoi.openingHoursRaw
             )
         } else {
             item
@@ -685,17 +675,17 @@ internal fun rebuildPreviewRouteAfterReplacingPoi(
     val nextOriginalItem = originalItems.getOrNull(targetIndex + 1)
     val poiLegs = replacedItems.mapNotNull { item ->
         when {
-            item.poi_id == replacementPoi.id -> replacementLegToReplacement
-            item.poi_id == nextOriginalItem?.poi_id -> replacementLegToNext
-            else -> existingLegs.firstOrNull { leg -> leg.to.poi_id == item.poi_id }
+            item.poiId == replacementPoi.id -> replacementLegToReplacement
+            item.poiId == nextOriginalItem?.poiId -> replacementLegToNext
+            else -> existingLegs.firstOrNull { leg -> leg.to.poiId == item.poiId }
         }
     }
-    val returnLeg = if (previousResponse.return_to_start) {
+    val returnLeg = if (previousResponse.returnToStart) {
         if (targetIndex == originalItems.lastIndex) {
             replacementReturnLeg
         } else {
-            val lastPoiId = replacedItems.lastOrNull()?.poi_id
-            existingLegs.firstOrNull { leg -> leg.to.type == "start" && leg.from.poi_id == lastPoiId }
+            val lastPoiId = replacedItems.lastOrNull()?.poiId
+            existingLegs.firstOrNull { leg -> leg.to.type == "start" && leg.from.poiId == lastPoiId }
         }
     } else {
         null
@@ -706,55 +696,55 @@ internal fun rebuildPreviewRouteAfterReplacingPoi(
     }
     var elapsedMinutes = 0
     val renumberedItems = replacedItems.mapIndexed { index, item ->
-        val incomingLeg = renumberedLegs.firstOrNull { leg -> leg.to.poi_id == item.poi_id }
-        val travelMinutes = incomingLeg?.duration_minutes ?: item.travel_minutes_from_previous
+        val incomingLeg = renumberedLegs.firstOrNull { leg -> leg.to.poiId == item.poiId }
+        val travelMinutes = incomingLeg?.durationMinutes ?: item.travelMinutesFromPrevious
         elapsedMinutes += travelMinutes
         val arrivalMinutes = elapsedMinutes
-        elapsedMinutes += item.visit_duration_min
+        elapsedMinutes += item.visitDurationMin
         item.copy(
             order = index + 1,
-            travel_minutes_from_previous = travelMinutes,
-            arrival_after_min = arrivalMinutes,
-            departure_after_min = elapsedMinutes
+            travelMinutesFromPrevious = travelMinutes,
+            arrivalAfterMin = arrivalMinutes,
+            departureAfterMin = elapsedMinutes
         )
     }
     val returnLegMinutes = returnLeg
         ?.takeIf { leg -> leg.to.type == "start" }
-        ?.duration_minutes
+        ?.durationMinutes
         ?: 0
     val usedMinutes = elapsedMinutes + returnLegMinutes
-    val totalVisitMinutes = renumberedItems.sumOf { item -> item.visit_duration_min }
+    val totalVisitMinutes = renumberedItems.sumOf { item -> item.visitDurationMin }
 
     return previousResponse.copy(
-        used_minutes = usedMinutes,
-        remaining_minutes = maxOf(0, previousResponse.available_minutes - usedMinutes),
-        total_visit_minutes = totalVisitMinutes,
-        total_walk_minutes = maxOf(0, usedMinutes - totalVisitMinutes),
-        return_to_start_minutes = returnLegMinutes,
-        poi_count = renumberedItems.size,
+        usedMinutes = usedMinutes,
+        remainingMinutes = maxOf(0, previousResponse.availableMinutes - usedMinutes),
+        totalVisitMinutes = totalVisitMinutes,
+        totalWalkMinutes = maxOf(0, usedMinutes - totalVisitMinutes),
+        returnToStartMinutes = returnLegMinutes,
+        poiCount = renumberedItems.size,
         route = renumberedItems,
         legs = renumberedLegs.ifEmpty { null },
-        full_geometry = mergeLegGeometries(renumberedLegs)
+        fullGeometry = mergeLegGeometries(renumberedLegs)
     )
 }
 
 internal fun replaceActiveRouteApproachLeg(
-    previousResponse: RouteResponse,
+    previousResponse: RoutePlan,
     nextPoiId: Int,
-    replacementLeg: RouteLegDto
-): RouteResponse {
+    replacementLeg: RouteLeg
+): RoutePlan {
     val previousLegs = previousResponse.legs.orEmpty().sortedBy { leg -> leg.order }
     if (previousLegs.isEmpty()) {
         return previousResponse
     }
 
-    val targetLegIndex = previousLegs.indexOfFirst { leg -> leg.to.poi_id == nextPoiId }
+    val targetLegIndex = previousLegs.indexOfFirst { leg -> leg.to.poiId == nextPoiId }
     if (targetLegIndex == -1) {
         return previousResponse
     }
 
     val targetLeg = previousLegs[targetLegIndex]
-    val durationDeltaMinutes = replacementLeg.duration_minutes - targetLeg.duration_minutes
+    val durationDeltaMinutes = replacementLeg.durationMinutes - targetLeg.durationMinutes
     val updatedLegs = previousLegs.toMutableList().apply {
         this[targetLegIndex] = replacementLeg.copy(
             order = targetLeg.order,
@@ -762,23 +752,23 @@ internal fun replaceActiveRouteApproachLeg(
         )
     }
 
-    val targetItem = previousResponse.route.firstOrNull { item -> item.poi_id == nextPoiId }
+    val targetItem = previousResponse.route.firstOrNull { item -> item.poiId == nextPoiId }
         ?: return previousResponse.copy(
             legs = updatedLegs,
-            full_geometry = mergeLegGeometries(updatedLegs)
+            fullGeometry = mergeLegGeometries(updatedLegs)
         )
     val targetOrder = targetItem.order
     val updatedItems = previousResponse.route.map { item ->
         when {
-            item.poi_id == nextPoiId -> item.copy(
-                travel_minutes_from_previous = replacementLeg.duration_minutes,
-                arrival_after_min = item.arrival_after_min + durationDeltaMinutes,
-                departure_after_min = item.departure_after_min + durationDeltaMinutes
+            item.poiId == nextPoiId -> item.copy(
+                travelMinutesFromPrevious = replacementLeg.durationMinutes,
+                arrivalAfterMin = item.arrivalAfterMin + durationDeltaMinutes,
+                departureAfterMin = item.departureAfterMin + durationDeltaMinutes
             )
 
             item.order > targetOrder -> item.copy(
-                arrival_after_min = item.arrival_after_min + durationDeltaMinutes,
-                departure_after_min = item.departure_after_min + durationDeltaMinutes
+                arrivalAfterMin = item.arrivalAfterMin + durationDeltaMinutes,
+                departureAfterMin = item.departureAfterMin + durationDeltaMinutes
             )
 
             else -> item
@@ -787,28 +777,28 @@ internal fun replaceActiveRouteApproachLeg(
 
     val returnLegMinutes = updatedLegs.lastOrNull()
         ?.takeIf { leg -> leg.to.type == "start" }
-        ?.duration_minutes
+        ?.durationMinutes
         ?: 0
-    val usedMinutes = (updatedItems.maxOfOrNull { item -> item.departure_after_min } ?: 0) + returnLegMinutes
-    val totalVisitMinutes = updatedItems.sumOf { item -> item.visit_duration_min }
+    val usedMinutes = (updatedItems.maxOfOrNull { item -> item.departureAfterMin } ?: 0) + returnLegMinutes
+    val totalVisitMinutes = updatedItems.sumOf { item -> item.visitDurationMin }
 
     return previousResponse.copy(
-        used_minutes = usedMinutes,
-        remaining_minutes = maxOf(0, previousResponse.available_minutes - usedMinutes),
-        total_visit_minutes = totalVisitMinutes,
-        total_walk_minutes = maxOf(0, usedMinutes - totalVisitMinutes),
+        usedMinutes = usedMinutes,
+        remainingMinutes = maxOf(0, previousResponse.availableMinutes - usedMinutes),
+        totalVisitMinutes = totalVisitMinutes,
+        totalWalkMinutes = maxOf(0, usedMinutes - totalVisitMinutes),
         route = updatedItems,
         legs = updatedLegs,
-        full_geometry = mergeLegGeometries(updatedLegs)
+        fullGeometry = mergeLegGeometries(updatedLegs)
     )
 }
 
-internal fun mergeLegGeometries(legs: List<RouteLegDto>): List<com.example.smarttourism.data.remote.dto.RouteCoordinateDto> {
+internal fun mergeLegGeometries(legs: List<RouteLeg>): List<RouteCoordinate> {
     if (legs.isEmpty()) {
         return emptyList()
     }
 
-    val mergedGeometry = mutableListOf<com.example.smarttourism.data.remote.dto.RouteCoordinateDto>()
+    val mergedGeometry = mutableListOf<RouteCoordinate>()
     legs.forEach { leg ->
         val geometry = leg.geometry
         if (geometry.isEmpty()) {
@@ -825,15 +815,15 @@ internal fun mergeLegGeometries(legs: List<RouteLegDto>): List<com.example.smart
 }
 
 internal fun estimateRemainingMinutes(
-    routeResponse: RouteResponse?,
-    routeItems: List<RouteItemDto>,
+    routeResponse: RoutePlan?,
+    routeItems: List<RouteStop>,
     visitedPoiIds: List<Int>,
     skippedPoiIds: List<Int>,
-    currentLocation: RouteStartDto?,
-    nextTarget: RouteItemDto?
+    currentLocation: RoutePoint?,
+    nextTarget: RouteStop?
 ): Int {
     val remainingItems = routeItems.filter { item ->
-        item.poi_id !in visitedPoiIds && item.poi_id !in skippedPoiIds
+        item.poiId !in visitedPoiIds && item.poiId !in skippedPoiIds
     }
     if (remainingItems.isEmpty()) {
         return 0
@@ -848,14 +838,14 @@ internal fun estimateRemainingMinutes(
         )
         estimateWalkingMinutes(distanceMeters, routeResponse?.pace)
     } else {
-        remainingItems.first().travel_minutes_from_previous
+        remainingItems.first().travelMinutesFromPrevious
     }
-    val remainingVisits = remainingItems.sumOf { item -> item.visit_duration_min }
+    val remainingVisits = remainingItems.sumOf { item -> item.visitDurationMin }
     val remainingWalksAfterTarget = remainingItems.drop(1).sumOf { item ->
-        item.travel_minutes_from_previous
+        item.travelMinutesFromPrevious
     }
-    val returnToStartMinutes = if (routeResponse?.return_to_start == true) {
-        routeResponse.return_to_start_minutes
+    val returnToStartMinutes = if (routeResponse?.returnToStart == true) {
+        routeResponse.returnToStartMinutes
     } else {
         0
     }
@@ -864,19 +854,19 @@ internal fun estimateRemainingMinutes(
 }
 
 internal fun rerouteStartPoint(
-    routeItems: List<RouteItemDto>,
+    routeItems: List<RouteStop>,
     visitedPoiIds: List<Int>,
-    currentLocation: RouteStartDto?,
-    fallbackStart: RouteStartDto
-): RouteStartDto {
+    currentLocation: RoutePoint?,
+    fallbackStart: RoutePoint
+): RoutePoint {
     currentLocation?.let { return it }
 
     val lastVisitedStop = routeItems
-        .filter { item -> item.poi_id in visitedPoiIds }
+        .filter { item -> item.poiId in visitedPoiIds }
         .maxByOrNull { item -> item.order }
 
     return lastVisitedStop?.let { stop ->
-        RouteStartDto(lat = stop.lat, lon = stop.lon)
+        RoutePoint(lat = stop.lat, lon = stop.lon)
     } ?: fallbackStart
 }
 
@@ -893,14 +883,14 @@ internal fun estimateWalkingMinutes(
 }
 
 internal fun distanceToNextRouteSegmentMeters(
-    routeResponse: RouteResponse?,
+    routeResponse: RoutePlan?,
     nextTargetPoiId: Int,
-    currentLocation: RouteStartDto
+    currentLocation: RoutePoint
 ): Float {
     val legGeometry = routeResponse
         ?.legs
         .orEmpty()
-        .firstOrNull { leg -> leg.to.poi_id == nextTargetPoiId }
+        .firstOrNull { leg -> leg.to.poiId == nextTargetPoiId }
         ?.geometry
         .orEmpty()
 
@@ -908,7 +898,7 @@ internal fun distanceToNextRouteSegmentMeters(
         val nextTarget = routeResponse
             ?.route
             .orEmpty()
-            .firstOrNull { item -> item.poi_id == nextTargetPoiId }
+            .firstOrNull { item -> item.poiId == nextTargetPoiId }
             ?: return 0f
 
         return distanceMeters(
@@ -933,7 +923,7 @@ internal fun distanceToNextRouteSegmentMeters(
 }
 
 internal fun distanceToSegmentMeters(
-    point: RouteStartDto,
+    point: RoutePoint,
     startLat: Double,
     startLon: Double,
     endLat: Double,
@@ -1158,13 +1148,13 @@ internal fun startRouteLocationTracking(
 }
 
 internal fun markNearbyPoisVisited(
-    routeItems: List<RouteItemDto>,
-    currentLocation: RouteStartDto,
+    routeItems: List<RouteStop>,
+    currentLocation: RoutePoint,
     visitedPoiIds: MutableList<Int>,
     skippedPoiIds: List<Int>
 ): List<Int> {
     val newlyVisitedIds = routeItems
-        .filter { item -> item.poi_id !in visitedPoiIds && item.poi_id !in skippedPoiIds }
+        .filter { item -> item.poiId !in visitedPoiIds && item.poiId !in skippedPoiIds }
         .filter { item ->
             distanceMeters(
                 startLat = currentLocation.lat,
@@ -1173,7 +1163,7 @@ internal fun markNearbyPoisVisited(
                 endLon = item.lon
             ) <= PoiVisitedRadiusMeters
         }
-        .map { item -> item.poi_id }
+        .map { item -> item.poiId }
 
     visitedPoiIds.addAll(newlyVisitedIds)
     return newlyVisitedIds

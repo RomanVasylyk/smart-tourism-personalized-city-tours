@@ -80,23 +80,20 @@ import androidx.core.content.ContextCompat
 import com.example.smarttourism.data.model.ActiveRouteSession
 import com.example.smarttourism.data.model.RouteBookmark
 import com.example.smarttourism.core.network.ApiModule
-import com.example.smarttourism.data.remote.dto.CityDto
+import com.example.smarttourism.features.planner.domain.model.City
 import com.example.smarttourism.core.platform.NetworkMonitor
 import com.example.smarttourism.data.repository.OfflineCacheRepository
-import com.example.smarttourism.data.remote.dto.PoiDto
+import com.example.smarttourism.features.planner.domain.model.Poi
 import com.example.smarttourism.data.model.RouteFeedback
 import com.example.smarttourism.data.model.RouteHistoryEntry
-import com.example.smarttourism.data.remote.dto.RouteFeedbackRequest
-import com.example.smarttourism.data.remote.dto.RouteLegDto
-import com.example.smarttourism.data.remote.dto.RouteRequest
-import com.example.smarttourism.data.remote.dto.RouteResponse
-import com.example.smarttourism.data.remote.dto.RouteSegmentDto
-import com.example.smarttourism.data.remote.dto.RouteSessionDto
-import com.example.smarttourism.data.remote.dto.RouteSessionCreateRequest
-import com.example.smarttourism.data.remote.dto.RouteSessionPoiVisitRequest
-import com.example.smarttourism.data.remote.dto.RouteStartDto
+import com.example.smarttourism.features.planner.domain.model.RouteLeg
+import com.example.smarttourism.features.planner.domain.model.PlannerPreferences
+import com.example.smarttourism.features.planner.domain.model.RoutePlan
+import com.example.smarttourism.features.planner.domain.model.RouteSegment
+import com.example.smarttourism.features.planner.domain.model.RouteSession
+import com.example.smarttourism.features.planner.domain.model.RoutePoint
 import com.example.smarttourism.data.repository.RouteStorage
-import com.example.smarttourism.data.remote.dto.RouteItemDto
+import com.example.smarttourism.features.planner.domain.model.RouteStop
 import com.example.smarttourism.data.model.SavedRouteSnapshot
 import com.example.smarttourism.sync.OfflineSyncScheduler
 import com.example.smarttourism.R
@@ -132,7 +129,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 
 @Composable
-internal fun RouteSummaryCard(routeResponse: RouteResponse) {
+internal fun RouteSummaryCard(routeResponse: RoutePlan) {
     ElevatedCard {
         Column(
             modifier = Modifier
@@ -158,26 +155,26 @@ internal fun RouteSummaryCard(routeResponse: RouteResponse) {
             Text(
                 stringResource(
                     R.string.route_summary_start_time,
-                    routeResponse.start_datetime.toRouteDateTimeLabel(stringResource(R.string.common_unknown))
+                    routeResponse.startDateTime.toRouteDateTimeLabel(stringResource(R.string.common_unknown))
                 )
             )
             Text(stringResource(R.string.route_summary_pace, paceLabel(routeResponse.pace)))
-            Text(stringResource(R.string.route_summary_stops, routeResponse.poi_count))
+            Text(stringResource(R.string.route_summary_stops, routeResponse.poiCount))
             Text(
                 stringResource(
                     R.string.route_summary_used_time,
-                    routeResponse.used_minutes,
-                    routeResponse.available_minutes
+                    routeResponse.usedMinutes,
+                    routeResponse.availableMinutes
                 )
             )
-            Text(stringResource(R.string.route_summary_walking, routeResponse.total_walk_minutes))
-            Text(stringResource(R.string.route_summary_visits, routeResponse.total_visit_minutes))
-            Text(stringResource(R.string.route_summary_remaining, routeResponse.remaining_minutes))
-            Text(stringResource(R.string.route_summary_return_to_start, routeResponse.return_to_start_minutes))
+            Text(stringResource(R.string.route_summary_walking, routeResponse.totalWalkMinutes))
+            Text(stringResource(R.string.route_summary_visits, routeResponse.totalVisitMinutes))
+            Text(stringResource(R.string.route_summary_remaining, routeResponse.remainingMinutes))
+            Text(stringResource(R.string.route_summary_return_to_start, routeResponse.returnToStartMinutes))
             Text(
                 stringResource(
                     R.string.route_summary_opening_hours_filter,
-                    if (routeResponse.respect_opening_hours) {
+                    if (routeResponse.respectOpeningHours) {
                         stringResource(R.string.state_on)
                     } else {
                         stringResource(R.string.state_off)
@@ -190,8 +187,8 @@ internal fun RouteSummaryCard(routeResponse: RouteResponse) {
 
 @Composable
 internal fun RouteStopTimelineItem(
-    item: RouteItemDto,
-    incomingLeg: RouteLegDto?,
+    item: RouteStop,
+    incomingLeg: RouteLeg?,
     isVisited: Boolean,
     isSkipped: Boolean,
     isNext: Boolean,
@@ -208,7 +205,7 @@ internal fun RouteStopTimelineItem(
     onMoveDown: () -> Unit,
     onReplace: () -> Unit
 ) {
-    var expanded by remember(item.poi_id) { mutableStateOf(isNext) }
+    var expanded by remember(item.poiId) { mutableStateOf(isNext) }
     val statusColor = when {
         isVisited -> MaterialTheme.colorScheme.primary
         isSkipped -> MaterialTheme.colorScheme.tertiary
@@ -297,8 +294,8 @@ internal fun RouteStopTimelineItem(
                 Text(
                     text = stringResource(
                         R.string.route_stop_arrival_departure,
-                        item.arrival_after_min,
-                        item.departure_after_min
+                        item.arrivalAfterMin,
+                        item.departureAfterMin
                     ),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -307,15 +304,15 @@ internal fun RouteStopTimelineItem(
                     .orEmpty()
                     .filter { segment ->
                         val mode = segment.mode.orEmpty()
-                        mode == "transit" || (segment.duration_minutes ?: 0) > 0
+                        mode == "transit" || (segment.durationMinutes ?: 0) > 0
                     }
                     .forEach { segment ->
                         Text(
                             text = routeSegmentLabel(segment),
                             style = MaterialTheme.typography.bodySmall
                         )
-                        val fromStopName = segment.from_stop_name
-                        val toStopName = segment.to_stop_name
+                        val fromStopName = segment.fromStopName
+                        val toStopName = segment.toStopName
                         if (segment.mode == "transit" && !fromStopName.isNullOrBlank() && !toStopName.isNullOrBlank()) {
                             Text(
                                 text = stringResource(R.string.route_stop_segment_stops, fromStopName, toStopName),
@@ -324,9 +321,9 @@ internal fun RouteStopTimelineItem(
                             )
                         }
                     }
-                if (!item.opening_hours_raw.isNullOrBlank()) {
+                if (!item.openingHoursRaw.isNullOrBlank()) {
                     Text(
-                        text = stringResource(R.string.route_stop_opening_hours, item.opening_hours_raw),
+                        text = stringResource(R.string.route_stop_opening_hours, item.openingHoursRaw),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -442,17 +439,17 @@ private fun TimelineMarker(
 
 @Composable
 internal fun routeStopCompactSummary(
-    item: RouteItemDto,
-    incomingLeg: RouteLegDto?
+    item: RouteStop,
+    incomingLeg: RouteLeg?
 ): String {
     val transitUsed = incomingLeg?.segments.orEmpty().any { segment ->
         segment.mode == "transit"
     }
-    val travelMinutes = incomingLeg?.duration_minutes ?: item.travel_minutes_from_previous
+    val travelMinutes = incomingLeg?.durationMinutes ?: item.travelMinutesFromPrevious
     val baseLabel = stringResource(
         R.string.route_stop_summary_compact,
         travelMinutes,
-        item.visit_duration_min
+        item.visitDurationMin
     )
     return if (transitUsed) {
         "$baseLabel • ${stringResource(R.string.route_transport_walk_mhd)}"
@@ -462,7 +459,7 @@ internal fun routeStopCompactSummary(
 }
 
 @Composable
-internal fun routeTransportLabel(routeResponse: RouteResponse): String {
+internal fun routeTransportLabel(routeResponse: RoutePlan): String {
     val transitUsed = routeResponse.legs.orEmpty().any { leg ->
         leg.segments.orEmpty().any { segment -> segment.mode == "transit" }
     }
@@ -475,8 +472,8 @@ internal fun routeTransportLabel(routeResponse: RouteResponse): String {
 
 @Composable
 internal fun RouteStopCard(
-    item: RouteItemDto,
-    incomingLeg: RouteLegDto?,
+    item: RouteStop,
+    incomingLeg: RouteLeg?,
     isVisited: Boolean,
     isSkipped: Boolean,
     isRouteActive: Boolean,
@@ -542,20 +539,20 @@ internal fun RouteStopCard(
                     }
                 }
             }
-            Text(stringResource(R.string.route_stop_walk_from_previous, item.travel_minutes_from_previous))
+            Text(stringResource(R.string.route_stop_walk_from_previous, item.travelMinutesFromPrevious))
             incomingLeg?.segments
                 .orEmpty()
                 .filter { segment ->
                     val mode = segment.mode.orEmpty()
-                    mode == "transit" || (segment.duration_minutes ?: 0) > 0
+                    mode == "transit" || (segment.durationMinutes ?: 0) > 0
                 }
                 .forEach { segment ->
                     Text(
                         text = routeSegmentLabel(segment),
                         style = MaterialTheme.typography.bodyMedium
                     )
-                    val fromStopName = segment.from_stop_name
-                    val toStopName = segment.to_stop_name
+                    val fromStopName = segment.fromStopName
+                    val toStopName = segment.toStopName
                     if (segment.mode == "transit" && !fromStopName.isNullOrBlank() && !toStopName.isNullOrBlank()) {
                         Text(
                             text = stringResource(R.string.route_stop_segment_stops, fromStopName, toStopName),
@@ -563,8 +560,8 @@ internal fun RouteStopCard(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
-                    val departureLabel = segment.departure_time.toRouteTimeOfDayLabel()
-                    val arrivalLabel = segment.arrival_time.toRouteTimeOfDayLabel()
+                    val departureLabel = segment.departureTime.toRouteTimeOfDayLabel()
+                    val arrivalLabel = segment.arrivalTime.toRouteTimeOfDayLabel()
                     if (segment.mode == "transit" && departureLabel != null && arrivalLabel != null) {
                         Text(
                             text = stringResource(R.string.route_stop_segment_schedule, departureLabel, arrivalLabel),
@@ -572,8 +569,8 @@ internal fun RouteStopCard(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
-                    val waitMinutes = segment.wait_minutes_before_departure ?: 0
-                    val inVehicleMinutes = segment.in_vehicle_minutes ?: 0
+                    val waitMinutes = segment.waitMinutesBeforeDeparture ?: 0
+                    val inVehicleMinutes = segment.inVehicleMinutes ?: 0
                     if (segment.mode == "transit" && (waitMinutes > 0 || inVehicleMinutes > 0)) {
                         Text(
                             text = stringResource(
@@ -586,12 +583,12 @@ internal fun RouteStopCard(
                         )
                     }
                 }
-            Text(stringResource(R.string.route_stop_visit_duration, item.visit_duration_min))
-            Text(stringResource(R.string.route_stop_arrival_after_start, item.arrival_after_min))
-            Text(stringResource(R.string.route_stop_departure_after_start, item.departure_after_min))
-            if (!item.opening_hours_raw.isNullOrBlank()) {
+            Text(stringResource(R.string.route_stop_visit_duration, item.visitDurationMin))
+            Text(stringResource(R.string.route_stop_arrival_after_start, item.arrivalAfterMin))
+            Text(stringResource(R.string.route_stop_departure_after_start, item.departureAfterMin))
+            if (!item.openingHoursRaw.isNullOrBlank()) {
                 Text(
-                    text = stringResource(R.string.route_stop_opening_hours, item.opening_hours_raw),
+                    text = stringResource(R.string.route_stop_opening_hours, item.openingHoursRaw),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

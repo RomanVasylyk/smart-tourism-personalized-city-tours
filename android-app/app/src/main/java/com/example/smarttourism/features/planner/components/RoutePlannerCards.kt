@@ -80,23 +80,20 @@ import androidx.core.content.ContextCompat
 import com.example.smarttourism.data.model.ActiveRouteSession
 import com.example.smarttourism.data.model.RouteBookmark
 import com.example.smarttourism.core.network.ApiModule
-import com.example.smarttourism.data.remote.dto.CityDto
+import com.example.smarttourism.features.planner.domain.model.City
 import com.example.smarttourism.core.platform.NetworkMonitor
 import com.example.smarttourism.data.repository.OfflineCacheRepository
-import com.example.smarttourism.data.remote.dto.PoiDto
+import com.example.smarttourism.features.planner.domain.model.Poi
 import com.example.smarttourism.data.model.RouteFeedback
 import com.example.smarttourism.data.model.RouteHistoryEntry
-import com.example.smarttourism.data.remote.dto.RouteFeedbackRequest
-import com.example.smarttourism.data.remote.dto.RouteLegDto
-import com.example.smarttourism.data.remote.dto.RouteRequest
-import com.example.smarttourism.data.remote.dto.RouteResponse
-import com.example.smarttourism.data.remote.dto.RouteSegmentDto
-import com.example.smarttourism.data.remote.dto.RouteSessionDto
-import com.example.smarttourism.data.remote.dto.RouteSessionCreateRequest
-import com.example.smarttourism.data.remote.dto.RouteSessionPoiVisitRequest
-import com.example.smarttourism.data.remote.dto.RouteStartDto
+import com.example.smarttourism.features.planner.domain.model.RouteLeg
+import com.example.smarttourism.features.planner.domain.model.PlannerPreferences
+import com.example.smarttourism.features.planner.domain.model.RoutePlan
+import com.example.smarttourism.features.planner.domain.model.RouteSegment
+import com.example.smarttourism.features.planner.domain.model.RouteSession
+import com.example.smarttourism.features.planner.domain.model.RoutePoint
 import com.example.smarttourism.data.repository.RouteStorage
-import com.example.smarttourism.data.remote.dto.RouteItemDto
+import com.example.smarttourism.features.planner.domain.model.RouteStop
 import com.example.smarttourism.data.model.SavedRouteSnapshot
 import com.example.smarttourism.sync.OfflineSyncScheduler
 import com.example.smarttourism.R
@@ -133,7 +130,7 @@ import androidx.compose.ui.window.DialogProperties
 
 @Composable
 internal fun OfflineSupportCard(
-    selectedCity: CityDto?,
+    selectedCity: City?,
     offlineStatusMessage: String?,
     pendingSyncOperationCount: Int,
     offlineRegionAvailable: Boolean,
@@ -255,10 +252,10 @@ internal fun OfflineSupportCard(
 
 @Composable
 internal fun CitySelectorCard(
-    cities: List<CityDto>,
-    selectedCity: CityDto?,
+    cities: List<City>,
+    selectedCity: City?,
     enabled: Boolean = true,
-    onCitySelected: (CityDto) -> Unit
+    onCitySelected: (City) -> Unit
 ) {
     ElevatedCard {
         Column(
@@ -312,7 +309,7 @@ internal fun CitySelectorCard(
 
 @Composable
 internal fun StartPointCard(
-    startPoint: RouteStartDto,
+    startPoint: RoutePoint,
     isSelectingStart: Boolean,
     isLocating: Boolean,
     enabled: Boolean,
@@ -393,7 +390,7 @@ internal fun StartPointCard(
 @Composable
 @OptIn(ExperimentalLayoutApi::class)
 internal fun RequiredPlacesCard(
-    selectedPois: List<PoiDto>,
+    selectedPois: List<Poi>,
     availablePoiCount: Int,
     isEditingEnabled: Boolean,
     onChooseOnMap: () -> Unit,
@@ -530,7 +527,7 @@ internal fun RequiredPlacesCard(
 
 @Composable
 internal fun RequiredPlacesPickerSheetContent(
-    pois: List<PoiDto>,
+    pois: List<Poi>,
     selectedPoiIds: List<Int>,
     isEditingEnabled: Boolean,
     onTogglePoi: (Int) -> Unit
@@ -568,7 +565,7 @@ internal fun RequiredPlacesPickerSheetContent(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 items(
-                    items = pois.sortedWith(compareBy<PoiDto> { poi -> poi.category }.thenBy { poi -> poi.name }),
+                    items = pois.sortedWith(compareBy<Poi> { poi -> poi.category }.thenBy { poi -> poi.name }),
                     key = { poi -> poi.id }
                 ) { poi ->
                     val selected = poi.id in selectedPoiIds
@@ -918,7 +915,7 @@ internal fun RouteTrackingCard(
     routeId: String?,
     startedAt: String?,
     metrics: RouteProgressMetrics,
-    currentLocation: RouteStartDto?,
+    currentLocation: RoutePoint?,
     isRerouting: Boolean,
     canStartCurrentRoute: Boolean,
     onStartRoute: () -> Unit,
@@ -1129,7 +1126,7 @@ internal fun RouteTrackingCard(
 }
 
 @Composable
-internal fun RoutePreviewSummaryPanel(routeResponse: RouteResponse) {
+internal fun RoutePreviewSummaryPanel(routeResponse: RoutePlan) {
     val transportLabel = routeTransportLabel(routeResponse)
 
     Surface(
@@ -1154,12 +1151,12 @@ internal fun RoutePreviewSummaryPanel(routeResponse: RouteResponse) {
             ) {
                 SummaryMetric(
                     label = stringResource(R.string.route_summary_metric_stops),
-                    value = routeResponse.poi_count.toString(),
+                    value = routeResponse.poiCount.toString(),
                     modifier = Modifier.weight(1f)
                 )
                 SummaryMetric(
                     label = stringResource(R.string.route_summary_metric_total_time),
-                    value = "${routeResponse.used_minutes} min",
+                    value = "${routeResponse.usedMinutes} min",
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -1169,7 +1166,7 @@ internal fun RoutePreviewSummaryPanel(routeResponse: RouteResponse) {
             ) {
                 SummaryMetric(
                     label = stringResource(R.string.route_summary_metric_walking),
-                    value = "${routeResponse.total_walk_minutes} min",
+                    value = "${routeResponse.totalWalkMinutes} min",
                     modifier = Modifier.weight(1f)
                 )
                 SummaryMetric(
@@ -1216,12 +1213,12 @@ internal fun SummaryMetric(
 internal fun ActiveRouteBottomPanel(
     status: RouteSessionStatus,
     metrics: RouteProgressMetrics,
-    currentLocation: RouteStartDto?,
+    currentLocation: RoutePoint?,
     isRerouting: Boolean,
     canSkip: Boolean,
     isActionInProgress: Boolean,
-    nextTarget: RouteItemDto?,
-    nextTargetIncomingLeg: RouteLegDto?,
+    nextTarget: RouteStop?,
+    nextTargetIncomingLeg: RouteLeg?,
     onMarkVisited: () -> Unit,
     onSkip: () -> Unit,
     onPauseRoute: () -> Unit,

@@ -55,11 +55,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.smarttourism.R
 import com.example.smarttourism.core.i18n.AppLanguage
 import com.example.smarttourism.data.model.RouteHistoryEntry
-import com.example.smarttourism.data.remote.dto.CityDto
-import com.example.smarttourism.data.remote.dto.PoiDto
-import com.example.smarttourism.data.remote.dto.RouteItemDto
-import com.example.smarttourism.data.remote.dto.RouteResponse
-import com.example.smarttourism.data.remote.dto.RouteStartDto
+import com.example.smarttourism.features.planner.domain.model.City
+import com.example.smarttourism.features.planner.domain.model.Poi
+import com.example.smarttourism.features.planner.domain.model.RouteStop
+import com.example.smarttourism.features.planner.domain.model.RoutePlan
+import com.example.smarttourism.features.planner.domain.model.RoutePoint
 import com.example.smarttourism.features.map.MapLocationButton
 import com.example.smarttourism.features.map.PoiMapScreen
 import com.example.smarttourism.features.planner.components.ActiveRouteBottomPanel
@@ -225,7 +225,7 @@ fun RoutePlannerScreen(
         locationError = null
     }
 
-    fun selectedRequiredPois(): List<PoiDto> {
+    fun selectedRequiredPois(): List<Poi> {
         val poisById = pois.associateBy { poi -> poi.id }
         return requiredPoiIds.mapNotNull { poiId -> poisById[poiId] }
     }
@@ -278,7 +278,7 @@ fun RoutePlannerScreen(
                 context = context,
                 onLocation = { location ->
                     plannerViewModel.handleTrackedLocation(
-                        RouteStartDto(
+                        RoutePoint(
                             lat = location.latitude,
                             lon = location.longitude
                         )
@@ -372,7 +372,7 @@ fun RoutePlannerScreen(
                 pois = pois,
                 routeResponse = routeResponse,
                 startPoint = startPoint,
-                defaultZoom = selectedCity?.default_zoom,
+                defaultZoom = selectedCity?.defaultZoom,
                 currentRouteLocation = currentRouteLocation,
                 visitedPoiIds = visitedPoiIds,
                 skippedPoiIds = skippedPoiIds,
@@ -412,15 +412,15 @@ fun RoutePlannerScreen(
                 isActionInProgress = isRerouting,
                 nextTarget = progressMetrics.nextTarget,
                 nextTargetIncomingLeg = routeResponse?.legs.orEmpty()
-                    .firstOrNull { leg -> leg.to.poi_id == progressMetrics.nextTarget?.poi_id },
+                    .firstOrNull { leg -> leg.to.poiId == progressMetrics.nextTarget?.poiId },
                 onMarkVisited = {
                     progressMetrics.nextTarget?.let { target ->
-                        plannerViewModel.markRouteStopVisited(target.poi_id)
+                        plannerViewModel.markRouteStopVisited(target.poiId)
                     }
                 },
                 onSkip = {
                     progressMetrics.nextTarget?.let { target ->
-                        plannerViewModel.skipRouteStop(target.poi_id)
+                        plannerViewModel.skipRouteStop(target.poiId)
                     }
                 },
                 onPauseRoute = { plannerViewModel.pauseRoute() },
@@ -483,7 +483,7 @@ fun RoutePlannerScreen(
                             pois = pois,
                             routeResponse = routeResponse,
                             startPoint = startPoint,
-                            defaultZoom = selectedCity?.default_zoom,
+                            defaultZoom = selectedCity?.defaultZoom,
                             currentRouteLocation = currentRouteLocation,
                             visitedPoiIds = visitedPoiIds,
                             skippedPoiIds = skippedPoiIds,
@@ -580,7 +580,7 @@ fun RoutePlannerScreen(
                             pois = pois,
                             routeResponse = routeResponse,
                             startPoint = startPoint,
-                            defaultZoom = selectedCity?.default_zoom,
+                            defaultZoom = selectedCity?.defaultZoom,
                             currentRouteLocation = currentRouteLocation,
                             visitedPoiIds = visitedPoiIds,
                             skippedPoiIds = skippedPoiIds,
@@ -641,7 +641,7 @@ fun RoutePlannerScreen(
                         canReplace = true,
                         canMove = true,
                         isActionInProgress = isRerouting,
-                        highlightedPoiId = progressMetrics.nextTarget?.poi_id,
+                        highlightedPoiId = progressMetrics.nextTarget?.poiId,
                         onMarkVisited = { poiId -> plannerViewModel.markRouteStopVisited(poiId) },
                         onSkip = { poiId -> plannerViewModel.removePreviewStop(poiId) },
                         onMove = { poiId, direction -> plannerViewModel.movePreviewStop(poiId, direction) },
@@ -655,7 +655,7 @@ fun RoutePlannerScreen(
                             pois = pois,
                             routeResponse = routeResponse,
                             startPoint = startPoint,
-                            defaultZoom = selectedCity?.default_zoom,
+                            defaultZoom = selectedCity?.defaultZoom,
                             currentRouteLocation = currentRouteLocation,
                             visitedPoiIds = visitedPoiIds,
                             skippedPoiIds = skippedPoiIds,
@@ -933,7 +933,7 @@ fun RoutePlannerScreen(
     }
 
     replacingPoiId?.let { targetPoiId ->
-        val targetStop = routeItems.firstOrNull { item -> item.poi_id == targetPoiId }
+        val targetStop = routeItems.firstOrNull { item -> item.poiId == targetPoiId }
         if (targetStop != null) {
             ModalBottomSheet(
                 onDismissRequest = { replacingPoiId = null }
@@ -981,7 +981,7 @@ fun RoutePlannerScreen(
                     canReplace = false,
                     canMove = false,
                     isActionInProgress = isRerouting,
-                    highlightedPoiId = progressMetrics.nextTarget?.poi_id,
+                    highlightedPoiId = progressMetrics.nextTarget?.poiId,
                     onMarkVisited = { poiId -> plannerViewModel.markRouteStopVisited(poiId) },
                     onSkip = { poiId -> plannerViewModel.skipRouteStop(poiId) },
                     onMove = { _, _ -> },
@@ -1042,7 +1042,7 @@ fun RoutePlannerScreen(
                     routeResponse = routeResponse,
                     startLat = startPoint.lat,
                     startLon = startPoint.lon,
-                    defaultZoom = selectedCity?.default_zoom,
+                    defaultZoom = selectedCity?.defaultZoom,
                     currentLocation = currentRouteLocation,
                     visitedPoiIds = visitedPoiIds.toSet(),
                     skippedPoiIds = skippedPoiIds.toSet(),
