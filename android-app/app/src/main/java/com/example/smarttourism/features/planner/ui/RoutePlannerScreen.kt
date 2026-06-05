@@ -51,6 +51,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.smarttourism.R
 import com.example.smarttourism.core.i18n.AppLanguage
@@ -80,6 +81,7 @@ import com.example.smarttourism.features.planner.components.RouteTrackingCard
 import com.example.smarttourism.features.planner.components.StartPointCard
 import com.example.smarttourism.features.planner.components.StatusCard
 import com.example.smarttourism.features.planner.state.PlannerMode
+import com.example.smarttourism.features.planner.state.PlannerEvent
 import com.example.smarttourism.features.planner.state.RouteSessionStatus
 import com.example.smarttourism.features.planner.state.TrackingPermissionAction
 import com.example.smarttourism.features.planner.viewmodel.RoutePlannerViewModel
@@ -94,53 +96,55 @@ fun RoutePlannerScreen(
 ) {
     val context = LocalContext.current
     val plannerViewModel: RoutePlannerViewModel = viewModel()
+    val uiState by plannerViewModel.uiState.collectAsStateWithLifecycle()
+    val onPlannerEvent = plannerViewModel::onEvent
     val locationPermissionDeniedMessage = stringResource(R.string.error_location_permission_denied)
 
-    val cities = plannerViewModel.cities
-    val selectedCity = plannerViewModel.selectedCity
-    val pois = plannerViewModel.pois
-    val isPoiLoading = plannerViewModel.isPoiLoading
-    val poiError = plannerViewModel.poiError
-    val offlineStatusMessage = plannerViewModel.offlineStatusMessage
-    val pendingSyncOperationCount = plannerViewModel.pendingSyncOperationCount
-    val offlineStoredRegion = plannerViewModel.offlineStoredRegion
-    val isOfflineMapBusy = plannerViewModel.isOfflineMapBusy
-    val offlineMapProgress = plannerViewModel.offlineMapProgress
-    val offlineMapMessage = plannerViewModel.offlineMapMessage
-    val routeResponse = plannerViewModel.routeResponse
-    val routeBookmarks = plannerViewModel.routeBookmarks
-    val routeHistory = plannerViewModel.routeHistory
-    val isRouteLoading = plannerViewModel.isRouteLoading
-    val isRouteHistoryLoading = plannerViewModel.isRouteHistoryLoading
-    val routeError = plannerViewModel.routeError
-    val routeHistoryError = plannerViewModel.routeHistoryError
-    val isRerouting = plannerViewModel.isRerouting
-    val availableMinutes = plannerViewModel.availableMinutes
-    val maxAvailableMinutesLimit = plannerViewModel.maxAvailableMinutesLimit
-    val pace = plannerViewModel.pace
-    val returnToStart = plannerViewModel.returnToStart
-    val respectOpeningHours = plannerViewModel.respectOpeningHours
-    val allowPublicTransport = plannerViewModel.allowPublicTransport
-    val startPoint = plannerViewModel.startPoint
-    val startDateTime = plannerViewModel.startDateTime
-    val routeSessionStatus = plannerViewModel.routeSessionStatus
-    val routeId = plannerViewModel.routeId
-    val routeStartedAt = plannerViewModel.routeStartedAt
-    val currentRouteLocation = plannerViewModel.currentRouteLocation
-    val trackingError = plannerViewModel.trackingError
-    val routeFeedback = plannerViewModel.routeFeedback
-    val selectedInterests = plannerViewModel.selectedInterests
-    val requiredPoiIds = plannerViewModel.requiredPoiIds
-    val visitedPoiIds = plannerViewModel.visitedPoiIds
-    val skippedPoiIds = plannerViewModel.skippedPoiIds
-    val routeItems = plannerViewModel.routeItems
-    val hasPendingRouteChanges = plannerViewModel.hasPendingRouteChanges
-    val hasNoGeneratedStops = plannerViewModel.hasNoGeneratedStops
+    val cities = uiState.cities
+    val selectedCity = uiState.selectedCity
+    val pois = uiState.pois
+    val isPoiLoading = uiState.isPoiLoading
+    val poiError = uiState.poiError
+    val offlineStatusMessage = uiState.offlineStatusMessage
+    val pendingSyncOperationCount = uiState.pendingSyncOperationCount
+    val offlineStoredRegion = uiState.offlineStoredRegion
+    val isOfflineMapBusy = uiState.isOfflineMapBusy
+    val offlineMapProgress = uiState.offlineMapProgress
+    val offlineMapMessage = uiState.offlineMapMessage
+    val routeResponse = uiState.routeResponse
+    val routeBookmarks = uiState.routeBookmarks
+    val routeHistory = uiState.routeHistory
+    val isRouteLoading = uiState.isRouteLoading
+    val isRouteHistoryLoading = uiState.isRouteHistoryLoading
+    val routeError = uiState.routeError
+    val routeHistoryError = uiState.routeHistoryError
+    val isRerouting = uiState.isRerouting
+    val availableMinutes = uiState.availableMinutes
+    val maxAvailableMinutesLimit = uiState.maxAvailableMinutesLimit
+    val pace = uiState.pace
+    val returnToStart = uiState.returnToStart
+    val respectOpeningHours = uiState.respectOpeningHours
+    val allowPublicTransport = uiState.allowPublicTransport
+    val startPoint = uiState.startPoint
+    val startDateTime = uiState.startDateTime
+    val routeSessionStatus = uiState.routeSessionStatus
+    val routeId = uiState.routeId
+    val routeStartedAt = uiState.routeStartedAt
+    val currentRouteLocation = uiState.currentRouteLocation
+    val trackingError = uiState.trackingError
+    val routeFeedback = uiState.routeFeedback
+    val selectedInterests = uiState.selectedInterests
+    val requiredPoiIds = uiState.requiredPoiIds
+    val visitedPoiIds = uiState.visitedPoiIds
+    val skippedPoiIds = uiState.skippedPoiIds
+    val routeItems = uiState.routeItems
+    val hasPendingRouteChanges = uiState.hasPendingRouteChanges
+    val hasNoGeneratedStops = uiState.hasNoGeneratedStops
     val progressMetrics = plannerViewModel.progressMetrics
-    val selectedCityAvailableCategories = plannerViewModel.selectedCityAvailableCategories
-    val isPublicTransportAvailable = plannerViewModel.isPublicTransportAvailable
-    val activeBookmarkId = plannerViewModel.activeBookmarkId
-    val isCurrentRouteBookmarked = plannerViewModel.isCurrentRouteBookmarked
+    val selectedCityAvailableCategories = uiState.selectedCityAvailableCategories
+    val isPublicTransportAvailable = uiState.isPublicTransportAvailable
+    val activeBookmarkId = uiState.activeBookmarkId
+    val isCurrentRouteBookmarked = uiState.isCurrentRouteBookmarked
     val isPlannerEditingLocked =
         routeSessionStatus == RouteSessionStatus.IN_PROGRESS ||
             routeSessionStatus == RouteSessionStatus.PAUSED
@@ -167,7 +171,7 @@ fun RoutePlannerScreen(
     var activeRoutePanelHeightPx by remember { mutableIntStateOf(0) }
 
     LaunchedEffect(Unit) {
-        plannerViewModel.initialize()
+        onPlannerEvent(PlannerEvent.Initialize)
     }
 
     LaunchedEffect(plannerMode) {
@@ -192,7 +196,7 @@ fun RoutePlannerScreen(
 
     LaunchedEffect(currentDestination) {
         if (currentDestination == PlannerDestination.HISTORY) {
-            plannerViewModel.loadRouteHistory(forceRefresh = true)
+            onPlannerEvent(PlannerEvent.LoadRouteHistory(forceRefresh = true))
         } else {
             selectedHistoryEntry = null
         }
@@ -211,7 +215,7 @@ fun RoutePlannerScreen(
     }
 
     fun updateStartPoint(lat: Double, lon: Double) {
-        plannerViewModel.updateStartPoint(lat, lon)
+        onPlannerEvent(PlannerEvent.UpdateStartPoint(lat, lon))
         isSelectingStart = false
         isSelectingRequiredPlacesOnMap = false
         isMapFullScreen = false
@@ -262,30 +266,32 @@ fun RoutePlannerScreen(
     ) { granted ->
         if (granted) {
             when (trackingPermissionAction) {
-                TrackingPermissionAction.START -> plannerViewModel.activateRouteTracking()
-                TrackingPermissionAction.RESUME -> plannerViewModel.resumeRoute()
+                TrackingPermissionAction.START -> onPlannerEvent(PlannerEvent.ActivateRouteTracking)
+                TrackingPermissionAction.RESUME -> onPlannerEvent(PlannerEvent.ResumeRoute)
             }
         } else {
-            plannerViewModel.handleTrackingError(locationPermissionDeniedMessage)
+            onPlannerEvent(PlannerEvent.TrackingError(locationPermissionDeniedMessage))
         }
     }
 
-    DisposableEffect(context, routeItems, plannerViewModel.routeSessionStatus) {
-        if (plannerViewModel.routeSessionStatus != RouteSessionStatus.IN_PROGRESS) {
+    DisposableEffect(context, routeItems, routeSessionStatus) {
+        if (routeSessionStatus != RouteSessionStatus.IN_PROGRESS) {
             onDispose { }
         } else {
             val stopTracking = startRouteLocationTracking(
                 context = context,
                 onLocation = { location ->
-                    plannerViewModel.handleTrackedLocation(
-                        RoutePoint(
-                            lat = location.latitude,
-                            lon = location.longitude
+                    onPlannerEvent(
+                        PlannerEvent.TrackedLocation(
+                            RoutePoint(
+                                lat = location.latitude,
+                                lon = location.longitude
+                            )
                         )
                     )
                 },
                 onError = { message ->
-                    plannerViewModel.handleTrackingError(message)
+                    onPlannerEvent(PlannerEvent.TrackingError(message))
                 }
             )
 
@@ -304,7 +310,7 @@ fun RoutePlannerScreen(
         ) == PackageManager.PERMISSION_GRANTED
 
         if (hasFineLocationPermission) {
-            plannerViewModel.activateRouteTracking()
+            onPlannerEvent(PlannerEvent.ActivateRouteTracking)
         } else {
             trackingPermissionAction = TrackingPermissionAction.START
             trackingPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
@@ -320,7 +326,7 @@ fun RoutePlannerScreen(
         ) == PackageManager.PERMISSION_GRANTED
 
         if (hasFineLocationPermission) {
-            plannerViewModel.resumeRoute()
+            onPlannerEvent(PlannerEvent.ResumeRoute)
         } else {
             trackingPermissionAction = TrackingPermissionAction.RESUME
             trackingPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
@@ -334,7 +340,7 @@ fun RoutePlannerScreen(
     fun resetToPlanning() {
         isSelectingStart = false
         isParameterSheetOpen = false
-        plannerViewModel.clearDisplayedRoute(cancelActiveSession = false)
+        onPlannerEvent(PlannerEvent.ClearDisplayedRoute(cancelActiveSession = false))
     }
 
     val plannerAlerts = PlannerAlerts(
@@ -415,18 +421,18 @@ fun RoutePlannerScreen(
                     .firstOrNull { leg -> leg.to.poiId == progressMetrics.nextTarget?.poiId },
                 onMarkVisited = {
                     progressMetrics.nextTarget?.let { target ->
-                        plannerViewModel.markRouteStopVisited(target.poiId)
+                        onPlannerEvent(PlannerEvent.MarkRouteStopVisited(target.poiId))
                     }
                 },
                 onSkip = {
                     progressMetrics.nextTarget?.let { target ->
-                        plannerViewModel.skipRouteStop(target.poiId)
+                        onPlannerEvent(PlannerEvent.SkipRouteStop(target.poiId))
                     }
                 },
-                onPauseRoute = { plannerViewModel.pauseRoute() },
+                onPauseRoute = { onPlannerEvent(PlannerEvent.PauseRoute) },
                 onResumeRoute = ::resumeRoute,
-                onFinishRoute = { plannerViewModel.finishRoute() },
-                onCancelRoute = { plannerViewModel.cancelRoute() },
+                onFinishRoute = { onPlannerEvent(PlannerEvent.FinishRoute) },
+                onCancelRoute = { onPlannerEvent(PlannerEvent.CancelRoute) },
                 onShowAllStops = { isStopsSheetOpen = true },
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
@@ -460,7 +466,7 @@ fun RoutePlannerScreen(
                 onDestinationSelected = { destination -> currentDestination = destination },
                 onCitySelected = { city ->
                     if (selectedCity?.slug != city.slug) {
-                        plannerViewModel.selectCity(city)
+                        onPlannerEvent(PlannerEvent.SelectCity(city))
                     }
                 },
                 onLanguageSelected = onLanguageSelected
@@ -537,9 +543,9 @@ fun RoutePlannerScreen(
                             isEditingEnabled = !isPlannerEditingLocked,
                             onChooseOnMap = ::openRequiredPlacesMapPicker,
                             onChooseFromList = { isRequiredPlacesSheetOpen = true },
-                            onMovePoi = { poiId, direction -> plannerViewModel.moveRequiredPoi(poiId, direction) },
-                            onRemovePoi = { poiId -> plannerViewModel.removeRequiredPoi(poiId) },
-                            onClearAll = { plannerViewModel.clearRequiredPois() }
+                            onMovePoi = { poiId, direction -> onPlannerEvent(PlannerEvent.MoveRequiredPoi(poiId, direction)) },
+                            onRemovePoi = { poiId -> onPlannerEvent(PlannerEvent.RemoveRequiredPoi(poiId)) },
+                            onClearAll = { onPlannerEvent(PlannerEvent.ClearRequiredPois) }
                         )
                     }
 
@@ -547,27 +553,27 @@ fun RoutePlannerScreen(
                         RouteParametersCard(
                             availableMinutes = availableMinutes,
                             maxAvailableMinutes = maxAvailableMinutesLimit,
-                            onAvailableMinutesChange = { plannerViewModel.updateAvailableMinutes(it) },
+                            onAvailableMinutesChange = { onPlannerEvent(PlannerEvent.UpdateAvailableMinutes(it)) },
                             availableInterests = selectedCityAvailableCategories,
                             selectedInterests = selectedInterests,
                             onInterestToggle = { interest, checked ->
-                                plannerViewModel.toggleInterest(interest, checked)
+                                onPlannerEvent(PlannerEvent.ToggleInterest(interest, checked))
                             },
                             pace = pace,
-                            onPaceChange = { plannerViewModel.updatePace(it) },
+                            onPaceChange = { onPlannerEvent(PlannerEvent.UpdatePace(it)) },
                             returnToStart = returnToStart,
-                            onReturnToStartChange = { plannerViewModel.updateReturnToStart(it) },
+                            onReturnToStartChange = { onPlannerEvent(PlannerEvent.UpdateReturnToStart(it)) },
                             respectOpeningHours = respectOpeningHours,
-                            onRespectOpeningHoursChange = { plannerViewModel.updateRespectOpeningHours(it) },
+                            onRespectOpeningHoursChange = { onPlannerEvent(PlannerEvent.UpdateRespectOpeningHours(it)) },
                             isPublicTransportAvailable = isPublicTransportAvailable,
                             allowPublicTransport = allowPublicTransport,
-                            onAllowPublicTransportChange = { plannerViewModel.updateAllowPublicTransport(it) },
+                            onAllowPublicTransportChange = { onPlannerEvent(PlannerEvent.UpdateAllowPublicTransport(it)) },
                             startDateTime = startDateTime,
-                            onStartDateTimeChange = { plannerViewModel.updateStartDateTime(it) },
-                            onUseCurrentTime = { plannerViewModel.useCurrentTime() },
+                            onStartDateTimeChange = { onPlannerEvent(PlannerEvent.UpdateStartDateTime(it)) },
+                            onUseCurrentTime = { onPlannerEvent(PlannerEvent.UseCurrentTime) },
                             isEditingEnabled = !isPlannerEditingLocked,
                             isGenerating = isRouteLoading,
-                            onGenerateRoute = { plannerViewModel.generateRoute() }
+                            onGenerateRoute = { onPlannerEvent(PlannerEvent.GenerateRoute) }
                         )
                     }
 
@@ -615,7 +621,7 @@ fun RoutePlannerScreen(
 
                     item {
                         Button(
-                            onClick = { plannerViewModel.saveCurrentRouteBookmark() },
+                            onClick = { onPlannerEvent(PlannerEvent.SaveCurrentRouteBookmark) },
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Text(
@@ -642,9 +648,9 @@ fun RoutePlannerScreen(
                         canMove = true,
                         isActionInProgress = isRerouting,
                         highlightedPoiId = progressMetrics.nextTarget?.poiId,
-                        onMarkVisited = { poiId -> plannerViewModel.markRouteStopVisited(poiId) },
-                        onSkip = { poiId -> plannerViewModel.removePreviewStop(poiId) },
-                        onMove = { poiId, direction -> plannerViewModel.movePreviewStop(poiId, direction) },
+                        onMarkVisited = { poiId -> onPlannerEvent(PlannerEvent.MarkRouteStopVisited(poiId)) },
+                        onSkip = { poiId -> onPlannerEvent(PlannerEvent.RemovePreviewStop(poiId)) },
+                        onMove = { poiId, direction -> onPlannerEvent(PlannerEvent.MovePreviewStop(poiId, direction)) },
                         onReplace = { poiId -> replacingPoiId = poiId }
                     )
                 }
@@ -688,7 +694,7 @@ fun RoutePlannerScreen(
 
                     item {
                         Button(
-                            onClick = { plannerViewModel.saveCurrentRouteBookmark() },
+                            onClick = { onPlannerEvent(PlannerEvent.SaveCurrentRouteBookmark) },
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Text(
@@ -755,11 +761,11 @@ fun RoutePlannerScreen(
                             bookmarks = routeBookmarks,
                             activeBookmarkId = activeBookmarkId,
                             onOpenBookmark = { bookmarkId ->
-                                plannerViewModel.openRouteBookmark(bookmarkId)
+                                onPlannerEvent(PlannerEvent.OpenRouteBookmark(bookmarkId))
                                 currentDestination = PlannerDestination.PLANNER
                             },
                             onDeleteBookmark = { bookmarkId ->
-                                plannerViewModel.deleteRouteBookmark(bookmarkId)
+                                onPlannerEvent(PlannerEvent.DeleteRouteBookmark(bookmarkId))
                             }
                         )
                     }
@@ -775,7 +781,7 @@ fun RoutePlannerScreen(
                         currentRouteId = routeId,
                         isLoading = isRouteHistoryLoading,
                         errorMessage = routeHistoryError,
-                        onRefresh = { plannerViewModel.loadRouteHistory(forceRefresh = true) },
+                        onRefresh = { onPlannerEvent(PlannerEvent.LoadRouteHistory(forceRefresh = true)) },
                         onOpenEntry = { entry -> selectedHistoryEntry = entry }
                     )
                 }
@@ -794,8 +800,8 @@ fun RoutePlannerScreen(
                             isOfflineMapBusy = isOfflineMapBusy,
                             offlineMapProgress = offlineMapProgress,
                             offlineMapMessage = offlineMapMessage,
-                            onDownloadOfflineMap = { plannerViewModel.downloadOfflineMap() },
-                            onDeleteOfflineMap = { plannerViewModel.deleteOfflineMap() }
+                            onDownloadOfflineMap = { onPlannerEvent(PlannerEvent.DownloadOfflineMap) },
+                            onDeleteOfflineMap = { onPlannerEvent(PlannerEvent.DeleteOfflineMap) }
                         )
                     }
                 }
@@ -866,9 +872,9 @@ fun RoutePlannerScreen(
                         isEditingEnabled = !isPlannerEditingLocked,
                         onChooseOnMap = ::openRequiredPlacesMapPicker,
                         onChooseFromList = { isRequiredPlacesSheetOpen = true },
-                        onMovePoi = { poiId, direction -> plannerViewModel.moveRequiredPoi(poiId, direction) },
-                        onRemovePoi = { poiId -> plannerViewModel.removeRequiredPoi(poiId) },
-                        onClearAll = { plannerViewModel.clearRequiredPois() }
+                        onMovePoi = { poiId, direction -> onPlannerEvent(PlannerEvent.MoveRequiredPoi(poiId, direction)) },
+                        onRemovePoi = { poiId -> onPlannerEvent(PlannerEvent.RemoveRequiredPoi(poiId)) },
+                        onClearAll = { onPlannerEvent(PlannerEvent.ClearRequiredPois) }
                     )
                 }
 
@@ -876,28 +882,28 @@ fun RoutePlannerScreen(
                     RouteParametersCard(
                         availableMinutes = availableMinutes,
                         maxAvailableMinutes = maxAvailableMinutesLimit,
-                        onAvailableMinutesChange = { plannerViewModel.updateAvailableMinutes(it) },
+                        onAvailableMinutesChange = { onPlannerEvent(PlannerEvent.UpdateAvailableMinutes(it)) },
                         availableInterests = selectedCityAvailableCategories,
                         selectedInterests = selectedInterests,
                         onInterestToggle = { interest, checked ->
-                            plannerViewModel.toggleInterest(interest, checked)
+                            onPlannerEvent(PlannerEvent.ToggleInterest(interest, checked))
                         },
                         pace = pace,
-                        onPaceChange = { plannerViewModel.updatePace(it) },
+                        onPaceChange = { onPlannerEvent(PlannerEvent.UpdatePace(it)) },
                         returnToStart = returnToStart,
-                        onReturnToStartChange = { plannerViewModel.updateReturnToStart(it) },
+                        onReturnToStartChange = { onPlannerEvent(PlannerEvent.UpdateReturnToStart(it)) },
                         respectOpeningHours = respectOpeningHours,
-                        onRespectOpeningHoursChange = { plannerViewModel.updateRespectOpeningHours(it) },
+                        onRespectOpeningHoursChange = { onPlannerEvent(PlannerEvent.UpdateRespectOpeningHours(it)) },
                         isPublicTransportAvailable = isPublicTransportAvailable,
                         allowPublicTransport = allowPublicTransport,
-                        onAllowPublicTransportChange = { plannerViewModel.updateAllowPublicTransport(it) },
+                        onAllowPublicTransportChange = { onPlannerEvent(PlannerEvent.UpdateAllowPublicTransport(it)) },
                         startDateTime = startDateTime,
-                        onStartDateTimeChange = { plannerViewModel.updateStartDateTime(it) },
-                        onUseCurrentTime = { plannerViewModel.useCurrentTime() },
+                        onStartDateTimeChange = { onPlannerEvent(PlannerEvent.UpdateStartDateTime(it)) },
+                        onUseCurrentTime = { onPlannerEvent(PlannerEvent.UseCurrentTime) },
                         isEditingEnabled = !isPlannerEditingLocked,
                         isGenerating = isRouteLoading,
                         onGenerateRoute = {
-                            plannerViewModel.generateRoute()
+                            onPlannerEvent(PlannerEvent.GenerateRoute)
                             isParameterSheetOpen = false
                         }
                     )
@@ -919,7 +925,7 @@ fun RoutePlannerScreen(
                     pois = pois,
                     selectedPoiIds = requiredPoiIds,
                     isEditingEnabled = !isPlannerEditingLocked,
-                    onTogglePoi = { poiId -> plannerViewModel.toggleRequiredPoi(poiId) }
+                    onTogglePoi = { poiId -> onPlannerEvent(PlannerEvent.ToggleRequiredPoi(poiId)) }
                 )
             }
         }
@@ -948,11 +954,11 @@ fun RoutePlannerScreen(
                         candidates = plannerViewModel.previewReplacementCandidates(targetPoiId),
                         isActionInProgress = isRerouting,
                         onUseBestSuggestion = {
-                            plannerViewModel.replacePreviewStop(targetPoiId)
+                            onPlannerEvent(PlannerEvent.ReplacePreviewStop(targetPoiId))
                             replacingPoiId = null
                         },
                         onChooseCandidate = { preferredPoiId ->
-                            plannerViewModel.replacePreviewStop(targetPoiId, preferredPoiId)
+                            onPlannerEvent(PlannerEvent.ReplacePreviewStop(targetPoiId, preferredPoiId))
                             replacingPoiId = null
                         }
                     )
@@ -982,8 +988,8 @@ fun RoutePlannerScreen(
                     canMove = false,
                     isActionInProgress = isRerouting,
                     highlightedPoiId = progressMetrics.nextTarget?.poiId,
-                    onMarkVisited = { poiId -> plannerViewModel.markRouteStopVisited(poiId) },
-                    onSkip = { poiId -> plannerViewModel.skipRouteStop(poiId) },
+                    onMarkVisited = { poiId -> onPlannerEvent(PlannerEvent.MarkRouteStopVisited(poiId)) },
+                    onSkip = { poiId -> onPlannerEvent(PlannerEvent.SkipRouteStop(poiId)) },
                     onMove = { _, _ -> },
                     onReplace = {}
                 )
@@ -1006,7 +1012,7 @@ fun RoutePlannerScreen(
                 ) {
                     RouteFeedbackCard(
                         feedback = routeFeedback,
-                        onFeedbackChange = { feedback -> plannerViewModel.updateFeedback(feedback) },
+                        onFeedbackChange = { feedback -> onPlannerEvent(PlannerEvent.UpdateFeedback(feedback)) },
                         framed = false
                     )
                 }
@@ -1053,7 +1059,7 @@ fun RoutePlannerScreen(
                     isSelectingRoutePois = isSelectingRequiredPlacesOnMap,
                     selectedRoutePoiIds = requiredPoiIds.toSet(),
                     onStartPointSelected = ::updateStartPoint,
-                    onRoutePoiSelected = { poi -> plannerViewModel.toggleRequiredPoi(poi.id) },
+                    onRoutePoiSelected = { poi -> onPlannerEvent(PlannerEvent.ToggleRequiredPoi(poi.id)) },
                     modifier = Modifier.fillMaxSize()
                 )
                 OutlinedButton(

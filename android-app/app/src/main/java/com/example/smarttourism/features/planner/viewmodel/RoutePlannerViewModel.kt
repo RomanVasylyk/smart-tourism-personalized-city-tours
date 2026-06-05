@@ -1,10 +1,6 @@
 package com.example.smarttourism.features.planner.viewmodel
 
 import android.app.Application
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.smarttourism.R
@@ -33,8 +29,14 @@ import com.example.smarttourism.features.planner.state.MinimumAvailableMinutes
 import com.example.smarttourism.features.planner.state.OffRouteDistanceMeters
 import com.example.smarttourism.features.planner.state.OffRouteSustainDurationMs
 import com.example.smarttourism.features.planner.state.OfflineDownloadProgress
+import com.example.smarttourism.features.planner.state.PlannerEvent
 import com.example.smarttourism.features.planner.state.RouteProgressMetrics
 import com.example.smarttourism.features.planner.state.RouteSessionStatus
+import com.example.smarttourism.features.planner.state.RoutePlannerUiState
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
@@ -65,95 +67,144 @@ internal class RoutePlannerViewModel(
 
     private var initialized = false
 
-    var cities by mutableStateOf<List<City>>(emptyList())
-        private set
-    var selectedCity by mutableStateOf<City?>(null)
-        private set
-    var pois by mutableStateOf<List<Poi>>(emptyList())
-        private set
-    var isPoiLoading by mutableStateOf(true)
-        private set
-    var poiError by mutableStateOf<String?>(null)
-        private set
-    var offlineStatusMessage by mutableStateOf<String?>(null)
-        private set
-    var pendingSyncOperationCount by mutableIntStateOf(0)
-        private set
-    var offlineStoredRegion by mutableStateOf<OfflineStoredRegion?>(null)
-        private set
-    var isOfflineMapBusy by mutableStateOf(false)
-        private set
-    var offlineMapProgress by mutableStateOf<OfflineDownloadProgress?>(null)
-        private set
-    var offlineMapMessage by mutableStateOf<String?>(null)
-        private set
+    private val _uiState = MutableStateFlow(
+        RoutePlannerUiState(startDateTime = defaultRouteStartDateTime())
+    )
+    val uiState: StateFlow<RoutePlannerUiState> = _uiState.asStateFlow()
 
-    var routeResponse by mutableStateOf<RoutePlan?>(null)
-        private set
-    var routeBookmarks by mutableStateOf<List<RouteBookmark>>(emptyList())
-        private set
-    var routeHistory by mutableStateOf<List<RouteHistoryEntry>>(emptyList())
-        private set
-    var currentRouteRequest by mutableStateOf<PlannerPreferences?>(null)
-        private set
-    var activeBookmarkId by mutableStateOf<String?>(null)
-        private set
-    var hasPendingRouteChanges by mutableStateOf(false)
-        private set
-    var isRouteLoading by mutableStateOf(false)
-        private set
-    var isRouteHistoryLoading by mutableStateOf(false)
-        private set
-    var routeError by mutableStateOf<String?>(null)
-        private set
-    var routeHistoryError by mutableStateOf<String?>(null)
-        private set
-    var hasNoGeneratedStops by mutableStateOf(false)
-        private set
-    var isRerouting by mutableStateOf(false)
-        private set
+    private fun updateUiState(transform: (RoutePlannerUiState) -> RoutePlannerUiState) {
+        _uiState.update(transform)
+    }
 
-    var availableMinutes by mutableIntStateOf(180)
-        private set
-    var pace by mutableStateOf("normal")
-        private set
-    var returnToStart by mutableStateOf(true)
-        private set
-    var respectOpeningHours by mutableStateOf(true)
-        private set
-    var allowPublicTransport by mutableStateOf(false)
-        private set
-    var startPoint by mutableStateOf(EmptyStartPoint)
-        private set
-    var startDateTime by mutableStateOf(defaultRouteStartDateTime())
-        private set
-    var routeSessionStatus by mutableStateOf(RouteSessionStatus.NOT_STARTED)
-        private set
-    var routeId by mutableStateOf<String?>(null)
-        private set
-    var routeStartedAt by mutableStateOf<String?>(null)
-        private set
-    var currentTargetPoiId by mutableStateOf<Int?>(null)
-        private set
-    var currentRouteLocation by mutableStateOf<RoutePoint?>(null)
-        private set
-    var trackingError by mutableStateOf<String?>(null)
-        private set
-    var routeFeedback by mutableStateOf<RouteFeedback?>(null)
-        private set
-    var offRouteDetectedAtMs by mutableStateOf<Long?>(null)
-        private set
-    var lastAutoRerouteAtMs by mutableStateOf<Long?>(null)
-        private set
-
-    var selectedInterests by mutableStateOf<List<String>>(emptyList())
-        private set
-    var requiredPoiIds by mutableStateOf<List<Int>>(emptyList())
-        private set
-    var visitedPoiIds by mutableStateOf<List<Int>>(emptyList())
-        private set
-    var skippedPoiIds by mutableStateOf<List<Int>>(emptyList())
-        private set
+    private var cities: List<City>
+        get() = uiState.value.cities
+        set(value) = updateUiState { state -> state.copy(cities = value) }
+    private var selectedCity: City?
+        get() = uiState.value.selectedCity
+        set(value) = updateUiState { state -> state.copy(selectedCity = value) }
+    private var pois: List<Poi>
+        get() = uiState.value.pois
+        set(value) = updateUiState { state -> state.copy(pois = value) }
+    private var isPoiLoading: Boolean
+        get() = uiState.value.isPoiLoading
+        set(value) = updateUiState { state -> state.copy(isPoiLoading = value) }
+    private var poiError: String?
+        get() = uiState.value.poiError
+        set(value) = updateUiState { state -> state.copy(poiError = value) }
+    private var offlineStatusMessage: String?
+        get() = uiState.value.offlineStatusMessage
+        set(value) = updateUiState { state -> state.copy(offlineStatusMessage = value) }
+    private var pendingSyncOperationCount: Int
+        get() = uiState.value.pendingSyncOperationCount
+        set(value) = updateUiState { state -> state.copy(pendingSyncOperationCount = value) }
+    private var offlineStoredRegion: OfflineStoredRegion?
+        get() = uiState.value.offlineStoredRegion
+        set(value) = updateUiState { state -> state.copy(offlineStoredRegion = value) }
+    private var isOfflineMapBusy: Boolean
+        get() = uiState.value.isOfflineMapBusy
+        set(value) = updateUiState { state -> state.copy(isOfflineMapBusy = value) }
+    private var offlineMapProgress: OfflineDownloadProgress?
+        get() = uiState.value.offlineMapProgress
+        set(value) = updateUiState { state -> state.copy(offlineMapProgress = value) }
+    private var offlineMapMessage: String?
+        get() = uiState.value.offlineMapMessage
+        set(value) = updateUiState { state -> state.copy(offlineMapMessage = value) }
+    private var routeResponse: RoutePlan?
+        get() = uiState.value.routeResponse
+        set(value) = updateUiState { state -> state.copy(routeResponse = value) }
+    private var routeBookmarks: List<RouteBookmark>
+        get() = uiState.value.routeBookmarks
+        set(value) = updateUiState { state -> state.copy(routeBookmarks = value) }
+    private var routeHistory: List<RouteHistoryEntry>
+        get() = uiState.value.routeHistory
+        set(value) = updateUiState { state -> state.copy(routeHistory = value) }
+    private var currentRouteRequest: PlannerPreferences?
+        get() = uiState.value.currentRouteRequest
+        set(value) = updateUiState { state -> state.copy(currentRouteRequest = value) }
+    private var activeBookmarkId: String?
+        get() = uiState.value.activeBookmarkId
+        set(value) = updateUiState { state -> state.copy(activeBookmarkId = value) }
+    private var hasPendingRouteChanges: Boolean
+        get() = uiState.value.hasPendingRouteChanges
+        set(value) = updateUiState { state -> state.copy(hasPendingRouteChanges = value) }
+    private var isRouteLoading: Boolean
+        get() = uiState.value.isRouteLoading
+        set(value) = updateUiState { state -> state.copy(isRouteLoading = value) }
+    private var isRouteHistoryLoading: Boolean
+        get() = uiState.value.isRouteHistoryLoading
+        set(value) = updateUiState { state -> state.copy(isRouteHistoryLoading = value) }
+    private var routeError: String?
+        get() = uiState.value.routeError
+        set(value) = updateUiState { state -> state.copy(routeError = value) }
+    private var routeHistoryError: String?
+        get() = uiState.value.routeHistoryError
+        set(value) = updateUiState { state -> state.copy(routeHistoryError = value) }
+    private var hasNoGeneratedStops: Boolean
+        get() = uiState.value.hasNoGeneratedStops
+        set(value) = updateUiState { state -> state.copy(hasNoGeneratedStops = value) }
+    private var isRerouting: Boolean
+        get() = uiState.value.isRerouting
+        set(value) = updateUiState { state -> state.copy(isRerouting = value) }
+    private var availableMinutes: Int
+        get() = uiState.value.availableMinutes
+        set(value) = updateUiState { state -> state.copy(availableMinutes = value) }
+    private var pace: String
+        get() = uiState.value.pace
+        set(value) = updateUiState { state -> state.copy(pace = value) }
+    private var returnToStart: Boolean
+        get() = uiState.value.returnToStart
+        set(value) = updateUiState { state -> state.copy(returnToStart = value) }
+    private var respectOpeningHours: Boolean
+        get() = uiState.value.respectOpeningHours
+        set(value) = updateUiState { state -> state.copy(respectOpeningHours = value) }
+    private var allowPublicTransport: Boolean
+        get() = uiState.value.allowPublicTransport
+        set(value) = updateUiState { state -> state.copy(allowPublicTransport = value) }
+    private var startPoint: RoutePoint
+        get() = uiState.value.startPoint
+        set(value) = updateUiState { state -> state.copy(startPoint = value) }
+    private var startDateTime: LocalDateTime
+        get() = uiState.value.startDateTime
+        set(value) = updateUiState { state -> state.copy(startDateTime = value) }
+    private var routeSessionStatus: RouteSessionStatus
+        get() = uiState.value.routeSessionStatus
+        set(value) = updateUiState { state -> state.copy(routeSessionStatus = value) }
+    private var routeId: String?
+        get() = uiState.value.routeId
+        set(value) = updateUiState { state -> state.copy(routeId = value) }
+    private var routeStartedAt: String?
+        get() = uiState.value.routeStartedAt
+        set(value) = updateUiState { state -> state.copy(routeStartedAt = value) }
+    private var currentTargetPoiId: Int?
+        get() = uiState.value.currentTargetPoiId
+        set(value) = updateUiState { state -> state.copy(currentTargetPoiId = value) }
+    private var currentRouteLocation: RoutePoint?
+        get() = uiState.value.currentRouteLocation
+        set(value) = updateUiState { state -> state.copy(currentRouteLocation = value) }
+    private var trackingError: String?
+        get() = uiState.value.trackingError
+        set(value) = updateUiState { state -> state.copy(trackingError = value) }
+    private var routeFeedback: RouteFeedback?
+        get() = uiState.value.routeFeedback
+        set(value) = updateUiState { state -> state.copy(routeFeedback = value) }
+    private var offRouteDetectedAtMs: Long?
+        get() = uiState.value.offRouteDetectedAtMs
+        set(value) = updateUiState { state -> state.copy(offRouteDetectedAtMs = value) }
+    private var lastAutoRerouteAtMs: Long?
+        get() = uiState.value.lastAutoRerouteAtMs
+        set(value) = updateUiState { state -> state.copy(lastAutoRerouteAtMs = value) }
+    private var selectedInterests: List<String>
+        get() = uiState.value.selectedInterests
+        set(value) = updateUiState { state -> state.copy(selectedInterests = value) }
+    private var requiredPoiIds: List<Int>
+        get() = uiState.value.requiredPoiIds
+        set(value) = updateUiState { state -> state.copy(requiredPoiIds = value) }
+    private var visitedPoiIds: List<Int>
+        get() = uiState.value.visitedPoiIds
+        set(value) = updateUiState { state -> state.copy(visitedPoiIds = value) }
+    private var skippedPoiIds: List<Int>
+        get() = uiState.value.skippedPoiIds
+        set(value) = updateUiState { state -> state.copy(skippedPoiIds = value) }
 
     val routeItems: List<RouteStop>
         get() = routeResponse?.route.orEmpty()
@@ -180,7 +231,49 @@ internal class RoutePlannerViewModel(
     val maxAvailableMinutesLimit: Int
         get() = maxAvailableMinutesFor(selectedCity)
 
-    fun initialize() {
+    fun onEvent(event: PlannerEvent) {
+        when (event) {
+            PlannerEvent.Initialize -> initialize()
+            is PlannerEvent.LoadRouteHistory -> loadRouteHistory(event.forceRefresh)
+            is PlannerEvent.SelectCity -> selectCity(event.city)
+            is PlannerEvent.UpdateStartPoint -> updateStartPoint(event.lat, event.lon)
+            is PlannerEvent.UpdateAvailableMinutes -> updateAvailableMinutes(event.value)
+            is PlannerEvent.ToggleInterest -> toggleInterest(event.interest, event.checked)
+            is PlannerEvent.UpdatePace -> updatePace(event.value)
+            is PlannerEvent.UpdateReturnToStart -> updateReturnToStart(event.value)
+            is PlannerEvent.UpdateRespectOpeningHours -> updateRespectOpeningHours(event.value)
+            is PlannerEvent.UpdateAllowPublicTransport -> updateAllowPublicTransport(event.value)
+            PlannerEvent.UseCurrentTime -> useCurrentTime()
+            is PlannerEvent.UpdateStartDateTime -> updateStartDateTime(event.value)
+            is PlannerEvent.ToggleRequiredPoi -> toggleRequiredPoi(event.poiId)
+            is PlannerEvent.RemoveRequiredPoi -> removeRequiredPoi(event.poiId)
+            is PlannerEvent.MoveRequiredPoi -> moveRequiredPoi(event.poiId, event.direction)
+            PlannerEvent.ClearRequiredPois -> clearRequiredPois()
+            PlannerEvent.GenerateRoute -> generateRoute()
+            PlannerEvent.SaveCurrentRouteBookmark -> saveCurrentRouteBookmark()
+            is PlannerEvent.OpenRouteBookmark -> openRouteBookmark(event.bookmarkId)
+            is PlannerEvent.DeleteRouteBookmark -> deleteRouteBookmark(event.bookmarkId)
+            PlannerEvent.ActivateRouteTracking -> activateRouteTracking()
+            PlannerEvent.PauseRoute -> pauseRoute()
+            PlannerEvent.ResumeRoute -> resumeRoute()
+            PlannerEvent.FinishRoute -> finishRoute()
+            PlannerEvent.CancelRoute -> cancelRoute()
+            is PlannerEvent.UpdateFeedback -> updateFeedback(event.feedback)
+            is PlannerEvent.MarkRouteStopVisited -> markRouteStopVisited(event.poiId)
+            is PlannerEvent.SkipRouteStop -> skipRouteStop(event.poiId)
+            is PlannerEvent.RemovePreviewStop -> removePreviewStop(event.poiId)
+            is PlannerEvent.MovePreviewStop -> movePreviewStop(event.poiId, event.direction)
+            is PlannerEvent.ReplacePreviewStop -> replacePreviewStop(event.poiId, event.preferredPoiId)
+            PlannerEvent.RecalculateFromCurrentLocation -> recalculateFromCurrentLocation()
+            is PlannerEvent.TrackedLocation -> handleTrackedLocation(event.point)
+            is PlannerEvent.TrackingError -> handleTrackingError(event.message)
+            PlannerEvent.DownloadOfflineMap -> downloadOfflineMap()
+            PlannerEvent.DeleteOfflineMap -> deleteOfflineMap()
+            is PlannerEvent.ClearDisplayedRoute -> clearDisplayedRoute(event.cancelActiveSession)
+        }
+    }
+
+    private fun initialize() {
         if (initialized) {
             return
         }
@@ -190,13 +283,13 @@ internal class RoutePlannerViewModel(
         }
     }
 
-    fun loadRouteHistory(forceRefresh: Boolean = true) {
+    private fun loadRouteHistory(forceRefresh: Boolean = true) {
         viewModelScope.launch {
             refreshRouteHistory(forceRefresh)
         }
     }
 
-    fun selectCity(city: City) {
+    private fun selectCity(city: City) {
         if (selectedCity?.slug == city.slug) {
             return
         }
@@ -212,19 +305,19 @@ internal class RoutePlannerViewModel(
         }
     }
 
-    fun updateStartPoint(lat: Double, lon: Double) {
+    private fun updateStartPoint(lat: Double, lon: Double) {
         startPoint = RoutePoint(lat = lat, lon = lon)
         hasNoGeneratedStops = false
         invalidateRoutePreviewIfAllowed()
     }
 
-    fun updateAvailableMinutes(value: Int) {
+    private fun updateAvailableMinutes(value: Int) {
         availableMinutes = clampAvailableMinutes(value)
         hasNoGeneratedStops = false
         invalidateRoutePreviewIfAllowed()
     }
 
-    fun toggleInterest(interest: String, checked: Boolean) {
+    private fun toggleInterest(interest: String, checked: Boolean) {
         selectedInterests = if (checked) {
             (selectedInterests + interest).distinct()
         } else {
@@ -234,43 +327,43 @@ internal class RoutePlannerViewModel(
         invalidateRoutePreviewIfAllowed()
     }
 
-    fun updatePace(value: String) {
+    private fun updatePace(value: String) {
         pace = value
         hasNoGeneratedStops = false
         invalidateRoutePreviewIfAllowed()
     }
 
-    fun updateReturnToStart(value: Boolean) {
+    private fun updateReturnToStart(value: Boolean) {
         returnToStart = value
         hasNoGeneratedStops = false
         invalidateRoutePreviewIfAllowed()
     }
 
-    fun updateRespectOpeningHours(value: Boolean) {
+    private fun updateRespectOpeningHours(value: Boolean) {
         respectOpeningHours = value
         hasNoGeneratedStops = false
         invalidateRoutePreviewIfAllowed()
     }
 
-    fun updateAllowPublicTransport(value: Boolean) {
+    private fun updateAllowPublicTransport(value: Boolean) {
         allowPublicTransport = value
         hasNoGeneratedStops = false
         invalidateRoutePreviewIfAllowed()
     }
 
-    fun useCurrentTime() {
+    private fun useCurrentTime() {
         startDateTime = defaultRouteStartDateTime()
         hasNoGeneratedStops = false
         invalidateRoutePreviewIfAllowed()
     }
 
-    fun updateStartDateTime(value: LocalDateTime) {
+    private fun updateStartDateTime(value: LocalDateTime) {
         startDateTime = value.truncatedTo(ChronoUnit.MINUTES)
         hasNoGeneratedStops = false
         invalidateRoutePreviewIfAllowed()
     }
 
-    fun toggleRequiredPoi(poiId: Int) {
+    private fun toggleRequiredPoi(poiId: Int) {
         if (routeSessionStatus == RouteSessionStatus.IN_PROGRESS || routeSessionStatus == RouteSessionStatus.PAUSED) {
             return
         }
@@ -284,7 +377,7 @@ internal class RoutePlannerViewModel(
         invalidateRoutePreviewIfAllowed()
     }
 
-    fun removeRequiredPoi(poiId: Int) {
+    private fun removeRequiredPoi(poiId: Int) {
         if (poiId !in requiredPoiIds) {
             return
         }
@@ -294,7 +387,7 @@ internal class RoutePlannerViewModel(
         invalidateRoutePreviewIfAllowed()
     }
 
-    fun moveRequiredPoi(poiId: Int, direction: Int) {
+    private fun moveRequiredPoi(poiId: Int, direction: Int) {
         if (routeSessionStatus == RouteSessionStatus.IN_PROGRESS || routeSessionStatus == RouteSessionStatus.PAUSED) {
             return
         }
@@ -319,7 +412,7 @@ internal class RoutePlannerViewModel(
         invalidateRoutePreviewIfAllowed()
     }
 
-    fun clearRequiredPois() {
+    private fun clearRequiredPois() {
         if (requiredPoiIds.isEmpty()) {
             return
         }
@@ -329,7 +422,7 @@ internal class RoutePlannerViewModel(
         invalidateRoutePreviewIfAllowed()
     }
 
-    fun generateRoute() {
+    private fun generateRoute() {
         viewModelScope.launch {
             if (!repository.isNetworkAvailable()) {
                 routeError = offlineRouteGenerationMessage
@@ -421,7 +514,7 @@ internal class RoutePlannerViewModel(
         }
     }
 
-    fun saveCurrentRouteBookmark() {
+    private fun saveCurrentRouteBookmark() {
         val snapshot = currentRouteSnapshot() ?: return
         viewModelScope.launch {
             val now = System.currentTimeMillis()
@@ -443,7 +536,7 @@ internal class RoutePlannerViewModel(
         }
     }
 
-    fun openRouteBookmark(bookmarkId: String) {
+    private fun openRouteBookmark(bookmarkId: String) {
         viewModelScope.launch {
             val bookmark = repository.loadRouteBookmark(bookmarkId) ?: return@launch
             resetRouteSession()
@@ -459,7 +552,7 @@ internal class RoutePlannerViewModel(
         }
     }
 
-    fun deleteRouteBookmark(bookmarkId: String) {
+    private fun deleteRouteBookmark(bookmarkId: String) {
         viewModelScope.launch {
             repository.deleteRouteBookmark(bookmarkId)
             if (activeBookmarkId == bookmarkId) {
@@ -478,7 +571,7 @@ internal class RoutePlannerViewModel(
             excludePoiIds = currentRouteRequest?.excludedPoiIds.orEmpty()
         )
 
-    fun activateRouteTracking() {
+    private fun activateRouteTracking() {
         if (hasPendingRouteChanges) {
             return
         }
@@ -524,14 +617,14 @@ internal class RoutePlannerViewModel(
         )
     }
 
-    fun pauseRoute() {
+    private fun pauseRoute() {
         if (routeSessionStatus == RouteSessionStatus.IN_PROGRESS) {
             routeSessionStatus = RouteSessionStatus.PAUSED
             persistRouteSession(status = RouteSessionStatus.PAUSED)
         }
     }
 
-    fun resumeRoute() {
+    private fun resumeRoute() {
         val activeRouteId = routeId ?: UUID.randomUUID().toString()
         val activeStartedAt = routeStartedAt ?: defaultRouteStartDateTime().toString()
         routeId = activeRouteId
@@ -547,7 +640,7 @@ internal class RoutePlannerViewModel(
         )
     }
 
-    fun finishRoute() {
+    private fun finishRoute() {
         if (!progressMetrics.canComplete) {
             return
         }
@@ -555,12 +648,12 @@ internal class RoutePlannerViewModel(
         persistRouteSession(status = RouteSessionStatus.COMPLETED)
     }
 
-    fun cancelRoute() {
+    private fun cancelRoute() {
         routeSessionStatus = RouteSessionStatus.CANCELLED
         persistRouteSession(status = RouteSessionStatus.CANCELLED)
     }
 
-    fun updateFeedback(feedback: RouteFeedback) {
+    private fun updateFeedback(feedback: RouteFeedback) {
         routeFeedback = feedback
         persistRouteSession(
             status = RouteSessionStatus.COMPLETED,
@@ -569,7 +662,7 @@ internal class RoutePlannerViewModel(
         syncFeedbackToBackend(feedback)
     }
 
-    fun markRouteStopVisited(poiId: Int) {
+    private fun markRouteStopVisited(poiId: Int) {
         if (poiId in visitedPoiIds || poiId in skippedPoiIds) {
             return
         }
@@ -617,7 +710,7 @@ internal class RoutePlannerViewModel(
         }
     }
 
-    fun skipRouteStop(poiId: Int) {
+    private fun skipRouteStop(poiId: Int) {
         if (poiId in visitedPoiIds || poiId in skippedPoiIds) {
             return
         }
@@ -682,12 +775,12 @@ internal class RoutePlannerViewModel(
         }
     }
 
-    fun recalculateFromCurrentLocation() {
+    private fun recalculateFromCurrentLocation() {
         val location = currentRouteLocation ?: return
         recalculateRouteFromPoint(location, false, emptyList())
     }
 
-    fun removePreviewStop(poiId: Int) {
+    private fun removePreviewStop(poiId: Int) {
         if (routeSessionStatus != RouteSessionStatus.NOT_STARTED) {
             return
         }
@@ -737,7 +830,7 @@ internal class RoutePlannerViewModel(
         }
     }
 
-    fun movePreviewStop(poiId: Int, direction: Int) {
+    private fun movePreviewStop(poiId: Int, direction: Int) {
         if (routeSessionStatus != RouteSessionStatus.NOT_STARTED) {
             return
         }
@@ -792,7 +885,7 @@ internal class RoutePlannerViewModel(
         }
     }
 
-    fun replacePreviewStop(poiId: Int, preferredPoiId: Int? = null) {
+    private fun replacePreviewStop(poiId: Int, preferredPoiId: Int? = null) {
         if (routeSessionStatus != RouteSessionStatus.NOT_STARTED) {
             return
         }
@@ -849,7 +942,7 @@ internal class RoutePlannerViewModel(
         }
     }
 
-    fun handleTrackedLocation(routeLocation: RoutePoint) {
+    private fun handleTrackedLocation(routeLocation: RoutePoint) {
         currentRouteLocation = routeLocation
         trackingError = null
         var approachLegRefreshed = false
@@ -939,14 +1032,14 @@ internal class RoutePlannerViewModel(
         }
     }
 
-    fun handleTrackingError(message: String) {
+    private fun handleTrackingError(message: String) {
         routeSessionStatus = RouteSessionStatus.PAUSED
         trackingError = message
         offRouteDetectedAtMs = null
         persistRouteSession(status = RouteSessionStatus.PAUSED)
     }
 
-    fun downloadOfflineMap() {
+    private fun downloadOfflineMap() {
         val city = selectedCity ?: return
         val offlineRegion = city.toOfflineCityRegion() ?: run {
             offlineMapMessage = null
@@ -983,7 +1076,7 @@ internal class RoutePlannerViewModel(
         )
     }
 
-    fun deleteOfflineMap() {
+    private fun deleteOfflineMap() {
         val city = selectedCity ?: return
         val storedRegion = offlineStoredRegion ?: return
 
@@ -1007,7 +1100,7 @@ internal class RoutePlannerViewModel(
         )
     }
 
-    fun clearDisplayedRoute(cancelActiveSession: Boolean = true) {
+    private fun clearDisplayedRoute(cancelActiveSession: Boolean = true) {
         val snapshot = currentRouteSnapshot()
         val activeRouteId = routeId
         val activeStatus = routeSessionStatus
