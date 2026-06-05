@@ -790,11 +790,11 @@ internal class RoutePlannerViewModel(
             routeError = offlineRouteGenerationMessage
             return
         }
+        val updatedRequiredPoiIds = requiredPoiIds.filterNot { requiredPoiId -> requiredPoiId == poiId }
         val updatedRequest = request.copy(
             excludedPoiIds = (request.excludedPoiIds.orEmpty() + poiId).distinct(),
-            preferredPoiIds = request.preferredPoiIds.orEmpty().filterNot { preferredPoiId -> preferredPoiId == poiId }
+            preferredPoiIds = updatedRequiredPoiIds
         )
-        val updatedRequiredPoiIds = requiredPoiIds.filterNot { requiredPoiId -> requiredPoiId == poiId }
 
         viewModelScope.launch {
             isRerouting = true
@@ -850,12 +850,6 @@ internal class RoutePlannerViewModel(
             return
         }
 
-        val reorderedPoiIds = originalItems.toMutableList().also { mutableItems ->
-            val movedItem = mutableItems.removeAt(currentIndex)
-            mutableItems.add(targetIndex, movedItem)
-        }.map { item -> item.poiId }
-        val updatedRequest = request.copy(preferredPoiIds = reorderedPoiIds)
-
         viewModelScope.launch {
             isRerouting = true
             clearRouteMessages()
@@ -866,8 +860,8 @@ internal class RoutePlannerViewModel(
                     direction = direction,
                     context = routePreviewMutationContext()
                 )
+                val updatedRequest = request.copy(preferredPoiIds = requiredPoiIds)
                 currentRouteRequest = updatedRequest
-                requiredPoiIds = reorderedPoiIds
                 routeResponse = updatedResponse
                 hasPendingRouteChanges = false
                 hasNoGeneratedStops = false
@@ -908,13 +902,10 @@ internal class RoutePlannerViewModel(
         viewModelScope.launch {
             isRerouting = true
             clearRouteMessages()
-            val updatedPreferredPoiIds = buildList {
-                addAll(request.preferredPoiIds.orEmpty().filterNot { preferredId -> preferredId == poiId })
-                add(replacementPoi.id)
-            }.distinct()
+            val updatedRequiredPoiIds = requiredPoiIds.filterNot { requiredPoiId -> requiredPoiId == poiId }
             val updatedRequest = request.copy(
                 excludedPoiIds = (request.excludedPoiIds.orEmpty() + poiId).distinct(),
-                preferredPoiIds = updatedPreferredPoiIds
+                preferredPoiIds = updatedRequiredPoiIds
             )
 
             try {
@@ -925,7 +916,7 @@ internal class RoutePlannerViewModel(
                     context = routePreviewMutationContext()
                 )
                 currentRouteRequest = updatedRequest
-                requiredPoiIds = updatedPreferredPoiIds
+                requiredPoiIds = updatedRequiredPoiIds
                 routeResponse = updatedResponse
                 hasPendingRouteChanges = false
                 repository.saveSnapshot(
