@@ -1,7 +1,7 @@
 package com.example.smarttourism.features.planner.viewmodel
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
+import android.content.Context
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.smarttourism.R
 import com.example.smarttourism.data.model.ActiveRouteSession
@@ -19,7 +19,7 @@ import com.example.smarttourism.features.planner.domain.model.RouteSession
 import com.example.smarttourism.features.planner.domain.model.RoutePoint
 import com.example.smarttourism.features.map.offline.OfflineMapManager
 import com.example.smarttourism.features.map.offline.OfflineStoredRegion
-import com.example.smarttourism.features.planner.data.PlannerRepositoryFactory
+import com.example.smarttourism.features.planner.data.PlannerRepository
 import com.example.smarttourism.features.planner.state.AutoRerouteCooldownMs
 import com.example.smarttourism.features.planner.state.AvailableMinutesStepMinutes
 import com.example.smarttourism.features.planner.state.DefaultCitySlug
@@ -33,6 +33,8 @@ import com.example.smarttourism.features.planner.state.PlannerEvent
 import com.example.smarttourism.features.planner.state.RouteProgressMetrics
 import com.example.smarttourism.features.planner.state.RouteSessionStatus
 import com.example.smarttourism.features.planner.state.RoutePlannerUiState
+import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -42,14 +44,15 @@ import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 import java.util.Locale
 import java.util.UUID
+import javax.inject.Inject
 
-internal class RoutePlannerViewModel(
-    application: Application
-) : AndroidViewModel(application) {
-    private val appContext = application.applicationContext
-    private val repository = PlannerRepositoryFactory.create(appContext)
-    private val routePreviewMutationUseCase = RoutePreviewMutationUseCase(repository)
-    private val offlineMapManager = OfflineMapManager(appContext)
+@HiltViewModel
+internal class RoutePlannerViewModel @Inject constructor(
+    @ApplicationContext private val appContext: Context,
+    private val repository: PlannerRepository,
+    private val offlineMapManager: OfflineMapManager,
+    private val routePreviewMutationUseCase: RoutePreviewMutationUseCase
+) : ViewModel() {
     private val deviceId = repository.getOrCreateDeviceId()
 
     private val poiPreviewFailedMessage = appContext.getString(R.string.error_poi_preview_failed)

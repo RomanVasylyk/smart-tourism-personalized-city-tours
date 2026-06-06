@@ -10,6 +10,8 @@ import com.example.smarttourism.data.remote.dto.RouteSessionPoiVisitRequest
 import com.example.smarttourism.data.repository.OfflineCacheRepository
 import com.example.smarttourism.features.planner.domain.mapper.toDto
 import com.example.smarttourism.sync.OfflineSyncScheduler
+import dagger.hilt.android.qualifiers.ApplicationContext
+import javax.inject.Inject
 
 internal interface OfflineSyncRepository {
     fun isNetworkAvailable(): Boolean
@@ -40,7 +42,8 @@ internal interface OfflineSyncRepository {
     fun scheduleImmediateSync()
 }
 
-internal class DefaultOfflineSyncRepository(
+internal class DefaultOfflineSyncRepository @Inject constructor(
+    @ApplicationContext
     context: Context
 ) : OfflineSyncRepository {
     private val appContext = context.applicationContext

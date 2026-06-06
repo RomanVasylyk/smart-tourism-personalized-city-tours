@@ -8,6 +8,7 @@ import com.example.smarttourism.features.planner.domain.model.RouteLegQuery
 import com.example.smarttourism.features.planner.domain.model.RoutePlan
 import com.example.smarttourism.features.planner.domain.model.RoutePoint
 import com.example.smarttourism.features.planner.data.PlannerRepository
+import javax.inject.Inject
 
 internal data class RoutePreviewMutationContext(
     val city: String?,
@@ -16,7 +17,7 @@ internal data class RoutePreviewMutationContext(
     val transportMode: String?
 )
 
-internal class RoutePreviewMutationUseCase(
+internal class RoutePreviewMutationUseCase @Inject constructor(
     private val repository: PlannerRepository
 ) {
     suspend fun removeStop(

@@ -10,6 +10,7 @@ import com.example.smarttourism.features.planner.domain.model.RouteLeg
 import com.example.smarttourism.features.planner.domain.model.RouteLegQuery
 import com.example.smarttourism.features.planner.domain.model.RoutePlan
 import com.example.smarttourism.features.planner.domain.model.RouteSession
+import javax.inject.Inject
 
 internal interface PlannerRemoteDataSource {
     suspend fun fetchCities(): List<City>
@@ -25,7 +26,7 @@ internal interface PlannerRemoteDataSource {
     suspend fun getRouteSessions(deviceId: String): List<RouteSession>
 }
 
-internal class ApiPlannerRemoteDataSource(
+internal class ApiPlannerRemoteDataSource @Inject constructor(
     private val api: PoiApi
 ) : PlannerRemoteDataSource {
     override suspend fun fetchCities(): List<City> =

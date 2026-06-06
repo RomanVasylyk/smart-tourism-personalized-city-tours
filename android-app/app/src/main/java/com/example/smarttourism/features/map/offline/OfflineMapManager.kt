@@ -1,6 +1,7 @@
 package com.example.smarttourism.features.map.offline
 
 import android.content.Context
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.suspendCancellableCoroutine
 import org.json.JSONObject
 import org.maplibre.android.geometry.LatLngBounds
@@ -8,6 +9,7 @@ import org.maplibre.android.offline.OfflineManager
 import org.maplibre.android.offline.OfflineRegion
 import org.maplibre.android.offline.OfflineTilePyramidRegionDefinition
 import kotlin.coroutines.resume
+import javax.inject.Inject
 
 data class OfflineCityRegion(
     val slug: String,
@@ -31,7 +33,9 @@ data class OfflineStoredRegion(
     val metadata: OfflineCityRegionMetadata
 )
 
-class OfflineMapManager(private val context: Context) {
+class OfflineMapManager @Inject constructor(
+    @ApplicationContext private val context: Context
+) {
 
     private val offlineManager: OfflineManager by lazy {
         OfflineManager.getInstance(context)

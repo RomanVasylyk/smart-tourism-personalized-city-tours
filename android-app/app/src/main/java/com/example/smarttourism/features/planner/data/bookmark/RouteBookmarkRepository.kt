@@ -2,6 +2,7 @@ package com.example.smarttourism.features.planner.data.bookmark
 
 import com.example.smarttourism.data.model.RouteBookmark
 import com.example.smarttourism.features.planner.data.local.PlannerLocalDataSource
+import javax.inject.Inject
 
 internal interface RouteBookmarkRepository {
     suspend fun saveBookmark(bookmark: RouteBookmark)
@@ -13,7 +14,7 @@ internal interface RouteBookmarkRepository {
     suspend fun deleteBookmark(bookmarkId: String)
 }
 
-internal class DefaultRouteBookmarkRepository(
+internal class DefaultRouteBookmarkRepository @Inject constructor(
     private val localDataSource: PlannerLocalDataSource
 ) : RouteBookmarkRepository {
     override suspend fun saveBookmark(bookmark: RouteBookmark) {

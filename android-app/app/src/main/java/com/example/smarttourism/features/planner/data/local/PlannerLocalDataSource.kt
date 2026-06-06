@@ -11,6 +11,8 @@ import com.example.smarttourism.features.planner.domain.mapper.toDomain
 import com.example.smarttourism.features.planner.domain.mapper.toDto
 import com.example.smarttourism.features.planner.domain.model.City
 import com.example.smarttourism.features.planner.domain.model.Poi
+import dagger.hilt.android.qualifiers.ApplicationContext
+import javax.inject.Inject
 
 internal interface PlannerLocalDataSource {
     fun getOrCreateDeviceId(): String
@@ -48,7 +50,8 @@ internal interface PlannerLocalDataSource {
     suspend fun loadRouteHistoryEntries(): List<RouteHistoryEntry>
 }
 
-internal class DefaultPlannerLocalDataSource(
+internal class DefaultPlannerLocalDataSource @Inject constructor(
+    @ApplicationContext
     context: Context
 ) : PlannerLocalDataSource {
     private val appContext = context.applicationContext

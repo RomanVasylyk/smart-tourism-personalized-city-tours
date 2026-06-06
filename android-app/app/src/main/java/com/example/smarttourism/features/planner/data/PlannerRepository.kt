@@ -17,8 +17,9 @@ import com.example.smarttourism.features.planner.domain.model.RouteLeg
 import com.example.smarttourism.features.planner.domain.model.RouteLegQuery
 import com.example.smarttourism.features.planner.domain.model.RoutePlan
 import com.example.smarttourism.features.planner.domain.model.RouteSession
+import javax.inject.Inject
 
-internal class PlannerRepository(
+internal class PlannerRepository @Inject constructor(
     private val remoteDataSource: PlannerRemoteDataSource,
     private val localDataSource: PlannerLocalDataSource,
     private val routeSessionRepository: RouteSessionRepository,

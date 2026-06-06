@@ -5,6 +5,7 @@ import com.example.smarttourism.data.model.RouteHistoryEntry
 import com.example.smarttourism.features.planner.data.local.PlannerLocalDataSource
 import com.example.smarttourism.features.planner.data.remote.PlannerRemoteDataSource
 import com.example.smarttourism.features.planner.domain.model.RouteSession
+import javax.inject.Inject
 
 internal interface RouteSessionRepository {
     suspend fun getRouteSession(routeId: String): RouteSession
@@ -24,7 +25,7 @@ internal interface RouteSessionRepository {
     suspend fun loadHistoryEntries(): List<RouteHistoryEntry>
 }
 
-internal class DefaultRouteSessionRepository(
+internal class DefaultRouteSessionRepository @Inject constructor(
     private val remoteDataSource: PlannerRemoteDataSource,
     private val localDataSource: PlannerLocalDataSource
 ) : RouteSessionRepository {
