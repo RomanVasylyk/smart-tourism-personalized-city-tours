@@ -19,7 +19,7 @@ import com.example.smarttourism.features.planner.domain.model.RouteSession
 import com.example.smarttourism.features.planner.domain.model.RoutePoint
 import com.example.smarttourism.features.map.offline.OfflineMapManager
 import com.example.smarttourism.features.map.offline.OfflineStoredRegion
-import com.example.smarttourism.features.planner.data.PlannerRepository
+import com.example.smarttourism.features.planner.data.PlannerRepositoryFactory
 import com.example.smarttourism.features.planner.state.AutoRerouteCooldownMs
 import com.example.smarttourism.features.planner.state.AvailableMinutesStepMinutes
 import com.example.smarttourism.features.planner.state.DefaultCitySlug
@@ -47,7 +47,7 @@ internal class RoutePlannerViewModel(
     application: Application
 ) : AndroidViewModel(application) {
     private val appContext = application.applicationContext
-    private val repository = PlannerRepository(appContext)
+    private val repository = PlannerRepositoryFactory.create(appContext)
     private val routePreviewMutationUseCase = RoutePreviewMutationUseCase(repository)
     private val offlineMapManager = OfflineMapManager(appContext)
     private val deviceId = repository.getOrCreateDeviceId()
