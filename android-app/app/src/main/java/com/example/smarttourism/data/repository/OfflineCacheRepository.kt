@@ -13,9 +13,12 @@ import com.example.smarttourism.data.local.PendingPoiVisitSyncEntity
 import com.example.smarttourism.data.local.PendingRouteSessionSyncEntity
 import com.example.smarttourism.data.local.RouteHistoryEntryEntity
 import com.example.smarttourism.data.model.ActiveRouteSession
+import com.example.smarttourism.data.model.CacheEnvelopeType
+import com.example.smarttourism.data.model.CurrentCacheEnvelopeVersion
 import com.example.smarttourism.data.model.RouteBookmark
 import com.example.smarttourism.data.model.RouteHistoryEntry
 import com.example.smarttourism.data.model.SavedRouteSnapshot
+import com.example.smarttourism.data.model.VersionedCacheEnvelope
 import com.example.smarttourism.data.remote.api.PoiApi
 import com.example.smarttourism.data.remote.dto.CityBboxDto
 import com.example.smarttourism.data.remote.dto.CityDto
@@ -26,6 +29,9 @@ import com.example.smarttourism.data.remote.dto.RouteSessionPoiVisitRequest
 import com.example.smarttourism.data.remote.dto.RoutingLimitsDto
 import com.example.smarttourism.data.remote.dto.TransportProfileDto
 import com.google.gson.Gson
+import com.google.gson.JsonElement
+import com.google.gson.JsonObject
+import com.google.gson.JsonParser
 import com.google.gson.reflect.TypeToken
 
 data class OfflineSyncSummary(
@@ -151,7 +157,7 @@ object OfflineCacheRepository {
         dao(context).upsertLastRoute(
             CachedLastRouteEntity(
                 cacheKey = LastRouteCacheKey,
-                snapshotJson = gson.toJson(snapshot),
+                snapshotJson = toVersionedJson(CacheEnvelopeType.SAVED_ROUTE_SNAPSHOT, snapshot),
                 updatedAtEpochMs = System.currentTimeMillis()
             )
         )
@@ -161,7 +167,13 @@ object OfflineCacheRepository {
         dao(context)
             .getLastRoute()
             ?.snapshotJson
-            ?.let { rawJson -> fromJsonOrNull(rawJson, SavedRouteSnapshot::class.java) }
+            ?.let { rawJson ->
+                fromVersionedJsonOrNull(
+                    rawJson = rawJson,
+                    expectedType = CacheEnvelopeType.SAVED_ROUTE_SNAPSHOT,
+                    clazz = SavedRouteSnapshot::class.java
+                )
+            }
 
     suspend fun saveRouteBookmark(
         context: Context,
@@ -172,7 +184,7 @@ object OfflineCacheRepository {
                 bookmarkId = bookmark.id,
                 title = bookmark.title,
                 citySlug = bookmark.citySlug,
-                snapshotJson = gson.toJson(bookmark.snapshot),
+                snapshotJson = toVersionedJson(CacheEnvelopeType.SAVED_ROUTE_SNAPSHOT, bookmark.snapshot),
                 createdAtEpochMs = bookmark.createdAtEpochMs,
                 updatedAtEpochMs = bookmark.updatedAtEpochMs
             )
@@ -197,7 +209,7 @@ object OfflineCacheRepository {
         dao(context).upsertRouteHistoryEntry(
             RouteHistoryEntryEntity(
                 routeId = entry.routeId,
-                historyJson = gson.toJson(entry),
+                historyJson = toVersionedJson(CacheEnvelopeType.ROUTE_HISTORY_ENTRY, entry),
                 updatedAtEpochMs = entry.updatedAtEpochMs
             )
         )
@@ -208,7 +220,7 @@ object OfflineCacheRepository {
             entries.map { entry ->
                 RouteHistoryEntryEntity(
                     routeId = entry.routeId,
-                    historyJson = gson.toJson(entry),
+                    historyJson = toVersionedJson(CacheEnvelopeType.ROUTE_HISTORY_ENTRY, entry),
                     updatedAtEpochMs = entry.updatedAtEpochMs
                 )
             }
@@ -219,7 +231,11 @@ object OfflineCacheRepository {
         dao(context)
             .getRouteHistoryEntries()
             .mapNotNull { entity ->
-                fromJsonOrNull(entity.historyJson, RouteHistoryEntry::class.java)
+                fromVersionedJsonOrNull(
+                    rawJson = entity.historyJson,
+                    expectedType = CacheEnvelopeType.ROUTE_HISTORY_ENTRY,
+                    clazz = RouteHistoryEntry::class.java
+                )
                     ?.copy(updatedAtEpochMs = entity.updatedAtEpochMs)
             }
 
@@ -227,7 +243,7 @@ object OfflineCacheRepository {
         dao(context).saveActiveRouteSession(
             CachedRouteSessionEntity(
                 routeId = session.route_id,
-                sessionJson = gson.toJson(session),
+                sessionJson = toVersionedJson(CacheEnvelopeType.ACTIVE_ROUTE_SESSION, session),
                 isActive = true,
                 updatedAtEpochMs = System.currentTimeMillis()
             )
@@ -238,7 +254,13 @@ object OfflineCacheRepository {
         dao(context)
             .getActiveRouteSession()
             ?.sessionJson
-            ?.let { rawJson -> fromJsonOrNull(rawJson, ActiveRouteSession::class.java) }
+            ?.let { rawJson ->
+                fromVersionedJsonOrNull(
+                    rawJson = rawJson,
+                    expectedType = CacheEnvelopeType.ACTIVE_ROUTE_SESSION,
+                    clazz = ActiveRouteSession::class.java
+                )
+            }
 
     suspend fun clearActiveRouteSession(context: Context) {
         dao(context).deleteActiveRouteSession()
@@ -252,7 +274,7 @@ object OfflineCacheRepository {
         dao(context).upsertPendingRouteSessionSync(
             PendingRouteSessionSyncEntity(
                 sessionId = request.id,
-                requestJson = gson.toJson(request),
+                requestJson = toVersionedJson(CacheEnvelopeType.ROUTE_SESSION_CREATE_REQUEST, request),
                 syncStatus = LocalSyncStatus.PENDING,
                 lastSyncAttemptAtEpochMs = null,
                 retryCount = 0,
@@ -274,7 +296,7 @@ object OfflineCacheRepository {
                 requestKey = "$sessionId:$poiId",
                 sessionId = sessionId,
                 poiId = poiId,
-                requestJson = gson.toJson(request),
+                requestJson = toVersionedJson(CacheEnvelopeType.ROUTE_SESSION_POI_VISIT_REQUEST, request),
                 syncStatus = LocalSyncStatus.PENDING,
                 lastSyncAttemptAtEpochMs = null,
                 retryCount = 0,
@@ -293,7 +315,7 @@ object OfflineCacheRepository {
         dao(context).upsertPendingFeedback(
             PendingFeedbackEntity(
                 sessionId = sessionId,
-                feedbackJson = gson.toJson(request),
+                feedbackJson = toVersionedJson(CacheEnvelopeType.ROUTE_FEEDBACK_REQUEST, request),
                 syncStatus = LocalSyncStatus.PENDING,
                 lastSyncAttemptAtEpochMs = null,
                 retryCount = 0,
@@ -337,7 +359,11 @@ object OfflineCacheRepository {
         var failedCount = 0
 
         dao(context).getPendingRouteSessionSyncs().forEach { pendingRouteSession ->
-            val request = fromJsonOrNull(pendingRouteSession.requestJson, RouteSessionCreateRequest::class.java)
+            val request = fromVersionedJsonOrNull(
+                rawJson = pendingRouteSession.requestJson,
+                expectedType = CacheEnvelopeType.ROUTE_SESSION_CREATE_REQUEST,
+                clazz = RouteSessionCreateRequest::class.java
+            )
             if (request == null) {
                 dao(context).deletePendingRouteSessionSync(pendingRouteSession.sessionId)
                 return@forEach
@@ -373,7 +399,11 @@ object OfflineCacheRepository {
         var failedCount = 0
 
         dao(context).getPendingPoiVisitSyncs().forEach { pendingPoiVisit ->
-            val request = fromJsonOrNull(pendingPoiVisit.requestJson, RouteSessionPoiVisitRequest::class.java)
+            val request = fromVersionedJsonOrNull(
+                rawJson = pendingPoiVisit.requestJson,
+                expectedType = CacheEnvelopeType.ROUTE_SESSION_POI_VISIT_REQUEST,
+                clazz = RouteSessionPoiVisitRequest::class.java
+            )
             if (request == null) {
                 dao(context).deletePendingPoiVisitSync(pendingPoiVisit.requestKey)
                 return@forEach
@@ -413,7 +443,11 @@ object OfflineCacheRepository {
         var failedCount = 0
 
         dao(context).getPendingFeedback().forEach { pendingFeedback ->
-            val request = fromJsonOrNull(pendingFeedback.feedbackJson, RouteFeedbackRequest::class.java)
+            val request = fromVersionedJsonOrNull(
+                rawJson = pendingFeedback.feedbackJson,
+                expectedType = CacheEnvelopeType.ROUTE_FEEDBACK_REQUEST,
+                clazz = RouteFeedbackRequest::class.java
+            )
             if (request == null) {
                 dao(context).deletePendingFeedback(pendingFeedback.sessionId)
                 return@forEach
@@ -462,8 +496,55 @@ object OfflineCacheRepository {
     private fun <T> fromJsonOrNull(rawJson: String, clazz: Class<T>): T? =
         runCatching { gson.fromJson(rawJson, clazz) }.getOrNull()
 
+    private fun <T> toVersionedJson(type: String, value: T): String =
+        gson.toJson(
+            VersionedCacheEnvelope(
+                type = type,
+                payload = gson.toJsonTree(value)
+            )
+        )
+
+    private fun <T> fromVersionedJsonOrNull(
+        rawJson: String,
+        expectedType: String,
+        clazz: Class<T>
+    ): T? {
+        val root = runCatching { JsonParser.parseString(rawJson) }.getOrNull()
+        val envelope = root?.asJsonObjectOrNull()
+        if (envelope?.has("payload") == true && envelope.hasSchemaVersion()) {
+            val schemaVersion = envelope.schemaVersionOrNull() ?: return null
+            val type = envelope.get("type").asStringOrNull() ?: return null
+            val payload = envelope.get("payload") ?: return null
+            if (schemaVersion != CurrentCacheEnvelopeVersion || type != expectedType) {
+                return null
+            }
+            return runCatching { gson.fromJson(payload, clazz) }.getOrNull()
+        }
+
+        return fromJsonOrNull(rawJson, clazz)
+    }
+
+    private fun JsonElement.asJsonObjectOrNull(): JsonObject? =
+        if (isJsonObject) asJsonObject else null
+
+    private fun JsonObject.hasSchemaVersion(): Boolean =
+        has("schema_version") || has("schemaVersion")
+
+    private fun JsonObject.schemaVersionOrNull(): Int? =
+        (get("schema_version") ?: get("schemaVersion")).asIntOrNull()
+
+    private fun JsonElement?.asIntOrNull(): Int? =
+        runCatching { this?.asInt }.getOrNull()
+
+    private fun JsonElement?.asStringOrNull(): String? =
+        runCatching { this?.asString }.getOrNull()
+
     private fun BookmarkedRouteEntity.toRouteBookmarkOrNull(): RouteBookmark? {
-        val snapshot = fromJsonOrNull(snapshotJson, SavedRouteSnapshot::class.java) ?: return null
+        val snapshot = fromVersionedJsonOrNull(
+            rawJson = snapshotJson,
+            expectedType = CacheEnvelopeType.SAVED_ROUTE_SNAPSHOT,
+            clazz = SavedRouteSnapshot::class.java
+        ) ?: return null
         return RouteBookmark(
             id = bookmarkId,
             title = title,
