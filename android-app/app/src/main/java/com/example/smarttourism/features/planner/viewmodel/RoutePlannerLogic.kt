@@ -271,6 +271,96 @@ internal fun RouteSessionStatus.isRestorable(): Boolean =
 internal fun RouteSessionStatus.isTerminal(): Boolean =
     this == RouteSessionStatus.COMPLETED || this == RouteSessionStatus.CANCELLED
 
+internal fun sortRouteHistoryEntries(entries: List<RouteHistoryEntry>): List<RouteHistoryEntry> =
+    entries.sortedByDescending { entry -> entry.updatedAtEpochMs }
+
+internal fun mergeRouteHistoryEntries(
+    cachedEntries: List<RouteHistoryEntry>,
+    remoteEntries: List<RouteHistoryEntry>,
+    currentEntry: RouteHistoryEntry?
+): List<RouteHistoryEntry> {
+    val merged = linkedMapOf<String, RouteHistoryEntry>()
+    cachedEntries.forEach { entry ->
+        merged[entry.routeId] = entry
+    }
+    remoteEntries.forEach { entry ->
+        val existing = merged[entry.routeId]
+        merged[entry.routeId] = if (existing == null) {
+            entry
+        } else {
+            mergeRemoteHistoryEntry(existing, entry)
+        }
+    }
+    if (currentEntry != null) {
+        val existing = merged[currentEntry.routeId]
+        merged[currentEntry.routeId] = if (existing == null) {
+            currentEntry
+        } else {
+            choosePreferredHistoryEntry(existing, currentEntry)
+        }
+    }
+    return sortRouteHistoryEntries(merged.values.toList())
+}
+
+internal fun mergeRemoteHistoryEntry(
+    localEntry: RouteHistoryEntry,
+    remoteEntry: RouteHistoryEntry
+): RouteHistoryEntry =
+    remoteEntry.copy(
+        feedback = remoteEntry.feedback ?: localEntry.feedback,
+        visitedPoiIds = if (
+            remoteEntry.visitedPoiIds.isNotEmpty() ||
+                remoteEntry.skippedPoiIds.isNotEmpty()
+        ) {
+            remoteEntry.visitedPoiIds
+        } else {
+            localEntry.visitedPoiIds
+        },
+        skippedPoiIds = if (
+            remoteEntry.visitedPoiIds.isNotEmpty() ||
+                remoteEntry.skippedPoiIds.isNotEmpty()
+        ) {
+            remoteEntry.skippedPoiIds
+        } else {
+            localEntry.skippedPoiIds
+        }
+    )
+
+internal fun upsertRouteHistoryEntry(
+    currentEntries: List<RouteHistoryEntry>,
+    entry: RouteHistoryEntry
+): List<RouteHistoryEntry> =
+    sortRouteHistoryEntries(
+        buildList {
+            val existing = currentEntries.firstOrNull { current -> current.routeId == entry.routeId }
+            add(if (existing == null) entry else choosePreferredHistoryEntry(existing, entry))
+            addAll(currentEntries.filterNot { existingEntry -> existingEntry.routeId == entry.routeId })
+        }
+    )
+
+internal fun choosePreferredHistoryEntry(
+    existing: RouteHistoryEntry,
+    candidate: RouteHistoryEntry
+): RouteHistoryEntry {
+    val existingStatus = RouteSessionStatus.fromRawValue(existing.status)
+    val candidateStatus = RouteSessionStatus.fromRawValue(candidate.status)
+
+    if (existingStatus.isTerminal() && !candidateStatus.isTerminal()) {
+        return existing
+    }
+    if (!existingStatus.isTerminal() && candidateStatus.isTerminal()) {
+        return candidate
+    }
+    if (existing.feedback != null && candidate.feedback == null) {
+        return existing
+    }
+    if (existing.feedback == null && candidate.feedback != null) {
+        return candidate
+    }
+
+    return if (candidate.updatedAtEpochMs >= existing.updatedAtEpochMs) candidate else existing
+}
+
 internal fun City.matchesToken(token: String?): Boolean {
     val normalizedToken = normalizedCityToken(token)
     return normalizedToken.isNotBlank() &&
