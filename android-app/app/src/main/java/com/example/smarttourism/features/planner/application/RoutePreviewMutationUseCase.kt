@@ -1,13 +1,17 @@
-package com.example.smarttourism.features.planner.viewmodel
+package com.example.smarttourism.features.planner.application
 
+import com.example.smarttourism.features.planner.data.PlannerRepository
 import com.example.smarttourism.features.planner.domain.model.Poi
-import com.example.smarttourism.features.planner.domain.model.RouteStop
 import com.example.smarttourism.features.planner.domain.model.RouteLeg
 import com.example.smarttourism.features.planner.domain.model.RouteLegEndpoint
 import com.example.smarttourism.features.planner.domain.model.RouteLegQuery
 import com.example.smarttourism.features.planner.domain.model.RoutePlan
 import com.example.smarttourism.features.planner.domain.model.RoutePoint
-import com.example.smarttourism.features.planner.data.PlannerRepository
+import com.example.smarttourism.features.planner.domain.model.RouteStop
+import com.example.smarttourism.features.planner.viewmodel.mergeLegGeometries
+import com.example.smarttourism.features.planner.viewmodel.rebuildPreviewRouteAfterRemovingPoi
+import com.example.smarttourism.features.planner.viewmodel.rebuildPreviewRouteAfterReplacingPoi
+import com.example.smarttourism.features.planner.viewmodel.removePreviewRoutePoi
 import javax.inject.Inject
 
 internal data class RoutePreviewMutationContext(

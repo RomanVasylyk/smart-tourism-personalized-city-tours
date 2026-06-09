@@ -9,6 +9,19 @@ import com.example.smarttourism.data.model.RouteBookmark
 import com.example.smarttourism.data.model.RouteFeedback
 import com.example.smarttourism.data.model.RouteHistoryEntry
 import com.example.smarttourism.data.model.SavedRouteSnapshot
+import com.example.smarttourism.features.planner.application.ActiveRouteController
+import com.example.smarttourism.features.planner.application.BookmarkController
+import com.example.smarttourism.features.planner.application.CityCatalogLoadInput
+import com.example.smarttourism.features.planner.application.OfflineMapController
+import com.example.smarttourism.features.planner.application.PersistRouteSessionInput
+import com.example.smarttourism.features.planner.application.PlannerCatalogUseCase
+import com.example.smarttourism.features.planner.application.PlannerBootstrapUseCase
+import com.example.smarttourism.features.planner.application.PoiCatalogLoadInput
+import com.example.smarttourism.features.planner.application.RouteGenerationInput
+import com.example.smarttourism.features.planner.application.RouteGenerationResult
+import com.example.smarttourism.features.planner.application.RouteGenerationUseCase
+import com.example.smarttourism.features.planner.application.RouteHistoryController
+import com.example.smarttourism.features.planner.application.RoutePreviewController
 import com.example.smarttourism.features.planner.domain.model.City
 import com.example.smarttourism.features.planner.domain.model.Poi
 import com.example.smarttourism.features.planner.domain.model.RouteStop
@@ -17,22 +30,16 @@ import com.example.smarttourism.features.planner.domain.model.PlannerPreferences
 import com.example.smarttourism.features.planner.domain.model.RoutePlan
 import com.example.smarttourism.features.planner.domain.model.RouteSession
 import com.example.smarttourism.features.planner.domain.model.RoutePoint
-import com.example.smarttourism.features.map.offline.OfflineMapManager
 import com.example.smarttourism.features.map.offline.OfflineStoredRegion
 import com.example.smarttourism.features.planner.data.PlannerRepository
-import com.example.smarttourism.features.planner.state.AutoRerouteCooldownMs
-import com.example.smarttourism.features.planner.state.AvailableMinutesStepMinutes
-import com.example.smarttourism.features.planner.state.DefaultCitySlug
 import com.example.smarttourism.features.planner.state.EmptyStartPoint
-import com.example.smarttourism.features.planner.state.MaximumAvailableMinutes
-import com.example.smarttourism.features.planner.state.MinimumAvailableMinutes
-import com.example.smarttourism.features.planner.state.OffRouteDistanceMeters
-import com.example.smarttourism.features.planner.state.OffRouteSustainDurationMs
 import com.example.smarttourism.features.planner.state.OfflineDownloadProgress
+import com.example.smarttourism.features.planner.state.PlannerStateReducer
 import com.example.smarttourism.features.planner.state.PlannerEvent
 import com.example.smarttourism.features.planner.state.RouteProgressMetrics
 import com.example.smarttourism.features.planner.state.RouteSessionStatus
 import com.example.smarttourism.features.planner.state.RoutePlannerUiState
+import com.example.smarttourism.features.planner.state.maxAvailableMinutesFor
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -41,7 +48,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
-import java.time.temporal.ChronoUnit
 import java.util.Locale
 import java.util.UUID
 import javax.inject.Inject
@@ -50,8 +56,14 @@ import javax.inject.Inject
 internal class RoutePlannerViewModel @Inject constructor(
     @ApplicationContext private val appContext: Context,
     private val repository: PlannerRepository,
-    private val offlineMapManager: OfflineMapManager,
-    private val routePreviewMutationUseCase: RoutePreviewMutationUseCase
+    private val plannerBootstrapUseCase: PlannerBootstrapUseCase,
+    private val plannerCatalogUseCase: PlannerCatalogUseCase,
+    private val routeGenerationUseCase: RouteGenerationUseCase,
+    private val activeRouteController: ActiveRouteController,
+    private val routeHistoryController: RouteHistoryController,
+    private val bookmarkController: BookmarkController,
+    private val offlineMapController: OfflineMapController,
+    private val routePreviewController: RoutePreviewController
 ) : ViewModel() {
     private val deviceId = repository.getOrCreateDeviceId()
 
@@ -309,239 +321,179 @@ internal class RoutePlannerViewModel @Inject constructor(
     }
 
     private fun updateStartPoint(lat: Double, lon: Double) {
-        startPoint = RoutePoint(lat = lat, lon = lon)
-        hasNoGeneratedStops = false
-        invalidateRoutePreviewIfAllowed()
+        updateUiState { state ->
+            PlannerStateReducer.updateStartPoint(state, RoutePoint(lat = lat, lon = lon))
+        }
     }
 
     private fun updateAvailableMinutes(value: Int) {
-        availableMinutes = clampAvailableMinutes(value)
-        hasNoGeneratedStops = false
-        invalidateRoutePreviewIfAllowed()
+        updateUiState { state ->
+            PlannerStateReducer.updateAvailableMinutes(state, value)
+        }
     }
 
     private fun toggleInterest(interest: String, checked: Boolean) {
-        selectedInterests = if (checked) {
-            (selectedInterests + interest).distinct()
-        } else {
-            selectedInterests.filterNot { selected -> selected == interest }
+        updateUiState { state ->
+            PlannerStateReducer.toggleInterest(state, interest, checked)
         }
-        hasNoGeneratedStops = false
-        invalidateRoutePreviewIfAllowed()
     }
 
     private fun updatePace(value: String) {
-        pace = value
-        hasNoGeneratedStops = false
-        invalidateRoutePreviewIfAllowed()
+        updateUiState { state ->
+            PlannerStateReducer.updatePace(state, value)
+        }
     }
 
     private fun updateReturnToStart(value: Boolean) {
-        returnToStart = value
-        hasNoGeneratedStops = false
-        invalidateRoutePreviewIfAllowed()
+        updateUiState { state ->
+            PlannerStateReducer.updateReturnToStart(state, value)
+        }
     }
 
     private fun updateRespectOpeningHours(value: Boolean) {
-        respectOpeningHours = value
-        hasNoGeneratedStops = false
-        invalidateRoutePreviewIfAllowed()
+        updateUiState { state ->
+            PlannerStateReducer.updateRespectOpeningHours(state, value)
+        }
     }
 
     private fun updateAllowPublicTransport(value: Boolean) {
-        allowPublicTransport = value
-        hasNoGeneratedStops = false
-        invalidateRoutePreviewIfAllowed()
+        updateUiState { state ->
+            PlannerStateReducer.updateAllowPublicTransport(state, value)
+        }
     }
 
     private fun useCurrentTime() {
-        startDateTime = defaultRouteStartDateTime()
-        hasNoGeneratedStops = false
-        invalidateRoutePreviewIfAllowed()
+        updateUiState { state ->
+            PlannerStateReducer.useCurrentTime(state, defaultRouteStartDateTime())
+        }
     }
 
     private fun updateStartDateTime(value: LocalDateTime) {
-        startDateTime = value.truncatedTo(ChronoUnit.MINUTES)
-        hasNoGeneratedStops = false
-        invalidateRoutePreviewIfAllowed()
+        updateUiState { state ->
+            PlannerStateReducer.updateStartDateTime(state, value)
+        }
     }
 
     private fun toggleRequiredPoi(poiId: Int) {
-        if (routeSessionStatus == RouteSessionStatus.IN_PROGRESS || routeSessionStatus == RouteSessionStatus.PAUSED) {
-            return
+        updateUiState { state ->
+            PlannerStateReducer.toggleRequiredPoi(state, poiId)
         }
-        requiredPoiIds = if (poiId in requiredPoiIds) {
-            requiredPoiIds.filterNot { selectedPoiId -> selectedPoiId == poiId }
-        } else {
-            (requiredPoiIds + poiId).distinct()
-        }
-        currentRouteRequest = currentRouteRequest?.copy(preferredPoiIds = requiredPoiIds)
-        hasNoGeneratedStops = false
-        invalidateRoutePreviewIfAllowed()
     }
 
     private fun removeRequiredPoi(poiId: Int) {
-        if (poiId !in requiredPoiIds) {
-            return
+        updateUiState { state ->
+            PlannerStateReducer.removeRequiredPoi(state, poiId)
         }
-        requiredPoiIds = requiredPoiIds.filterNot { selectedPoiId -> selectedPoiId == poiId }
-        currentRouteRequest = currentRouteRequest?.copy(preferredPoiIds = requiredPoiIds)
-        hasNoGeneratedStops = false
-        invalidateRoutePreviewIfAllowed()
     }
 
     private fun moveRequiredPoi(poiId: Int, direction: Int) {
-        if (routeSessionStatus == RouteSessionStatus.IN_PROGRESS || routeSessionStatus == RouteSessionStatus.PAUSED) {
-            return
+        updateUiState { state ->
+            PlannerStateReducer.moveRequiredPoi(state, poiId, direction)
         }
-
-        val currentIndex = requiredPoiIds.indexOf(poiId)
-        if (currentIndex == -1) {
-            return
-        }
-
-        val targetIndex = (currentIndex + direction).coerceIn(0, requiredPoiIds.lastIndex)
-        if (targetIndex == currentIndex) {
-            return
-        }
-
-        val reorderedIds = requiredPoiIds.toMutableList()
-        val movedPoiId = reorderedIds.removeAt(currentIndex)
-        reorderedIds.add(targetIndex, movedPoiId)
-
-        requiredPoiIds = reorderedIds
-        currentRouteRequest = currentRouteRequest?.copy(preferredPoiIds = requiredPoiIds)
-        hasNoGeneratedStops = false
-        invalidateRoutePreviewIfAllowed()
     }
 
     private fun clearRequiredPois() {
-        if (requiredPoiIds.isEmpty()) {
-            return
+        updateUiState { state ->
+            PlannerStateReducer.clearRequiredPois(state)
         }
-        requiredPoiIds = emptyList()
-        currentRouteRequest = currentRouteRequest?.copy(preferredPoiIds = emptyList())
-        hasNoGeneratedStops = false
-        invalidateRoutePreviewIfAllowed()
     }
 
     private fun generateRoute() {
         viewModelScope.launch {
-            if (!repository.isNetworkAvailable()) {
-                routeError = offlineRouteGenerationMessage
-                hasNoGeneratedStops = false
-                return@launch
-            }
-
             isRouteLoading = true
             clearRouteMessages()
             val existingSnapshot = currentRouteSnapshot()
             val existingRouteId = routeId
             val existingStatus = routeSessionStatus
             val existingStartedAt = routeStartedAt ?: defaultRouteStartDateTime().toString()
-
-            val request = PlannerPreferences(
-                city = selectedCity?.slug ?: DefaultCitySlug,
-                startLat = startPoint.lat,
-                startLon = startPoint.lon,
-                availableMinutes = availableMinutes,
-                interests = selectedInterests,
-                pace = pace,
-                returnToStart = returnToStart,
-                startDateTime = startDateTime.truncatedTo(ChronoUnit.MINUTES).toString(),
-                respectOpeningHours = respectOpeningHours,
-                preferredPoiIds = requiredPoiIds
-                    .filterNot { poiId -> poiId in visitedPoiIds || poiId in skippedPoiIds },
-                transportMode = if (allowPublicTransport && isPublicTransportAvailable) {
-                    "walk_or_mhd"
-                } else {
-                    "walk"
-                }
+            val result = routeGenerationUseCase.generateRoute(
+                RouteGenerationInput(
+                    selectedCity = selectedCity,
+                    startPoint = startPoint,
+                    availableMinutes = availableMinutes,
+                    selectedInterests = selectedInterests,
+                    pace = pace,
+                    returnToStart = returnToStart,
+                    startDateTime = startDateTime,
+                    respectOpeningHours = respectOpeningHours,
+                    requiredPoiIds = requiredPoiIds,
+                    visitedPoiIds = visitedPoiIds,
+                    skippedPoiIds = skippedPoiIds,
+                    allowPublicTransport = allowPublicTransport,
+                    isPublicTransportAvailable = isPublicTransportAvailable,
+                    pois = pois,
+                    offlineRouteGenerationMessage = offlineRouteGenerationMessage,
+                    routeGenerationFailedMessage = routeGenerationFailedMessage,
+                    requiredPlacesMissingMessage = requiredPlacesMissingMessage
+                )
             )
 
-            try {
-                val generatedRoute = repository.generateRoute(request)
-                val missingRequiredPlaces = missingRequiredPoiLabels(
-                    request = request,
-                    response = generatedRoute
-                )
-                if (missingRequiredPlaces.isNotEmpty()) {
+            when (result) {
+                is RouteGenerationResult.Error -> {
+                    routeError = result.message
+                    hasNoGeneratedStops = false
+                }
+
+                is RouteGenerationResult.MissingRequiredPlaces -> {
                     routeResponse = null
-                    currentRouteRequest = request
+                    currentRouteRequest = result.request
                     hasPendingRouteChanges = false
                     hasNoGeneratedStops = false
-                    routeError = String.format(
-                        Locale.getDefault(),
-                        requiredPlacesMissingMessage,
-                        missingRequiredPlaces.joinToString(", ")
-                    )
-                    return@launch
+                    routeError = result.message
                 }
-                if (generatedRoute.route.isEmpty()) {
+
+                is RouteGenerationResult.EmptyRoute -> {
                     routeResponse = null
                     currentRouteRequest = null
                     hasPendingRouteChanges = false
                     hasNoGeneratedStops = true
-                    return@launch
                 }
-                if (
-                    existingRouteId != null &&
-                    existingSnapshot != null &&
-                    existingStatus.isRestorable()
-                ) {
-                    enqueueRouteSessionSync(
-                        sessionRouteId = existingRouteId,
-                        status = RouteSessionStatus.CANCELLED,
-                        startedAtValue = existingStartedAt,
-                        snapshot = existingSnapshot,
-                        finishedAt = defaultRouteStartDateTime().toString()
-                    )
+
+                is RouteGenerationResult.Success -> {
+                    if (
+                        existingRouteId != null &&
+                        existingSnapshot != null &&
+                        existingStatus.isRestorable()
+                    ) {
+                        enqueueRouteSessionSync(
+                            sessionRouteId = existingRouteId,
+                            status = RouteSessionStatus.CANCELLED,
+                            startedAtValue = existingStartedAt,
+                            snapshot = existingSnapshot,
+                            finishedAt = defaultRouteStartDateTime().toString()
+                        )
+                    }
+                    resetRouteSession()
+                    currentRouteRequest = result.request
+                    routeResponse = result.response
+                    hasPendingRouteChanges = false
+                    hasNoGeneratedStops = false
+                    offlineStatusMessage = null
+                    refreshPendingSyncOperationCount()
                 }
-                resetRouteSession()
-                currentRouteRequest = request
-                routeResponse = generatedRoute
-                hasPendingRouteChanges = false
-                repository.saveSnapshot(
-                    SavedRouteSnapshot(
-                        request = request,
-                        response = generatedRoute
-                    )
-                )
-                offlineStatusMessage = null
-                refreshPendingSyncOperationCount()
-            } catch (e: Exception) {
-                routeError = e.toUserMessage(routeGenerationFailedMessage)
-            } finally {
-                isRouteLoading = false
             }
+            isRouteLoading = false
         }
     }
 
     private fun saveCurrentRouteBookmark() {
         val snapshot = currentRouteSnapshot() ?: return
         viewModelScope.launch {
-            val now = System.currentTimeMillis()
-            val existingBookmark = activeBookmarkId?.let { bookmarkId ->
-                routeBookmarks.firstOrNull { bookmark -> bookmark.id == bookmarkId }
-            }
-            val bookmark = RouteBookmark(
-                id = existingBookmark?.id ?: UUID.randomUUID().toString(),
-                title = existingBookmark?.title
-                    ?: defaultRouteBookmarkTitle(snapshot, selectedCity?.name ?: snapshot.response.city),
-                citySlug = selectedCity?.slug ?: snapshot.request.city,
+            val result = bookmarkController.saveCurrentRouteBookmark(
                 snapshot = snapshot,
-                createdAtEpochMs = existingBookmark?.createdAtEpochMs ?: now,
-                updatedAtEpochMs = now
+                activeBookmarkId = activeBookmarkId,
+                routeBookmarks = routeBookmarks,
+                selectedCityName = selectedCity?.name ?: snapshot.response.city,
+                selectedCitySlug = selectedCity?.slug ?: snapshot.request.city
             )
-            repository.saveRouteBookmark(bookmark)
-            activeBookmarkId = bookmark.id
-            routeBookmarks = repository.loadRouteBookmarks()
+            activeBookmarkId = result.activeBookmarkId
+            routeBookmarks = result.bookmarks
         }
     }
 
     private fun openRouteBookmark(bookmarkId: String) {
         viewModelScope.launch {
-            val bookmark = repository.loadRouteBookmark(bookmarkId) ?: return@launch
+            val bookmark = bookmarkController.loadRouteBookmark(bookmarkId) ?: return@launch
             resetRouteSession()
             clearRouteMessages()
             activeBookmarkId = bookmark.id
@@ -551,20 +503,18 @@ internal class RoutePlannerViewModel @Inject constructor(
             if (bookmarkCity != null) {
                 loadPoisForCity(bookmarkCity)
             }
-            repository.saveSnapshot(bookmark.snapshot)
+            bookmarkController.saveSnapshot(bookmark.snapshot)
         }
     }
 
     private fun deleteRouteBookmark(bookmarkId: String) {
         viewModelScope.launch {
-            repository.deleteRouteBookmark(bookmarkId)
+            routeBookmarks = bookmarkController.deleteRouteBookmark(bookmarkId)
             if (activeBookmarkId == bookmarkId) {
                 activeBookmarkId = null
             }
-            routeBookmarks = repository.loadRouteBookmarks()
         }
     }
-
     fun previewReplacementCandidates(poiId: Int): List<Poi> =
         buildPreviewReplacementCandidates(
             targetPoiId = poiId,
@@ -575,206 +525,131 @@ internal class RoutePlannerViewModel @Inject constructor(
         )
 
     private fun activateRouteTracking() {
-        if (hasPendingRouteChanges) {
-            return
-        }
-        val response = routeResponse
-        if (response?.route.isNullOrEmpty() || currentRouteRequest == null) {
-            return
-        }
-
-        val shouldStartFreshSession =
-            routeSessionStatus == RouteSessionStatus.NOT_STARTED ||
-                routeSessionStatus == RouteSessionStatus.COMPLETED ||
-                routeSessionStatus == RouteSessionStatus.CANCELLED
-
-        if (shouldStartFreshSession) {
-            visitedPoiIds = emptyList()
-            skippedPoiIds = emptyList()
-            routeFeedback = null
-        }
-
-        val activeRouteId = if (shouldStartFreshSession) {
-            UUID.randomUUID().toString()
-        } else {
-            routeId ?: UUID.randomUUID().toString()
-        }
-        val activeStartedAt = if (shouldStartFreshSession) {
-            defaultRouteStartDateTime().toString()
-        } else {
-            routeStartedAt ?: defaultRouteStartDateTime().toString()
-        }
-
-        routeId = activeRouteId
-        routeStartedAt = activeStartedAt
-        currentTargetPoiId = nextPendingPoi(response!!.route, visitedPoiIds, skippedPoiIds)?.poiId
-        trackingError = null
-        offRouteDetectedAtMs = null
-        lastAutoRerouteAtMs = null
-        routeSessionStatus = RouteSessionStatus.IN_PROGRESS
+        val result = activeRouteController.activateRouteTracking(
+            state = uiState.value,
+            newRouteId = UUID.randomUUID().toString(),
+            startedAtNow = defaultRouteStartDateTime().toString()
+        ) ?: return
+        updateUiState { result.state }
         persistRouteSession(
-            status = RouteSessionStatus.IN_PROGRESS,
-            routeIdValue = activeRouteId,
-            startedAtValue = activeStartedAt,
-            feedback = null
+            status = result.status,
+            routeIdValue = result.routeId,
+            startedAtValue = result.startedAt,
+            feedback = result.feedback
         )
     }
 
     private fun pauseRoute() {
-        if (routeSessionStatus == RouteSessionStatus.IN_PROGRESS) {
-            routeSessionStatus = RouteSessionStatus.PAUSED
-            persistRouteSession(status = RouteSessionStatus.PAUSED)
-        }
+        val result = activeRouteController.pauseRoute(uiState.value) ?: return
+        updateUiState { result.state }
+        persistRouteSession(
+            status = result.status,
+            routeIdValue = result.routeId,
+            startedAtValue = result.startedAt,
+            feedback = result.feedback
+        )
     }
 
     private fun resumeRoute() {
-        val activeRouteId = routeId ?: UUID.randomUUID().toString()
-        val activeStartedAt = routeStartedAt ?: defaultRouteStartDateTime().toString()
-        routeId = activeRouteId
-        routeStartedAt = activeStartedAt
-        routeSessionStatus = RouteSessionStatus.IN_PROGRESS
-        trackingError = null
-        offRouteDetectedAtMs = null
-        lastAutoRerouteAtMs = null
+        val result = activeRouteController.resumeRoute(
+            state = uiState.value,
+            newRouteId = UUID.randomUUID().toString(),
+            startedAtNow = defaultRouteStartDateTime().toString()
+        )
+        updateUiState { result.state }
         persistRouteSession(
-            status = RouteSessionStatus.IN_PROGRESS,
-            routeIdValue = activeRouteId,
-            startedAtValue = activeStartedAt
+            status = result.status,
+            routeIdValue = result.routeId,
+            startedAtValue = result.startedAt,
+            feedback = result.feedback
         )
     }
 
     private fun finishRoute() {
-        if (!progressMetrics.canComplete) {
-            return
-        }
-        routeSessionStatus = RouteSessionStatus.COMPLETED
-        persistRouteSession(status = RouteSessionStatus.COMPLETED)
+        val result = activeRouteController.finishRoute(uiState.value, progressMetrics) ?: return
+        updateUiState { result.state }
+        persistRouteSession(
+            status = result.status,
+            routeIdValue = result.routeId,
+            startedAtValue = result.startedAt,
+            feedback = result.feedback
+        )
     }
 
     private fun cancelRoute() {
-        routeSessionStatus = RouteSessionStatus.CANCELLED
-        persistRouteSession(status = RouteSessionStatus.CANCELLED)
+        val result = activeRouteController.cancelRoute(uiState.value) ?: return
+        updateUiState { result.state }
+        persistRouteSession(
+            status = result.status,
+            routeIdValue = result.routeId,
+            startedAtValue = result.startedAt,
+            feedback = result.feedback
+        )
     }
 
     private fun updateFeedback(feedback: RouteFeedback) {
-        routeFeedback = feedback
+        val result = activeRouteController.updateFeedback(uiState.value, feedback) ?: return
+        updateUiState { result.state }
         persistRouteSession(
-            status = RouteSessionStatus.COMPLETED,
-            feedback = feedback
+            status = result.status,
+            routeIdValue = result.routeId,
+            startedAtValue = result.startedAt,
+            feedback = result.feedback
         )
         syncFeedbackToBackend(feedback)
     }
 
     private fun markRouteStopVisited(poiId: Int) {
-        if (poiId in visitedPoiIds || poiId in skippedPoiIds) {
-            return
-        }
-
-        val responseBeforeVisit = routeResponse
-        val locationAtVisit = currentRouteLocation
-        val statusAtVisit = routeSessionStatus
-        val updatedVisited = (visitedPoiIds + poiId).distinct()
-        visitedPoiIds = updatedVisited
-        syncVisitedPoisToBackend(listOf(poiId))
-        val nextPendingPoi = nextPendingPoi(routeItems, updatedVisited, skippedPoiIds)
-        currentTargetPoiId = nextPendingPoi?.poiId
-
-        if (nextPendingPoi == null) {
-            routeSessionStatus = RouteSessionStatus.COMPLETED
-            persistRouteSession(
-                status = RouteSessionStatus.COMPLETED,
-                visitedIds = updatedVisited
-            )
-        } else {
-            persistRouteSession(visitedIds = updatedVisited)
-            val rerouteLocation = rerouteStartPoint(
-                routeItems = routeItems,
-                visitedPoiIds = updatedVisited,
-                currentLocation = locationAtVisit,
-                fallbackStart = startPoint
-            )
-            if (
-                statusAtVisit == RouteSessionStatus.IN_PROGRESS &&
-                responseBeforeVisit != null &&
-                repository.isNetworkAvailable()
-            ) {
-                refreshActiveRouteApproachLeg(
-                    previousResponse = responseBeforeVisit,
-                    currentLocation = rerouteLocation,
-                    nextTarget = nextPendingPoi
-                )
-            } else {
-                currentRouteSnapshot()?.let { snapshot ->
-                    viewModelScope.launch {
-                        repository.saveSnapshot(snapshot)
-                    }
-                }
-            }
-        }
-    }
-
-    private fun skipRouteStop(poiId: Int) {
-        if (poiId in visitedPoiIds || poiId in skippedPoiIds) {
-            return
-        }
-
-        val responseBeforeSkip = routeResponse
-        val locationAtSkip = currentRouteLocation
-        val statusAtSkip = routeSessionStatus
-        val updatedSkipped = (skippedPoiIds + poiId).distinct()
-        skippedPoiIds = updatedSkipped
-        currentRouteRequest = currentRouteRequest?.copy(
-            excludedPoiIds = (currentRouteRequest?.excludedPoiIds.orEmpty() + poiId).distinct(),
-            preferredPoiIds = currentRouteRequest?.preferredPoiIds
-                .orEmpty()
-                .filterNot { preferredPoiId -> preferredPoiId == poiId }
+        val result = activeRouteController.markRouteStopVisited(
+            state = uiState.value,
+            poiId = poiId,
+            isNetworkAvailable = repository.isNetworkAvailable()
+        ) ?: return
+        updateUiState { result.state }
+        syncVisitedPoisToBackend(result.syncVisitedPoiIds)
+        persistRouteSession(
+            status = result.statusToPersist,
+            visitedIds = result.visitedPoiIds,
+            skippedIds = result.skippedPoiIds
         )
-        requiredPoiIds = requiredPoiIds.filterNot { requiredPoiId -> requiredPoiId == poiId }
-        val nextPendingPoi = nextPendingPoi(routeItems, visitedPoiIds, updatedSkipped)
-        currentTargetPoiId = nextPendingPoi?.poiId
-        currentRouteSnapshot()?.let { snapshot ->
+        result.snapshotToSave?.let { snapshot ->
             viewModelScope.launch {
                 repository.saveSnapshot(snapshot)
             }
         }
-        syncSkippedPoisToBackend(listOf(poiId))
-
-        if (nextPendingPoi == null) {
-            routeSessionStatus = RouteSessionStatus.COMPLETED
-            persistRouteSession(
-                status = RouteSessionStatus.COMPLETED,
-                skippedIds = updatedSkipped
-            )
-            return
-        }
-
-        persistRouteSession(
-            status = routeSessionStatus,
-            skippedIds = updatedSkipped
-        )
-
-        if (
-            statusAtSkip == RouteSessionStatus.IN_PROGRESS &&
-            responseBeforeSkip != null &&
-            repository.isNetworkAvailable()
-        ) {
-            val rerouteLocation = rerouteStartPoint(
-                routeItems = routeItems,
-                visitedPoiIds = visitedPoiIds,
-                currentLocation = locationAtSkip,
-                fallbackStart = startPoint
-            )
+        result.approachRefresh?.let { refresh ->
             refreshActiveRouteApproachLeg(
-                previousResponse = responseBeforeSkip,
-                currentLocation = rerouteLocation,
-                nextTarget = nextPendingPoi
+                previousResponse = refresh.previousResponse,
+                currentLocation = refresh.currentLocation,
+                nextTarget = refresh.nextTarget
             )
-        } else {
-            currentRouteSnapshot()?.let { snapshot ->
-                viewModelScope.launch {
-                    repository.saveSnapshot(snapshot)
-                }
+        }
+    }
+
+    private fun skipRouteStop(poiId: Int) {
+        val result = activeRouteController.skipRouteStop(
+            state = uiState.value,
+            poiId = poiId,
+            isNetworkAvailable = repository.isNetworkAvailable()
+        ) ?: return
+        updateUiState { result.state }
+        result.snapshotToSave?.let { snapshot ->
+            viewModelScope.launch {
+                repository.saveSnapshot(snapshot)
             }
+        }
+        syncSkippedPoisToBackend(result.syncSkippedPoiIds)
+        persistRouteSession(
+            status = result.statusToPersist,
+            visitedIds = result.visitedPoiIds,
+            skippedIds = result.skippedPoiIds
+        )
+        result.approachRefresh?.let { refresh ->
+            refreshActiveRouteApproachLeg(
+                previousResponse = refresh.previousResponse,
+                currentLocation = refresh.currentLocation,
+                nextTarget = refresh.nextTarget
+            )
         }
     }
 
@@ -784,267 +659,114 @@ internal class RoutePlannerViewModel @Inject constructor(
     }
 
     private fun removePreviewStop(poiId: Int) {
-        if (routeSessionStatus != RouteSessionStatus.NOT_STARTED) {
-            return
-        }
-        val response = routeResponse ?: return
-        val request = currentRouteRequest ?: return
-        if (!repository.isNetworkAvailable()) {
-            routeError = offlineRouteGenerationMessage
-            return
-        }
-        val updatedRequiredPoiIds = requiredPoiIds.filterNot { requiredPoiId -> requiredPoiId == poiId }
-        val updatedRequest = request.copy(
-            excludedPoiIds = (request.excludedPoiIds.orEmpty() + poiId).distinct(),
-            preferredPoiIds = updatedRequiredPoiIds
-        )
-
         viewModelScope.launch {
             isRerouting = true
             clearRouteMessages()
-            try {
-                val updatedResponse = routePreviewMutationUseCase.removeStop(
-                    previousResponse = response,
-                    poiId = poiId,
-                    context = routePreviewMutationContext()
+            val result = routePreviewController.removeStop(
+                state = uiState.value,
+                poiId = poiId,
+                offlineRouteGenerationMessage = offlineRouteGenerationMessage,
+                routeGenerationFailedMessage = routeGenerationFailedMessage
+            )
+            updateUiState {
+                result.state.copy(
+                    isRerouting = false,
+                    routeError = result.error ?: result.state.routeError
                 )
-                currentRouteRequest = updatedRequest
-                requiredPoiIds = updatedRequiredPoiIds
-                if (updatedResponse.route.isEmpty()) {
-                    routeResponse = null
-                    hasPendingRouteChanges = false
-                    hasNoGeneratedStops = true
-                } else {
-                    routeResponse = updatedResponse
-                    hasPendingRouteChanges = false
-                    hasNoGeneratedStops = false
-                    repository.saveSnapshot(
-                        SavedRouteSnapshot(
-                            request = updatedRequest,
-                            response = updatedResponse
-                        )
-                    )
-                }
-            } catch (e: Exception) {
-                routeError = e.toUserMessage(routeGenerationFailedMessage)
-            } finally {
-                isRerouting = false
             }
         }
     }
 
     private fun movePreviewStop(poiId: Int, direction: Int) {
-        if (routeSessionStatus != RouteSessionStatus.NOT_STARTED) {
-            return
-        }
-        val response = routeResponse ?: return
-        val request = currentRouteRequest ?: return
-        val originalItems = response.route.sortedBy { item -> item.order }
-        val currentIndex = originalItems.indexOfFirst { item -> item.poiId == poiId }
-        if (currentIndex == -1) {
-            return
-        }
-        val targetIndex = (currentIndex + direction).coerceIn(0, originalItems.lastIndex)
-        if (targetIndex == currentIndex) {
-            return
-        }
-        if (!repository.isNetworkAvailable()) {
-            routeError = offlineRouteGenerationMessage
-            return
-        }
-
         viewModelScope.launch {
             isRerouting = true
             clearRouteMessages()
-            try {
-                val updatedResponse = routePreviewMutationUseCase.moveStop(
-                    previousResponse = response,
-                    poiId = poiId,
-                    direction = direction,
-                    context = routePreviewMutationContext()
+            val result = routePreviewController.moveStop(
+                state = uiState.value,
+                poiId = poiId,
+                direction = direction,
+                offlineRouteGenerationMessage = offlineRouteGenerationMessage,
+                routeGenerationFailedMessage = routeGenerationFailedMessage
+            )
+            updateUiState {
+                result.state.copy(
+                    isRerouting = false,
+                    routeError = result.error ?: result.state.routeError
                 )
-                val updatedRequest = request.copy(preferredPoiIds = requiredPoiIds)
-                currentRouteRequest = updatedRequest
-                routeResponse = updatedResponse
-                hasPendingRouteChanges = false
-                hasNoGeneratedStops = false
-                repository.saveSnapshot(
-                    SavedRouteSnapshot(
-                        request = updatedRequest,
-                        response = updatedResponse
-                    )
-                )
-            } catch (e: Exception) {
-                routeError = e.toUserMessage(routeGenerationFailedMessage)
-            } finally {
-                isRerouting = false
             }
         }
     }
 
     private fun replacePreviewStop(poiId: Int, preferredPoiId: Int? = null) {
-        if (routeSessionStatus != RouteSessionStatus.NOT_STARTED) {
-            return
-        }
-        val response = routeResponse ?: return
-        val request = currentRouteRequest ?: return
-        if (!repository.isNetworkAvailable()) {
-            routeError = offlineRouteGenerationMessage
-            return
-        }
-        val replacementPoi = if (preferredPoiId != null) {
-            pois.firstOrNull { poi -> poi.id == preferredPoiId }
-        } else {
-            previewReplacementCandidates(poiId).firstOrNull()
-        }
-        if (replacementPoi == null) {
-            routeError = routeGenerationFailedMessage
-            return
-        }
-
         viewModelScope.launch {
             isRerouting = true
             clearRouteMessages()
-            val updatedRequiredPoiIds = requiredPoiIds.filterNot { requiredPoiId -> requiredPoiId == poiId }
-            val updatedRequest = request.copy(
-                excludedPoiIds = (request.excludedPoiIds.orEmpty() + poiId).distinct(),
-                preferredPoiIds = updatedRequiredPoiIds
+            val result = routePreviewController.replaceStop(
+                state = uiState.value,
+                poiId = poiId,
+                preferredPoiId = preferredPoiId,
+                offlineRouteGenerationMessage = offlineRouteGenerationMessage,
+                routeGenerationFailedMessage = routeGenerationFailedMessage
             )
-
-            try {
-                val updatedResponse = routePreviewMutationUseCase.replaceStop(
-                    previousResponse = response,
-                    targetPoiId = poiId,
-                    replacementPoi = replacementPoi,
-                    context = routePreviewMutationContext()
+            updateUiState {
+                result.state.copy(
+                    isRerouting = false,
+                    routeError = result.error ?: result.state.routeError
                 )
-                currentRouteRequest = updatedRequest
-                requiredPoiIds = updatedRequiredPoiIds
-                routeResponse = updatedResponse
-                hasPendingRouteChanges = false
-                repository.saveSnapshot(
-                    SavedRouteSnapshot(
-                        request = updatedRequest,
-                        response = updatedResponse
-                    )
-                )
-            } catch (e: Exception) {
-                routeError = e.toUserMessage(routeGenerationFailedMessage)
-            } finally {
-                isRerouting = false
             }
         }
     }
 
     private fun handleTrackedLocation(routeLocation: RoutePoint) {
-        currentRouteLocation = routeLocation
-        trackingError = null
-        var approachLegRefreshed = false
-
-        val mutableVisited = visitedPoiIds.toMutableList()
-        val newlyVisitedPoiIds = markNearbyPoisVisited(
-            routeItems = routeItems,
-            currentLocation = routeLocation,
-            visitedPoiIds = mutableVisited,
-            skippedPoiIds = skippedPoiIds
+        val result = activeRouteController.handleTrackedLocation(
+            state = uiState.value,
+            routeLocation = routeLocation,
+            nowMs = System.currentTimeMillis(),
+            isNetworkAvailable = repository.isNetworkAvailable(),
+            isRerouting = isRerouting
         )
-        visitedPoiIds = mutableVisited.distinct()
-        val nextTarget = nextPendingPoi(routeItems, visitedPoiIds, skippedPoiIds)
-        currentTargetPoiId = nextTarget?.poiId
-
-        val isCurrentlyOffRoute = routeResponse != null &&
-            nextTarget != null &&
-            distanceToNextRouteSegmentMeters(routeResponse, nextTarget.poiId, routeLocation) > OffRouteDistanceMeters
-
-        val nowMs = System.currentTimeMillis()
-        if (isCurrentlyOffRoute) {
-            offRouteDetectedAtMs = offRouteDetectedAtMs ?: nowMs
-        } else {
-            offRouteDetectedAtMs = null
+        updateUiState { result.state }
+        result.statusToPersist?.let { status ->
+            persistRouteSession(
+                status = status,
+                visitedIds = result.visitedPoiIds,
+                skippedIds = result.skippedPoiIds
+            )
         }
-
-        if (nextTarget == null && routeSessionStatus != RouteSessionStatus.COMPLETED) {
-            routeSessionStatus = RouteSessionStatus.COMPLETED
-            persistRouteSession(
-                status = RouteSessionStatus.COMPLETED,
-                visitedIds = visitedPoiIds,
-                skippedIds = skippedPoiIds
-            )
-            syncVisitedPoisToBackend(newlyVisitedPoiIds)
-        } else if (newlyVisitedPoiIds.isNotEmpty()) {
-            persistRouteSession(
-                status = RouteSessionStatus.IN_PROGRESS,
-                visitedIds = visitedPoiIds,
-                skippedIds = skippedPoiIds
-            )
-            syncVisitedPoisToBackend(newlyVisitedPoiIds)
-            if (
-                routeSessionStatus == RouteSessionStatus.IN_PROGRESS &&
-                routeResponse != null &&
-                nextTarget != null &&
-                repository.isNetworkAvailable()
-            ) {
-                refreshActiveRouteApproachLeg(
-                    previousResponse = routeResponse!!,
-                    currentLocation = routeLocation,
-                    nextTarget = nextTarget
-                )
-                approachLegRefreshed = true
-            } else {
-                currentRouteSnapshot()?.let { snapshot ->
-                    viewModelScope.launch {
-                        repository.saveSnapshot(snapshot)
-                    }
-                }
+        syncVisitedPoisToBackend(result.syncVisitedPoiIds)
+        result.snapshotToSave?.let { snapshot ->
+            viewModelScope.launch {
+                repository.saveSnapshot(snapshot)
             }
         }
-
-        val offRouteDetectedAt = offRouteDetectedAtMs
-        val autoRerouteCooldownElapsed = lastAutoRerouteAtMs?.let { lastTriggeredAt ->
-            nowMs - lastTriggeredAt >= AutoRerouteCooldownMs
-        } ?: true
-        val offRouteSustained = offRouteDetectedAt != null &&
-            nowMs - offRouteDetectedAt >= OffRouteSustainDurationMs
-
-        if (
-            !approachLegRefreshed &&
-            routeSessionStatus == RouteSessionStatus.IN_PROGRESS &&
-            routeResponse != null &&
-            nextTarget != null &&
-            isCurrentlyOffRoute &&
-            offRouteSustained &&
-            autoRerouteCooldownElapsed &&
-            repository.isNetworkAvailable() &&
-            !isRerouting
-        ) {
+        result.approachRefresh?.let { refresh ->
             refreshActiveRouteApproachLeg(
-                previousResponse = routeResponse!!,
-                currentLocation = routeLocation,
-                nextTarget = nextTarget,
-                autoTriggered = true
+                previousResponse = refresh.previousResponse,
+                currentLocation = refresh.currentLocation,
+                nextTarget = refresh.nextTarget,
+                autoTriggered = result.approachRefreshAutoTriggered
             )
         }
     }
 
     private fun handleTrackingError(message: String) {
-        routeSessionStatus = RouteSessionStatus.PAUSED
-        trackingError = message
-        offRouteDetectedAtMs = null
-        persistRouteSession(status = RouteSessionStatus.PAUSED)
+        val result = activeRouteController.handleTrackingError(uiState.value, message) ?: return
+        updateUiState { result.state }
+        persistRouteSession(
+            status = result.status,
+            routeIdValue = result.routeId,
+            startedAtValue = result.startedAt,
+            feedback = result.feedback
+        )
     }
 
     private fun downloadOfflineMap() {
         val city = selectedCity ?: return
-        val offlineRegion = city.toOfflineCityRegion() ?: run {
-            offlineMapMessage = null
-            return
-        }
-
         isOfflineMapBusy = true
         offlineMapProgress = OfflineDownloadProgress(0, 0, 0.0)
         offlineMapMessage = null
-        offlineMapManager.downloadCityRegion(
-            city = offlineRegion,
+        val started = offlineMapController.downloadCityRegion(
+            city = city,
             onProgress = { completed, required, percent ->
                 offlineMapProgress = OfflineDownloadProgress(
                     completed = completed,
@@ -1060,7 +782,7 @@ internal class RoutePlannerViewModel @Inject constructor(
                     city.name
                 )
                 viewModelScope.launch {
-                    offlineStoredRegion = offlineMapManager.findRegionBySlug(city.slug)
+                    offlineStoredRegion = offlineMapController.findStoredRegion(city.slug)
                 }
             },
             onError = { error ->
@@ -1068,6 +790,12 @@ internal class RoutePlannerViewModel @Inject constructor(
                 offlineMapMessage = "$offlineMapDownloadFailedMessage $error"
             }
         )
+        if (!started) {
+            isOfflineMapBusy = false
+            offlineMapProgress = null
+            offlineMapMessage = null
+            return
+        }
     }
 
     private fun deleteOfflineMap() {
@@ -1075,8 +803,8 @@ internal class RoutePlannerViewModel @Inject constructor(
         val storedRegion = offlineStoredRegion ?: return
 
         isOfflineMapBusy = true
-        offlineMapManager.deleteRegion(
-            region = storedRegion.region,
+        offlineMapController.deleteRegion(
+            storedRegion = storedRegion,
             onComplete = {
                 isOfflineMapBusy = false
                 offlineMapProgress = null
@@ -1146,12 +874,13 @@ internal class RoutePlannerViewModel @Inject constructor(
     }
 
     private suspend fun bootstrap() {
-        routeBookmarks = repository.loadRouteBookmarks()
-        routeHistory = sortRouteHistoryEntries(repository.loadRouteHistoryEntries())
-        val activeSession = repository.loadActiveSession()
-        val savedSnapshot = activeSession?.snapshot ?: repository.loadSnapshot()
+        val localState = plannerBootstrapUseCase.loadLocalState()
+        routeBookmarks = localState.bookmarks
+        routeHistory = localState.history
+        val activeSession = localState.activeSession
+        val savedSnapshot = localState.savedSnapshot
         var restoredCityToken = savedSnapshot?.request?.city ?: savedSnapshot?.response?.city
-        pendingSyncOperationCount = repository.getPendingSyncOperationCount()
+        pendingSyncOperationCount = localState.pendingSyncOperationCount
 
         savedSnapshot?.let { snapshot ->
             restoreSnapshot(snapshot)
@@ -1175,74 +904,68 @@ internal class RoutePlannerViewModel @Inject constructor(
             }
         }
 
-        repository.scheduleImmediateSync()
+        plannerBootstrapUseCase.scheduleImmediateSync()
 
-        runCatching {
-            val remoteSession = if (routeId != null && routeSessionStatus.isRestorable()) {
-                repository.getRouteSession(routeId!!)
-            } else {
-                repository.getRouteSessions(deviceId)
-                    .firstOrNull { session ->
-                        RouteSessionStatus.fromRawValue(session.status).isRestorable()
-                    }
-            }
-
-            if (remoteSession != null) {
-                remoteSession.toSavedRouteSnapshot()?.let { snapshot ->
-                    restoredCityToken = snapshot.request.city.ifBlank { snapshot.response.city }
-                    restoreSnapshot(snapshot)
-                    routeId = remoteSession.id
-                    routeStartedAt = remoteSession.startedAt
-                    val restoredStatus = RouteSessionStatus.fromRawValue(remoteSession.status)
-                    routeFeedback = remoteSession.toRouteFeedback()
-                    visitedPoiIds = remoteSession.pois
-                        .orEmpty()
-                        .filter { poi -> poi.visited && !poi.skipped }
-                        .map { poi -> poi.poiId }
-                        .distinct()
-                    skippedPoiIds = remoteSession.pois
-                        .orEmpty()
-                        .filter { poi -> poi.skipped }
-                        .map { poi -> poi.poiId }
-                        .distinct()
-                    val nextPendingPoiId = nextPendingPoi(
-                        snapshot.response.route,
-                        visitedPoiIds,
-                        skippedPoiIds
-                    )?.poiId
-                    currentTargetPoiId = nextPendingPoiId
-                    val normalizedStatus = if (restoredStatus.isRestorable() && nextPendingPoiId == null) {
-                        RouteSessionStatus.COMPLETED
-                    } else {
-                        restoredStatus
-                    }
-                    routeSessionStatus = normalizedStatus
-                    repository.saveSnapshot(snapshot)
-                    repository.saveActiveSession(
-                        ActiveRouteSession(
-                            route_id = remoteSession.id,
-                            status = normalizedStatus.rawValue,
-                            started_at = remoteSession.startedAt,
-                            current_target_poi_id = currentTargetPoiId,
-                            visited_poi_ids = visitedPoiIds,
-                            skipped_poi_ids = skippedPoiIds,
-                            progress_visited_count = visitedPoiIds.size,
-                            progress_total_count = progressTotalCount(snapshot.response.route, skippedPoiIds),
-                            snapshot = snapshot,
-                            feedback = routeFeedback
-                        )
+        val remoteSession = plannerBootstrapUseCase.findRestorableRemoteSession(
+            deviceId = deviceId,
+            routeId = routeId,
+            routeSessionStatus = routeSessionStatus
+        )
+        if (remoteSession != null) {
+            remoteSession.toSavedRouteSnapshot()?.let { snapshot ->
+                restoredCityToken = snapshot.request.city.ifBlank { snapshot.response.city }
+                restoreSnapshot(snapshot)
+                routeId = remoteSession.id
+                routeStartedAt = remoteSession.startedAt
+                val restoredStatus = RouteSessionStatus.fromRawValue(remoteSession.status)
+                routeFeedback = remoteSession.toRouteFeedback()
+                visitedPoiIds = remoteSession.pois
+                    .orEmpty()
+                    .filter { poi -> poi.visited && !poi.skipped }
+                    .map { poi -> poi.poiId }
+                    .distinct()
+                skippedPoiIds = remoteSession.pois
+                    .orEmpty()
+                    .filter { poi -> poi.skipped }
+                    .map { poi -> poi.poiId }
+                    .distinct()
+                val nextPendingPoiId = nextPendingPoi(
+                    snapshot.response.route,
+                    visitedPoiIds,
+                    skippedPoiIds
+                )?.poiId
+                currentTargetPoiId = nextPendingPoiId
+                val normalizedStatus = if (restoredStatus.isRestorable() && nextPendingPoiId == null) {
+                    RouteSessionStatus.COMPLETED
+                } else {
+                    restoredStatus
+                }
+                routeSessionStatus = normalizedStatus
+                repository.saveSnapshot(snapshot)
+                repository.saveActiveSession(
+                    ActiveRouteSession(
+                        route_id = remoteSession.id,
+                        status = normalizedStatus.rawValue,
+                        started_at = remoteSession.startedAt,
+                        current_target_poi_id = currentTargetPoiId,
+                        visited_poi_ids = visitedPoiIds,
+                        skipped_poi_ids = skippedPoiIds,
+                        progress_visited_count = visitedPoiIds.size,
+                        progress_total_count = progressTotalCount(snapshot.response.route, skippedPoiIds),
+                        snapshot = snapshot,
+                        feedback = routeFeedback
                     )
-                    if (normalizedStatus != restoredStatus) {
-                        persistRouteSession(
-                            status = normalizedStatus,
-                            routeIdValue = remoteSession.id,
-                            startedAtValue = remoteSession.startedAt,
-                            visitedIds = visitedPoiIds,
-                            skippedIds = skippedPoiIds,
-                            feedback = routeFeedback,
-                            snapshotOverride = snapshot
-                        )
-                    }
+                )
+                if (normalizedStatus != restoredStatus) {
+                    persistRouteSession(
+                        status = normalizedStatus,
+                        routeIdValue = remoteSession.id,
+                        startedAtValue = remoteSession.startedAt,
+                        visitedIds = visitedPoiIds,
+                        skippedIds = skippedPoiIds,
+                        feedback = routeFeedback,
+                        snapshotOverride = snapshot
+                    )
                 }
             }
         }
@@ -1252,187 +975,58 @@ internal class RoutePlannerViewModel @Inject constructor(
     }
 
     private fun restoreSnapshot(snapshot: SavedRouteSnapshot) {
-        hasPendingRouteChanges = false
-        hasNoGeneratedStops = false
-        currentRouteRequest = PlannerPreferences(
-            city = snapshot.request.city,
-            startLat = snapshot.request.startLat,
-            startLon = snapshot.request.startLon,
-            availableMinutes = snapshot.request.availableMinutes,
-            interests = snapshot.request.interests,
-            pace = snapshot.request.pace,
-            returnToStart = snapshot.request.returnToStart,
-            startDateTime = snapshot.request.startDateTime,
-            respectOpeningHours = snapshot.request.respectOpeningHours,
-            excludedPoiIds = snapshot.request.excludedPoiIds.orEmpty(),
-            preferredPoiIds = snapshot.request.preferredPoiIds.orEmpty(),
-            transportMode = snapshot.request.transportMode ?: "walk"
-        )
-        routeResponse = snapshot.response
-        startPoint = RoutePoint(snapshot.request.startLat, snapshot.request.startLon)
-        availableMinutes = clampAvailableMinutes(snapshot.request.availableMinutes, city = null)
-        pace = snapshot.request.pace
-        returnToStart = snapshot.request.returnToStart
-        respectOpeningHours = snapshot.request.respectOpeningHours
-        allowPublicTransport = snapshot.request.transportMode == "walk_or_mhd"
-        startDateTime = parseRouteStartDateTime(snapshot.request.startDateTime)
-        selectedInterests = snapshot.request.interests
-        requiredPoiIds = snapshot.request.preferredPoiIds.orEmpty().distinct()
+        updateUiState { state ->
+            PlannerStateReducer.restoreSnapshot(
+                state = state,
+                snapshot = snapshot,
+                parsedStartDateTime = parseRouteStartDateTime(snapshot.request.startDateTime)
+            )
+        }
     }
 
     private fun restoreActiveSession(session: ActiveRouteSession) {
-        routeId = session.route_id
-        routeStartedAt = session.started_at
-        val restoredStatus = RouteSessionStatus.fromRawValue(session.status)
-        routeFeedback = session.feedback
-        visitedPoiIds = session.visited_poi_ids.distinct()
-        skippedPoiIds = session.skipped_poi_ids.orEmpty().distinct()
-        val nextPendingPoiId = nextPendingPoi(
-            session.snapshot.response.route,
-            visitedPoiIds,
-            skippedPoiIds
-        )?.poiId
-        currentTargetPoiId = nextPendingPoiId ?: session.current_target_poi_id
-        routeSessionStatus = if (restoredStatus.isRestorable() && nextPendingPoiId == null) {
-            RouteSessionStatus.COMPLETED
-        } else {
-            restoredStatus
+        updateUiState { state ->
+            activeRouteController.restoreActiveSession(state, session)
         }
     }
 
     private suspend fun loadCities(restoredCityToken: String?) {
-        val cachedCities = repository.getCachedCities()
-        if (cachedCities.isNotEmpty()) {
-            cities = cachedCities
-            selectLoadedCity(restoredCityToken)
-            offlineStatusMessage = offlineCitiesFallbackMessage
-            selectedCity?.let { city ->
-                loadPoisForCity(city)
+        plannerCatalogUseCase.loadCities(
+            input = CityCatalogLoadInput(
+                restoredCityToken = restoredCityToken,
+                currentState = uiState.value,
+                offlineCitiesFallbackMessage = offlineCitiesFallbackMessage
+            )
+        ) { stage ->
+            updateUiState { state ->
+                state.copy(
+                    cities = stage.cities,
+                    selectedCity = stage.selectedCity,
+                    currentRouteRequest = stage.currentRouteRequest,
+                    routeResponse = stage.routeResponse,
+                    startPoint = stage.startPoint,
+                    offlineStatusMessage = stage.offlineStatusMessage,
+                    pendingSyncOperationCount = stage.pendingSyncOperationCount
+                        ?: state.pendingSyncOperationCount
+                )
             }
-        }
-
-        try {
-            val remoteCities = repository.fetchCities()
-            repository.cacheCities(remoteCities)
-            cities = remoteCities
-            selectLoadedCity(restoredCityToken)
-            offlineStatusMessage = null
-            refreshPendingSyncOperationCount()
-        } catch (_: Exception) {
-            if (cachedCities.isEmpty()) {
-                cities = repository.getCachedCities()
-                selectLoadedCity(restoredCityToken)
-            }
-            offlineStatusMessage = if (cities.isNotEmpty()) {
-                offlineCitiesFallbackMessage
-            } else {
-                null
-            }
-        }
-
-        if (cachedCities.isEmpty()) {
-            selectedCity?.let { city ->
-                loadPoisForCity(city)
-            }
-        }
-    }
-
-    private fun selectLoadedCity(restoredCityToken: String?) {
-        selectedCity = cities.firstOrNull { city -> city.matchesToken(restoredCityToken) }
-            ?: cities.firstOrNull { city -> city.matchesToken(routeResponse?.city) }
-            ?: selectedCity?.let { previousCity ->
-                cities.firstOrNull { city -> city.matchesToken(previousCity.slug) }
-            }
-            ?: cities.firstOrNull { city -> city.matchesToken(DefaultCitySlug) }
-            ?: cities.firstOrNull()
-
-        selectedCity?.let { city ->
-            currentRouteRequest = currentRouteRequest?.copy(city = city.slug)
-            routeResponse = routeResponse?.copy(city = city.slug)
-        }
-
-        if (routeResponse == null) {
-            selectedCity?.let { city ->
-                startPoint = city.toStartPoint()
+            if (stage.shouldLoadPoisForSelectedCity && stage.selectedCity != null) {
+                loadPoisForCity(stage.selectedCity)
             }
         }
     }
 
     private suspend fun loadPoisForCity(city: City) {
-        selectedCity = city
-        isPoiLoading = true
-        offlineMapProgress = null
-        availableMinutes = clampAvailableMinutes(availableMinutes, city)
-
-        if (selectedInterests.isEmpty()) {
-            selectedInterests = city.availableCategories()
-        } else {
-            val allowedCategories = city.availableCategories().toSet()
-            val filteredInterests = selectedInterests.filter { interest -> interest in allowedCategories }
-            selectedInterests = filteredInterests.ifEmpty { city.availableCategories() }
+        plannerCatalogUseCase.loadPoisForCity(
+            input = PoiCatalogLoadInput(
+                city = city,
+                currentState = uiState.value,
+                poiPreviewFailedMessage = poiPreviewFailedMessage,
+                offlinePoisFallbackMessage = offlinePoisFallbackMessage
+            )
+        ) { stage ->
+            updateUiState { stage.state }
         }
-
-        if (routeResponse == null) {
-            startPoint = city.toStartPoint()
-        }
-
-        if (!city.supportsPublicTransport()) {
-            allowPublicTransport = false
-        }
-
-        val cachedPois = repository.getCachedPois(city.slug)
-        if (cachedPois.isNotEmpty()) {
-            pois = cachedPois
-            poiError = null
-        }
-
-        try {
-            val remotePois = repository.fetchPois(city.slug)
-            repository.cachePois(city.slug, remotePois)
-            pois = remotePois
-            poiError = null
-            offlineStatusMessage = null
-            refreshPendingSyncOperationCount()
-        } catch (e: Exception) {
-            poiError = if (cachedPois.isEmpty()) {
-                e.toUserMessage(poiPreviewFailedMessage)
-            } else {
-                null
-            }
-            offlineStatusMessage = if (cachedPois.isNotEmpty()) {
-                String.format(Locale.getDefault(), offlinePoisFallbackMessage, city.name)
-            } else {
-                offlineStatusMessage
-            }
-        } finally {
-            isPoiLoading = false
-        }
-
-        offlineStoredRegion = offlineMapManager.findRegionBySlug(city.slug)
-    }
-
-    private fun maxAvailableMinutesFor(city: City?): Int =
-        city?.routingLimits?.maxAvailableMinutes
-            ?.coerceIn(MinimumAvailableMinutes, MaximumAvailableMinutes)
-            ?: MaximumAvailableMinutes
-
-    private fun clampAvailableMinutes(value: Int, city: City? = selectedCity): Int {
-        val maxAllowedMinutes = maxAvailableMinutesFor(city)
-        val clampedValue = value.coerceIn(MinimumAvailableMinutes, maxAllowedMinutes)
-        val relativeMinutes = clampedValue - MinimumAvailableMinutes
-        val remainder = relativeMinutes % AvailableMinutesStepMinutes
-
-        if (remainder == 0) {
-            return clampedValue
-        }
-
-        val roundedValue = if (remainder >= AvailableMinutesStepMinutes / 2) {
-            clampedValue + (AvailableMinutesStepMinutes - remainder)
-        } else {
-            clampedValue - remainder
-        }
-
-        return roundedValue.coerceIn(MinimumAvailableMinutes, maxAllowedMinutes)
     }
 
     private fun refreshPendingSyncOperationCount() {
@@ -1441,49 +1035,16 @@ internal class RoutePlannerViewModel @Inject constructor(
         }
     }
 
-    private fun invalidateRoutePreviewIfAllowed() {
-        if (routeSessionStatus == RouteSessionStatus.IN_PROGRESS || routeSessionStatus == RouteSessionStatus.PAUSED) {
-            return
-        }
-        if (routeResponse != null) {
-            hasPendingRouteChanges = true
-        }
-        clearRouteMessages()
-    }
-
     private fun clearRouteMessages() {
-        routeError = null
-        hasNoGeneratedStops = false
-    }
-
-    private fun missingRequiredPoiLabels(
-        request: PlannerPreferences,
-        response: RoutePlan
-    ): List<String> {
-        val requiredIds = request.preferredPoiIds.orEmpty().distinct()
-        if (requiredIds.isEmpty()) {
-            return emptyList()
+        updateUiState { state ->
+            PlannerStateReducer.clearRouteMessages(state)
         }
-
-        val generatedIds = response.route.map { item -> item.poiId }.toSet()
-        val poisById = pois.associateBy { poi -> poi.id }
-        return requiredIds
-            .filterNot { poiId -> poiId in generatedIds }
-            .map { poiId -> poisById[poiId]?.name ?: "#$poiId" }
     }
 
     private fun resetRouteSession(clearStoredSession: Boolean = true) {
-        routeSessionStatus = RouteSessionStatus.NOT_STARTED
-        routeId = null
-        routeStartedAt = null
-        currentTargetPoiId = null
-        currentRouteLocation = null
-        trackingError = null
-        routeFeedback = null
-        offRouteDetectedAtMs = null
-        lastAutoRerouteAtMs = null
-        visitedPoiIds = emptyList()
-        skippedPoiIds = emptyList()
+        updateUiState { state ->
+            activeRouteController.resetRouteSession(state)
+        }
         if (clearStoredSession) {
             viewModelScope.launch {
                 repository.clearActiveSession()
@@ -1501,14 +1062,6 @@ internal class RoutePlannerViewModel @Inject constructor(
         }
     }
 
-    private fun routePreviewMutationContext(): RoutePreviewMutationContext =
-        RoutePreviewMutationContext(
-            city = currentRouteRequest?.city ?: selectedCity?.slug,
-            pace = currentRouteRequest?.pace,
-            startDateTime = currentRouteRequest?.startDateTime,
-            transportMode = currentRouteRequest?.transportMode
-        )
-
     private suspend fun enqueueRouteSessionSync(
         sessionRouteId: String,
         status: RouteSessionStatus,
@@ -1516,16 +1069,14 @@ internal class RoutePlannerViewModel @Inject constructor(
         snapshot: SavedRouteSnapshot,
         finishedAt: String? = null
     ) {
-        repository.enqueuePendingRouteSession(
-            sessionRouteId = sessionRouteId,
+        pendingSyncOperationCount = activeRouteController.enqueueRouteSessionSync(
             deviceId = deviceId,
-            status = status.rawValue,
+            sessionRouteId = sessionRouteId,
+            status = status,
             startedAt = startedAtValue,
             snapshot = snapshot,
             finishedAt = finishedAt
         )
-        pendingSyncOperationCount = repository.getPendingSyncOperationCount()
-        repository.scheduleImmediateSync()
     }
 
     private fun persistRouteSession(
@@ -1540,99 +1091,39 @@ internal class RoutePlannerViewModel @Inject constructor(
         val snapshot = snapshotOverride ?: currentRouteSnapshot() ?: return
         val savedRouteId = routeIdValue ?: return
         val savedStartedAt = startedAtValue ?: defaultRouteStartDateTime().toString()
-        val nextTargetId = nextPendingPoi(snapshot.response.route, visitedIds, skippedIds)?.poiId
-        val totalCount = progressTotalCount(snapshot.response.route, skippedIds)
-        val existingHistoryEntry = routeHistory.firstOrNull { entry -> entry.routeId == savedRouteId }
-        val finishedAt = if (status == RouteSessionStatus.COMPLETED || status == RouteSessionStatus.CANCELLED) {
-            existingHistoryEntry?.finishedAt ?: defaultRouteStartDateTime().toString()
-        } else {
-            null
-        }
-        val historyUpdatedAt = when {
-            status == RouteSessionStatus.COMPLETED || status == RouteSessionStatus.CANCELLED ->
-                existingHistoryEntry?.updatedAtEpochMs ?: routeHistoryTimestamp(finishedAt)
-            else -> System.currentTimeMillis()
-        }
-        val historyEntry = buildRouteHistoryEntry(
-            routeId = savedRouteId,
-            cityName = snapshot.response.city,
-            status = status,
-            startedAt = savedStartedAt,
-            finishedAt = finishedAt,
-            snapshot = snapshot,
-            visitedPoiIds = visitedIds,
-            skippedPoiIds = skippedIds,
-            feedback = feedback,
-            updatedAtEpochMs = historyUpdatedAt
-        )
-
-        currentTargetPoiId = nextTargetId
-
+        currentTargetPoiId = nextPendingPoi(snapshot.response.route, visitedIds, skippedIds)?.poiId
         viewModelScope.launch {
-            repository.saveActiveSession(
-                ActiveRouteSession(
-                    route_id = savedRouteId,
-                    status = status.rawValue,
-                    started_at = savedStartedAt,
-                    current_target_poi_id = nextTargetId,
-                    visited_poi_ids = visitedIds,
-                    skipped_poi_ids = skippedIds,
-                    progress_visited_count = visitedIds.distinct().size,
-                    progress_total_count = totalCount,
+            val result = activeRouteController.persistRouteSession(
+                PersistRouteSessionInput(
+                    deviceId = deviceId,
+                    routeId = savedRouteId,
+                    status = status,
+                    startedAt = savedStartedAt,
                     snapshot = snapshot,
-                    feedback = feedback
+                    visitedPoiIds = visitedIds,
+                    skippedPoiIds = skippedIds,
+                    feedback = feedback,
+                    currentHistory = routeHistory
                 )
             )
-            repository.saveRouteHistoryEntry(historyEntry)
-            routeHistory = upsertRouteHistoryEntry(routeHistory, historyEntry)
-            enqueueRouteSessionSync(
-                sessionRouteId = savedRouteId,
-                status = status,
-                startedAtValue = savedStartedAt,
-                snapshot = snapshot,
-                finishedAt = finishedAt
-            )
+            currentTargetPoiId = result.nextTargetPoiId
+            routeHistory = result.history
+            pendingSyncOperationCount = result.pendingSyncOperationCount
         }
     }
 
     private suspend fun refreshRouteHistory(forceRefresh: Boolean) {
-        val cachedHistory = sortRouteHistoryEntries(repository.loadRouteHistoryEntries())
-        if (routeHistory.isEmpty()) {
-            routeHistory = cachedHistory
-        }
-        if (!forceRefresh && routeHistory.isNotEmpty()) {
-            return
-        }
-
         isRouteHistoryLoading = true
         routeHistoryError = null
-
-        if (!repository.isNetworkAvailable()) {
-            isRouteHistoryLoading = false
-            return
-        }
-
-        runCatching {
-            val remoteEntries = repository.getRouteSessions(deviceId)
-                .mapNotNull { session ->
-                    runCatching { session.toRouteHistoryEntry() }.getOrNull()
-                }
-            val mergedEntries = mergeRouteHistoryEntries(
-                cachedHistory,
-                remoteEntries,
-                buildCurrentRouteHistoryEntry()
-            )
-            repository.saveRouteHistoryEntries(mergedEntries)
-            routeHistory = mergedEntries
-        }.onFailure { error ->
-            routeHistory = cachedHistory
-            routeHistoryError = if (cachedHistory.isEmpty()) {
-                error.toUserMessage(routeHistoryLoadFailedMessage)
-            } else {
-                null
-            }
-        }
-
+        val result = routeHistoryController.refreshRouteHistory(
+            deviceId = deviceId,
+            forceRefresh = forceRefresh,
+            currentHistory = routeHistory,
+            currentEntry = buildCurrentRouteHistoryEntry(),
+            routeHistoryLoadFailedMessage = routeHistoryLoadFailedMessage
+        )
+        routeHistory = result.history
+        routeHistoryError = result.error
         isRouteHistoryLoading = false
     }
 
@@ -1677,16 +1168,10 @@ internal class RoutePlannerViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            poiIds.distinct().forEach { poiId ->
-                repository.enqueuePendingPoiVisit(
-                    sessionId = sessionRouteId,
-                    poiId = poiId,
-                    visitedAt = defaultRouteStartDateTime().toString(),
-                    skipped = false
-                )
-            }
-            pendingSyncOperationCount = repository.getPendingSyncOperationCount()
-            repository.scheduleImmediateSync()
+            pendingSyncOperationCount = activeRouteController.syncVisitedPois(
+                sessionId = sessionRouteId,
+                poiIds = poiIds
+            )
         }
     }
 
@@ -1697,16 +1182,10 @@ internal class RoutePlannerViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            poiIds.distinct().forEach { poiId ->
-                repository.enqueuePendingPoiVisit(
-                    sessionId = sessionRouteId,
-                    poiId = poiId,
-                    visitedAt = defaultRouteStartDateTime().toString(),
-                    skipped = true
-                )
-            }
-            pendingSyncOperationCount = repository.getPendingSyncOperationCount()
-            repository.scheduleImmediateSync()
+            pendingSyncOperationCount = activeRouteController.syncSkippedPois(
+                sessionId = sessionRouteId,
+                poiIds = poiIds
+            )
         }
     }
 
@@ -1717,12 +1196,10 @@ internal class RoutePlannerViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            repository.enqueuePendingFeedback(
+            pendingSyncOperationCount = activeRouteController.syncFeedback(
                 sessionId = sessionRouteId,
                 feedback = feedback
             )
-            pendingSyncOperationCount = repository.getPendingSyncOperationCount()
-            repository.scheduleImmediateSync()
             offlineStatusMessage = if (repository.isNetworkAvailable()) {
                 null
             } else {
