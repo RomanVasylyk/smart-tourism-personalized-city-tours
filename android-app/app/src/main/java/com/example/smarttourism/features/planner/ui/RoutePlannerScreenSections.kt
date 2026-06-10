@@ -83,8 +83,8 @@ import com.example.smarttourism.features.planner.state.PlannerMode
 import com.example.smarttourism.features.planner.state.RouteSessionStatus
 import com.example.smarttourism.features.planner.state.TrackingPermissionAction
 import com.example.smarttourism.features.planner.viewmodel.RoutePlannerViewModel
-import com.example.smarttourism.features.planner.viewmodel.fetchCurrentLocation
-import com.example.smarttourism.features.planner.viewmodel.startRouteLocationTracking
+import com.example.smarttourism.features.planner.location.fetchCurrentLocation
+import com.example.smarttourism.features.planner.location.startRouteLocationTracking
 
 internal enum class PlannerDestination {
     PLANNER,

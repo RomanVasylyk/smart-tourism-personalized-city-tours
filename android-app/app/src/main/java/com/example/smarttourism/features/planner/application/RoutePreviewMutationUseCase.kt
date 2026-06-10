@@ -8,10 +8,10 @@ import com.example.smarttourism.features.planner.domain.model.RouteLegQuery
 import com.example.smarttourism.features.planner.domain.model.RoutePlan
 import com.example.smarttourism.features.planner.domain.model.RoutePoint
 import com.example.smarttourism.features.planner.domain.model.RouteStop
-import com.example.smarttourism.features.planner.viewmodel.mergeLegGeometries
-import com.example.smarttourism.features.planner.viewmodel.rebuildPreviewRouteAfterRemovingPoi
-import com.example.smarttourism.features.planner.viewmodel.rebuildPreviewRouteAfterReplacingPoi
-import com.example.smarttourism.features.planner.viewmodel.removePreviewRoutePoi
+import com.example.smarttourism.features.planner.domain.route.mergeLegGeometries
+import com.example.smarttourism.features.planner.domain.route.rebuildPreviewRouteAfterRemovingPoi
+import com.example.smarttourism.features.planner.domain.route.rebuildPreviewRouteAfterReplacingPoi
+import com.example.smarttourism.features.planner.domain.route.removePreviewRoutePoi
 import javax.inject.Inject
 
 internal data class RoutePreviewMutationContext(

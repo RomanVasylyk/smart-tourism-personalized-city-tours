@@ -3,7 +3,7 @@ package com.example.smarttourism.features.planner.application
 import com.example.smarttourism.data.model.RouteBookmark
 import com.example.smarttourism.data.model.SavedRouteSnapshot
 import com.example.smarttourism.features.planner.data.PlannerRepository
-import com.example.smarttourism.features.planner.viewmodel.defaultRouteBookmarkTitle
+import com.example.smarttourism.features.planner.domain.history.defaultRouteBookmarkTitle
 import java.util.UUID
 import javax.inject.Inject
 

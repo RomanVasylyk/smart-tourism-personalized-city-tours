@@ -14,16 +14,16 @@ import com.example.smarttourism.features.planner.state.OffRouteSustainDurationMs
 import com.example.smarttourism.features.planner.state.RoutePlannerUiState
 import com.example.smarttourism.features.planner.state.RouteProgressMetrics
 import com.example.smarttourism.features.planner.state.RouteSessionStatus
-import com.example.smarttourism.features.planner.viewmodel.buildRouteHistoryEntry
-import com.example.smarttourism.features.planner.viewmodel.defaultRouteStartDateTime
-import com.example.smarttourism.features.planner.viewmodel.distanceToNextRouteSegmentMeters
-import com.example.smarttourism.features.planner.viewmodel.isRestorable
-import com.example.smarttourism.features.planner.viewmodel.markNearbyPoisVisited
-import com.example.smarttourism.features.planner.viewmodel.nextPendingPoi
-import com.example.smarttourism.features.planner.viewmodel.progressTotalCount
-import com.example.smarttourism.features.planner.viewmodel.rerouteStartPoint
-import com.example.smarttourism.features.planner.viewmodel.routeHistoryTimestamp
-import com.example.smarttourism.features.planner.viewmodel.upsertRouteHistoryEntry
+import com.example.smarttourism.features.planner.domain.history.buildRouteHistoryEntry
+import com.example.smarttourism.features.planner.domain.route.defaultRouteStartDateTime
+import com.example.smarttourism.features.planner.domain.route.distanceToNextRouteSegmentMeters
+import com.example.smarttourism.features.planner.domain.history.isRestorable
+import com.example.smarttourism.features.planner.domain.route.markNearbyPoisVisited
+import com.example.smarttourism.features.planner.domain.route.nextPendingPoi
+import com.example.smarttourism.features.planner.domain.route.progressTotalCount
+import com.example.smarttourism.features.planner.domain.route.rerouteStartPoint
+import com.example.smarttourism.features.planner.domain.history.routeHistoryTimestamp
+import com.example.smarttourism.features.planner.domain.history.upsertRouteHistoryEntry
 import javax.inject.Inject
 
 internal data class PersistRouteSessionInput(

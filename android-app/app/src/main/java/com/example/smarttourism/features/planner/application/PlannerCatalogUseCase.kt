@@ -8,11 +8,10 @@ import com.example.smarttourism.features.planner.domain.model.RoutePoint
 import com.example.smarttourism.features.planner.state.DefaultCitySlug
 import com.example.smarttourism.features.planner.state.RoutePlannerUiState
 import com.example.smarttourism.features.planner.state.clampAvailableMinutes
-import com.example.smarttourism.features.planner.viewmodel.availableCategories
-import com.example.smarttourism.features.planner.viewmodel.matchesToken
-import com.example.smarttourism.features.planner.viewmodel.supportsPublicTransport
-import com.example.smarttourism.features.planner.viewmodel.toStartPoint
-import com.example.smarttourism.features.planner.viewmodel.toUserMessage
+import com.example.smarttourism.features.planner.domain.city.availableCategories
+import com.example.smarttourism.features.planner.domain.city.matchesToken
+import com.example.smarttourism.features.planner.domain.city.supportsPublicTransport
+import com.example.smarttourism.features.planner.domain.city.toStartPoint
 import java.util.Locale
 import javax.inject.Inject
 

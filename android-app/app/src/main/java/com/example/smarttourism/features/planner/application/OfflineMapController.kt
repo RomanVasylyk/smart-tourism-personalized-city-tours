@@ -3,7 +3,7 @@ package com.example.smarttourism.features.planner.application
 import com.example.smarttourism.features.map.offline.OfflineMapManager
 import com.example.smarttourism.features.map.offline.OfflineStoredRegion
 import com.example.smarttourism.features.planner.domain.model.City
-import com.example.smarttourism.features.planner.viewmodel.toOfflineCityRegion
+import com.example.smarttourism.features.planner.domain.city.toOfflineCityRegion
 import javax.inject.Inject
 
 internal class OfflineMapController @Inject constructor(

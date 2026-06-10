@@ -2,10 +2,9 @@ package com.example.smarttourism.features.planner.application
 
 import com.example.smarttourism.data.model.RouteHistoryEntry
 import com.example.smarttourism.features.planner.data.PlannerRepository
-import com.example.smarttourism.features.planner.viewmodel.mergeRouteHistoryEntries
-import com.example.smarttourism.features.planner.viewmodel.sortRouteHistoryEntries
-import com.example.smarttourism.features.planner.viewmodel.toRouteHistoryEntry
-import com.example.smarttourism.features.planner.viewmodel.toUserMessage
+import com.example.smarttourism.features.planner.domain.history.mergeRouteHistoryEntries
+import com.example.smarttourism.features.planner.domain.history.sortRouteHistoryEntries
+import com.example.smarttourism.features.planner.domain.history.toRouteHistoryEntry
 import javax.inject.Inject
 
 internal data class RouteHistoryRefreshResult(

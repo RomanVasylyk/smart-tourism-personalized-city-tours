@@ -7,8 +7,8 @@ import com.example.smarttourism.data.model.SavedRouteSnapshot
 import com.example.smarttourism.features.planner.data.PlannerRepository
 import com.example.smarttourism.features.planner.domain.model.RouteSession
 import com.example.smarttourism.features.planner.state.RouteSessionStatus
-import com.example.smarttourism.features.planner.viewmodel.isRestorable
-import com.example.smarttourism.features.planner.viewmodel.sortRouteHistoryEntries
+import com.example.smarttourism.features.planner.domain.history.isRestorable
+import com.example.smarttourism.features.planner.domain.history.sortRouteHistoryEntries
 import javax.inject.Inject
 
 internal data class PlannerBootstrapLocalState(

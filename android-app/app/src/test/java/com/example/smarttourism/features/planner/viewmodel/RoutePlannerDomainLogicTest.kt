@@ -14,6 +14,9 @@ import com.example.smarttourism.features.planner.data.session.RouteSessionReposi
 import com.example.smarttourism.features.planner.data.sync.OfflineSyncRepository
 import com.example.smarttourism.features.planner.application.RoutePreviewMutationContext
 import com.example.smarttourism.features.planner.application.RoutePreviewMutationUseCase
+import com.example.smarttourism.features.planner.domain.history.isTerminal
+import com.example.smarttourism.features.planner.domain.history.mergeRouteHistoryEntries
+import com.example.smarttourism.features.planner.domain.history.upsertRouteHistoryEntry
 import com.example.smarttourism.features.planner.domain.model.City
 import com.example.smarttourism.features.planner.domain.model.PlannerPreferences
 import com.example.smarttourism.features.planner.domain.model.Poi
@@ -25,6 +28,11 @@ import com.example.smarttourism.features.planner.domain.model.RoutePlan
 import com.example.smarttourism.features.planner.domain.model.RoutePoint
 import com.example.smarttourism.features.planner.domain.model.RouteSession
 import com.example.smarttourism.features.planner.domain.model.RouteStop
+import com.example.smarttourism.features.planner.domain.route.finalizedHandledRoutePlan
+import com.example.smarttourism.features.planner.domain.route.mergeLegGeometries
+import com.example.smarttourism.features.planner.domain.route.mergeReroutedRoutePlan
+import com.example.smarttourism.features.planner.domain.route.rebuildPreviewRouteAfterRemovingPoi
+import com.example.smarttourism.features.planner.domain.route.rebuildPreviewRouteAfterReplacingPoi
 import com.example.smarttourism.features.planner.state.RouteSessionStatus
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
@@ -34,7 +42,7 @@ import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-class RoutePlannerLogicTest {
+class RoutePlannerDomainLogicTest {
     @Test
     fun mergeRouteHistoryEntriesPreservesLocalProgressWhenRemoteHasNoProgress() {
         val localFeedback = RouteFeedback(

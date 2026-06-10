@@ -4,8 +4,7 @@ import com.example.smarttourism.data.model.SavedRouteSnapshot
 import com.example.smarttourism.features.planner.data.PlannerRepository
 import com.example.smarttourism.features.planner.state.RoutePlannerUiState
 import com.example.smarttourism.features.planner.state.RouteSessionStatus
-import com.example.smarttourism.features.planner.viewmodel.buildPreviewReplacementCandidates
-import com.example.smarttourism.features.planner.viewmodel.toUserMessage
+import com.example.smarttourism.features.planner.domain.route.buildPreviewReplacementCandidates
 import javax.inject.Inject
 
 internal data class RoutePreviewMutationResult(
