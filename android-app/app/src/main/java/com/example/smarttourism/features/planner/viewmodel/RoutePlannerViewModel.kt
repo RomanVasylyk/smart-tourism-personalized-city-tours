@@ -51,7 +51,9 @@ import com.example.smarttourism.features.planner.domain.route.progressTotalCount
 import com.example.smarttourism.features.planner.domain.route.replaceActiveRouteApproachLeg
 import com.example.smarttourism.features.planner.domain.route.routeProgressMetrics
 import com.example.smarttourism.features.map.offline.OfflineStoredRegion
-import com.example.smarttourism.features.planner.data.PlannerRepository
+import com.example.smarttourism.features.planner.data.route.RoutePlanningRepository
+import com.example.smarttourism.features.planner.data.session.RouteSessionRepository
+import com.example.smarttourism.features.planner.data.sync.OfflineSyncRepository
 import com.example.smarttourism.features.planner.state.EmptyStartPoint
 import com.example.smarttourism.features.planner.state.OfflineDownloadProgress
 import com.example.smarttourism.features.planner.state.PlannerStateReducer
@@ -76,7 +78,9 @@ import javax.inject.Inject
 @HiltViewModel
 internal class RoutePlannerViewModel @Inject constructor(
     @ApplicationContext private val appContext: Context,
-    private val repository: PlannerRepository,
+    private val routePlanningRepository: RoutePlanningRepository,
+    private val routeSessionRepository: RouteSessionRepository,
+    private val offlineSyncRepository: OfflineSyncRepository,
     private val plannerBootstrapUseCase: PlannerBootstrapUseCase,
     private val plannerCatalogUseCase: PlannerCatalogUseCase,
     private val routeGenerationUseCase: RouteGenerationUseCase,
@@ -86,7 +90,7 @@ internal class RoutePlannerViewModel @Inject constructor(
     private val offlineMapController: OfflineMapController,
     private val routePreviewController: RoutePreviewController
 ) : ViewModel() {
-    private val deviceId = repository.getOrCreateDeviceId()
+    private val deviceId = routeSessionRepository.getOrCreateDeviceId()
 
     private val poiPreviewFailedMessage = appContext.getString(R.string.error_poi_preview_failed)
     private val routeGenerationFailedMessage = appContext.getString(R.string.error_route_generation_failed_default)
@@ -624,7 +628,7 @@ internal class RoutePlannerViewModel @Inject constructor(
         val result = activeRouteController.markRouteStopVisited(
             state = uiState.value,
             poiId = poiId,
-            isNetworkAvailable = repository.isNetworkAvailable()
+            isNetworkAvailable = offlineSyncRepository.isNetworkAvailable()
         ) ?: return
         updateUiState { result.state }
         syncVisitedPoisToBackend(result.syncVisitedPoiIds)
@@ -635,7 +639,7 @@ internal class RoutePlannerViewModel @Inject constructor(
         )
         result.snapshotToSave?.let { snapshot ->
             viewModelScope.launch {
-                repository.saveSnapshot(snapshot)
+                routePlanningRepository.saveSnapshot(snapshot)
             }
         }
         result.approachRefresh?.let { refresh ->
@@ -651,12 +655,12 @@ internal class RoutePlannerViewModel @Inject constructor(
         val result = activeRouteController.skipRouteStop(
             state = uiState.value,
             poiId = poiId,
-            isNetworkAvailable = repository.isNetworkAvailable()
+            isNetworkAvailable = offlineSyncRepository.isNetworkAvailable()
         ) ?: return
         updateUiState { result.state }
         result.snapshotToSave?.let { snapshot ->
             viewModelScope.launch {
-                repository.saveSnapshot(snapshot)
+                routePlanningRepository.saveSnapshot(snapshot)
             }
         }
         syncSkippedPoisToBackend(result.syncSkippedPoiIds)
@@ -743,7 +747,7 @@ internal class RoutePlannerViewModel @Inject constructor(
             state = uiState.value,
             routeLocation = routeLocation,
             nowMs = System.currentTimeMillis(),
-            isNetworkAvailable = repository.isNetworkAvailable(),
+            isNetworkAvailable = offlineSyncRepository.isNetworkAvailable(),
             isRerouting = isRerouting
         )
         updateUiState { result.state }
@@ -757,7 +761,7 @@ internal class RoutePlannerViewModel @Inject constructor(
         syncVisitedPoisToBackend(result.syncVisitedPoiIds)
         result.snapshotToSave?.let { snapshot ->
             viewModelScope.launch {
-                repository.saveSnapshot(snapshot)
+                routePlanningRepository.saveSnapshot(snapshot)
             }
         }
         result.approachRefresh?.let { refresh ->
@@ -879,7 +883,7 @@ internal class RoutePlannerViewModel @Inject constructor(
                     ?: routeHistoryTimestamp(existingHistoryEntry?.finishedAt ?: cancelledFinishedAt)
             )
             viewModelScope.launch {
-                repository.saveRouteHistoryEntry(cancelledHistoryEntry)
+                routeSessionRepository.saveHistoryEntry(cancelledHistoryEntry)
                 routeHistory = upsertRouteHistoryEntry(routeHistory, cancelledHistoryEntry)
                 enqueueRouteSessionSync(
                     sessionRouteId = activeRouteId,
@@ -962,8 +966,8 @@ internal class RoutePlannerViewModel @Inject constructor(
                     restoredStatus
                 }
                 routeSessionStatus = normalizedStatus
-                repository.saveSnapshot(snapshot)
-                repository.saveActiveSession(
+                routePlanningRepository.saveSnapshot(snapshot)
+                routeSessionRepository.saveActiveSession(
                     ActiveRouteSession(
                         route_id = remoteSession.id,
                         status = normalizedStatus.rawValue,
@@ -1052,7 +1056,7 @@ internal class RoutePlannerViewModel @Inject constructor(
 
     private fun refreshPendingSyncOperationCount() {
         viewModelScope.launch {
-            pendingSyncOperationCount = repository.getPendingSyncOperationCount()
+            pendingSyncOperationCount = offlineSyncRepository.getPendingSyncOperationCount()
         }
     }
 
@@ -1068,7 +1072,7 @@ internal class RoutePlannerViewModel @Inject constructor(
         }
         if (clearStoredSession) {
             viewModelScope.launch {
-                repository.clearActiveSession()
+                routeSessionRepository.clearActiveSession()
             }
         }
     }
@@ -1221,7 +1225,7 @@ internal class RoutePlannerViewModel @Inject constructor(
                 sessionId = sessionRouteId,
                 feedback = feedback
             )
-            offlineStatusMessage = if (repository.isNetworkAvailable()) {
+            offlineStatusMessage = if (offlineSyncRepository.isNetworkAvailable()) {
                 null
             } else {
                 pendingSyncQueuedMessage
@@ -1265,7 +1269,7 @@ internal class RoutePlannerViewModel @Inject constructor(
             )
 
             try {
-                val generatedRoute = repository.generateRoute(request)
+                val generatedRoute = routePlanningRepository.generateRoute(request)
                 val mergedRoute = mergeReroutedRoutePlan(
                     previousResponse = response,
                     reroutedResponse = generatedRoute,
@@ -1302,7 +1306,7 @@ internal class RoutePlannerViewModel @Inject constructor(
                     routeSessionStatus
                 }
                 routeSessionStatus = updatedStatus
-                repository.saveSnapshot(snapshot)
+                routePlanningRepository.saveSnapshot(snapshot)
                 persistRouteSession(
                     status = updatedStatus,
                     skippedIds = effectiveSkippedPoiIds,
@@ -1343,7 +1347,7 @@ internal class RoutePlannerViewModel @Inject constructor(
         viewModelScope.launch {
             isRerouting = true
             try {
-                val replacementLeg = repository.generateRouteLeg(routeLegRequest)
+                val replacementLeg = routePlanningRepository.generateRouteLeg(routeLegRequest)
                 val updatedResponse = replaceActiveRouteApproachLeg(
                     previousResponse = previousResponse,
                     nextPoiId = nextTarget.poiId,
@@ -1352,7 +1356,7 @@ internal class RoutePlannerViewModel @Inject constructor(
                 routeResponse = updatedResponse
                 val snapshot = currentRouteSnapshot()
                 if (snapshot != null) {
-                    repository.saveSnapshot(snapshot)
+                    routePlanningRepository.saveSnapshot(snapshot)
                     persistRouteSession(
                         status = routeSessionStatus,
                         skippedIds = skippedPoiIds,
@@ -1361,7 +1365,7 @@ internal class RoutePlannerViewModel @Inject constructor(
                 }
             } catch (_: Exception) {
                 currentRouteSnapshot()?.let { snapshot ->
-                    repository.saveSnapshot(snapshot)
+                    routePlanningRepository.saveSnapshot(snapshot)
                 }
             } finally {
                 if (autoTriggered) {

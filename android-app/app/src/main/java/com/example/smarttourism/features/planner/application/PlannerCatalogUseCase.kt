@@ -1,6 +1,8 @@
 package com.example.smarttourism.features.planner.application
 
-import com.example.smarttourism.features.planner.data.PlannerRepository
+import com.example.smarttourism.features.planner.data.city.CityRepository
+import com.example.smarttourism.features.planner.data.poi.PoiRepository
+import com.example.smarttourism.features.planner.data.sync.OfflineSyncRepository
 import com.example.smarttourism.features.planner.domain.model.City
 import com.example.smarttourism.features.planner.domain.model.PlannerPreferences
 import com.example.smarttourism.features.planner.domain.model.RoutePlan
@@ -44,7 +46,9 @@ internal data class PoiCatalogStage(
 )
 
 internal class PlannerCatalogUseCase @Inject constructor(
-    private val repository: PlannerRepository,
+    private val cityRepository: CityRepository,
+    private val poiRepository: PoiRepository,
+    private val offlineSyncRepository: OfflineSyncRepository,
     private val offlineMapController: OfflineMapController
 ) {
     suspend fun loadCities(
@@ -52,7 +56,7 @@ internal class PlannerCatalogUseCase @Inject constructor(
         onStage: suspend (CityCatalogStage) -> Unit
     ) {
         var workingState = input.currentState
-        val cachedCities = repository.getCachedCities()
+        val cachedCities = cityRepository.getCachedCities()
         if (cachedCities.isNotEmpty()) {
             val cachedStage = buildCityStage(
                 cities = cachedCities,
@@ -67,20 +71,20 @@ internal class PlannerCatalogUseCase @Inject constructor(
         }
 
         try {
-            val remoteCities = repository.fetchCities()
-            repository.cacheCities(remoteCities)
+            val remoteCities = cityRepository.fetchCities()
+            cityRepository.cacheCities(remoteCities)
             val remoteStage = buildCityStage(
                 cities = remoteCities,
                 currentState = workingState,
                 restoredCityToken = input.restoredCityToken,
                 offlineStatusMessage = null,
-                pendingSyncOperationCount = repository.getPendingSyncOperationCount(),
+                pendingSyncOperationCount = offlineSyncRepository.getPendingSyncOperationCount(),
                 shouldLoadPoisForSelectedCity = cachedCities.isEmpty()
             )
             onStage(remoteStage)
         } catch (_: Exception) {
             if (cachedCities.isEmpty()) {
-                val fallbackCities = repository.getCachedCities()
+                val fallbackCities = cityRepository.getCachedCities()
                 val fallbackStage = buildCityStage(
                     cities = fallbackCities,
                     currentState = workingState,
@@ -120,7 +124,7 @@ internal class PlannerCatalogUseCase @Inject constructor(
             .withSelectedPoiCity(input.city)
         onStage(PoiCatalogStage(workingState))
 
-        val cachedPois = repository.getCachedPois(input.city.slug)
+        val cachedPois = poiRepository.getCachedPois(input.city.slug)
         if (cachedPois.isNotEmpty()) {
             workingState = workingState.copy(
                 pois = cachedPois,
@@ -130,14 +134,14 @@ internal class PlannerCatalogUseCase @Inject constructor(
         }
 
         val finalState = try {
-            val remotePois = repository.fetchPois(input.city.slug)
-            repository.cachePois(input.city.slug, remotePois)
+            val remotePois = poiRepository.fetchPois(input.city.slug)
+            poiRepository.cachePois(input.city.slug, remotePois)
             workingState.copy(
                 pois = remotePois,
                 isPoiLoading = false,
                 poiError = null,
                 offlineStatusMessage = null,
-                pendingSyncOperationCount = repository.getPendingSyncOperationCount(),
+                pendingSyncOperationCount = offlineSyncRepository.getPendingSyncOperationCount(),
                 offlineStoredRegion = offlineMapController.findStoredRegion(input.city.slug)
             )
         } catch (error: Exception) {

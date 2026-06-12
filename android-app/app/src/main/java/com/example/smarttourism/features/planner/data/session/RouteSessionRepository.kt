@@ -8,6 +8,8 @@ import com.example.smarttourism.features.planner.domain.model.RouteSession
 import javax.inject.Inject
 
 internal interface RouteSessionRepository {
+    fun getOrCreateDeviceId(): String
+
     suspend fun getRouteSession(routeId: String): RouteSession
 
     suspend fun getRouteSessions(deviceId: String): List<RouteSession>
@@ -29,6 +31,9 @@ internal class DefaultRouteSessionRepository @Inject constructor(
     private val remoteDataSource: PlannerRemoteDataSource,
     private val localDataSource: PlannerLocalDataSource
 ) : RouteSessionRepository {
+    override fun getOrCreateDeviceId(): String =
+        localDataSource.getOrCreateDeviceId()
+
     override suspend fun getRouteSession(routeId: String): RouteSession =
         remoteDataSource.getRouteSession(routeId)
 

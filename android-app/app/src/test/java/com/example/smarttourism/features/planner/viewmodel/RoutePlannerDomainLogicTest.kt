@@ -1,23 +1,15 @@
 package com.example.smarttourism.features.planner.viewmodel
 
-import com.example.smarttourism.data.model.ActiveRouteSession
 import com.example.smarttourism.data.model.CacheEnvelopeType
-import com.example.smarttourism.data.model.RouteBookmark
 import com.example.smarttourism.data.model.RouteFeedback
 import com.example.smarttourism.data.model.RouteHistoryEntry
 import com.example.smarttourism.data.model.SavedRouteSnapshot
-import com.example.smarttourism.features.planner.data.PlannerRepository
-import com.example.smarttourism.features.planner.data.bookmark.RouteBookmarkRepository
-import com.example.smarttourism.features.planner.data.local.PlannerLocalDataSource
-import com.example.smarttourism.features.planner.data.remote.PlannerRemoteDataSource
-import com.example.smarttourism.features.planner.data.session.RouteSessionRepository
-import com.example.smarttourism.features.planner.data.sync.OfflineSyncRepository
+import com.example.smarttourism.features.planner.data.route.RoutePlanningRepository
 import com.example.smarttourism.features.planner.application.RoutePreviewMutationContext
 import com.example.smarttourism.features.planner.application.RoutePreviewMutationUseCase
 import com.example.smarttourism.features.planner.domain.history.isTerminal
 import com.example.smarttourism.features.planner.domain.history.mergeRouteHistoryEntries
 import com.example.smarttourism.features.planner.domain.history.upsertRouteHistoryEntry
-import com.example.smarttourism.features.planner.domain.model.City
 import com.example.smarttourism.features.planner.domain.model.PlannerPreferences
 import com.example.smarttourism.features.planner.domain.model.Poi
 import com.example.smarttourism.features.planner.domain.model.RouteCoordinate
@@ -26,7 +18,6 @@ import com.example.smarttourism.features.planner.domain.model.RouteLegEndpoint
 import com.example.smarttourism.features.planner.domain.model.RouteLegQuery
 import com.example.smarttourism.features.planner.domain.model.RoutePlan
 import com.example.smarttourism.features.planner.domain.model.RoutePoint
-import com.example.smarttourism.features.planner.domain.model.RouteSession
 import com.example.smarttourism.features.planner.domain.model.RouteStop
 import com.example.smarttourism.features.planner.domain.route.finalizedHandledRoutePlan
 import com.example.smarttourism.features.planner.domain.route.mergeLegGeometries
@@ -181,19 +172,13 @@ class RoutePlannerDomainLogicTest {
     fun moveStopRegeneratesLegOrderForNewSequence() = runBlocking {
         val plan = sampleRoutePlan()
         val useCase = RoutePreviewMutationUseCase(
-            repository = PlannerRepository(
-                remoteDataSource = FakePlannerRemoteDataSource(
-                    durationByEndPoiId = mapOf(
-                        1 to 5,
-                        2 to 6,
-                        3 to 4,
-                        -1 to 7
-                    )
-                ),
-                localDataSource = FakePlannerLocalDataSource(),
-                routeSessionRepository = FakeRouteSessionRepository(),
-                routeBookmarkRepository = FakeRouteBookmarkRepository(),
-                offlineSyncRepository = FakeOfflineSyncRepository()
+            routePlanningRepository = FakeRoutePlanningRepository(
+                durationByEndPoiId = mapOf(
+                    1 to 5,
+                    2 to 6,
+                    3 to 4,
+                    -1 to 7
+                )
             )
         )
 
@@ -456,13 +441,9 @@ class RoutePlannerDomainLogicTest {
             updatedAtEpochMs = updatedAtEpochMs
         )
 
-    private inner class FakePlannerRemoteDataSource(
+    private inner class FakeRoutePlanningRepository(
         private val durationByEndPoiId: Map<Int, Int>
-    ) : PlannerRemoteDataSource {
-        override suspend fun fetchCities(): List<City> = unsupported()
-
-        override suspend fun fetchPois(citySlug: String): List<Poi> = unsupported()
-
+    ) : RoutePlanningRepository {
         override suspend fun generateRoute(request: PlannerPreferences): RoutePlan = unsupported()
 
         override suspend fun generateRouteLeg(request: RouteLegQuery): RouteLeg {
@@ -487,102 +468,9 @@ class RoutePlannerDomainLogicTest {
             )
         }
 
-        override suspend fun getRouteSession(routeId: String): RouteSession = unsupported()
-
-        override suspend fun getRouteSessions(deviceId: String): List<RouteSession> = unsupported()
-    }
-
-    private inner class FakePlannerLocalDataSource : PlannerLocalDataSource {
-        override fun getOrCreateDeviceId(): String = "test-device"
-
-        override suspend fun cacheCities(cities: List<City>) = Unit
-
-        override suspend fun getCachedCities(): List<City> = emptyList()
-
-        override suspend fun cachePois(citySlug: String, pois: List<Poi>) = Unit
-
-        override suspend fun getCachedPois(citySlug: String): List<Poi> = emptyList()
-
         override suspend fun saveSnapshot(snapshot: SavedRouteSnapshot) = Unit
 
         override suspend fun loadSnapshot(): SavedRouteSnapshot? = null
-
-        override suspend fun saveActiveSession(session: ActiveRouteSession) = Unit
-
-        override suspend fun loadActiveSession(): ActiveRouteSession? = null
-
-        override suspend fun clearActiveSession() = Unit
-
-        override suspend fun saveRouteBookmark(bookmark: RouteBookmark) = Unit
-
-        override suspend fun loadRouteBookmarks(): List<RouteBookmark> = emptyList()
-
-        override suspend fun loadRouteBookmark(bookmarkId: String): RouteBookmark? = null
-
-        override suspend fun deleteRouteBookmark(bookmarkId: String) = Unit
-
-        override suspend fun saveRouteHistoryEntry(entry: RouteHistoryEntry) = Unit
-
-        override suspend fun saveRouteHistoryEntries(entries: List<RouteHistoryEntry>) = Unit
-
-        override suspend fun loadRouteHistoryEntries(): List<RouteHistoryEntry> = emptyList()
-    }
-
-    private inner class FakeRouteSessionRepository : RouteSessionRepository {
-        override suspend fun getRouteSession(routeId: String): RouteSession = unsupported()
-
-        override suspend fun getRouteSessions(deviceId: String): List<RouteSession> = unsupported()
-
-        override suspend fun saveActiveSession(session: ActiveRouteSession) = Unit
-
-        override suspend fun loadActiveSession(): ActiveRouteSession? = null
-
-        override suspend fun clearActiveSession() = Unit
-
-        override suspend fun saveHistoryEntry(entry: RouteHistoryEntry) = Unit
-
-        override suspend fun saveHistoryEntries(entries: List<RouteHistoryEntry>) = Unit
-
-        override suspend fun loadHistoryEntries(): List<RouteHistoryEntry> = emptyList()
-    }
-
-    private inner class FakeRouteBookmarkRepository : RouteBookmarkRepository {
-        override suspend fun saveBookmark(bookmark: RouteBookmark) = Unit
-
-        override suspend fun loadBookmarks(): List<RouteBookmark> = emptyList()
-
-        override suspend fun loadBookmark(bookmarkId: String): RouteBookmark? = null
-
-        override suspend fun deleteBookmark(bookmarkId: String) = Unit
-    }
-
-    private inner class FakeOfflineSyncRepository : OfflineSyncRepository {
-        override fun isNetworkAvailable(): Boolean = true
-
-        override suspend fun getPendingSyncOperationCount(): Int = 0
-
-        override suspend fun enqueuePendingRouteSession(
-            sessionRouteId: String,
-            deviceId: String,
-            status: String,
-            startedAt: String,
-            snapshot: SavedRouteSnapshot,
-            finishedAt: String?
-        ) = Unit
-
-        override suspend fun enqueuePendingPoiVisit(
-            sessionId: String,
-            poiId: Int,
-            visitedAt: String,
-            skipped: Boolean
-        ) = Unit
-
-        override suspend fun enqueuePendingFeedback(
-            sessionId: String,
-            feedback: RouteFeedback
-        ) = Unit
-
-        override fun scheduleImmediateSync() = Unit
     }
 
     private fun <T> unsupported(): T =

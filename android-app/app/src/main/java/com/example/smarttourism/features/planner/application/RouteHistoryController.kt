@@ -1,7 +1,8 @@
 package com.example.smarttourism.features.planner.application
 
 import com.example.smarttourism.data.model.RouteHistoryEntry
-import com.example.smarttourism.features.planner.data.PlannerRepository
+import com.example.smarttourism.features.planner.data.session.RouteSessionRepository
+import com.example.smarttourism.features.planner.data.sync.OfflineSyncRepository
 import com.example.smarttourism.features.planner.domain.history.mergeRouteHistoryEntries
 import com.example.smarttourism.features.planner.domain.history.sortRouteHistoryEntries
 import com.example.smarttourism.features.planner.domain.history.toRouteHistoryEntry
@@ -13,7 +14,8 @@ internal data class RouteHistoryRefreshResult(
 )
 
 internal class RouteHistoryController @Inject constructor(
-    private val repository: PlannerRepository
+    private val routeSessionRepository: RouteSessionRepository,
+    private val offlineSyncRepository: OfflineSyncRepository
 ) {
     suspend fun refreshRouteHistory(
         deviceId: String,
@@ -22,7 +24,7 @@ internal class RouteHistoryController @Inject constructor(
         currentEntry: RouteHistoryEntry?,
         routeHistoryLoadFailedMessage: String
     ): RouteHistoryRefreshResult {
-        val cachedHistory = sortRouteHistoryEntries(repository.loadRouteHistoryEntries())
+        val cachedHistory = sortRouteHistoryEntries(routeSessionRepository.loadHistoryEntries())
         if (!forceRefresh && currentHistory.isNotEmpty()) {
             return RouteHistoryRefreshResult(
                 history = currentHistory,
@@ -30,7 +32,7 @@ internal class RouteHistoryController @Inject constructor(
             )
         }
 
-        if (!repository.isNetworkAvailable()) {
+        if (!offlineSyncRepository.isNetworkAvailable()) {
             return RouteHistoryRefreshResult(
                 history = currentHistory.ifEmpty { cachedHistory },
                 error = null
@@ -38,7 +40,7 @@ internal class RouteHistoryController @Inject constructor(
         }
 
         return runCatching {
-            val remoteEntries = repository.getRouteSessions(deviceId)
+            val remoteEntries = routeSessionRepository.getRouteSessions(deviceId)
                 .mapNotNull { session ->
                     runCatching { session.toRouteHistoryEntry() }.getOrNull()
                 }
@@ -47,7 +49,7 @@ internal class RouteHistoryController @Inject constructor(
                 remoteEntries = remoteEntries,
                 currentEntry = currentEntry
             )
-            repository.saveRouteHistoryEntries(mergedEntries)
+            routeSessionRepository.saveHistoryEntries(mergedEntries)
             RouteHistoryRefreshResult(
                 history = mergedEntries,
                 error = null

@@ -1,7 +1,8 @@
 package com.example.smarttourism.features.planner.application
 
 import com.example.smarttourism.data.model.SavedRouteSnapshot
-import com.example.smarttourism.features.planner.data.PlannerRepository
+import com.example.smarttourism.features.planner.data.route.RoutePlanningRepository
+import com.example.smarttourism.features.planner.data.sync.OfflineSyncRepository
 import com.example.smarttourism.features.planner.domain.model.City
 import com.example.smarttourism.features.planner.domain.model.PlannerPreferences
 import com.example.smarttourism.features.planner.domain.model.Poi
@@ -53,10 +54,11 @@ internal sealed interface RouteGenerationResult {
 }
 
 internal class RouteGenerationUseCase @Inject constructor(
-    private val repository: PlannerRepository
+    private val routePlanningRepository: RoutePlanningRepository,
+    private val offlineSyncRepository: OfflineSyncRepository
 ) {
     suspend fun generateRoute(input: RouteGenerationInput): RouteGenerationResult {
-        if (!repository.isNetworkAvailable()) {
+        if (!offlineSyncRepository.isNetworkAvailable()) {
             return RouteGenerationResult.Error(input.offlineRouteGenerationMessage)
         }
 
@@ -80,7 +82,7 @@ internal class RouteGenerationUseCase @Inject constructor(
         )
 
         return runCatching {
-            val generatedRoute = repository.generateRoute(request)
+            val generatedRoute = routePlanningRepository.generateRoute(request)
             val missingRequiredPlaces = missingRequiredPoiLabels(
                 request = request,
                 response = generatedRoute,
@@ -99,7 +101,7 @@ internal class RouteGenerationUseCase @Inject constructor(
                 generatedRoute.route.isEmpty() -> RouteGenerationResult.EmptyRoute(request)
 
                 else -> {
-                    repository.saveSnapshot(
+                    routePlanningRepository.saveSnapshot(
                         SavedRouteSnapshot(
                             request = request,
                             response = generatedRoute

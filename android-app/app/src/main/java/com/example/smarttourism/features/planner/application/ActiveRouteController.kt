@@ -4,7 +4,8 @@ import com.example.smarttourism.data.model.ActiveRouteSession
 import com.example.smarttourism.data.model.RouteFeedback
 import com.example.smarttourism.data.model.RouteHistoryEntry
 import com.example.smarttourism.data.model.SavedRouteSnapshot
-import com.example.smarttourism.features.planner.data.PlannerRepository
+import com.example.smarttourism.features.planner.data.session.RouteSessionRepository
+import com.example.smarttourism.features.planner.data.sync.OfflineSyncRepository
 import com.example.smarttourism.features.planner.domain.model.RoutePlan
 import com.example.smarttourism.features.planner.domain.model.RoutePoint
 import com.example.smarttourism.features.planner.domain.model.RouteStop
@@ -81,7 +82,8 @@ internal data class TrackedLocationResult(
 )
 
 internal class ActiveRouteController @Inject constructor(
-    private val repository: PlannerRepository
+    private val routeSessionRepository: RouteSessionRepository,
+    private val offlineSyncRepository: OfflineSyncRepository
 ) {
     fun activateRouteTracking(
         state: RoutePlannerUiState,
@@ -524,7 +526,7 @@ internal class ActiveRouteController @Inject constructor(
         snapshot: SavedRouteSnapshot,
         finishedAt: String? = null
     ): Int {
-        repository.enqueuePendingRouteSession(
+        offlineSyncRepository.enqueuePendingRouteSession(
             sessionRouteId = sessionRouteId,
             deviceId = deviceId,
             status = status.rawValue,
@@ -532,8 +534,8 @@ internal class ActiveRouteController @Inject constructor(
             snapshot = snapshot,
             finishedAt = finishedAt
         )
-        val pendingCount = repository.getPendingSyncOperationCount()
-        repository.scheduleImmediateSync()
+        val pendingCount = offlineSyncRepository.getPendingSyncOperationCount()
+        offlineSyncRepository.scheduleImmediateSync()
         return pendingCount
     }
 
@@ -569,7 +571,7 @@ internal class ActiveRouteController @Inject constructor(
             updatedAtEpochMs = historyUpdatedAt
         )
 
-        repository.saveActiveSession(
+        routeSessionRepository.saveActiveSession(
             ActiveRouteSession(
                 route_id = input.routeId,
                 status = input.status.rawValue,
@@ -583,7 +585,7 @@ internal class ActiveRouteController @Inject constructor(
                 feedback = input.feedback
             )
         )
-        repository.saveRouteHistoryEntry(historyEntry)
+        routeSessionRepository.saveHistoryEntry(historyEntry)
         val pendingCount = enqueueRouteSessionSync(
             deviceId = input.deviceId,
             sessionRouteId = input.routeId,
@@ -616,12 +618,12 @@ internal class ActiveRouteController @Inject constructor(
         sessionId: String,
         feedback: RouteFeedback
     ): Int {
-        repository.enqueuePendingFeedback(
+        offlineSyncRepository.enqueuePendingFeedback(
             sessionId = sessionId,
             feedback = feedback
         )
-        val pendingCount = repository.getPendingSyncOperationCount()
-        repository.scheduleImmediateSync()
+        val pendingCount = offlineSyncRepository.getPendingSyncOperationCount()
+        offlineSyncRepository.scheduleImmediateSync()
         return pendingCount
     }
 
@@ -631,15 +633,15 @@ internal class ActiveRouteController @Inject constructor(
         skipped: Boolean
     ): Int {
         poiIds.distinct().forEach { poiId ->
-            repository.enqueuePendingPoiVisit(
+            offlineSyncRepository.enqueuePendingPoiVisit(
                 sessionId = sessionId,
                 poiId = poiId,
                 visitedAt = defaultRouteStartDateTime().toString(),
                 skipped = skipped
             )
         }
-        val pendingCount = repository.getPendingSyncOperationCount()
-        repository.scheduleImmediateSync()
+        val pendingCount = offlineSyncRepository.getPendingSyncOperationCount()
+        offlineSyncRepository.scheduleImmediateSync()
         return pendingCount
     }
 

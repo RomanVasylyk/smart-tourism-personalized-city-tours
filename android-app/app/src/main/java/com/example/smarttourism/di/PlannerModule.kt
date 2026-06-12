@@ -4,10 +4,16 @@ import com.example.smarttourism.core.network.ApiModule
 import com.example.smarttourism.data.remote.api.PoiApi
 import com.example.smarttourism.features.planner.data.bookmark.DefaultRouteBookmarkRepository
 import com.example.smarttourism.features.planner.data.bookmark.RouteBookmarkRepository
+import com.example.smarttourism.features.planner.data.city.CityRepository
+import com.example.smarttourism.features.planner.data.city.DefaultCityRepository
 import com.example.smarttourism.features.planner.data.local.DefaultPlannerLocalDataSource
 import com.example.smarttourism.features.planner.data.local.PlannerLocalDataSource
+import com.example.smarttourism.features.planner.data.poi.DefaultPoiRepository
+import com.example.smarttourism.features.planner.data.poi.PoiRepository
 import com.example.smarttourism.features.planner.data.remote.ApiPlannerRemoteDataSource
 import com.example.smarttourism.features.planner.data.remote.PlannerRemoteDataSource
+import com.example.smarttourism.features.planner.data.route.DefaultRoutePlanningRepository
+import com.example.smarttourism.features.planner.data.route.RoutePlanningRepository
 import com.example.smarttourism.features.planner.data.session.DefaultRouteSessionRepository
 import com.example.smarttourism.features.planner.data.session.RouteSessionRepository
 import com.example.smarttourism.features.planner.data.sync.DefaultOfflineSyncRepository
@@ -33,6 +39,24 @@ internal abstract class PlannerBindingsModule {
     abstract fun bindPlannerLocalDataSource(
         dataSource: DefaultPlannerLocalDataSource
     ): PlannerLocalDataSource
+
+    @Binds
+    @Singleton
+    abstract fun bindCityRepository(
+        repository: DefaultCityRepository
+    ): CityRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindPoiRepository(
+        repository: DefaultPoiRepository
+    ): PoiRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindRoutePlanningRepository(
+        repository: DefaultRoutePlanningRepository
+    ): RoutePlanningRepository
 
     @Binds
     @Singleton

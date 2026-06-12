@@ -1,7 +1,8 @@
 package com.example.smarttourism.features.planner.application
 
 import com.example.smarttourism.data.model.SavedRouteSnapshot
-import com.example.smarttourism.features.planner.data.PlannerRepository
+import com.example.smarttourism.features.planner.data.route.RoutePlanningRepository
+import com.example.smarttourism.features.planner.data.sync.OfflineSyncRepository
 import com.example.smarttourism.features.planner.state.RoutePlannerUiState
 import com.example.smarttourism.features.planner.state.RouteSessionStatus
 import com.example.smarttourism.features.planner.domain.route.buildPreviewReplacementCandidates
@@ -13,7 +14,8 @@ internal data class RoutePreviewMutationResult(
 )
 
 internal class RoutePreviewController @Inject constructor(
-    private val repository: PlannerRepository,
+    private val routePlanningRepository: RoutePlanningRepository,
+    private val offlineSyncRepository: OfflineSyncRepository,
     private val routePreviewMutationUseCase: RoutePreviewMutationUseCase
 ) {
     suspend fun removeStop(
@@ -27,7 +29,7 @@ internal class RoutePreviewController @Inject constructor(
         }
         val response = state.routeResponse ?: return RoutePreviewMutationResult(state)
         val request = state.currentRouteRequest ?: return RoutePreviewMutationResult(state)
-        if (!repository.isNetworkAvailable()) {
+        if (!offlineSyncRepository.isNetworkAvailable()) {
             return RoutePreviewMutationResult(state, offlineRouteGenerationMessage)
         }
 
@@ -53,7 +55,7 @@ internal class RoutePreviewController @Inject constructor(
                     routeError = null
                 )
             } else {
-                repository.saveSnapshot(
+                routePlanningRepository.saveSnapshot(
                     SavedRouteSnapshot(
                         request = updatedRequest,
                         response = updatedResponse
@@ -98,7 +100,7 @@ internal class RoutePreviewController @Inject constructor(
         if (targetIndex == currentIndex) {
             return RoutePreviewMutationResult(state)
         }
-        if (!repository.isNetworkAvailable()) {
+        if (!offlineSyncRepository.isNetworkAvailable()) {
             return RoutePreviewMutationResult(state, offlineRouteGenerationMessage)
         }
 
@@ -110,7 +112,7 @@ internal class RoutePreviewController @Inject constructor(
                 context = state.routePreviewMutationContext()
             )
             val updatedRequest = request.copy(preferredPoiIds = state.requiredPoiIds)
-            repository.saveSnapshot(
+            routePlanningRepository.saveSnapshot(
                 SavedRouteSnapshot(
                     request = updatedRequest,
                     response = updatedResponse
@@ -145,7 +147,7 @@ internal class RoutePreviewController @Inject constructor(
         }
         val response = state.routeResponse ?: return RoutePreviewMutationResult(state)
         val request = state.currentRouteRequest ?: return RoutePreviewMutationResult(state)
-        if (!repository.isNetworkAvailable()) {
+        if (!offlineSyncRepository.isNetworkAvailable()) {
             return RoutePreviewMutationResult(state, offlineRouteGenerationMessage)
         }
 
@@ -177,7 +179,7 @@ internal class RoutePreviewController @Inject constructor(
                 replacementPoi = replacementPoi,
                 context = state.routePreviewMutationContext()
             )
-            repository.saveSnapshot(
+            routePlanningRepository.saveSnapshot(
                 SavedRouteSnapshot(
                     request = updatedRequest,
                     response = updatedResponse

@@ -2,7 +2,8 @@ package com.example.smarttourism.features.planner.application
 
 import com.example.smarttourism.data.model.RouteBookmark
 import com.example.smarttourism.data.model.SavedRouteSnapshot
-import com.example.smarttourism.features.planner.data.PlannerRepository
+import com.example.smarttourism.features.planner.data.bookmark.RouteBookmarkRepository
+import com.example.smarttourism.features.planner.data.route.RoutePlanningRepository
 import com.example.smarttourism.features.planner.domain.history.defaultRouteBookmarkTitle
 import java.util.UUID
 import javax.inject.Inject
@@ -13,7 +14,8 @@ internal data class BookmarkSaveResult(
 )
 
 internal class BookmarkController @Inject constructor(
-    private val repository: PlannerRepository
+    private val routeBookmarkRepository: RouteBookmarkRepository,
+    private val routePlanningRepository: RoutePlanningRepository
 ) {
     suspend fun saveCurrentRouteBookmark(
         snapshot: SavedRouteSnapshot,
@@ -35,22 +37,22 @@ internal class BookmarkController @Inject constructor(
             createdAtEpochMs = existingBookmark?.createdAtEpochMs ?: now,
             updatedAtEpochMs = now
         )
-        repository.saveRouteBookmark(bookmark)
+        routeBookmarkRepository.saveBookmark(bookmark)
         return BookmarkSaveResult(
             activeBookmarkId = bookmark.id,
-            bookmarks = repository.loadRouteBookmarks()
+            bookmarks = routeBookmarkRepository.loadBookmarks()
         )
     }
 
     suspend fun loadRouteBookmark(bookmarkId: String): RouteBookmark? =
-        repository.loadRouteBookmark(bookmarkId)
+        routeBookmarkRepository.loadBookmark(bookmarkId)
 
     suspend fun saveSnapshot(snapshot: SavedRouteSnapshot) {
-        repository.saveSnapshot(snapshot)
+        routePlanningRepository.saveSnapshot(snapshot)
     }
 
     suspend fun deleteRouteBookmark(bookmarkId: String): List<RouteBookmark> {
-        repository.deleteRouteBookmark(bookmarkId)
-        return repository.loadRouteBookmarks()
+        routeBookmarkRepository.deleteBookmark(bookmarkId)
+        return routeBookmarkRepository.loadBookmarks()
     }
 }

@@ -1,6 +1,6 @@
 package com.example.smarttourism.features.planner.application
 
-import com.example.smarttourism.features.planner.data.PlannerRepository
+import com.example.smarttourism.features.planner.data.route.RoutePlanningRepository
 import com.example.smarttourism.features.planner.domain.model.Poi
 import com.example.smarttourism.features.planner.domain.model.RouteLeg
 import com.example.smarttourism.features.planner.domain.model.RouteLegEndpoint
@@ -22,7 +22,7 @@ internal data class RoutePreviewMutationContext(
 )
 
 internal class RoutePreviewMutationUseCase @Inject constructor(
-    private val repository: PlannerRepository
+    private val routePlanningRepository: RoutePlanningRepository
 ) {
     suspend fun removeStop(
         previousResponse: RoutePlan,
@@ -222,7 +222,7 @@ internal class RoutePreviewMutationUseCase @Inject constructor(
             transportMode = context.transportMode ?: previousResponse.transportMode ?: "walk"
         )
 
-        return repository.generateRouteLeg(routeLegRequest).copy(
+        return routePlanningRepository.generateRouteLeg(routeLegRequest).copy(
             from = fromEndpoint,
             to = toEndpoint
         )

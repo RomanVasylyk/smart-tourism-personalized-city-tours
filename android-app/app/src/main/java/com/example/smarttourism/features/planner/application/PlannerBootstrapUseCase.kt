@@ -4,7 +4,10 @@ import com.example.smarttourism.data.model.ActiveRouteSession
 import com.example.smarttourism.data.model.RouteBookmark
 import com.example.smarttourism.data.model.RouteHistoryEntry
 import com.example.smarttourism.data.model.SavedRouteSnapshot
-import com.example.smarttourism.features.planner.data.PlannerRepository
+import com.example.smarttourism.features.planner.data.bookmark.RouteBookmarkRepository
+import com.example.smarttourism.features.planner.data.route.RoutePlanningRepository
+import com.example.smarttourism.features.planner.data.session.RouteSessionRepository
+import com.example.smarttourism.features.planner.data.sync.OfflineSyncRepository
 import com.example.smarttourism.features.planner.domain.model.RouteSession
 import com.example.smarttourism.features.planner.state.RouteSessionStatus
 import com.example.smarttourism.features.planner.domain.history.isRestorable
@@ -20,16 +23,19 @@ internal data class PlannerBootstrapLocalState(
 )
 
 internal class PlannerBootstrapUseCase @Inject constructor(
-    private val repository: PlannerRepository
+    private val routeBookmarkRepository: RouteBookmarkRepository,
+    private val routePlanningRepository: RoutePlanningRepository,
+    private val routeSessionRepository: RouteSessionRepository,
+    private val offlineSyncRepository: OfflineSyncRepository
 ) {
     suspend fun loadLocalState(): PlannerBootstrapLocalState {
-        val activeSession = repository.loadActiveSession()
+        val activeSession = routeSessionRepository.loadActiveSession()
         return PlannerBootstrapLocalState(
-            bookmarks = repository.loadRouteBookmarks(),
-            history = sortRouteHistoryEntries(repository.loadRouteHistoryEntries()),
+            bookmarks = routeBookmarkRepository.loadBookmarks(),
+            history = sortRouteHistoryEntries(routeSessionRepository.loadHistoryEntries()),
             activeSession = activeSession,
-            savedSnapshot = activeSession?.snapshot ?: repository.loadSnapshot(),
-            pendingSyncOperationCount = repository.getPendingSyncOperationCount()
+            savedSnapshot = activeSession?.snapshot ?: routePlanningRepository.loadSnapshot(),
+            pendingSyncOperationCount = offlineSyncRepository.getPendingSyncOperationCount()
         )
     }
 
@@ -40,9 +46,9 @@ internal class PlannerBootstrapUseCase @Inject constructor(
     ): RouteSession? =
         runCatching {
             if (routeId != null && routeSessionStatus.isRestorable()) {
-                repository.getRouteSession(routeId)
+                routeSessionRepository.getRouteSession(routeId)
             } else {
-                repository.getRouteSessions(deviceId)
+                routeSessionRepository.getRouteSessions(deviceId)
                     .firstOrNull { session ->
                         RouteSessionStatus.fromRawValue(session.status).isRestorable()
                     }
@@ -50,6 +56,6 @@ internal class PlannerBootstrapUseCase @Inject constructor(
         }.getOrNull()
 
     fun scheduleImmediateSync() {
-        repository.scheduleImmediateSync()
+        offlineSyncRepository.scheduleImmediateSync()
     }
 }
