@@ -13,11 +13,14 @@ import com.example.smarttourism.data.local.PendingPoiVisitSyncEntity
 import com.example.smarttourism.data.local.PendingRouteSessionSyncEntity
 import com.example.smarttourism.data.local.RouteHistoryEntryEntity
 import com.example.smarttourism.data.model.ActiveRouteSession
+import com.example.smarttourism.data.model.ActiveRouteSessionCache
 import com.example.smarttourism.data.model.CacheEnvelopeType
 import com.example.smarttourism.data.model.CurrentCacheEnvelopeVersion
 import com.example.smarttourism.data.model.RouteBookmark
 import com.example.smarttourism.data.model.RouteHistoryEntry
+import com.example.smarttourism.data.model.RouteHistoryEntryCache
 import com.example.smarttourism.data.model.SavedRouteSnapshot
+import com.example.smarttourism.data.model.SavedRouteSnapshotCache
 import com.example.smarttourism.data.model.VersionedCacheEnvelope
 import com.example.smarttourism.data.remote.api.PoiApi
 import com.example.smarttourism.data.remote.dto.CityBboxDto
@@ -28,6 +31,8 @@ import com.example.smarttourism.data.remote.dto.RouteSessionCreateRequest
 import com.example.smarttourism.data.remote.dto.RouteSessionPoiVisitRequest
 import com.example.smarttourism.data.remote.dto.RoutingLimitsDto
 import com.example.smarttourism.data.remote.dto.TransportProfileDto
+import com.example.smarttourism.features.planner.domain.mapper.toDomain
+import com.example.smarttourism.features.planner.domain.mapper.toDto
 import com.google.gson.Gson
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
@@ -157,7 +162,7 @@ object OfflineCacheRepository {
         dao(context).upsertLastRoute(
             CachedLastRouteEntity(
                 cacheKey = LastRouteCacheKey,
-                snapshotJson = toVersionedJson(CacheEnvelopeType.SAVED_ROUTE_SNAPSHOT, snapshot),
+                snapshotJson = toVersionedJson(CacheEnvelopeType.SAVED_ROUTE_SNAPSHOT, snapshot.toCache()),
                 updatedAtEpochMs = System.currentTimeMillis()
             )
         )
@@ -167,13 +172,7 @@ object OfflineCacheRepository {
         dao(context)
             .getLastRoute()
             ?.snapshotJson
-            ?.let { rawJson ->
-                fromVersionedJsonOrNull(
-                    rawJson = rawJson,
-                    expectedType = CacheEnvelopeType.SAVED_ROUTE_SNAPSHOT,
-                    clazz = SavedRouteSnapshot::class.java
-                )
-            }
+            ?.let { rawJson -> savedRouteSnapshotFromJsonOrNull(rawJson) }
 
     suspend fun saveRouteBookmark(
         context: Context,
@@ -184,7 +183,7 @@ object OfflineCacheRepository {
                 bookmarkId = bookmark.id,
                 title = bookmark.title,
                 citySlug = bookmark.citySlug,
-                snapshotJson = toVersionedJson(CacheEnvelopeType.SAVED_ROUTE_SNAPSHOT, bookmark.snapshot),
+                snapshotJson = toVersionedJson(CacheEnvelopeType.SAVED_ROUTE_SNAPSHOT, bookmark.snapshot.toCache()),
                 createdAtEpochMs = bookmark.createdAtEpochMs,
                 updatedAtEpochMs = bookmark.updatedAtEpochMs
             )
@@ -209,7 +208,7 @@ object OfflineCacheRepository {
         dao(context).upsertRouteHistoryEntry(
             RouteHistoryEntryEntity(
                 routeId = entry.routeId,
-                historyJson = toVersionedJson(CacheEnvelopeType.ROUTE_HISTORY_ENTRY, entry),
+                historyJson = toVersionedJson(CacheEnvelopeType.ROUTE_HISTORY_ENTRY, entry.toCache()),
                 updatedAtEpochMs = entry.updatedAtEpochMs
             )
         )
@@ -220,7 +219,7 @@ object OfflineCacheRepository {
             entries.map { entry ->
                 RouteHistoryEntryEntity(
                     routeId = entry.routeId,
-                    historyJson = toVersionedJson(CacheEnvelopeType.ROUTE_HISTORY_ENTRY, entry),
+                    historyJson = toVersionedJson(CacheEnvelopeType.ROUTE_HISTORY_ENTRY, entry.toCache()),
                     updatedAtEpochMs = entry.updatedAtEpochMs
                 )
             }
@@ -231,11 +230,7 @@ object OfflineCacheRepository {
         dao(context)
             .getRouteHistoryEntries()
             .mapNotNull { entity ->
-                fromVersionedJsonOrNull(
-                    rawJson = entity.historyJson,
-                    expectedType = CacheEnvelopeType.ROUTE_HISTORY_ENTRY,
-                    clazz = RouteHistoryEntry::class.java
-                )
+                routeHistoryEntryFromJsonOrNull(entity.historyJson)
                     ?.copy(updatedAtEpochMs = entity.updatedAtEpochMs)
             }
 
@@ -243,7 +238,7 @@ object OfflineCacheRepository {
         dao(context).saveActiveRouteSession(
             CachedRouteSessionEntity(
                 routeId = session.route_id,
-                sessionJson = toVersionedJson(CacheEnvelopeType.ACTIVE_ROUTE_SESSION, session),
+                sessionJson = toVersionedJson(CacheEnvelopeType.ACTIVE_ROUTE_SESSION, session.toCache()),
                 isActive = true,
                 updatedAtEpochMs = System.currentTimeMillis()
             )
@@ -254,13 +249,7 @@ object OfflineCacheRepository {
         dao(context)
             .getActiveRouteSession()
             ?.sessionJson
-            ?.let { rawJson ->
-                fromVersionedJsonOrNull(
-                    rawJson = rawJson,
-                    expectedType = CacheEnvelopeType.ACTIVE_ROUTE_SESSION,
-                    clazz = ActiveRouteSession::class.java
-                )
-            }
+            ?.let { rawJson -> activeRouteSessionFromJsonOrNull(rawJson) }
 
     suspend fun clearActiveRouteSession(context: Context) {
         dao(context).deleteActiveRouteSession()
@@ -539,12 +528,111 @@ object OfflineCacheRepository {
     private fun JsonElement?.asStringOrNull(): String? =
         runCatching { this?.asString }.getOrNull()
 
+    private fun savedRouteSnapshotFromJsonOrNull(rawJson: String): SavedRouteSnapshot? =
+        runCatching {
+            fromVersionedJsonOrNull(
+                rawJson = rawJson,
+                expectedType = CacheEnvelopeType.SAVED_ROUTE_SNAPSHOT,
+                clazz = SavedRouteSnapshotCache::class.java
+            )?.toDomain()
+        }.getOrNull()
+
+    private fun routeHistoryEntryFromJsonOrNull(rawJson: String): RouteHistoryEntry? =
+        runCatching {
+            fromVersionedJsonOrNull(
+                rawJson = rawJson,
+                expectedType = CacheEnvelopeType.ROUTE_HISTORY_ENTRY,
+                clazz = RouteHistoryEntryCache::class.java
+            )?.toDomain()
+        }.getOrNull()
+
+    private fun activeRouteSessionFromJsonOrNull(rawJson: String): ActiveRouteSession? =
+        runCatching {
+            fromVersionedJsonOrNull(
+                rawJson = rawJson,
+                expectedType = CacheEnvelopeType.ACTIVE_ROUTE_SESSION,
+                clazz = ActiveRouteSessionCache::class.java
+            )?.toDomain()
+        }.getOrNull()
+
+    private fun SavedRouteSnapshot.toCache(): SavedRouteSnapshotCache =
+        SavedRouteSnapshotCache(
+            request = request.toDto(),
+            response = response.toDto()
+        )
+
+    private fun SavedRouteSnapshotCache.toDomain(): SavedRouteSnapshot =
+        SavedRouteSnapshot(
+            request = request.toDomain(),
+            response = response.toDomain()
+        )
+
+    private fun RouteHistoryEntry.toCache(): RouteHistoryEntryCache =
+        RouteHistoryEntryCache(
+            routeId = routeId,
+            cityName = cityName,
+            status = status,
+            startedAt = startedAt,
+            finishedAt = finishedAt,
+            availableMinutes = availableMinutes,
+            usedMinutes = usedMinutes,
+            totalWalkMinutes = totalWalkMinutes,
+            totalVisitMinutes = totalVisitMinutes,
+            snapshot = snapshot.toCache(),
+            visitedPoiIds = visitedPoiIds,
+            skippedPoiIds = skippedPoiIds,
+            feedback = feedback,
+            updatedAtEpochMs = updatedAtEpochMs
+        )
+
+    private fun RouteHistoryEntryCache.toDomain(): RouteHistoryEntry =
+        RouteHistoryEntry(
+            routeId = routeId,
+            cityName = cityName,
+            status = status,
+            startedAt = startedAt,
+            finishedAt = finishedAt,
+            availableMinutes = availableMinutes,
+            usedMinutes = usedMinutes,
+            totalWalkMinutes = totalWalkMinutes,
+            totalVisitMinutes = totalVisitMinutes,
+            snapshot = snapshot.toDomain(),
+            visitedPoiIds = visitedPoiIds,
+            skippedPoiIds = skippedPoiIds,
+            feedback = feedback,
+            updatedAtEpochMs = updatedAtEpochMs
+        )
+
+    private fun ActiveRouteSession.toCache(): ActiveRouteSessionCache =
+        ActiveRouteSessionCache(
+            route_id = route_id,
+            status = status,
+            started_at = started_at,
+            current_target_poi_id = current_target_poi_id,
+            visited_poi_ids = visited_poi_ids,
+            skipped_poi_ids = skipped_poi_ids,
+            progress_visited_count = progress_visited_count,
+            progress_total_count = progress_total_count,
+            snapshot = snapshot.toCache(),
+            feedback = feedback
+        )
+
+    private fun ActiveRouteSessionCache.toDomain(): ActiveRouteSession =
+        ActiveRouteSession(
+            route_id = route_id,
+            status = status,
+            started_at = started_at,
+            current_target_poi_id = current_target_poi_id,
+            visited_poi_ids = visited_poi_ids,
+            skipped_poi_ids = skipped_poi_ids,
+            progress_visited_count = progress_visited_count,
+            progress_total_count = progress_total_count,
+            snapshot = snapshot.toDomain(),
+            feedback = feedback
+        )
+
     private fun BookmarkedRouteEntity.toRouteBookmarkOrNull(): RouteBookmark? {
-        val snapshot = fromVersionedJsonOrNull(
-            rawJson = snapshotJson,
-            expectedType = CacheEnvelopeType.SAVED_ROUTE_SNAPSHOT,
-            clazz = SavedRouteSnapshot::class.java
-        ) ?: return null
+        val snapshot = savedRouteSnapshotFromJsonOrNull(snapshotJson) ?: return null
         return RouteBookmark(
             id = bookmarkId,
             title = title,
