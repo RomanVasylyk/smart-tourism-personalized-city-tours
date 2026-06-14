@@ -1,0 +1,216 @@
+package com.example.smarttourism.data.repository
+
+import com.example.smarttourism.data.local.BookmarkedRouteEntity
+import com.example.smarttourism.data.local.CachedCityEntity
+import com.example.smarttourism.data.local.CachedLastRouteEntity
+import com.example.smarttourism.data.local.CachedPoiEntity
+import com.example.smarttourism.data.local.CachedRouteSessionEntity
+import com.example.smarttourism.data.local.OfflineCacheDao
+import com.example.smarttourism.data.local.PendingFeedbackEntity
+import com.example.smarttourism.data.local.PendingPoiVisitSyncEntity
+import com.example.smarttourism.data.local.PendingRouteSessionSyncEntity
+import com.example.smarttourism.data.local.RouteHistoryEntryEntity
+import com.example.smarttourism.data.model.CacheEnvelopeType
+import com.example.smarttourism.data.remote.dto.RouteFeedbackRequest
+import com.example.smarttourism.data.remote.dto.RouteSessionCreateRequest
+import com.example.smarttourism.data.remote.dto.RouteSessionPoiVisitRequest
+import com.example.smarttourism.features.planner.domain.mapper.toDto
+import com.example.smarttourism.features.planner.sampleSnapshot
+import com.google.gson.Gson
+import com.google.gson.JsonParser
+import kotlinx.coroutines.runBlocking
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
+import org.junit.Test
+
+class OfflineCacheRepositoryEnvelopeTest {
+    @Test
+    fun saveLastRoutePersistsVersionedDtoEnvelopeAndRoundTripsToDomain() = runBlocking {
+        val dao = FakeOfflineCacheDao()
+        val store = OfflineCacheStore(dao = dao, gson = Gson())
+        val snapshot = sampleSnapshot()
+
+        store.saveLastRoute(snapshot)
+
+        val rawJson = dao.lastRoute?.snapshotJson
+        assertNotNull(rawJson)
+        val envelope = JsonParser.parseString(rawJson).asJsonObject
+        assertEquals(1, envelope.get("schema_version").asInt)
+        assertEquals(CacheEnvelopeType.SAVED_ROUTE_SNAPSHOT, envelope.get("type").asString)
+
+        val requestJson = envelope.getAsJsonObject("payload").getAsJsonObject("request")
+        assertTrue(requestJson.has("start_lat"))
+        assertTrue(requestJson.has("available_minutes"))
+        assertFalse(requestJson.has("startLat"))
+        assertFalse(requestJson.has("availableMinutes"))
+
+        val restored = store.loadLastRoute()
+        assertEquals(snapshot.request.startLat, restored?.request?.startLat)
+        assertEquals(snapshot.request.availableMinutes, restored?.request?.availableMinutes)
+        assertEquals(snapshot.response.usedMinutes, restored?.response?.usedMinutes)
+        assertEquals(snapshot.response.route.map { stop -> stop.poiId }, restored?.response?.route?.map { stop -> stop.poiId })
+    }
+
+    @Test
+    fun loadLastRouteRejectsWrongEnvelopeType() = runBlocking {
+        val dao = FakeOfflineCacheDao().apply {
+            lastRoute = CachedLastRouteEntity(
+                cacheKey = "last_route",
+                snapshotJson = """
+                    {
+                      "schema_version": 1,
+                      "type": "${CacheEnvelopeType.ROUTE_HISTORY_ENTRY}",
+                      "payload": {}
+                    }
+                """.trimIndent(),
+                updatedAtEpochMs = 1
+            )
+        }
+        val store = OfflineCacheStore(dao = dao, gson = Gson())
+
+        assertNull(store.loadLastRoute())
+    }
+
+    @Test
+    fun pendingSyncCountSumsRouteSessionPoiVisitAndFeedbackQueues() = runBlocking {
+        val dao = FakeOfflineCacheDao()
+        val store = OfflineCacheStore(dao = dao, gson = Gson())
+        val snapshot = sampleSnapshot()
+
+        store.enqueuePendingRouteSession(
+            RouteSessionCreateRequest(
+                id = "session-1",
+                device_id = "device-1",
+                city = "nitra",
+                status = "in_progress",
+                start_lat = snapshot.response.start.lat,
+                start_lon = snapshot.response.start.lon,
+                available_minutes = snapshot.response.availableMinutes,
+                pace = snapshot.response.pace,
+                return_to_start = snapshot.response.returnToStart,
+                opening_hours_enabled = snapshot.response.respectOpeningHours,
+                started_at = "2026-05-19T10:00:00",
+                finished_at = null,
+                used_minutes = snapshot.response.usedMinutes,
+                total_walk_minutes = snapshot.response.totalWalkMinutes,
+                total_visit_minutes = snapshot.response.totalVisitMinutes,
+                route_snapshot_json = snapshot.response.toDto()
+            )
+        )
+        store.enqueuePendingPoiVisit(
+            sessionId = "session-1",
+            poiId = 1,
+            request = RouteSessionPoiVisitRequest(
+                visited_at = "2026-05-19T10:15:00",
+                skipped = false
+            )
+        )
+        store.enqueuePendingFeedback(
+            sessionId = "session-1",
+            request = RouteFeedbackRequest(
+                rating = 5,
+                was_convenient = true,
+                too_much_walking = false,
+                pois_were_interesting = true
+            )
+        )
+
+        assertEquals(3, store.getPendingSyncOperationCount())
+    }
+
+    private class FakeOfflineCacheDao : OfflineCacheDao {
+        var lastRoute: CachedLastRouteEntity? = null
+        private val routeSessions = linkedMapOf<String, PendingRouteSessionSyncEntity>()
+        private val poiVisits = linkedMapOf<String, PendingPoiVisitSyncEntity>()
+        private val feedback = linkedMapOf<String, PendingFeedbackEntity>()
+
+        override suspend fun getCachedCities(): List<CachedCityEntity> = emptyList()
+
+        override suspend fun insertCachedCities(cities: List<CachedCityEntity>) = Unit
+
+        override suspend fun clearCachedCities() = Unit
+
+        override suspend fun getCachedPois(citySlug: String): List<CachedPoiEntity> = emptyList()
+
+        override suspend fun insertCachedPois(pois: List<CachedPoiEntity>) = Unit
+
+        override suspend fun clearCachedPois(citySlug: String) = Unit
+
+        override suspend fun getLastRoute(cacheKey: String): CachedLastRouteEntity? = lastRoute
+
+        override suspend fun upsertLastRoute(route: CachedLastRouteEntity) {
+            lastRoute = route
+        }
+
+        override suspend fun clearLastRoute(cacheKey: String) {
+            lastRoute = null
+        }
+
+        override suspend fun getBookmarkedRoutes(): List<BookmarkedRouteEntity> = emptyList()
+
+        override suspend fun getBookmarkedRoute(bookmarkId: String): BookmarkedRouteEntity? = null
+
+        override suspend fun upsertBookmarkedRoute(route: BookmarkedRouteEntity) = Unit
+
+        override suspend fun deleteBookmarkedRoute(bookmarkId: String) = Unit
+
+        override suspend fun getRouteHistoryEntries(): List<RouteHistoryEntryEntity> = emptyList()
+
+        override suspend fun upsertRouteHistoryEntry(entry: RouteHistoryEntryEntity) = Unit
+
+        override suspend fun upsertRouteHistoryEntries(entries: List<RouteHistoryEntryEntity>) = Unit
+
+        override suspend fun getActiveRouteSession(): CachedRouteSessionEntity? = null
+
+        override suspend fun upsertRouteSession(routeSession: CachedRouteSessionEntity) = Unit
+
+        override suspend fun clearActiveRouteSessionFlags() = Unit
+
+        override suspend fun deleteActiveRouteSession() = Unit
+
+        override suspend fun upsertPendingFeedback(feedback: PendingFeedbackEntity) {
+            this.feedback[feedback.sessionId] = feedback
+        }
+
+        override suspend fun getPendingFeedback(): List<PendingFeedbackEntity> =
+            feedback.values.toList()
+
+        override suspend fun deletePendingFeedback(sessionId: String) {
+            feedback.remove(sessionId)
+        }
+
+        override suspend fun getPendingFeedbackCount(): Int =
+            feedback.size
+
+        override suspend fun upsertPendingRouteSessionSync(routeSessionSync: PendingRouteSessionSyncEntity) {
+            routeSessions[routeSessionSync.sessionId] = routeSessionSync
+        }
+
+        override suspend fun getPendingRouteSessionSyncs(): List<PendingRouteSessionSyncEntity> =
+            routeSessions.values.toList()
+
+        override suspend fun deletePendingRouteSessionSync(sessionId: String) {
+            routeSessions.remove(sessionId)
+        }
+
+        override suspend fun getPendingRouteSessionSyncCount(): Int =
+            routeSessions.size
+
+        override suspend fun upsertPendingPoiVisitSync(poiVisitSync: PendingPoiVisitSyncEntity) {
+            poiVisits[poiVisitSync.requestKey] = poiVisitSync
+        }
+
+        override suspend fun getPendingPoiVisitSyncs(): List<PendingPoiVisitSyncEntity> =
+            poiVisits.values.toList()
+
+        override suspend fun deletePendingPoiVisitSync(requestKey: String) {
+            poiVisits.remove(requestKey)
+        }
+
+        override suspend fun getPendingPoiVisitSyncCount(): Int =
+            poiVisits.size
+    }
+}
