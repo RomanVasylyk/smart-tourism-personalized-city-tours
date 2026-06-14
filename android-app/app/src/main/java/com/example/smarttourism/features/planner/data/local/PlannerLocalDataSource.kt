@@ -1,17 +1,15 @@
 package com.example.smarttourism.features.planner.data.local
 
-import android.content.Context
 import com.example.smarttourism.data.model.ActiveRouteSession
 import com.example.smarttourism.data.model.RouteBookmark
 import com.example.smarttourism.data.model.RouteHistoryEntry
 import com.example.smarttourism.data.model.SavedRouteSnapshot
-import com.example.smarttourism.data.repository.OfflineCacheRepository
-import com.example.smarttourism.data.repository.RouteStorage
+import com.example.smarttourism.data.repository.DeviceIdStore
+import com.example.smarttourism.data.repository.OfflineCacheStore
 import com.example.smarttourism.features.planner.domain.mapper.toDomain
 import com.example.smarttourism.features.planner.domain.mapper.toDto
 import com.example.smarttourism.features.planner.domain.model.City
 import com.example.smarttourism.features.planner.domain.model.Poi
-import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 
 internal interface PlannerLocalDataSource {
@@ -51,68 +49,66 @@ internal interface PlannerLocalDataSource {
 }
 
 internal class DefaultPlannerLocalDataSource @Inject constructor(
-    @ApplicationContext
-    context: Context
+    private val offlineCacheStore: OfflineCacheStore,
+    private val deviceIdStore: DeviceIdStore
 ) : PlannerLocalDataSource {
-    private val appContext = context.applicationContext
-
     override fun getOrCreateDeviceId(): String =
-        RouteStorage.getOrCreateDeviceId(appContext)
+        deviceIdStore.getOrCreateDeviceId()
 
     override suspend fun cacheCities(cities: List<City>) {
-        OfflineCacheRepository.cacheCities(appContext, cities.map { city -> city.toDto() })
+        offlineCacheStore.cacheCities(cities.map { city -> city.toDto() })
     }
 
     override suspend fun getCachedCities(): List<City> =
-        OfflineCacheRepository.getCachedCities(appContext).map { city -> city.toDomain() }
+        offlineCacheStore.getCachedCities().map { city -> city.toDomain() }
 
     override suspend fun cachePois(citySlug: String, pois: List<Poi>) {
-        OfflineCacheRepository.cachePois(appContext, citySlug, pois.map { poi -> poi.toDto() })
+        offlineCacheStore.cachePois(citySlug, pois.map { poi -> poi.toDto() })
     }
 
     override suspend fun getCachedPois(citySlug: String): List<Poi> =
-        OfflineCacheRepository.getCachedPois(appContext, citySlug).map { poi -> poi.toDomain() }
+        offlineCacheStore.getCachedPois(citySlug).map { poi -> poi.toDomain() }
 
     override suspend fun saveSnapshot(snapshot: SavedRouteSnapshot) {
-        RouteStorage.save(appContext, snapshot)
+        offlineCacheStore.saveLastRoute(snapshot)
     }
 
     override suspend fun loadSnapshot(): SavedRouteSnapshot? =
-        RouteStorage.load(appContext)
+        offlineCacheStore.loadLastRoute()
 
     override suspend fun saveActiveSession(session: ActiveRouteSession) {
-        RouteStorage.saveActiveSession(appContext, session)
+        offlineCacheStore.saveActiveRouteSession(session)
     }
 
     override suspend fun loadActiveSession(): ActiveRouteSession? =
-        RouteStorage.loadActiveSession(appContext)
+        offlineCacheStore.loadActiveRouteSession()
 
     override suspend fun clearActiveSession() {
-        RouteStorage.clearActiveSession(appContext)
+        offlineCacheStore.clearActiveRouteSession()
     }
 
     override suspend fun saveRouteBookmark(bookmark: RouteBookmark) {
-        RouteStorage.saveRouteBookmark(appContext, bookmark)
+        offlineCacheStore.saveRouteBookmark(bookmark)
     }
 
     override suspend fun loadRouteBookmarks(): List<RouteBookmark> =
-        RouteStorage.loadRouteBookmarks(appContext)
+        offlineCacheStore.getRouteBookmarks()
 
     override suspend fun loadRouteBookmark(bookmarkId: String): RouteBookmark? =
-        RouteStorage.loadRouteBookmark(appContext, bookmarkId)
+        offlineCacheStore.getRouteBookmark(bookmarkId)
 
     override suspend fun deleteRouteBookmark(bookmarkId: String) {
-        RouteStorage.deleteRouteBookmark(appContext, bookmarkId)
+        offlineCacheStore.deleteRouteBookmark(bookmarkId)
     }
 
     override suspend fun saveRouteHistoryEntry(entry: RouteHistoryEntry) {
-        RouteStorage.saveRouteHistoryEntry(appContext, entry)
+        offlineCacheStore.saveRouteHistoryEntry(entry)
     }
 
     override suspend fun saveRouteHistoryEntries(entries: List<RouteHistoryEntry>) {
-        RouteStorage.saveRouteHistoryEntries(appContext, entries)
+        offlineCacheStore.saveRouteHistoryEntries(entries)
     }
 
     override suspend fun loadRouteHistoryEntries(): List<RouteHistoryEntry> =
-        RouteStorage.loadRouteHistoryEntries(appContext)
+        offlineCacheStore.getRouteHistoryEntries()
 }

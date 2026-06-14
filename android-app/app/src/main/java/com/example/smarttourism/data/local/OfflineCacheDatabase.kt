@@ -1,8 +1,6 @@
 package com.example.smarttourism.data.local
 
-import android.content.Context
 import androidx.room.Database
-import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
@@ -26,21 +24,10 @@ abstract class OfflineCacheDatabase : RoomDatabase() {
     abstract fun offlineCacheDao(): OfflineCacheDao
 
     companion object {
-        @Volatile
-        private var instance: OfflineCacheDatabase? = null
+        const val DatabaseName = "smart-tourism-offline.db"
 
-        fun getInstance(context: Context): OfflineCacheDatabase =
-            instance ?: synchronized(this) {
-                instance ?: Room.databaseBuilder(
-                    context.applicationContext,
-                    OfflineCacheDatabase::class.java,
-                    "smart-tourism-offline.db"
-                )
-                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
-                    .build().also { created ->
-                    instance = created
-                }
-            }
+        val Migrations: Array<Migration>
+            get() = arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
 
         private val MIGRATION_1_2 = object : Migration(1, 2) {
             override fun migrate(database: SupportSQLiteDatabase) {

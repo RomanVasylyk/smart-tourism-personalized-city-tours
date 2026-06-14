@@ -3,9 +3,13 @@ package com.example.smarttourism.sync
 import android.content.Context
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import com.example.smarttourism.core.network.ApiModule
 import com.example.smarttourism.core.platform.NetworkMonitor
-import com.example.smarttourism.data.repository.OfflineCacheRepository
+import com.example.smarttourism.data.remote.api.PoiApi
+import com.example.smarttourism.data.repository.OfflineCacheStore
+import dagger.hilt.EntryPoint
+import dagger.hilt.InstallIn
+import dagger.hilt.android.EntryPointAccessors
+import dagger.hilt.components.SingletonComponent
 
 class OfflineSyncWorker(
     appContext: Context,
@@ -16,15 +20,17 @@ class OfflineSyncWorker(
             return Result.retry()
         }
 
-        if (OfflineCacheRepository.getPendingSyncOperationCount(applicationContext) == 0) {
+        val dependencies = EntryPointAccessors.fromApplication(
+            applicationContext,
+            OfflineSyncWorkerDependencies::class.java
+        )
+        val offlineCacheStore = dependencies.offlineCacheStore()
+        if (offlineCacheStore.getPendingSyncOperationCount() == 0) {
             return Result.success()
         }
 
         val summary = runCatching {
-            OfflineCacheRepository.syncPendingOperations(
-                context = applicationContext,
-                api = ApiModule.poiApi
-            )
+            offlineCacheStore.syncPendingOperations(dependencies.poiApi())
         }.getOrElse {
             return Result.retry()
         }
@@ -35,4 +41,12 @@ class OfflineSyncWorker(
             Result.success()
         }
     }
+}
+
+@EntryPoint
+@InstallIn(SingletonComponent::class)
+internal interface OfflineSyncWorkerDependencies {
+    fun offlineCacheStore(): OfflineCacheStore
+
+    fun poiApi(): PoiApi
 }

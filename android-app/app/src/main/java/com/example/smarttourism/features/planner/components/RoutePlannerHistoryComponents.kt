@@ -82,7 +82,6 @@ import com.example.smarttourism.data.model.RouteBookmark
 import com.example.smarttourism.core.network.ApiModule
 import com.example.smarttourism.features.planner.domain.model.City
 import com.example.smarttourism.core.platform.NetworkMonitor
-import com.example.smarttourism.data.repository.OfflineCacheRepository
 import com.example.smarttourism.features.planner.domain.model.Poi
 import com.example.smarttourism.data.model.RouteFeedback
 import com.example.smarttourism.data.model.RouteHistoryEntry
@@ -92,7 +91,6 @@ import com.example.smarttourism.features.planner.domain.model.RoutePlan
 import com.example.smarttourism.features.planner.domain.model.RouteSegment
 import com.example.smarttourism.features.planner.domain.model.RouteSession
 import com.example.smarttourism.features.planner.domain.model.RoutePoint
-import com.example.smarttourism.data.repository.RouteStorage
 import com.example.smarttourism.features.planner.domain.model.RouteStop
 import com.example.smarttourism.data.model.SavedRouteSnapshot
 import com.example.smarttourism.sync.OfflineSyncScheduler

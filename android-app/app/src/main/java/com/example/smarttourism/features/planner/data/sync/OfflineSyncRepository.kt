@@ -7,7 +7,7 @@ import com.example.smarttourism.data.model.SavedRouteSnapshot
 import com.example.smarttourism.data.remote.dto.RouteFeedbackRequest
 import com.example.smarttourism.data.remote.dto.RouteSessionCreateRequest
 import com.example.smarttourism.data.remote.dto.RouteSessionPoiVisitRequest
-import com.example.smarttourism.data.repository.OfflineCacheRepository
+import com.example.smarttourism.data.repository.OfflineCacheStore
 import com.example.smarttourism.features.planner.domain.mapper.toDto
 import com.example.smarttourism.sync.OfflineSyncScheduler
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -44,7 +44,8 @@ internal interface OfflineSyncRepository {
 
 internal class DefaultOfflineSyncRepository @Inject constructor(
     @ApplicationContext
-    context: Context
+    context: Context,
+    private val offlineCacheStore: OfflineCacheStore
 ) : OfflineSyncRepository {
     private val appContext = context.applicationContext
 
@@ -52,7 +53,7 @@ internal class DefaultOfflineSyncRepository @Inject constructor(
         NetworkMonitor.isNetworkAvailable(appContext)
 
     override suspend fun getPendingSyncOperationCount(): Int =
-        OfflineCacheRepository.getPendingSyncOperationCount(appContext)
+        offlineCacheStore.getPendingSyncOperationCount()
 
     override suspend fun enqueuePendingRouteSession(
         sessionRouteId: String,
@@ -63,8 +64,7 @@ internal class DefaultOfflineSyncRepository @Inject constructor(
         finishedAt: String?
     ) {
         val response = snapshot.response
-        OfflineCacheRepository.enqueuePendingRouteSession(
-            appContext,
+        offlineCacheStore.enqueuePendingRouteSession(
             RouteSessionCreateRequest(
                 id = sessionRouteId,
                 device_id = deviceId,
@@ -92,8 +92,7 @@ internal class DefaultOfflineSyncRepository @Inject constructor(
         visitedAt: String,
         skipped: Boolean
     ) {
-        OfflineCacheRepository.enqueuePendingPoiVisit(
-            context = appContext,
+        offlineCacheStore.enqueuePendingPoiVisit(
             sessionId = sessionId,
             poiId = poiId,
             request = RouteSessionPoiVisitRequest(
@@ -107,8 +106,7 @@ internal class DefaultOfflineSyncRepository @Inject constructor(
         sessionId: String,
         feedback: RouteFeedback
     ) {
-        OfflineCacheRepository.enqueuePendingFeedback(
-            context = appContext,
+        offlineCacheStore.enqueuePendingFeedback(
             sessionId = sessionId,
             request = RouteFeedbackRequest(
                 rating = feedback.rating,

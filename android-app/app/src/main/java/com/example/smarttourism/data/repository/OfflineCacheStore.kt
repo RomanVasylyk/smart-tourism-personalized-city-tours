@@ -1,13 +1,12 @@
 package com.example.smarttourism.data.repository
 
-import android.content.Context
 import com.example.smarttourism.data.local.BookmarkedRouteEntity
 import com.example.smarttourism.data.local.CachedCityEntity
 import com.example.smarttourism.data.local.CachedLastRouteEntity
 import com.example.smarttourism.data.local.CachedPoiEntity
 import com.example.smarttourism.data.local.CachedRouteSessionEntity
 import com.example.smarttourism.data.local.LocalSyncStatus
-import com.example.smarttourism.data.local.OfflineCacheDatabase
+import com.example.smarttourism.data.local.OfflineCacheDao
 import com.example.smarttourism.data.local.PendingFeedbackEntity
 import com.example.smarttourism.data.local.PendingPoiVisitSyncEntity
 import com.example.smarttourism.data.local.PendingRouteSessionSyncEntity
@@ -38,6 +37,7 @@ import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import com.google.gson.reflect.TypeToken
+import javax.inject.Inject
 
 data class OfflineSyncSummary(
     val syncedRouteSessions: Int,
@@ -51,13 +51,15 @@ data class OfflineSyncSummary(
         get() = failedRouteSessions > 0 || failedPoiVisits > 0 || failedFeedback > 0
 }
 
-object OfflineCacheRepository {
-    private val gson = Gson()
-    private const val LastRouteCacheKey = "last_route"
+private const val LastRouteCacheKey = "last_route"
 
-    suspend fun cacheCities(context: Context, cities: List<CityDto>) {
+class OfflineCacheStore @Inject constructor(
+    private val dao: OfflineCacheDao,
+    private val gson: Gson
+) {
+    suspend fun cacheCities(cities: List<CityDto>) {
         val updatedAt = System.currentTimeMillis()
-        dao(context).replaceCachedCities(
+        dao.replaceCachedCities(
             cities.map { city ->
                 CachedCityEntity(
                     slug = city.slug,
@@ -83,8 +85,8 @@ object OfflineCacheRepository {
         )
     }
 
-    suspend fun getCachedCities(context: Context): List<CityDto> =
-        dao(context).getCachedCities().map { entity ->
+    suspend fun getCachedCities(): List<CityDto> =
+        dao.getCachedCities().map { entity ->
             CityDto(
                 id = entity.cityId,
                 slug = entity.slug,
@@ -121,9 +123,9 @@ object OfflineCacheRepository {
             )
         }
 
-    suspend fun cachePois(context: Context, citySlug: String, pois: List<PoiDto>) {
+    suspend fun cachePois(citySlug: String, pois: List<PoiDto>) {
         val updatedAt = System.currentTimeMillis()
-        dao(context).replaceCachedPois(
+        dao.replaceCachedPois(
             citySlug = citySlug,
             pois = pois.map { poi ->
                 CachedPoiEntity(
@@ -143,8 +145,8 @@ object OfflineCacheRepository {
         )
     }
 
-    suspend fun getCachedPois(context: Context, citySlug: String): List<PoiDto> =
-        dao(context).getCachedPois(citySlug).map { entity ->
+    suspend fun getCachedPois(citySlug: String): List<PoiDto> =
+        dao.getCachedPois(citySlug).map { entity ->
             PoiDto(
                 id = entity.id,
                 name = entity.name,
@@ -158,8 +160,8 @@ object OfflineCacheRepository {
             )
         }
 
-    suspend fun saveLastRoute(context: Context, snapshot: SavedRouteSnapshot) {
-        dao(context).upsertLastRoute(
+    suspend fun saveLastRoute(snapshot: SavedRouteSnapshot) {
+        dao.upsertLastRoute(
             CachedLastRouteEntity(
                 cacheKey = LastRouteCacheKey,
                 snapshotJson = toVersionedJson(CacheEnvelopeType.SAVED_ROUTE_SNAPSHOT, snapshot.toCache()),
@@ -168,17 +170,14 @@ object OfflineCacheRepository {
         )
     }
 
-    suspend fun loadLastRoute(context: Context): SavedRouteSnapshot? =
-        dao(context)
+    suspend fun loadLastRoute(): SavedRouteSnapshot? =
+        dao
             .getLastRoute()
             ?.snapshotJson
             ?.let { rawJson -> savedRouteSnapshotFromJsonOrNull(rawJson) }
 
-    suspend fun saveRouteBookmark(
-        context: Context,
-        bookmark: RouteBookmark
-    ) {
-        dao(context).upsertBookmarkedRoute(
+    suspend fun saveRouteBookmark(bookmark: RouteBookmark) {
+        dao.upsertBookmarkedRoute(
             BookmarkedRouteEntity(
                 bookmarkId = bookmark.id,
                 title = bookmark.title,
@@ -190,22 +189,22 @@ object OfflineCacheRepository {
         )
     }
 
-    suspend fun getRouteBookmarks(context: Context): List<RouteBookmark> =
-        dao(context)
+    suspend fun getRouteBookmarks(): List<RouteBookmark> =
+        dao
             .getBookmarkedRoutes()
             .mapNotNull { entity -> entity.toRouteBookmarkOrNull() }
 
-    suspend fun getRouteBookmark(context: Context, bookmarkId: String): RouteBookmark? =
-        dao(context)
+    suspend fun getRouteBookmark(bookmarkId: String): RouteBookmark? =
+        dao
             .getBookmarkedRoute(bookmarkId)
             ?.toRouteBookmarkOrNull()
 
-    suspend fun deleteRouteBookmark(context: Context, bookmarkId: String) {
-        dao(context).deleteBookmarkedRoute(bookmarkId)
+    suspend fun deleteRouteBookmark(bookmarkId: String) {
+        dao.deleteBookmarkedRoute(bookmarkId)
     }
 
-    suspend fun saveRouteHistoryEntry(context: Context, entry: RouteHistoryEntry) {
-        dao(context).upsertRouteHistoryEntry(
+    suspend fun saveRouteHistoryEntry(entry: RouteHistoryEntry) {
+        dao.upsertRouteHistoryEntry(
             RouteHistoryEntryEntity(
                 routeId = entry.routeId,
                 historyJson = toVersionedJson(CacheEnvelopeType.ROUTE_HISTORY_ENTRY, entry.toCache()),
@@ -214,8 +213,8 @@ object OfflineCacheRepository {
         )
     }
 
-    suspend fun saveRouteHistoryEntries(context: Context, entries: List<RouteHistoryEntry>) {
-        dao(context).upsertRouteHistoryEntries(
+    suspend fun saveRouteHistoryEntries(entries: List<RouteHistoryEntry>) {
+        dao.upsertRouteHistoryEntries(
             entries.map { entry ->
                 RouteHistoryEntryEntity(
                     routeId = entry.routeId,
@@ -226,16 +225,16 @@ object OfflineCacheRepository {
         )
     }
 
-    suspend fun getRouteHistoryEntries(context: Context): List<RouteHistoryEntry> =
-        dao(context)
+    suspend fun getRouteHistoryEntries(): List<RouteHistoryEntry> =
+        dao
             .getRouteHistoryEntries()
             .mapNotNull { entity ->
                 routeHistoryEntryFromJsonOrNull(entity.historyJson)
                     ?.copy(updatedAtEpochMs = entity.updatedAtEpochMs)
             }
 
-    suspend fun saveActiveRouteSession(context: Context, session: ActiveRouteSession) {
-        dao(context).saveActiveRouteSession(
+    suspend fun saveActiveRouteSession(session: ActiveRouteSession) {
+        dao.saveActiveRouteSession(
             CachedRouteSessionEntity(
                 routeId = session.route_id,
                 sessionJson = toVersionedJson(CacheEnvelopeType.ACTIVE_ROUTE_SESSION, session.toCache()),
@@ -245,22 +244,19 @@ object OfflineCacheRepository {
         )
     }
 
-    suspend fun loadActiveRouteSession(context: Context): ActiveRouteSession? =
-        dao(context)
+    suspend fun loadActiveRouteSession(): ActiveRouteSession? =
+        dao
             .getActiveRouteSession()
             ?.sessionJson
             ?.let { rawJson -> activeRouteSessionFromJsonOrNull(rawJson) }
 
-    suspend fun clearActiveRouteSession(context: Context) {
-        dao(context).deleteActiveRouteSession()
+    suspend fun clearActiveRouteSession() {
+        dao.deleteActiveRouteSession()
     }
 
-    suspend fun enqueuePendingRouteSession(
-        context: Context,
-        request: RouteSessionCreateRequest
-    ) {
+    suspend fun enqueuePendingRouteSession(request: RouteSessionCreateRequest) {
         val now = System.currentTimeMillis()
-        dao(context).upsertPendingRouteSessionSync(
+        dao.upsertPendingRouteSessionSync(
             PendingRouteSessionSyncEntity(
                 sessionId = request.id,
                 requestJson = toVersionedJson(CacheEnvelopeType.ROUTE_SESSION_CREATE_REQUEST, request),
@@ -274,13 +270,12 @@ object OfflineCacheRepository {
     }
 
     suspend fun enqueuePendingPoiVisit(
-        context: Context,
         sessionId: String,
         poiId: Int,
         request: RouteSessionPoiVisitRequest
     ) {
         val now = System.currentTimeMillis()
-        dao(context).upsertPendingPoiVisitSync(
+        dao.upsertPendingPoiVisitSync(
             PendingPoiVisitSyncEntity(
                 requestKey = "$sessionId:$poiId",
                 sessionId = sessionId,
@@ -296,12 +291,11 @@ object OfflineCacheRepository {
     }
 
     suspend fun enqueuePendingFeedback(
-        context: Context,
         sessionId: String,
         request: RouteFeedbackRequest
     ) {
         val now = System.currentTimeMillis()
-        dao(context).upsertPendingFeedback(
+        dao.upsertPendingFeedback(
             PendingFeedbackEntity(
                 sessionId = sessionId,
                 feedbackJson = toVersionedJson(CacheEnvelopeType.ROUTE_FEEDBACK_REQUEST, request),
@@ -314,22 +308,22 @@ object OfflineCacheRepository {
         )
     }
 
-    suspend fun deletePendingFeedback(context: Context, sessionId: String) {
-        dao(context).deletePendingFeedback(sessionId)
+    suspend fun deletePendingFeedback(sessionId: String) {
+        dao.deletePendingFeedback(sessionId)
     }
 
-    suspend fun getPendingFeedbackCount(context: Context): Int =
-        dao(context).getPendingFeedbackCount()
+    suspend fun getPendingFeedbackCount(): Int =
+        dao.getPendingFeedbackCount()
 
-    suspend fun getPendingSyncOperationCount(context: Context): Int =
-        dao(context).getPendingRouteSessionSyncCount() +
-            dao(context).getPendingPoiVisitSyncCount() +
-            dao(context).getPendingFeedbackCount()
+    suspend fun getPendingSyncOperationCount(): Int =
+        dao.getPendingRouteSessionSyncCount() +
+            dao.getPendingPoiVisitSyncCount() +
+            dao.getPendingFeedbackCount()
 
-    suspend fun syncPendingOperations(context: Context, api: PoiApi): OfflineSyncSummary {
-        val routeSessionResult = syncPendingRouteSessions(context, api)
-        val poiVisitResult = syncPendingPoiVisits(context, api)
-        val feedbackResult = syncPendingFeedback(context, api)
+    suspend fun syncPendingOperations(api: PoiApi): OfflineSyncSummary {
+        val routeSessionResult = syncPendingRouteSessions(api)
+        val poiVisitResult = syncPendingPoiVisits(api)
+        val feedbackResult = syncPendingFeedback(api)
         return OfflineSyncSummary(
             syncedRouteSessions = routeSessionResult.syncedCount,
             failedRouteSessions = routeSessionResult.failedCount,
@@ -340,21 +334,18 @@ object OfflineCacheRepository {
         )
     }
 
-    private suspend fun syncPendingRouteSessions(
-        context: Context,
-        api: PoiApi
-    ): SyncBatchResult {
+    private suspend fun syncPendingRouteSessions(api: PoiApi): SyncBatchResult {
         var syncedCount = 0
         var failedCount = 0
 
-        dao(context).getPendingRouteSessionSyncs().forEach { pendingRouteSession ->
+        dao.getPendingRouteSessionSyncs().forEach { pendingRouteSession ->
             val request = fromVersionedJsonOrNull(
                 rawJson = pendingRouteSession.requestJson,
                 expectedType = CacheEnvelopeType.ROUTE_SESSION_CREATE_REQUEST,
                 clazz = RouteSessionCreateRequest::class.java
             )
             if (request == null) {
-                dao(context).deletePendingRouteSessionSync(pendingRouteSession.sessionId)
+                dao.deletePendingRouteSessionSync(pendingRouteSession.sessionId)
                 return@forEach
             }
 
@@ -362,10 +353,10 @@ object OfflineCacheRepository {
             runCatching {
                 api.createRouteSession(request)
             }.onSuccess {
-                dao(context).deletePendingRouteSessionSync(pendingRouteSession.sessionId)
+                dao.deletePendingRouteSessionSync(pendingRouteSession.sessionId)
                 syncedCount += 1
             }.onFailure {
-                dao(context).upsertPendingRouteSessionSync(
+                dao.upsertPendingRouteSessionSync(
                     pendingRouteSession.copy(
                         syncStatus = LocalSyncStatus.FAILED,
                         lastSyncAttemptAtEpochMs = attemptTime,
@@ -380,21 +371,18 @@ object OfflineCacheRepository {
         return SyncBatchResult(syncedCount = syncedCount, failedCount = failedCount)
     }
 
-    private suspend fun syncPendingPoiVisits(
-        context: Context,
-        api: PoiApi
-    ): SyncBatchResult {
+    private suspend fun syncPendingPoiVisits(api: PoiApi): SyncBatchResult {
         var syncedCount = 0
         var failedCount = 0
 
-        dao(context).getPendingPoiVisitSyncs().forEach { pendingPoiVisit ->
+        dao.getPendingPoiVisitSyncs().forEach { pendingPoiVisit ->
             val request = fromVersionedJsonOrNull(
                 rawJson = pendingPoiVisit.requestJson,
                 expectedType = CacheEnvelopeType.ROUTE_SESSION_POI_VISIT_REQUEST,
                 clazz = RouteSessionPoiVisitRequest::class.java
             )
             if (request == null) {
-                dao(context).deletePendingPoiVisitSync(pendingPoiVisit.requestKey)
+                dao.deletePendingPoiVisitSync(pendingPoiVisit.requestKey)
                 return@forEach
             }
 
@@ -406,10 +394,10 @@ object OfflineCacheRepository {
                     request = request
                 )
             }.onSuccess {
-                dao(context).deletePendingPoiVisitSync(pendingPoiVisit.requestKey)
+                dao.deletePendingPoiVisitSync(pendingPoiVisit.requestKey)
                 syncedCount += 1
             }.onFailure {
-                dao(context).upsertPendingPoiVisitSync(
+                dao.upsertPendingPoiVisitSync(
                     pendingPoiVisit.copy(
                         syncStatus = LocalSyncStatus.FAILED,
                         lastSyncAttemptAtEpochMs = attemptTime,
@@ -424,21 +412,18 @@ object OfflineCacheRepository {
         return SyncBatchResult(syncedCount = syncedCount, failedCount = failedCount)
     }
 
-    private suspend fun syncPendingFeedback(
-        context: Context,
-        api: PoiApi
-    ): SyncBatchResult {
+    private suspend fun syncPendingFeedback(api: PoiApi): SyncBatchResult {
         var syncedCount = 0
         var failedCount = 0
 
-        dao(context).getPendingFeedback().forEach { pendingFeedback ->
+        dao.getPendingFeedback().forEach { pendingFeedback ->
             val request = fromVersionedJsonOrNull(
                 rawJson = pendingFeedback.feedbackJson,
                 expectedType = CacheEnvelopeType.ROUTE_FEEDBACK_REQUEST,
                 clazz = RouteFeedbackRequest::class.java
             )
             if (request == null) {
-                dao(context).deletePendingFeedback(pendingFeedback.sessionId)
+                dao.deletePendingFeedback(pendingFeedback.sessionId)
                 return@forEach
             }
 
@@ -449,10 +434,10 @@ object OfflineCacheRepository {
                     request = request
                 )
             }.onSuccess {
-                dao(context).deletePendingFeedback(pendingFeedback.sessionId)
+                dao.deletePendingFeedback(pendingFeedback.sessionId)
                 syncedCount += 1
             }.onFailure {
-                dao(context).upsertPendingFeedback(
+                dao.upsertPendingFeedback(
                     pendingFeedback.copy(
                         syncStatus = LocalSyncStatus.FAILED,
                         lastSyncAttemptAtEpochMs = attemptTime,
@@ -466,9 +451,6 @@ object OfflineCacheRepository {
 
         return SyncBatchResult(syncedCount = syncedCount, failedCount = failedCount)
     }
-
-    private fun dao(context: Context) =
-        OfflineCacheDatabase.getInstance(context).offlineCacheDao()
 
     private fun decodeStringList(rawJson: String?): List<String> {
         if (rawJson.isNullOrBlank()) {
