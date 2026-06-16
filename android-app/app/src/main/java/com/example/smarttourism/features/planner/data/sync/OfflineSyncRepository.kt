@@ -8,7 +8,7 @@ import com.example.smarttourism.data.remote.dto.RouteFeedbackRequest
 import com.example.smarttourism.data.remote.dto.RouteSessionCreateRequest
 import com.example.smarttourism.data.remote.dto.RouteSessionPoiVisitRequest
 import com.example.smarttourism.data.repository.OfflineCacheStore
-import com.example.smarttourism.features.planner.domain.mapper.toDto
+import com.example.smarttourism.features.planner.data.mapper.toDto
 import com.example.smarttourism.sync.OfflineSyncScheduler
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject

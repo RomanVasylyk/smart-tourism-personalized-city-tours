@@ -30,8 +30,8 @@ import com.example.smarttourism.data.remote.dto.RouteSessionCreateRequest
 import com.example.smarttourism.data.remote.dto.RouteSessionPoiVisitRequest
 import com.example.smarttourism.data.remote.dto.RoutingLimitsDto
 import com.example.smarttourism.data.remote.dto.TransportProfileDto
-import com.example.smarttourism.features.planner.domain.mapper.toDomain
-import com.example.smarttourism.features.planner.domain.mapper.toDto
+import com.example.smarttourism.features.planner.data.mapper.toDomain
+import com.example.smarttourism.features.planner.data.mapper.toDto
 import com.google.gson.Gson
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject

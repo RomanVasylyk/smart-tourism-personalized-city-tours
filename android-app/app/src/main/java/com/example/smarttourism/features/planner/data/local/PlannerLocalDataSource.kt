@@ -6,8 +6,8 @@ import com.example.smarttourism.data.model.RouteHistoryEntry
 import com.example.smarttourism.data.model.SavedRouteSnapshot
 import com.example.smarttourism.data.repository.DeviceIdStore
 import com.example.smarttourism.data.repository.OfflineCacheStore
-import com.example.smarttourism.features.planner.domain.mapper.toDomain
-import com.example.smarttourism.features.planner.domain.mapper.toDto
+import com.example.smarttourism.features.planner.data.mapper.toDomain
+import com.example.smarttourism.features.planner.data.mapper.toDto
 import com.example.smarttourism.features.planner.domain.model.City
 import com.example.smarttourism.features.planner.domain.model.Poi
 import javax.inject.Inject

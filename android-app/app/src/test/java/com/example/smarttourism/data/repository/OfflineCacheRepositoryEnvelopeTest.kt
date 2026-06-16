@@ -14,7 +14,7 @@ import com.example.smarttourism.data.model.CacheEnvelopeType
 import com.example.smarttourism.data.remote.dto.RouteFeedbackRequest
 import com.example.smarttourism.data.remote.dto.RouteSessionCreateRequest
 import com.example.smarttourism.data.remote.dto.RouteSessionPoiVisitRequest
-import com.example.smarttourism.features.planner.domain.mapper.toDto
+import com.example.smarttourism.features.planner.data.mapper.toDto
 import com.example.smarttourism.features.planner.sampleSnapshot
 import com.google.gson.Gson
 import com.google.gson.JsonParser

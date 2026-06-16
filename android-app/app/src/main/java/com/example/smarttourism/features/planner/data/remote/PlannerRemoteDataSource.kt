@@ -1,8 +1,8 @@
 package com.example.smarttourism.features.planner.data.remote
 
 import com.example.smarttourism.data.remote.api.PoiApi
-import com.example.smarttourism.features.planner.domain.mapper.toDomain
-import com.example.smarttourism.features.planner.domain.mapper.toDto
+import com.example.smarttourism.features.planner.data.mapper.toDomain
+import com.example.smarttourism.features.planner.data.mapper.toDto
 import com.example.smarttourism.features.planner.domain.model.City
 import com.example.smarttourism.features.planner.domain.model.PlannerPreferences
 import com.example.smarttourism.features.planner.domain.model.Poi

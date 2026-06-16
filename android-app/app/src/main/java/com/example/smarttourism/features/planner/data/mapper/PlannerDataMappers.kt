@@ -1,4 +1,4 @@
-package com.example.smarttourism.features.planner.domain.mapper
+package com.example.smarttourism.features.planner.data.mapper
 
 import com.example.smarttourism.data.remote.dto.CityBboxDto
 import com.example.smarttourism.data.remote.dto.CityDto
