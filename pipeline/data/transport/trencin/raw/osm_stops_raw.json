@@ -2,7 +2,7 @@
   "version": 0.6,
   "generator": "Overpass API 0.7.62.11 87bfad18",
   "osm3s": {
-    "timestamp_osm_base": "2026-05-12T14:57:30Z",
+    "timestamp_osm_base": "2026-05-25T08:03:00Z",
     "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
   },
   "elements": [
@@ -178,11 +178,15 @@
       "lat": 48.8921588,
       "lon": 18.0592868,
       "tags": {
+        "bench": "yes",
+        "bin": "yes",
         "bus": "yes",
         "highway": "bus_stop",
+        "lit": "no",
         "name": "K výstavisku",
         "public_transport": "platform",
-        "shelter": "yes"
+        "shelter": "yes",
+        "tactile_paving": "no"
       }
     },
     {
@@ -211,6 +215,7 @@
         "bin": "yes",
         "bus": "yes",
         "highway": "bus_stop",
+        "lit": "no",
         "name": "Pred poľom",
         "public_transport": "platform",
         "shelter": "yes",
@@ -243,6 +248,7 @@
       "tags": {
         "alt_name": "Generála Milana Rastislava Štefánika",
         "bench": "yes",
+        "bin": "yes",
         "bus": "yes",
         "highway": "bus_stop",
         "name": "Generála M. R. Štefánika",
@@ -272,8 +278,10 @@
       "lon": 18.0656505,
       "tags": {
         "bench": "yes",
+        "bin": "yes",
         "bus": "yes",
         "highway": "bus_stop",
+        "lit": "yes",
         "name": "Kubranská, Billa",
         "public_transport": "platform",
         "shelter": "no",
@@ -1727,10 +1735,15 @@
       "lat": 48.8983565,
       "lon": 18.0729417,
       "tags": {
+        "bench": "yes",
+        "bin": "yes",
         "bus": "yes",
         "highway": "bus_stop",
+        "lit": "yes",
         "name": "Ivana Krasku",
-        "public_transport": "platform"
+        "public_transport": "platform",
+        "shelter": "yes",
+        "tactile_paving": "no"
       }
     },
     {
@@ -1740,8 +1753,10 @@
       "lon": 18.0707238,
       "tags": {
         "bench": "yes",
+        "bin": "yes",
         "bus": "yes",
         "highway": "bus_stop",
+        "lit": "yes",
         "name": "Žilinská",
         "public_transport": "platform",
         "shelter": "yes",
@@ -1773,8 +1788,10 @@
       "lon": 18.0689787,
       "tags": {
         "bench": "yes",
+        "bin": "yes",
         "bus": "yes",
         "highway": "bus_stop",
+        "lit": "yes",
         "name": "Žilinská",
         "public_transport": "platform",
         "shelter": "yes",
@@ -3704,10 +3721,12 @@
         "bin": "yes",
         "bus": "yes",
         "highway": "bus_stop",
+        "lit": "no",
         "name": "Sihoť IV",
         "public_transport": "platform",
         "shelter": "no",
-        "source": "Ortofotomozaika SR 2021-2023;survey"
+        "source": "Ortofotomozaika SR 2021-2023;survey",
+        "tactile_paving": "no"
       }
     },
     {
@@ -5016,10 +5035,15 @@
       "lat": 48.8976266,
       "lon": 18.0702443,
       "tags": {
+        "bench": "no",
+        "bin": "yes",
         "bus": "yes",
         "highway": "bus_stop",
+        "lit": "yes",
         "name": "Žilinská",
-        "public_transport": "platform"
+        "public_transport": "platform",
+        "shelter": "no",
+        "tactile_paving": "no"
       }
     },
     {
@@ -5291,14 +5315,19 @@
       "lat": 48.8959616,
       "lon": 18.051622,
       "tags": {
+        "bench": "yes",
+        "bin": "yes",
         "bus": "yes",
         "fixme": "spresniť polohu",
         "highway": "bus_stop",
+        "lit": "yes",
         "local_ref": "B",
         "name": "Autobusová stanica",
         "note": "Smer z centra/Out of the city centre",
         "public_transport": "platform",
-        "route_ref": "1;2;6;16;23;24;P6;N2"
+        "route_ref": "1;2;6;16;23;24;P6;N2",
+        "shelter": "yes",
+        "tactile_paving": "yes"
       }
     },
     {
@@ -5307,13 +5336,18 @@
       "lat": 48.8959948,
       "lon": 18.0512672,
       "tags": {
+        "bench": "yes",
+        "bin": "yes",
         "bus": "yes",
         "highway": "bus_stop",
+        "lit": "yes",
         "local_ref": "A",
         "name": "Autobusová stanica",
         "note": "Smer centrum/To the city centre",
         "public_transport": "platform",
-        "route_ref": "1;2;6;16;23;24;P6;N1;N3"
+        "route_ref": "1;2;6;16;23;24;P6;N1;N3",
+        "shelter": "yes",
+        "tactile_paving": "yes"
       }
     },
     {
@@ -5322,13 +5356,17 @@
       "lat": 48.8961414,
       "lon": 18.0519238,
       "tags": {
+        "bench": "yes",
         "bin": "yes",
         "bus": "yes",
         "fixme": "spresniť polohu",
         "highway": "bus_stop",
+        "lit": "yes",
         "local_ref": "1",
         "name": "Trenčín, aut. st.",
-        "public_transport": "platform"
+        "public_transport": "platform",
+        "shelter": "yes",
+        "tactile_paving": "yes"
       }
     },
     {
@@ -5337,12 +5375,16 @@
       "lat": 48.8961608,
       "lon": 18.05172,
       "tags": {
+        "bench": "yes",
         "bin": "yes",
         "bus": "yes",
         "highway": "bus_stop",
+        "lit": "yes",
         "local_ref": "2",
         "name": "Trenčín, aut. st.",
-        "public_transport": "platform"
+        "public_transport": "platform",
+        "shelter": "yes",
+        "tactile_paving": "yes"
       }
     },
     {
@@ -5351,13 +5393,17 @@
       "lat": 48.8961793,
       "lon": 18.0515416,
       "tags": {
+        "bench": "yes",
         "bin": "yes",
         "bus": "yes",
         "fixme": "spresniť polohu",
         "highway": "bus_stop",
+        "lit": "yes",
         "local_ref": "3",
         "name": "Trenčín, aut. st.",
-        "public_transport": "platform"
+        "public_transport": "platform",
+        "shelter": "yes",
+        "tactile_paving": "yes"
       }
     },
     {
@@ -5366,13 +5412,17 @@
       "lat": 48.8962005,
       "lon": 18.0512667,
       "tags": {
+        "bench": "yes",
         "bin": "yes",
         "bus": "yes",
         "fixme": "spresniť polohu",
         "highway": "bus_stop",
+        "lit": "yes",
         "local_ref": "4",
         "name": "Trenčín, aut. st.",
-        "public_transport": "platform"
+        "public_transport": "platform",
+        "shelter": "yes",
+        "tactile_paving": "yes"
       }
     },
     {
@@ -5381,12 +5431,14 @@
       "lat": 48.8960313,
       "lon": 18.0509248,
       "tags": {
+        "bench": "yes",
         "bin": "yes",
         "bus": "yes",
         "highway": "bus_stop",
         "local_ref": "10",
         "name": "Trenčín, aut. st.",
-        "public_transport": "platform"
+        "public_transport": "platform",
+        "shelter": "yes"
       }
     },
     {
@@ -5395,13 +5447,17 @@
       "lat": 48.896162,
       "lon": 18.051104,
       "tags": {
+        "bench": "yes",
         "bin": "yes",
         "bus": "yes",
         "fixme": "spresniť polohu",
         "highway": "bus_stop",
+        "lit": "yes",
         "local_ref": "9",
         "name": "Trenčín, aut. st.",
-        "public_transport": "platform"
+        "public_transport": "platform",
+        "shelter": "yes",
+        "tactile_paving": "yes"
       }
     },
     {
@@ -5410,13 +5466,17 @@
       "lat": 48.8961266,
       "lon": 18.0515272,
       "tags": {
+        "bench": "yes",
         "bin": "yes",
         "bus": "yes",
         "fixme": "spresniť polohu",
         "highway": "bus_stop",
+        "lit": "yes",
         "local_ref": "7",
         "name": "Trenčín, aut. st.",
-        "public_transport": "platform"
+        "public_transport": "platform",
+        "shelter": "yes",
+        "tactile_paving": "yes"
       }
     },
     {
@@ -5425,13 +5485,17 @@
       "lat": 48.8961089,
       "lon": 18.0517388,
       "tags": {
+        "bench": "yes",
         "bin": "yes",
         "bus": "yes",
         "fixme": "spresniť polohu",
         "highway": "bus_stop",
+        "lit": "yes",
         "local_ref": "6",
         "name": "Trenčín, aut. st.",
-        "public_transport": "platform"
+        "public_transport": "platform",
+        "shelter": "yes",
+        "tactile_paving": "yes"
       }
     },
     {
@@ -5440,13 +5504,17 @@
       "lat": 48.8960912,
       "lon": 18.0519503,
       "tags": {
+        "bench": "yes",
         "bin": "yes",
         "bus": "yes",
         "fixme": "spresniť polohu",
         "highway": "bus_stop",
+        "lit": "yes",
         "local_ref": "5",
         "name": "Trenčín, aut. st.",
-        "public_transport": "platform"
+        "public_transport": "platform",
+        "shelter": "yes",
+        "tactile_paving": "yes"
       }
     },
     {

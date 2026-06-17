@@ -1,7 +1,7 @@
 {
   "city": "zilina",
   "provider": "imhd_zilina",
-  "generated_at": "2026-05-13T17:13:29Z",
+  "generated_at": "2026-05-25T08:05:12Z",
   "source_document_count": 35,
   "parsed_document_count": 35,
   "variant_count": 59,
@@ -21,7 +21,5 @@
   "empty_service_bucket_count": 0,
   "line_without_trip_count": 0,
   "warnings_count": 0,
-  "coverage_ratio": 1.0,
-  "validation_warning_count": 0,
-  "validation_warnings": []
+  "coverage_ratio": 1.0
 }

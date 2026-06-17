@@ -1,7 +1,7 @@
 {
   "city": "trencin",
   "provider": "imhd_trencin",
-  "generated_at": "2026-05-12T14:59:19Z",
+  "generated_at": "2026-05-25T08:05:04Z",
   "stops": [
     {
       "graph_stop_key": "node/1168480717",
@@ -213,14 +213,25 @@
       "matched_by": "exact_alt_multi"
     },
     {
-      "graph_stop_key": "provider_synthetic/trencin/bratislava-vinohrady",
-      "name": "Bratislava - Vinohrady",
-      "normalized_name": "bratislava vinohrady",
+      "graph_stop_key": "provider_synthetic/trencin/bratislava-vinohrady-3",
+      "name": "Bratislava - Vinohrady 3",
+      "normalized_name": "bratislava vinohrady 3",
       "lat": 48.64785569999999,
       "lon": 17.686608300000014,
       "platform_ref": null,
       "source": "provider_estimated",
-      "source_reference": "provider_synthetic/trencin/bratislava-vinohrady",
+      "source_reference": "provider_synthetic/trencin/bratislava-vinohrady-3",
+      "matched_by": "estimated"
+    },
+    {
+      "graph_stop_key": "provider_synthetic/trencin/bratislava-vinohrady-4",
+      "name": "Bratislava - Vinohrady 4",
+      "normalized_name": "bratislava vinohrady 4",
+      "lat": 48.73078449999999,
+      "lon": 17.80880070000001,
+      "platform_ref": null,
+      "source": "provider_estimated",
+      "source_reference": "provider_synthetic/trencin/bratislava-vinohrady-4",
       "matched_by": "estimated"
     },
     {
@@ -6308,8 +6319,8 @@
         },
         {
           "sequence": 2,
-          "provider_stop_name": "Bratislava - Vinohrady",
-          "graph_stop_key": "provider_synthetic/trencin/bratislava-vinohrady"
+          "provider_stop_name": "Bratislava - Vinohrady 3",
+          "graph_stop_key": "provider_synthetic/trencin/bratislava-vinohrady-3"
         },
         {
           "sequence": 3,
@@ -6574,8 +6585,8 @@
         },
         {
           "sequence": 15,
-          "provider_stop_name": "Bratislava - Vinohrady",
-          "graph_stop_key": "provider_synthetic/trencin/bratislava-vinohrady"
+          "provider_stop_name": "Bratislava - Vinohrady 4",
+          "graph_stop_key": "provider_synthetic/trencin/bratislava-vinohrady-4"
         },
         {
           "sequence": 16,
@@ -15247,7 +15258,7 @@
       "from_sequence": 1,
       "to_sequence": 2,
       "from_stop_key": "provider_synthetic/trencin/bratislava-hlavna-stanica",
-      "to_stop_key": "provider_synthetic/trencin/bratislava-vinohrady",
+      "to_stop_key": "provider_synthetic/trencin/bratislava-vinohrady-3",
       "avg_travel_seconds": 300.0,
       "distance_meters": 6435.9
     },
@@ -15256,7 +15267,7 @@
       "source_url": "https://imhd.sk/tn/cestovny-poriadok/linka/R50/Bratislava-hlavn%C3%A1-stanica/smer-P%C3%BAchov-%C5%BDilina/ca71bd718971877f7c7f7fa3a1847f7ca1847f717b71c17189807b71b6718987817b71be71897f7b71c971897f7b71b371897171cc",
       "from_sequence": 2,
       "to_sequence": 3,
-      "from_stop_key": "provider_synthetic/trencin/bratislava-vinohrady",
+      "from_stop_key": "provider_synthetic/trencin/bratislava-vinohrady-3",
       "to_stop_key": "provider_synthetic/trencin/pezinok",
       "avg_travel_seconds": 720.0,
       "distance_meters": 6433.3
@@ -15677,19 +15688,19 @@
       "from_sequence": 14,
       "to_sequence": 15,
       "from_stop_key": "provider_synthetic/trencin/pezinok",
-      "to_stop_key": "provider_synthetic/trencin/bratislava-vinohrady",
+      "to_stop_key": "provider_synthetic/trencin/bratislava-vinohrady-4",
       "avg_travel_seconds": 600.0,
-      "distance_meters": 6433.3
+      "distance_meters": 6430.7
     },
     {
       "line_id": "R50:51",
       "source_url": "https://imhd.sk/tn/cestovny-poriadok/linka/R50/%C5%BDilina/smer-Bratislava-hlavn%C3%A1-stanica/ca71bd718971877f7c7f7fa3a1847f7ca1847f717b71c171897f7b71b67189808783857b71be71897f7b71c971897f7b71b371897171cc",
       "from_sequence": 15,
       "to_sequence": 16,
-      "from_stop_key": "provider_synthetic/trencin/bratislava-vinohrady",
+      "from_stop_key": "provider_synthetic/trencin/bratislava-vinohrady-4",
       "to_stop_key": "provider_synthetic/trencin/bratislava-hlavna-stanica",
       "avg_travel_seconds": 420.0,
-      "distance_meters": 6435.9
+      "distance_meters": 19299.9
     },
     {
       "line_id": "P7:52",
@@ -154561,8 +154572,8 @@
         },
         {
           "sequence": 2,
-          "graph_stop_key": "provider_synthetic/trencin/bratislava-vinohrady",
-          "provider_stop_name": "Bratislava - Vinohrady",
+          "graph_stop_key": "provider_synthetic/trencin/bratislava-vinohrady-3",
+          "provider_stop_name": "Bratislava - Vinohrady 3",
           "time_minutes": 265
         },
         {
@@ -154643,8 +154654,8 @@
         },
         {
           "sequence": 2,
-          "graph_stop_key": "provider_synthetic/trencin/bratislava-vinohrady",
-          "provider_stop_name": "Bratislava - Vinohrady",
+          "graph_stop_key": "provider_synthetic/trencin/bratislava-vinohrady-3",
+          "provider_stop_name": "Bratislava - Vinohrady 3",
           "time_minutes": 325
         },
         {
@@ -154725,8 +154736,8 @@
         },
         {
           "sequence": 2,
-          "graph_stop_key": "provider_synthetic/trencin/bratislava-vinohrady",
-          "provider_stop_name": "Bratislava - Vinohrady",
+          "graph_stop_key": "provider_synthetic/trencin/bratislava-vinohrady-3",
+          "provider_stop_name": "Bratislava - Vinohrady 3",
           "time_minutes": 385
         },
         {
@@ -154807,8 +154818,8 @@
         },
         {
           "sequence": 2,
-          "graph_stop_key": "provider_synthetic/trencin/bratislava-vinohrady",
-          "provider_stop_name": "Bratislava - Vinohrady",
+          "graph_stop_key": "provider_synthetic/trencin/bratislava-vinohrady-3",
+          "provider_stop_name": "Bratislava - Vinohrady 3",
           "time_minutes": 445
         },
         {
@@ -154889,8 +154900,8 @@
         },
         {
           "sequence": 2,
-          "graph_stop_key": "provider_synthetic/trencin/bratislava-vinohrady",
-          "provider_stop_name": "Bratislava - Vinohrady",
+          "graph_stop_key": "provider_synthetic/trencin/bratislava-vinohrady-3",
+          "provider_stop_name": "Bratislava - Vinohrady 3",
           "time_minutes": 505
         },
         {
@@ -154971,8 +154982,8 @@
         },
         {
           "sequence": 2,
-          "graph_stop_key": "provider_synthetic/trencin/bratislava-vinohrady",
-          "provider_stop_name": "Bratislava - Vinohrady",
+          "graph_stop_key": "provider_synthetic/trencin/bratislava-vinohrady-3",
+          "provider_stop_name": "Bratislava - Vinohrady 3",
           "time_minutes": 565
         },
         {
@@ -155053,8 +155064,8 @@
         },
         {
           "sequence": 2,
-          "graph_stop_key": "provider_synthetic/trencin/bratislava-vinohrady",
-          "provider_stop_name": "Bratislava - Vinohrady",
+          "graph_stop_key": "provider_synthetic/trencin/bratislava-vinohrady-3",
+          "provider_stop_name": "Bratislava - Vinohrady 3",
           "time_minutes": 625
         },
         {
@@ -155135,8 +155146,8 @@
         },
         {
           "sequence": 2,
-          "graph_stop_key": "provider_synthetic/trencin/bratislava-vinohrady",
-          "provider_stop_name": "Bratislava - Vinohrady",
+          "graph_stop_key": "provider_synthetic/trencin/bratislava-vinohrady-3",
+          "provider_stop_name": "Bratislava - Vinohrady 3",
           "time_minutes": 685
         },
         {
@@ -155217,8 +155228,8 @@
         },
         {
           "sequence": 2,
-          "graph_stop_key": "provider_synthetic/trencin/bratislava-vinohrady",
-          "provider_stop_name": "Bratislava - Vinohrady",
+          "graph_stop_key": "provider_synthetic/trencin/bratislava-vinohrady-3",
+          "provider_stop_name": "Bratislava - Vinohrady 3",
           "time_minutes": 745
         },
         {
@@ -155299,8 +155310,8 @@
         },
         {
           "sequence": 2,
-          "graph_stop_key": "provider_synthetic/trencin/bratislava-vinohrady",
-          "provider_stop_name": "Bratislava - Vinohrady",
+          "graph_stop_key": "provider_synthetic/trencin/bratislava-vinohrady-3",
+          "provider_stop_name": "Bratislava - Vinohrady 3",
           "time_minutes": 805
         },
         {
@@ -155381,8 +155392,8 @@
         },
         {
           "sequence": 2,
-          "graph_stop_key": "provider_synthetic/trencin/bratislava-vinohrady",
-          "provider_stop_name": "Bratislava - Vinohrady",
+          "graph_stop_key": "provider_synthetic/trencin/bratislava-vinohrady-3",
+          "provider_stop_name": "Bratislava - Vinohrady 3",
           "time_minutes": 865
         },
         {
@@ -155463,8 +155474,8 @@
         },
         {
           "sequence": 2,
-          "graph_stop_key": "provider_synthetic/trencin/bratislava-vinohrady",
-          "provider_stop_name": "Bratislava - Vinohrady",
+          "graph_stop_key": "provider_synthetic/trencin/bratislava-vinohrady-3",
+          "provider_stop_name": "Bratislava - Vinohrady 3",
           "time_minutes": 925
         },
         {
@@ -155545,8 +155556,8 @@
         },
         {
           "sequence": 2,
-          "graph_stop_key": "provider_synthetic/trencin/bratislava-vinohrady",
-          "provider_stop_name": "Bratislava - Vinohrady",
+          "graph_stop_key": "provider_synthetic/trencin/bratislava-vinohrady-3",
+          "provider_stop_name": "Bratislava - Vinohrady 3",
           "time_minutes": 985
         },
         {
@@ -155627,8 +155638,8 @@
         },
         {
           "sequence": 2,
-          "graph_stop_key": "provider_synthetic/trencin/bratislava-vinohrady",
-          "provider_stop_name": "Bratislava - Vinohrady",
+          "graph_stop_key": "provider_synthetic/trencin/bratislava-vinohrady-3",
+          "provider_stop_name": "Bratislava - Vinohrady 3",
           "time_minutes": 1045
         },
         {
@@ -155709,8 +155720,8 @@
         },
         {
           "sequence": 2,
-          "graph_stop_key": "provider_synthetic/trencin/bratislava-vinohrady",
-          "provider_stop_name": "Bratislava - Vinohrady",
+          "graph_stop_key": "provider_synthetic/trencin/bratislava-vinohrady-3",
+          "provider_stop_name": "Bratislava - Vinohrady 3",
           "time_minutes": 1105
         },
         {
@@ -155791,8 +155802,8 @@
         },
         {
           "sequence": 2,
-          "graph_stop_key": "provider_synthetic/trencin/bratislava-vinohrady",
-          "provider_stop_name": "Bratislava - Vinohrady",
+          "graph_stop_key": "provider_synthetic/trencin/bratislava-vinohrady-3",
+          "provider_stop_name": "Bratislava - Vinohrady 3",
           "time_minutes": 1165
         },
         {
@@ -155873,8 +155884,8 @@
         },
         {
           "sequence": 2,
-          "graph_stop_key": "provider_synthetic/trencin/bratislava-vinohrady",
-          "provider_stop_name": "Bratislava - Vinohrady",
+          "graph_stop_key": "provider_synthetic/trencin/bratislava-vinohrady-3",
+          "provider_stop_name": "Bratislava - Vinohrady 3",
           "time_minutes": 1225
         },
         {
@@ -155955,8 +155966,8 @@
         },
         {
           "sequence": 2,
-          "graph_stop_key": "provider_synthetic/trencin/bratislava-vinohrady",
-          "provider_stop_name": "Bratislava - Vinohrady",
+          "graph_stop_key": "provider_synthetic/trencin/bratislava-vinohrady-3",
+          "provider_stop_name": "Bratislava - Vinohrady 3",
           "time_minutes": 1285
         },
         {
@@ -156037,8 +156048,8 @@
         },
         {
           "sequence": 2,
-          "graph_stop_key": "provider_synthetic/trencin/bratislava-vinohrady",
-          "provider_stop_name": "Bratislava - Vinohrady",
+          "graph_stop_key": "provider_synthetic/trencin/bratislava-vinohrady-3",
+          "provider_stop_name": "Bratislava - Vinohrady 3",
           "time_minutes": 1345
         },
         {
@@ -157515,8 +157526,8 @@
         },
         {
           "sequence": 15,
-          "graph_stop_key": "provider_synthetic/trencin/bratislava-vinohrady",
-          "provider_stop_name": "Bratislava - Vinohrady",
+          "graph_stop_key": "provider_synthetic/trencin/bratislava-vinohrady-4",
+          "provider_stop_name": "Bratislava - Vinohrady 4",
           "time_minutes": 573
         },
         {
@@ -157621,8 +157632,8 @@
         },
         {
           "sequence": 15,
-          "graph_stop_key": "provider_synthetic/trencin/bratislava-vinohrady",
-          "provider_stop_name": "Bratislava - Vinohrady",
+          "graph_stop_key": "provider_synthetic/trencin/bratislava-vinohrady-4",
+          "provider_stop_name": "Bratislava - Vinohrady 4",
           "time_minutes": 693
         },
         {
@@ -157727,8 +157738,8 @@
         },
         {
           "sequence": 15,
-          "graph_stop_key": "provider_synthetic/trencin/bratislava-vinohrady",
-          "provider_stop_name": "Bratislava - Vinohrady",
+          "graph_stop_key": "provider_synthetic/trencin/bratislava-vinohrady-4",
+          "provider_stop_name": "Bratislava - Vinohrady 4",
           "time_minutes": 813
         },
         {
@@ -157833,8 +157844,8 @@
         },
         {
           "sequence": 15,
-          "graph_stop_key": "provider_synthetic/trencin/bratislava-vinohrady",
-          "provider_stop_name": "Bratislava - Vinohrady",
+          "graph_stop_key": "provider_synthetic/trencin/bratislava-vinohrady-4",
+          "provider_stop_name": "Bratislava - Vinohrady 4",
           "time_minutes": 933
         },
         {
@@ -157939,8 +157950,8 @@
         },
         {
           "sequence": 15,
-          "graph_stop_key": "provider_synthetic/trencin/bratislava-vinohrady",
-          "provider_stop_name": "Bratislava - Vinohrady",
+          "graph_stop_key": "provider_synthetic/trencin/bratislava-vinohrady-4",
+          "provider_stop_name": "Bratislava - Vinohrady 4",
           "time_minutes": 1053
         },
         {
@@ -158045,8 +158056,8 @@
         },
         {
           "sequence": 15,
-          "graph_stop_key": "provider_synthetic/trencin/bratislava-vinohrady",
-          "provider_stop_name": "Bratislava - Vinohrady",
+          "graph_stop_key": "provider_synthetic/trencin/bratislava-vinohrady-4",
+          "provider_stop_name": "Bratislava - Vinohrady 4",
           "time_minutes": 1173
         },
         {
@@ -158151,8 +158162,8 @@
         },
         {
           "sequence": 15,
-          "graph_stop_key": "provider_synthetic/trencin/bratislava-vinohrady",
-          "provider_stop_name": "Bratislava - Vinohrady",
+          "graph_stop_key": "provider_synthetic/trencin/bratislava-vinohrady-4",
+          "provider_stop_name": "Bratislava - Vinohrady 4",
           "time_minutes": 1293
         },
         {
@@ -158257,8 +158268,8 @@
         },
         {
           "sequence": 15,
-          "graph_stop_key": "provider_synthetic/trencin/bratislava-vinohrady",
-          "provider_stop_name": "Bratislava - Vinohrady",
+          "graph_stop_key": "provider_synthetic/trencin/bratislava-vinohrady-4",
+          "provider_stop_name": "Bratislava - Vinohrady 4",
           "time_minutes": 1413
         },
         {
@@ -164470,12 +164481,12 @@
   "quality_report": {
     "city": "trencin",
     "provider": "imhd_trencin",
-    "generated_at": "2026-05-12T14:59:19Z",
+    "generated_at": "2026-05-25T08:05:04Z",
     "source_document_count": 44,
     "parsed_document_count": 44,
     "variant_count": 66,
-    "total_stops": 162,
-    "matched_stops": 162,
+    "total_stops": 163,
+    "matched_stops": 163,
     "unmatched_stop_count": 0,
     "total_lines": 66,
     "total_connections": 987,

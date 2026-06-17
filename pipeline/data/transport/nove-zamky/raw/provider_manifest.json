@@ -11,7 +11,7 @@
       "east": 18.238448
     }
   ],
-  "downloaded_at": "2026-05-11T08:42:27Z",
+  "downloaded_at": "2026-05-25T08:03:47Z",
   "documents": [
     {
       "line_id": "1",
@@ -53,7 +53,7 @@
       ],
       "filename": "1_01.html",
       "document_format": "imhd_html",
-      "size_bytes": 164184
+      "size_bytes": 164180
     },
     {
       "line_id": "1",
@@ -94,7 +94,7 @@
       ],
       "filename": "1_02.html",
       "document_format": "imhd_html",
-      "size_bytes": 149215
+      "size_bytes": 149211
     },
     {
       "line_id": "4",
@@ -133,7 +133,7 @@
       ],
       "filename": "4_01.html",
       "document_format": "imhd_html",
-      "size_bytes": 147744
+      "size_bytes": 147740
     },
     {
       "line_id": "4",
@@ -170,7 +170,7 @@
       ],
       "filename": "4_02.html",
       "document_format": "imhd_html",
-      "size_bytes": 126408
+      "size_bytes": 126404
     },
     {
       "line_id": "6",
@@ -204,7 +204,7 @@
       ],
       "filename": "6_01.html",
       "document_format": "imhd_html",
-      "size_bytes": 128263
+      "size_bytes": 128259
     },
     {
       "line_id": "6",
@@ -233,7 +233,7 @@
       ],
       "filename": "6_02.html",
       "document_format": "imhd_html",
-      "size_bytes": 117652
+      "size_bytes": 117648
     },
     {
       "line_id": "7",
@@ -265,7 +265,7 @@
       ],
       "filename": "7_01.html",
       "document_format": "imhd_html",
-      "size_bytes": 129186
+      "size_bytes": 129182
     },
     {
       "line_id": "7",
@@ -299,7 +299,7 @@
       ],
       "filename": "7_02.html",
       "document_format": "imhd_html",
-      "size_bytes": 136351
+      "size_bytes": 136346
     },
     {
       "line_id": "8",
@@ -348,7 +348,7 @@
       ],
       "filename": "8_01.html",
       "document_format": "imhd_html",
-      "size_bytes": 247019
+      "size_bytes": 247015
     },
     {
       "line_id": "9",
@@ -401,7 +401,7 @@
       ],
       "filename": "9_01.html",
       "document_format": "imhd_html",
-      "size_bytes": 267842
+      "size_bytes": 267838
     },
     {
       "line_id": "10",
@@ -427,7 +427,7 @@
       ],
       "filename": "10_01.html",
       "document_format": "imhd_html",
-      "size_bytes": 118564
+      "size_bytes": 118560
     },
     {
       "line_id": "10",
@@ -453,7 +453,7 @@
       ],
       "filename": "10_02.html",
       "document_format": "imhd_html",
-      "size_bytes": 103521
+      "size_bytes": 103517
     }
   ]
 }

@@ -11,7 +11,7 @@
       "east": 18.8364391
     }
   ],
-  "downloaded_at": "2026-05-13T17:13:05Z",
+  "downloaded_at": "2026-05-25T08:04:24Z",
   "documents": [
     {
       "line_id": "1",
@@ -32,7 +32,7 @@
       ],
       "filename": "1_01.html",
       "document_format": "imhd_html",
-      "size_bytes": 98088
+      "size_bytes": 98085
     },
     {
       "line_id": "1",
@@ -52,7 +52,7 @@
       ],
       "filename": "1_02.html",
       "document_format": "imhd_html",
-      "size_bytes": 105990
+      "size_bytes": 105987
     },
     {
       "line_id": "3",
@@ -83,7 +83,7 @@
       ],
       "filename": "3_01.html",
       "document_format": "imhd_html",
-      "size_bytes": 145749
+      "size_bytes": 145747
     },
     {
       "line_id": "4",
@@ -114,7 +114,7 @@
       ],
       "filename": "4_01.html",
       "document_format": "imhd_html",
-      "size_bytes": 146162
+      "size_bytes": 146160
     },
     {
       "line_id": "5",
@@ -139,7 +139,7 @@
       ],
       "filename": "5_01.html",
       "document_format": "imhd_html",
-      "size_bytes": 128899
+      "size_bytes": 128897
     },
     {
       "line_id": "5",
@@ -163,7 +163,7 @@
       ],
       "filename": "5_02.html",
       "document_format": "imhd_html",
-      "size_bytes": 126010
+      "size_bytes": 126008
     },
     {
       "line_id": "6",
@@ -191,7 +191,7 @@
       ],
       "filename": "6_01.html",
       "document_format": "imhd_html",
-      "size_bytes": 140648
+      "size_bytes": 140646
     },
     {
       "line_id": "6",
@@ -221,7 +221,7 @@
       ],
       "filename": "6_02.html",
       "document_format": "imhd_html",
-      "size_bytes": 136595
+      "size_bytes": 136593
     },
     {
       "line_id": "7",
@@ -252,7 +252,7 @@
       ],
       "filename": "7_01.html",
       "document_format": "imhd_html",
-      "size_bytes": 117522
+      "size_bytes": 117520
     },
     {
       "line_id": "7",
@@ -283,7 +283,7 @@
       ],
       "filename": "7_02.html",
       "document_format": "imhd_html",
-      "size_bytes": 126352
+      "size_bytes": 126349
     },
     {
       "line_id": "14",
@@ -313,7 +313,7 @@
       ],
       "filename": "14_01.html",
       "document_format": "imhd_html",
-      "size_bytes": 144746
+      "size_bytes": 144744
     },
     {
       "line_id": "16",
@@ -346,7 +346,7 @@
       ],
       "filename": "16_01.html",
       "document_format": "imhd_html",
-      "size_bytes": 121988
+      "size_bytes": 121986
     },
     {
       "line_id": "20",
@@ -388,7 +388,7 @@
       ],
       "filename": "20_01.html",
       "document_format": "imhd_html",
-      "size_bytes": 131972
+      "size_bytes": 131970
     },
     {
       "line_id": "21",
@@ -415,7 +415,7 @@
       ],
       "filename": "21_01.html",
       "document_format": "imhd_html",
-      "size_bytes": 112360
+      "size_bytes": 112358
     },
     {
       "line_id": "21",
@@ -442,7 +442,7 @@
       ],
       "filename": "21_02.html",
       "document_format": "imhd_html",
-      "size_bytes": 115154
+      "size_bytes": 115152
     },
     {
       "line_id": "22",
@@ -469,7 +469,7 @@
       ],
       "filename": "22_01.html",
       "document_format": "imhd_html",
-      "size_bytes": 115372
+      "size_bytes": 115370
     },
     {
       "line_id": "22",
@@ -496,7 +496,7 @@
       ],
       "filename": "22_02.html",
       "document_format": "imhd_html",
-      "size_bytes": 117618
+      "size_bytes": 117616
     },
     {
       "line_id": "23",
@@ -510,7 +510,7 @@
       ],
       "filename": "23_01.html",
       "document_format": "imhd_html",
-      "size_bytes": 110268
+      "size_bytes": 110266
     },
     {
       "line_id": "23",
@@ -525,7 +525,7 @@
       ],
       "filename": "23_02.html",
       "document_format": "imhd_html",
-      "size_bytes": 79235
+      "size_bytes": 79233
     },
     {
       "line_id": "24",
@@ -555,7 +555,7 @@
       ],
       "filename": "24_01.html",
       "document_format": "imhd_html",
-      "size_bytes": 118362
+      "size_bytes": 118359
     },
     {
       "line_id": "24",
@@ -585,7 +585,7 @@
       ],
       "filename": "24_02.html",
       "document_format": "imhd_html",
-      "size_bytes": 120391
+      "size_bytes": 120389
     },
     {
       "line_id": "26",
@@ -612,7 +612,7 @@
       ],
       "filename": "26_01.html",
       "document_format": "imhd_html",
-      "size_bytes": 109261
+      "size_bytes": 109258
     },
     {
       "line_id": "26",
@@ -639,7 +639,7 @@
       ],
       "filename": "26_02.html",
       "document_format": "imhd_html",
-      "size_bytes": 110542
+      "size_bytes": 110539
     },
     {
       "line_id": "27",
@@ -669,7 +669,7 @@
       ],
       "filename": "27_01.html",
       "document_format": "imhd_html",
-      "size_bytes": 122469
+      "size_bytes": 122466
     },
     {
       "line_id": "27",
@@ -698,7 +698,7 @@
       ],
       "filename": "27_02.html",
       "document_format": "imhd_html",
-      "size_bytes": 123774
+      "size_bytes": 123772
     },
     {
       "line_id": "29",
@@ -723,7 +723,7 @@
       ],
       "filename": "29_01.html",
       "document_format": "imhd_html",
-      "size_bytes": 104212
+      "size_bytes": 104209
     },
     {
       "line_id": "29",
@@ -750,7 +750,7 @@
       ],
       "filename": "29_02.html",
       "document_format": "imhd_html",
-      "size_bytes": 136799
+      "size_bytes": 136797
     },
     {
       "line_id": "30",
@@ -771,7 +771,7 @@
       ],
       "filename": "30_01.html",
       "document_format": "imhd_html",
-      "size_bytes": 93108
+      "size_bytes": 93106
     },
     {
       "line_id": "30",
@@ -793,7 +793,7 @@
       ],
       "filename": "30_02.html",
       "document_format": "imhd_html",
-      "size_bytes": 89924
+      "size_bytes": 89922
     },
     {
       "line_id": "31",
@@ -818,7 +818,7 @@
       ],
       "filename": "31_01.html",
       "document_format": "imhd_html",
-      "size_bytes": 102891
+      "size_bytes": 102890
     },
     {
       "line_id": "31",
@@ -843,7 +843,7 @@
       ],
       "filename": "31_02.html",
       "document_format": "imhd_html",
-      "size_bytes": 117890
+      "size_bytes": 117888
     },
     {
       "line_id": "50",
@@ -880,7 +880,7 @@
       ],
       "filename": "50_01.html",
       "document_format": "imhd_html",
-      "size_bytes": 150628
+      "size_bytes": 150625
     },
     {
       "line_id": "50",
@@ -915,7 +915,7 @@
       ],
       "filename": "50_02.html",
       "document_format": "imhd_html",
-      "size_bytes": 121532
+      "size_bytes": 121530
     },
     {
       "line_id": "67",
@@ -946,7 +946,7 @@
       ],
       "filename": "67_01.html",
       "document_format": "imhd_html",
-      "size_bytes": 115478
+      "size_bytes": 115475
     },
     {
       "line_id": "67",
@@ -977,7 +977,7 @@
       ],
       "filename": "67_02.html",
       "document_format": "imhd_html",
-      "size_bytes": 104269
+      "size_bytes": 104266
     }
   ]
 }

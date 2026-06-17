@@ -1,7 +1,7 @@
 {
   "city": "zilina",
   "provider": "imhd_zilina",
-  "generated_at": "2026-05-13T17:13:29Z",
+  "generated_at": "2026-05-25T08:05:12Z",
   "stops": [
     {
       "graph_stop_key": "node/1057544331",
@@ -283319,7 +283319,7 @@
   "quality_report": {
     "city": "zilina",
     "provider": "imhd_zilina",
-    "generated_at": "2026-05-13T17:13:29Z",
+    "generated_at": "2026-05-25T08:05:12Z",
     "source_document_count": 35,
     "parsed_document_count": 35,
     "variant_count": 59,

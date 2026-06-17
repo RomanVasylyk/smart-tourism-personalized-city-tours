@@ -2,10 +2,82 @@
   "version": 0.6,
   "generator": "Overpass API 0.7.62.11 87bfad18",
   "osm3s": {
-    "timestamp_osm_base": "2026-05-10T08:08:21Z",
+    "timestamp_osm_base": "2026-05-25T08:01:59Z",
     "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
   },
   "elements": [
+    {
+      "type": "node",
+      "id": 31195516,
+      "lat": 48.3817025,
+      "lon": 17.5828536,
+      "tags": {
+        "bus": "yes",
+        "name": "Šrobárova",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 48754114,
+      "lat": 48.3701827,
+      "lon": 17.5829833,
+      "tags": {
+        "bus": "yes",
+        "fare_zone:IDSBK": "401",
+        "name": "Trnava, AS",
+        "network": "Prímestská autobusová doprava Trnavského samosprávneho kraja;Integrovaný dopravný systém Bratislavského kraja",
+        "network:short": "PAD TTSK;IDS BK",
+        "network:wikidata": "Q131360442;Q4241634",
+        "operator": "Arriva Trnava;Arriva Mobility Solutions",
+        "operator:wikidata": "Q131698585",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 60945948,
+      "lat": 48.3917883,
+      "lon": 17.6053235,
+      "tags": {
+        "bus": "yes",
+        "name": "Sibírska",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 61814847,
+      "lat": 48.3697114,
+      "lon": 17.5829744,
+      "tags": {
+        "bus": "yes",
+        "name": "Trnava, AS",
+        "network": "Prímestská autobusová doprava Trnavského samosprávneho kraja",
+        "network:short": "PAD TTSK",
+        "network:wikidata": "Q131360442",
+        "operator": "Arriva Trnava",
+        "operator:wikidata": "Q131698585",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 61814848,
+      "lat": 48.3701775,
+      "lon": 17.5831795,
+      "tags": {
+        "bus": "yes",
+        "name": "Trnava, AS",
+        "network": "Prímestská autobusová doprava Trnavského samosprávneho kraja",
+        "network:short": "PAD TTSK",
+        "network:wikidata": "Q131360442",
+        "operator": "Arriva Trnava",
+        "operator:wikidata": "Q131698585",
+        "public_transport": "stop_position"
+      }
+    },
     {
       "type": "node",
       "id": 61817495,
@@ -205,6 +277,54 @@
     },
     {
       "type": "node",
+      "id": 320605598,
+      "lat": 48.37007,
+      "lon": 17.5831387,
+      "tags": {
+        "bus": "yes",
+        "name": "Trnava, AS",
+        "network": "Prímestská autobusová doprava Trnavského samosprávneho kraja",
+        "network:short": "PAD TTSK",
+        "network:wikidata": "Q131360442",
+        "operator": "Arriva Trnava",
+        "operator:wikidata": "Q131698585",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 320605604,
+      "lat": 48.3702943,
+      "lon": 17.5832242,
+      "tags": {
+        "bus": "yes",
+        "name": "Trnava, AS",
+        "network": "Prímestská autobusová doprava Trnavského samosprávneho kraja",
+        "network:short": "PAD TTSK",
+        "network:wikidata": "Q131360442",
+        "operator": "Arriva Trnava",
+        "operator:wikidata": "Q131698585",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 320605608,
+      "lat": 48.3695976,
+      "lon": 17.5828376,
+      "tags": {
+        "bus": "yes",
+        "name": "Trnava, AS",
+        "network": "Prímestská autobusová doprava Trnavského samosprávneho kraja",
+        "network:short": "PAD TTSK",
+        "network:wikidata": "Q131360442",
+        "operator": "Arriva Trnava",
+        "operator:wikidata": "Q131698585",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
       "id": 325586312,
       "lat": 48.3737725,
       "lon": 17.488459,
@@ -297,6 +417,47 @@
         "network:wikidata": "Q12771417",
         "operator": "Arriva Trnava",
         "public_transport": "platform"
+      }
+    },
+    {
+      "type": "node",
+      "id": 339856318,
+      "lat": 48.3631276,
+      "lon": 17.5859004,
+      "tags": {
+        "bus": "yes",
+        "name": "Gorkého",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 583489228,
+      "lat": 48.3703314,
+      "lon": 17.571036,
+      "tags": {
+        "bus": "yes",
+        "name": "G. Dusíka",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 626494255,
+      "lat": 48.3684296,
+      "lon": 17.5287174,
+      "tags": {
+        "bus": "yes",
+        "local_ref": "C",
+        "name": "Biely Kostol, Pionierske námestie",
+        "network": "Prímestská autobusová doprava Trnavského samosprávneho kraja",
+        "network:short": "PAD TTSK",
+        "network:wikidata": "Q131360442",
+        "operator": "Arriva Trnava",
+        "operator:wikidata": "Q131698585",
+        "public_transport": "stop_position"
       }
     },
     {
@@ -979,6 +1140,32 @@
     },
     {
       "type": "node",
+      "id": 1986166800,
+      "lat": 48.3778707,
+      "lon": 17.5815928,
+      "tags": {
+        "bus": "yes",
+        "name": "Bernolákova brána",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2012712100,
+      "lat": 48.3708609,
+      "lon": 17.5847629,
+      "tags": {
+        "bus": "yes",
+        "fare_zone": "400",
+        "local_ref": "A",
+        "name": "Železničná stanica",
+        "public_transport": "stop_position",
+        "short_name": "Žel. stanica"
+      }
+    },
+    {
+      "type": "node",
       "id": 2118248033,
       "lat": 48.3911985,
       "lon": 17.5878292,
@@ -1229,6 +1416,24 @@
     },
     {
       "type": "node",
+      "id": 2118313407,
+      "lat": 48.3542062,
+      "lon": 17.5741877,
+      "tags": {
+        "bus": "yes",
+        "fare_zone:IDSBK": "401",
+        "local_ref": "D",
+        "name": "Strojárenská",
+        "network": "Mestská autobusová doprava Piešťany;Prímestská autobusová doprava Trnavského samosprávneho kraja",
+        "network:short": "MAD Piešťany;PAD TTSK",
+        "network:wikidata": "Q110521796;Q131360442",
+        "operator": "Arriva Trnava",
+        "operator:wikidata": "Q131698585",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
       "id": 2290431042,
       "lat": 48.3711457,
       "lon": 17.4995871,
@@ -1341,6 +1546,18 @@
     },
     {
       "type": "node",
+      "id": 2343628790,
+      "lat": 48.3665942,
+      "lon": 17.5736532,
+      "tags": {
+        "bus": "yes",
+        "name": "B. Smetanu",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
       "id": 2456052923,
       "lat": 48.3681806,
       "lon": 17.5872034,
@@ -1383,6 +1600,18 @@
         "shelter": "yes",
         "wikidata": "Q12766922",
         "wikipedia": "sk:Hlboká ulica (Trnava)"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2600127265,
+      "lat": 48.3721339,
+      "lon": 17.5893771,
+      "tags": {
+        "bus": "yes",
+        "name": "Kollárova",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
       }
     },
     {
@@ -1431,6 +1660,31 @@
     },
     {
       "type": "node",
+      "id": 2615907406,
+      "lat": 48.3894916,
+      "lon": 17.5969903,
+      "tags": {
+        "bus": "yes",
+        "name": "Saleziánska",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2622471617,
+      "lat": 48.3773497,
+      "lon": 17.5996336,
+      "tags": {
+        "bus": "yes",
+        "local_ref": "B",
+        "name": "V. Clementisa",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
       "id": 2738199521,
       "lat": 48.4049485,
       "lon": 17.513575,
@@ -1450,6 +1704,18 @@
         "public_transport": "platform",
         "shelter": "yes",
         "wheelchair": "no"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2925130554,
+      "lat": 48.3679721,
+      "lon": 17.6162646,
+      "tags": {
+        "bus": "yes",
+        "name": "Nová",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
       }
     },
     {
@@ -1796,6 +2062,19 @@
     },
     {
       "type": "node",
+      "id": 3727211298,
+      "lat": 48.4119974,
+      "lon": 17.500236,
+      "tags": {
+        "bus": "yes",
+        "fare_zone:IDSBK": "401",
+        "name": "Suchá n. Parnou, Ružová dolina",
+        "network": "IDS BK",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
       "id": 3750129220,
       "lat": 48.3542569,
       "lon": 17.6071485,
@@ -1937,6 +2216,24 @@
     },
     {
       "type": "node",
+      "id": 3853401545,
+      "lat": 48.3653541,
+      "lon": 17.5815236,
+      "tags": {
+        "bus": "yes",
+        "fare_zone": "400",
+        "fare_zone:IDSBK": "401",
+        "name": "Coburgova",
+        "network": "Mestský bus;Prímestská autobusová doprava Trnavského samosprávneho kraja",
+        "network:short": "PAD TTSK",
+        "network:wikidata": "Q12771417;Q131360442",
+        "operator": "Arriva Trnava",
+        "operator:wikidata": "Q131698585",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
       "id": 3853401546,
       "lat": 48.3653658,
       "lon": 17.5814287,
@@ -1969,6 +2266,24 @@
     },
     {
       "type": "node",
+      "id": 3853401547,
+      "lat": 48.3569918,
+      "lon": 17.5771817,
+      "tags": {
+        "bus": "yes",
+        "fare_zone": "400",
+        "fare_zone:IDSBK": "401",
+        "name": "Bratislavská",
+        "network": "Prímestská autobusová doprava Trnavského samosprávneho kraja;Integrovaný dopravný systém v Bratislavskom kraji",
+        "network:short": "PAD TTSK;IDS BK",
+        "network:wikidata": "Q131360442;Q4241634",
+        "operator": "Arriva Trnava;Arriva Mobility Solutions",
+        "operator:wikidata": "Q131698585;Q135153567",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
       "id": 3853401548,
       "lat": 48.3570219,
       "lon": 17.5770277,
@@ -1997,6 +2312,42 @@
     },
     {
       "type": "node",
+      "id": 3853401657,
+      "lat": 48.3681293,
+      "lon": 17.5870572,
+      "tags": {
+        "bus": "yes",
+        "fare_zone": "400",
+        "fare_zone:IDSBK": "401",
+        "name": "Dohnányho",
+        "network": "Mestský bus;Prímestská autobusová doprava Trnavského samosprávneho kraja;Integrovaný dopravný systém v Bratislavskom kraji",
+        "network:short": "PAD TTSK;IDS BK",
+        "network:wikidata": "Q12771417;Q131360442;Q4241634",
+        "operator": "Arriva Trnava;Arriva Mobility Solutions",
+        "operator:wikidata": "Q131698585;Q135153567",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 3853401658,
+      "lat": 48.3684939,
+      "lon": 17.5867979,
+      "tags": {
+        "bus": "yes",
+        "fare_zone": "400",
+        "fare_zone:IDSBK": "401",
+        "name": "Dohnányho",
+        "network": "Mestský bus;Prímestská autobusová doprava Trnavského samosprávneho kraja;Integrovaný dopravný systém v Bratislavskom kraji",
+        "network:short": "PAD TTSK;IDS BK",
+        "network:wikidata": "Q12771417;Q131360442;Q4241634",
+        "operator": "Arriva Trnava;Arriva Mobility Solutions",
+        "operator:wikidata": "Q131698585;Q135153567",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
       "id": 3853401659,
       "lat": 48.3594406,
       "lon": 17.5797081,
@@ -2018,6 +2369,43 @@
         "route_ref": "5;666;207425",
         "shelter": "no",
         "wheelchair": "no"
+      }
+    },
+    {
+      "type": "node",
+      "id": 3853401660,
+      "lat": 48.3594867,
+      "lon": 17.5796862,
+      "tags": {
+        "bus": "yes",
+        "fare_zone": "400",
+        "fare_zone:IDSBK": "401",
+        "name": "G. Steinera",
+        "network": "Prímestská autobusová doprava Trnavského samosprávneho kraja;Integrovaný dopravný systém v Bratislavskom kraji",
+        "network:short": "PAD TTSK;IDS BK",
+        "network:wikidata": "Q131360442;Q4241634",
+        "operator": "Arriva Trnava;Arriva Mobility Solutions",
+        "operator:wikidata": "Q131698585;Q135153567",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 3853401663,
+      "lat": 48.3432306,
+      "lon": 17.564959,
+      "tags": {
+        "bus": "yes",
+        "fare_zone:IDSBK": "401",
+        "fare_zone:PADTTSK": "439",
+        "name": "Hrnčiarovce, Cíferská",
+        "network": "Prímestská autobusová doprava Trnavského samosprávneho kraja;Integrovaný dopravný systém v Bratislavskom kraji",
+        "network:short": "PAD TTSK;IDS BK",
+        "network:wikidata": "Q131360442;Q4241634",
+        "operator": "Arriva Trnava;Arriva Mobility Solutions",
+        "operator:wikidata": "Q131698585;Q135153567",
+        "public_transport": "stop_position",
+        "short_name": "Hrnčiarovce n. Parnou, Cíferská"
       }
     },
     {
@@ -2078,6 +2466,25 @@
     },
     {
       "type": "node",
+      "id": 3853401666,
+      "lat": 48.3434591,
+      "lon": 17.5651928,
+      "tags": {
+        "bus": "yes",
+        "fare_zone:IDSBK": "401",
+        "fare_zone:PADTTSK": "439",
+        "name": "Hrnčiarovce, Cíferská",
+        "network": "Prímestská autobusová doprava Trnavského samosprávneho kraja;Integrovaný dopravný systém v Bratislavskom kraji",
+        "network:short": "PAD TTSK;IDS BK",
+        "network:wikidata": "Q131360442;Q4241634",
+        "operator": "Arriva Trnava;Arriva Mobility Solutions",
+        "operator:wikidata": "Q131698585;Q135153567",
+        "public_transport": "stop_position",
+        "short_name": "Hrnčiarovce n. Parnou, Cíferská"
+      }
+    },
+    {
+      "type": "node",
       "id": 3853401673,
       "lat": 48.3542285,
       "lon": 17.5741503,
@@ -2129,6 +2536,252 @@
     },
     {
       "type": "node",
+      "id": 3853401677,
+      "lat": 48.3690006,
+      "lon": 17.5812787,
+      "tags": {
+        "bus": "yes",
+        "name": "Trnava, AS",
+        "network": "Prímestská autobusová doprava Trnavského samosprávneho kraja",
+        "network:short": "PAD TTSK",
+        "network:wikidata": "Q131360442",
+        "operator": "Arriva Trnava",
+        "operator:wikidata": "Q131698585",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 3853401679,
+      "lat": 48.3690952,
+      "lon": 17.5814805,
+      "tags": {
+        "bus": "yes",
+        "name": "Trnava, AS",
+        "network": "Prímestská autobusová doprava Trnavského samosprávneho kraja",
+        "network:short": "PAD TTSK",
+        "network:wikidata": "Q131360442",
+        "operator": "Arriva Trnava",
+        "operator:wikidata": "Q131698585",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 3853401681,
+      "lat": 48.3691895,
+      "lon": 17.5816858,
+      "tags": {
+        "bus": "yes",
+        "name": "Trnava, AS",
+        "network": "Prímestská autobusová doprava Trnavského samosprávneho kraja",
+        "network:short": "PAD TTSK",
+        "network:wikidata": "Q131360442",
+        "operator": "Arriva Trnava",
+        "operator:wikidata": "Q131698585",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 3853401683,
+      "lat": 48.3692794,
+      "lon": 17.5818635,
+      "tags": {
+        "bus": "yes",
+        "name": "Trnava, AS",
+        "network": "Prímestská autobusová doprava Trnavského samosprávneho kraja",
+        "network:short": "PAD TTSK",
+        "network:wikidata": "Q131360442",
+        "operator": "Arriva Trnava",
+        "operator:wikidata": "Q131698585",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 3853401686,
+      "lat": 48.3693669,
+      "lon": 17.5823685,
+      "tags": {
+        "bus": "yes",
+        "name": "Trnava, AS",
+        "network": "Prímestská autobusová doprava Trnavského samosprávneho kraja",
+        "network:short": "PAD TTSK",
+        "network:wikidata": "Q131360442",
+        "operator": "Arriva Trnava",
+        "operator:wikidata": "Q131698585",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 3853401687,
+      "lat": 48.3693706,
+      "lon": 17.5820609,
+      "tags": {
+        "bus": "yes",
+        "name": "Trnava, AS",
+        "network": "Prímestská autobusová doprava Trnavského samosprávneho kraja",
+        "network:short": "PAD TTSK",
+        "network:wikidata": "Q131360442",
+        "operator": "Arriva Trnava",
+        "operator:wikidata": "Q131698585",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 3853401690,
+      "lat": 48.3694487,
+      "lon": 17.5825355,
+      "tags": {
+        "bus": "yes",
+        "fare_zone:IDSBK": "401",
+        "name": "Trnava, AS",
+        "network": "Prímestská autobusová doprava Trnavského samosprávneho kraja;Integrovaný dopravný systém Bratislavského kraja",
+        "network:short": "PAD TTSK;IDS BK",
+        "network:wikidata": "Q131360442;Q4241634",
+        "operator": "Arriva Trnava;Arriva Mobility Solutions",
+        "operator:wikidata": "Q131698585",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 3853401691,
+      "lat": 48.3694612,
+      "lon": 17.5822484,
+      "tags": {
+        "bus": "yes",
+        "name": "Trnava, AS",
+        "network": "Prímestská autobusová doprava Trnavského samosprávneho kraja",
+        "network:short": "PAD TTSK",
+        "network:wikidata": "Q131360442",
+        "operator": "Arriva Trnava",
+        "operator:wikidata": "Q131698585",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 3853401695,
+      "lat": 48.3699472,
+      "lon": 17.5828916,
+      "tags": {
+        "bus": "yes",
+        "name": "Trnava, AS",
+        "network": "Prímestská autobusová doprava Trnavského samosprávneho kraja",
+        "network:short": "PAD TTSK",
+        "network:wikidata": "Q131360442",
+        "operator": "Arriva Trnava",
+        "operator:wikidata": "Q131698585",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 3853401696,
+      "lat": 48.3699546,
+      "lon": 17.5830958,
+      "tags": {
+        "bus": "yes",
+        "fare_zone:IDSBK": "401",
+        "name": "Trnava, AS",
+        "network": "Prímestská autobusová doprava Trnavského samosprávneho kraja;Integrovaný dopravný systém Bratislavského kraja",
+        "network:short": "PAD TTSK;IDS BK",
+        "network:wikidata": "Q131360442;Q4241634",
+        "operator": "Arriva Trnava;Arriva Mobility Solutions",
+        "operator:wikidata": "Q131698585",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 3853401698,
+      "lat": 48.370104,
+      "lon": 17.5829546,
+      "tags": {
+        "bus": "yes",
+        "name": "Trnava, AS",
+        "network": "Prímestská autobusová doprava Trnavského samosprávneho kraja",
+        "network:short": "PAD TTSK",
+        "network:wikidata": "Q131360442",
+        "operator": "Arriva Trnava",
+        "operator:wikidata": "Q131698585",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 3853401700,
+      "lat": 48.3702705,
+      "lon": 17.5830176,
+      "tags": {
+        "bus": "yes",
+        "name": "Trnava, AS",
+        "network": "Prímestská autobusová doprava Trnavského samosprávneho kraja",
+        "network:short": "PAD TTSK",
+        "network:wikidata": "Q131360442",
+        "operator": "Arriva Trnava",
+        "operator:wikidata": "Q131698585",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 3853401702,
+      "lat": 48.3704091,
+      "lon": 17.5830733,
+      "tags": {
+        "bus": "yes",
+        "name": "Trnava, AS",
+        "network": "Prímestská autobusová doprava Trnavského samosprávneho kraja",
+        "network:short": "PAD TTSK",
+        "network:wikidata": "Q131360442",
+        "operator": "Arriva Trnava",
+        "operator:wikidata": "Q131698585",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 3901057995,
+      "lat": 48.3806762,
+      "lon": 17.5800345,
+      "tags": {
+        "bus": "yes",
+        "fare_zone:IDSBK": "401",
+        "local_ref": "C",
+        "name": "Zelený kríčok",
+        "network": "Mestský bus;Prímestská autobusová doprava Trnavského samosprávneho kraja",
+        "network:short": "PAD TTSK",
+        "network:wikidata": "Q12771417;Q131360442",
+        "old_name": "Hospodárska, Zelený kríčok",
+        "operator": "Arriva Trnava",
+        "operator:wikidata": "Q131698585",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 3901058002,
+      "lat": 48.3893662,
+      "lon": 17.5583575,
+      "tags": {
+        "bus": "yes",
+        "fare_zone:IDSBK": "401",
+        "name": "Orešianska",
+        "network": "Prímestská autobusová doprava Trnavského samosprávneho kraja;Integrovaný dopravný systém v Bratislavskom kraji",
+        "network:short": "PAD TTSK;IDS BK",
+        "network:wikidata": "Q131360442;Q4241634",
+        "operator": "Arriva Trnava;Arriva Mobility Solutions",
+        "operator:wikidata": "Q131698585;Q135153567",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
       "id": 3901058003,
       "lat": 48.3850677,
       "lon": 17.5702977,
@@ -2153,6 +2806,23 @@
     },
     {
       "type": "node",
+      "id": 3901058004,
+      "lat": 48.3850977,
+      "lon": 17.5703986,
+      "tags": {
+        "bus": "yes",
+        "fare_zone:IDSBK": "401",
+        "name": "Suchovská",
+        "network": "Prímestská autobusová doprava Trnavského samosprávneho kraja;Integrovaný dopravný systém v Bratislavskom kraji",
+        "network:short": "PAD TTSK;IDS BK",
+        "network:wikidata": "Q131360442;Q4241634",
+        "operator": "Arriva Trnava;Arriva Mobility Solutions",
+        "operator:wikidata": "Q131698585;Q135153567",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
       "id": 3901058005,
       "lat": 48.3851376,
       "lon": 17.5704907,
@@ -2173,6 +2843,19 @@
         "route_ref": "555",
         "shelter": "yes",
         "wheelchair": "no"
+      }
+    },
+    {
+      "type": "node",
+      "id": 3901058006,
+      "lat": 48.4087719,
+      "lon": 17.4933114,
+      "tags": {
+        "bus": "yes",
+        "fare_zone:IDSBK": "401",
+        "name": "Suchá n. Parnou, Hoštáky",
+        "network": "IDS BK",
+        "public_transport": "stop_position"
       }
     },
     {
@@ -2244,6 +2927,40 @@
     },
     {
       "type": "node",
+      "id": 3901058013,
+      "lat": 48.404998,
+      "lon": 17.5133,
+      "tags": {
+        "bus": "yes",
+        "fare_zone:IDSBK": "401",
+        "name": "Zvončín, rázc.",
+        "network": "Prímestská autobusová doprava Trnavského samosprávneho kraja;Integrovaný dopravný systém Bratislavského kraja",
+        "network:short": "PAD TTSK;IDS BK",
+        "network:wikidata": "Q131360442;Q4241634",
+        "operator": "Arriva Trnava;Arriva Mobility Solutions",
+        "operator:wikidata": "Q131698585",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 3901058014,
+      "lat": 48.4047672,
+      "lon": 17.5133527,
+      "tags": {
+        "bus": "yes",
+        "name": "Zvončín, rázc.",
+        "network": "Prímestská autobusová doprava Trnavského samosprávneho kraja",
+        "network:short": "PAD TTSK",
+        "network:wikidata": "Q131360442",
+        "operator": "Arriva Trnava",
+        "operator:wikidata": "Q131698585",
+        "public_transport": "stop_position",
+        "short_name": "Zvončín, rázc.I"
+      }
+    },
+    {
+      "type": "node",
       "id": 3901058015,
       "lat": 48.4048393,
       "lon": 17.5133387,
@@ -2291,6 +3008,24 @@
         "shelter": "yes",
         "surface": "paving_stones",
         "tactile_paving": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 3901058019,
+      "lat": 48.3809449,
+      "lon": 17.5816255,
+      "tags": {
+        "bus": "yes",
+        "fare_zone:IDSBK": "401",
+        "loc_name": "Zelený kríček",
+        "name": "Zelený kríčok",
+        "network": "Prímestská autobusová doprava Trnavského samosprávneho kraja;Integrovaný dopravný systém v Bratislavskom kraji",
+        "network:short": "PAD TTSK;IDS BK",
+        "network:wikidata": "Q131360442;Q4241634",
+        "operator": "Arriva Trnava;Arriva Mobility Solutions",
+        "operator:wikidata": "Q131698585;Q135153567",
+        "public_transport": "stop_position"
       }
     },
     {
@@ -2421,6 +3156,45 @@
         "shelter": "yes",
         "surface": "paving_stones",
         "tactile_paving": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 3954197270,
+      "lat": 48.3570406,
+      "lon": 17.5830338,
+      "tags": {
+        "bus": "yes",
+        "name": "Linčianska",
+        "network": "Mestský bus",
+        "operator": "Arriva Trnava",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 3954197272,
+      "lat": 48.3566651,
+      "lon": 17.5786604,
+      "tags": {
+        "bus": "yes",
+        "name": "Nerudova",
+        "network": "Mestský bus",
+        "operator": "Arriva Trnava",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 3954197273,
+      "lat": 48.3568861,
+      "lon": 17.5783755,
+      "tags": {
+        "bus": "yes",
+        "name": "Nerudova",
+        "network": "Mestský bus",
+        "operator": "Arriva Trnava",
+        "public_transport": "stop_position"
       }
     },
     {
@@ -2602,6 +3376,18 @@
         "public_transport": "platform",
         "shelter": "no",
         "tactile_paving": "no"
+      }
+    },
+    {
+      "type": "node",
+      "id": 5414880447,
+      "lat": 48.3887164,
+      "lon": 17.6015693,
+      "tags": {
+        "bus": "yes",
+        "name": "Východná",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
       }
     },
     {
@@ -3870,6 +4656,18 @@
     },
     {
       "type": "node",
+      "id": 6349159773,
+      "lat": 48.36036,
+      "lon": 17.6445939,
+      "tags": {
+        "amenity": "bus_station",
+        "bus": "yes",
+        "name": "Zavar, Logistický park",
+        "public_transport": "station"
+      }
+    },
+    {
+      "type": "node",
       "id": 6349159774,
       "lat": 48.3660946,
       "lon": 17.6327046,
@@ -3914,6 +4712,34 @@
         "public_transport": "platform",
         "shelter": "no",
         "tactile_paving": "no"
+      }
+    },
+    {
+      "type": "node",
+      "id": 6641268115,
+      "lat": 48.3863666,
+      "lon": 17.5920601,
+      "tags": {
+        "bus": "yes",
+        "name": "Na hlinách",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 6758667464,
+      "lat": 48.4002595,
+      "lon": 17.502913,
+      "tags": {
+        "bus": "yes",
+        "name": "Zvončín, OcÚ",
+        "network": "Prímestská autobusová doprava Trnavského samosprávneho kraja",
+        "network:short": "PAD TTSK",
+        "network:wikidata": "Q131360442",
+        "operator": "Arriva Trnava",
+        "operator:wikidata": "Q131698585",
+        "public_transport": "stop_position"
       }
     },
     {
@@ -4083,6 +4909,18 @@
         "shelter": "no",
         "surface": "paving_stones",
         "tactile_paving": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 8127495159,
+      "lat": 48.3668807,
+      "lon": 17.6111482,
+      "tags": {
+        "bus": "yes",
+        "name": "TMT",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
       }
     },
     {
@@ -4457,6 +5295,23 @@
     },
     {
       "type": "node",
+      "id": 9321396576,
+      "lat": 48.3409803,
+      "lon": 17.5659658,
+      "tags": {
+        "bus": "yes",
+        "direction": "forward",
+        "name": "Hrnčiarovce n.Parnou, Vinohradnícka",
+        "network": "Prímestská autobusová doprava Trnavského samosprávneho kraja",
+        "network:short": "PAD TTSK",
+        "network:wikidata": "Q131360442",
+        "operator": "Arriva Trnava",
+        "operator:wikidata": "Q131698585",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
       "id": 9321396577,
       "lat": 48.3440791,
       "lon": 17.569293,
@@ -4474,6 +5329,22 @@
         "operator:wikidata": "Q131698585",
         "public_transport": "platform",
         "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 9321396578,
+      "lat": 48.3440459,
+      "lon": 17.5692681,
+      "tags": {
+        "bus": "yes",
+        "name": "Hrnčiarovce n.Parnou, Sv. Martina",
+        "network": "Prímestská autobusová doprava Trnavského samosprávneho kraja",
+        "network:short": "PAD TTSK",
+        "network:wikidata": "Q131360442",
+        "operator": "Arriva Trnava",
+        "operator:wikidata": "Q131698585",
+        "public_transport": "stop_position"
       }
     },
     {
@@ -4501,6 +5372,18 @@
         "short_name": "J. Bottu",
         "surface": "paving_stones",
         "tactile_paving": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 9403151572,
+      "lat": 48.3817804,
+      "lon": 17.5825611,
+      "tags": {
+        "bus": "yes",
+        "name": "Šrobárova",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
       }
     },
     {
@@ -4586,6 +5469,110 @@
     },
     {
       "type": "node",
+      "id": 9589948141,
+      "lat": 48.3814449,
+      "lon": 17.5828013,
+      "tags": {
+        "bus": "yes",
+        "name": "Zelený kríčok",
+        "network": "Mestský bus",
+        "network:wikidata": "Q12771417",
+        "operator": "Arriva Trnava",
+        "operator:wikidata": "Q131698585",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 9841579012,
+      "lat": 48.3783613,
+      "lon": 17.5814024,
+      "tags": {
+        "bus": "yes",
+        "fare_zone:IDSBK": "401",
+        "name": "Bernolákova brána",
+        "network": "Mestský bus;Prímestská autobusová doprava Trnavského samosprávneho kraja",
+        "network:short": "PAD TTSK",
+        "network:wikidata": "Q12771417;Q131360442",
+        "operator": "Arriva Trnava",
+        "operator:wikidata": "Q131698585",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 9862615464,
+      "lat": 48.3791822,
+      "lon": 17.5940185,
+      "tags": {
+        "bus": "yes",
+        "name": "Starohájska",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 9912365907,
+      "lat": 48.3841671,
+      "lon": 17.5912417,
+      "tags": {
+        "bus": "yes",
+        "name": "Špačinská",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 9914122898,
+      "lat": 48.3800589,
+      "lon": 17.5984827,
+      "tags": {
+        "bus": "yes",
+        "name": "Poliklinika",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 9914122899,
+      "lat": 48.380245,
+      "lon": 17.5987171,
+      "tags": {
+        "bus": "yes",
+        "name": "Poliklinika",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 9915081926,
+      "lat": 48.3542965,
+      "lon": 17.6072277,
+      "tags": {
+        "bus": "yes",
+        "name": "Modranka",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 9919607623,
+      "lat": 48.3728256,
+      "lon": 17.6136683,
+      "tags": {
+        "bus": "yes",
+        "name": "Vozovka",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
       "id": 9919607624,
       "lat": 48.3910033,
       "lon": 17.6022167,
@@ -4631,6 +5618,200 @@
     },
     {
       "type": "node",
+      "id": 10140087054,
+      "lat": 48.3749742,
+      "lon": 17.5747477,
+      "tags": {
+        "bus": "yes",
+        "name": "Študentská",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 10894565780,
+      "lat": 48.3722617,
+      "lon": 17.5905974,
+      "tags": {
+        "bus": "yes",
+        "name": "Kollárova",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 11059712728,
+      "lat": 48.3813726,
+      "lon": 17.5826301,
+      "tags": {
+        "bus": "yes",
+        "name": "Zelený kríčok",
+        "network": "Prímestská autobusová doprava Trnavského samosprávneho kraja",
+        "network:short": "PAD TTSK",
+        "network:wikidata": "Q131360442",
+        "operator": "Arriva Trnava",
+        "operator:wikidata": "Q131698585",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 11059712729,
+      "lat": 48.3812878,
+      "lon": 17.5824309,
+      "tags": {
+        "bus": "yes",
+        "name": "Zelený kríčok",
+        "network": "Prímestská autobusová doprava Trnavského samosprávneho kraja",
+        "network:short": "PAD TTSK",
+        "network:wikidata": "Q131360442",
+        "operator": "Arriva Trnava",
+        "operator:wikidata": "Q131698585",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 11059712730,
+      "lat": 48.3811998,
+      "lon": 17.5822243,
+      "tags": {
+        "bus": "yes",
+        "name": "Zelený kríčok",
+        "network": "Prímestská autobusová doprava Trnavského samosprávneho kraja",
+        "network:short": "PAD TTSK",
+        "network:wikidata": "Q131360442",
+        "operator": "Arriva Trnava",
+        "operator:wikidata": "Q131698585",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 11059712731,
+      "lat": 48.3811136,
+      "lon": 17.5820217,
+      "tags": {
+        "bus": "yes",
+        "name": "Zelený kríčok",
+        "network": "Prímestská autobusová doprava Trnavského samosprávneho kraja",
+        "network:short": "PAD TTSK",
+        "network:wikidata": "Q131360442",
+        "operator": "Arriva Trnava",
+        "operator:wikidata": "Q131698585",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 11059712732,
+      "lat": 48.3810282,
+      "lon": 17.5818211,
+      "tags": {
+        "bus": "yes",
+        "name": "Zelený kríčok",
+        "network": "Prímestská autobusová doprava Trnavského samosprávneho kraja",
+        "network:short": "PAD TTSK",
+        "network:wikidata": "Q131360442",
+        "operator": "Arriva Trnava",
+        "operator:wikidata": "Q131698585",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 11059712781,
+      "lat": 48.4028182,
+      "lon": 17.6077249,
+      "tags": {
+        "bus": "yes",
+        "local_ref": "A",
+        "name": "Letisko",
+        "network": "Mestský bus",
+        "operator": "Mesto Trnava",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 11065228130,
+      "lat": 48.3772078,
+      "lon": 17.5678871,
+      "tags": {
+        "bus": "yes",
+        "name": "Ovocná",
+        "network": "Mestský bus;Prímestská autobusová doprava Trnavského samosprávneho kraja",
+        "network:short": "PAD TTSK",
+        "network:wikidata": "Q12771417;Q131360442",
+        "operator": "Arriva Trnava",
+        "operator:wikidata": "Q131698585",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 11097423948,
+      "lat": 48.389143,
+      "lon": 17.5973436,
+      "tags": {
+        "bus": "yes",
+        "name": "Saleziánska",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 11097423950,
+      "lat": 48.3762879,
+      "lon": 17.5806487,
+      "tags": {
+        "bus": "yes",
+        "name": "Orion",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 11097423953,
+      "lat": 48.3749027,
+      "lon": 17.5750194,
+      "tags": {
+        "bus": "yes",
+        "name": "Študentská",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 11097423961,
+      "lat": 48.366736,
+      "lon": 17.5700603,
+      "tags": {
+        "bus": "yes",
+        "name": "J. G. Tajovského",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 11097423963,
+      "lat": 48.370062,
+      "lon": 17.56979,
+      "tags": {
+        "bus": "yes",
+        "name": "G. Dusíka",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
       "id": 11099592976,
       "lat": 48.3570198,
       "lon": 17.5642929,
@@ -4648,6 +5829,106 @@
         "operator": "Arriva Trnava",
         "public_transport": "platform",
         "route_ref": "4;5"
+      }
+    },
+    {
+      "type": "node",
+      "id": 11119574151,
+      "lat": 48.3634548,
+      "lon": 17.6084274,
+      "tags": {
+        "bus": "yes",
+        "name": "IKEA",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 11119574156,
+      "lat": 48.3670979,
+      "lon": 17.5919591,
+      "tags": {
+        "bus": "yes",
+        "name": "Tamaškovičova",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 11122517713,
+      "lat": 48.3624653,
+      "lon": 17.5957533,
+      "tags": {
+        "bus": "yes",
+        "name": "Pedagogická fakulta",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 11123363003,
+      "lat": 48.3576193,
+      "lon": 17.5709174,
+      "tags": {
+        "bus": "yes",
+        "name": "SACHS",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 11153073354,
+      "lat": 48.3678986,
+      "lon": 17.5496204,
+      "tags": {
+        "bus": "yes",
+        "name": "Kamenný mlyn",
+        "network": "Mestský bus;Prímestská autobusová doprava Trnavského samosprávneho kraja",
+        "network:short": "PAD TTSK",
+        "network:wikidata": "Q12771417;Q131360442",
+        "operator": "Arriva Trnava",
+        "operator:wikidata": "Q131698585",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 11336383626,
+      "lat": 48.3630718,
+      "lon": 17.6017225,
+      "tags": {
+        "bus": "yes",
+        "name": "Nitrianska",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 11374329732,
+      "lat": 48.3926803,
+      "lon": 17.5663998,
+      "tags": {
+        "bus": "yes",
+        "name": "Nemečanka",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 11547029815,
+      "lat": 48.3646827,
+      "lon": 17.6119948,
+      "tags": {
+        "bus": "yes",
+        "name": "OBI",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
       }
     },
     {
@@ -4941,6 +6222,452 @@
     },
     {
       "type": "node",
+      "id": 12468742458,
+      "lat": 48.375004,
+      "lon": 17.6035324,
+      "tags": {
+        "bus": "yes",
+        "name": "Lokotka",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12468742459,
+      "lat": 48.3937688,
+      "lon": 17.591386,
+      "tags": {
+        "bus": "yes",
+        "name": "J. Hlubíka",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12468742460,
+      "lat": 48.3937045,
+      "lon": 17.5917695,
+      "tags": {
+        "bus": "yes",
+        "name": "J. Hlubíka",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12468742461,
+      "lat": 48.3912304,
+      "lon": 17.5879158,
+      "tags": {
+        "bus": "yes",
+        "name": "Kukučínova",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12468742462,
+      "lat": 48.3885709,
+      "lon": 17.5906827,
+      "tags": {
+        "bus": "yes",
+        "name": "Obchodná akadémia",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12468742463,
+      "lat": 48.3866913,
+      "lon": 17.5913474,
+      "tags": {
+        "bus": "yes",
+        "name": "Obchodná akadémia",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12468742464,
+      "lat": 48.3887236,
+      "lon": 17.5905257,
+      "tags": {
+        "bus": "yes",
+        "name": "Obchodná akadémia",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12468742465,
+      "lat": 48.3885839,
+      "lon": 17.5920664,
+      "tags": {
+        "bus": "yes",
+        "name": "Obchodná akadémia",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12468742466,
+      "lat": 48.37955,
+      "lon": 17.5929878,
+      "tags": {
+        "bus": "yes",
+        "name": "Hlboká",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12468742467,
+      "lat": 48.3783647,
+      "lon": 17.5934359,
+      "tags": {
+        "bus": "yes",
+        "name": "Hlboká",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12468742468,
+      "lat": 48.3908861,
+      "lon": 17.602269,
+      "tags": {
+        "bus": "yes",
+        "name": "Olympijská",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12468742469,
+      "lat": 48.3825717,
+      "lon": 17.5998555,
+      "tags": {
+        "bus": "yes",
+        "name": "Družba",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12468742470,
+      "lat": 48.3741859,
+      "lon": 17.5982342,
+      "tags": {
+        "bus": "yes",
+        "local_ref": "A",
+        "name": "Spartakovská",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12468742471,
+      "lat": 48.3729449,
+      "lon": 17.5946528,
+      "tags": {
+        "bus": "yes",
+        "name": "City Aréna",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12468742472,
+      "lat": 48.3707186,
+      "lon": 17.5982062,
+      "tags": {
+        "bus": "yes",
+        "name": "Zdravotnícka škola",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12468742473,
+      "lat": 48.3711223,
+      "lon": 17.5990854,
+      "tags": {
+        "bus": "yes",
+        "name": "Zdravotnícka škola",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12468742474,
+      "lat": 48.3727684,
+      "lon": 17.6026795,
+      "tags": {
+        "bus": "yes",
+        "name": "Koniarekova",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12468742475,
+      "lat": 48.3732205,
+      "lon": 17.6041585,
+      "tags": {
+        "bus": "yes",
+        "name": "Koniarekova",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12468742476,
+      "lat": 48.3663544,
+      "lon": 17.6083143,
+      "tags": {
+        "bus": "yes",
+        "name": "Belgická",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12468742477,
+      "lat": 48.3677739,
+      "lon": 17.6158871,
+      "tags": {
+        "bus": "yes",
+        "name": "Nová",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12468742478,
+      "lat": 48.3464889,
+      "lon": 17.6144933,
+      "tags": {
+        "bus": "yes",
+        "name": "Modranka, Jednota",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12468742479,
+      "lat": 48.3507775,
+      "lon": 17.609562,
+      "tags": {
+        "bus": "yes",
+        "name": "Modranka, Pošta",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12468742480,
+      "lat": 48.3629103,
+      "lon": 17.6020177,
+      "tags": {
+        "bus": "yes",
+        "name": "Nitrianska",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12468742481,
+      "lat": 48.3545548,
+      "lon": 17.5658424,
+      "tags": {
+        "bus": "yes",
+        "name": "BOGE",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12468742482,
+      "lat": 48.3570414,
+      "lon": 17.5642728,
+      "tags": {
+        "bus": "yes",
+        "name": "HKS",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12468742483,
+      "lat": 48.3569597,
+      "lon": 17.5716249,
+      "tags": {
+        "bus": "yes",
+        "name": "SACHS",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12468742484,
+      "lat": 48.3588582,
+      "lon": 17.5959045,
+      "tags": {
+        "bus": "yes",
+        "name": "Mikovíniho",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12468742485,
+      "lat": 48.3670193,
+      "lon": 17.5929898,
+      "tags": {
+        "bus": "yes",
+        "name": "Tamaškovičova",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12468742486,
+      "lat": 48.3727282,
+      "lon": 17.5841969,
+      "tags": {
+        "bus": "yes",
+        "fare_zone:IDSBK": "401",
+        "name": "Hospodárska",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12468742487,
+      "lat": 48.3763439,
+      "lon": 17.5815253,
+      "tags": {
+        "bus": "yes",
+        "name": "Orion",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12468742489,
+      "lat": 48.3858057,
+      "lon": 17.5965231,
+      "tags": {
+        "bus": "yes",
+        "name": "Okružná",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12468742490,
+      "lat": 48.3861893,
+      "lon": 17.5958883,
+      "tags": {
+        "bus": "yes",
+        "name": "Okružná",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12468742491,
+      "lat": 48.3872057,
+      "lon": 17.5987114,
+      "tags": {
+        "bus": "yes",
+        "name": "Veterná",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12468742492,
+      "lat": 48.3916674,
+      "lon": 17.594978,
+      "tags": {
+        "bus": "yes",
+        "name": "Kopánka",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12468742493,
+      "lat": 48.3913666,
+      "lon": 17.5960335,
+      "tags": {
+        "bus": "yes",
+        "name": "Kopánka",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12468742494,
+      "lat": 48.3913829,
+      "lon": 17.5959367,
+      "tags": {
+        "bus": "yes",
+        "name": "Kopánka",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12468742495,
+      "lat": 48.3919242,
+      "lon": 17.5942855,
+      "tags": {
+        "bus": "yes",
+        "name": "Kopánka",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
       "id": 12468742496,
       "lat": 48.3670254,
       "lon": 17.5699718,
@@ -4966,6 +6693,142 @@
     },
     {
       "type": "node",
+      "id": 12470779481,
+      "lat": 48.3706137,
+      "lon": 17.5705313,
+      "tags": {
+        "bus": "yes",
+        "name": "G. Dusíka",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12470779482,
+      "lat": 48.3680813,
+      "lon": 17.5498712,
+      "tags": {
+        "bus": "yes",
+        "name": "Kamenný mlyn",
+        "network": "Mestský bus;Prímestská autobusová doprava Trnavského samosprávneho kraja",
+        "network:short": "PAD TTSK",
+        "network:wikidata": "Q12771417;Q131360442",
+        "operator": "Arriva Trnava",
+        "operator:wikidata": "Q131698585",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12470779483,
+      "lat": 48.3702339,
+      "lon": 17.5542107,
+      "tags": {
+        "bus": "yes",
+        "name": "T. Kružliaka",
+        "network": "Mestský bus;Prímestská autobusová doprava Trnavského samosprávneho kraja",
+        "network:short": "PAD TTSK",
+        "network:wikidata": "Q12771417;Q131360442",
+        "operator": "Arriva Trnava",
+        "operator:wikidata": "Q131698585",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12470779484,
+      "lat": 48.3704642,
+      "lon": 17.5546599,
+      "tags": {
+        "bus": "yes",
+        "name": "T. Kružliaka",
+        "network": "Mestský bus;Prímestská autobusová doprava Trnavského samosprávneho kraja",
+        "network:short": "PAD TTSK",
+        "network:wikidata": "Q12771417;Q131360442",
+        "operator": "Arriva Trnava",
+        "operator:wikidata": "Q131698585",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12470779485,
+      "lat": 48.3745579,
+      "lon": 17.5626791,
+      "tags": {
+        "bus": "yes",
+        "name": "Kamenná cesta, cintorín",
+        "network": "Mestský bus;Prímestská autobusová doprava Trnavského samosprávneho kraja",
+        "network:short": "PAD TTSK",
+        "network:wikidata": "Q12771417;Q131360442",
+        "operator": "Arriva Trnava",
+        "operator:wikidata": "Q131698585",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12470779486,
+      "lat": 48.3743478,
+      "lon": 17.562261,
+      "tags": {
+        "bus": "yes",
+        "name": "Kamenná cesta, cintorín",
+        "network": "Mestský bus;Prímestská autobusová doprava Trnavského samosprávneho kraja",
+        "network:short": "PAD TTSK",
+        "network:wikidata": "Q12771417;Q131360442",
+        "operator": "Arriva Trnava",
+        "operator:wikidata": "Q131698585",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12470779487,
+      "lat": 48.379088,
+      "lon": 17.5715572,
+      "tags": {
+        "bus": "yes",
+        "name": "Okružné nám.",
+        "network": "Mestský bus;Prímestská autobusová doprava Trnavského samosprávneho kraja",
+        "network:short": "PAD TTSK",
+        "network:wikidata": "Q12771417;Q131360442",
+        "operator": "Arriva Trnava",
+        "operator:wikidata": "Q131698585",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12470779488,
+      "lat": 48.3792317,
+      "lon": 17.5718423,
+      "tags": {
+        "bus": "yes",
+        "name": "Okružné nám.",
+        "network": "Mestský bus;Prímestská autobusová doprava Trnavského samosprávneho kraja",
+        "network:short": "PAD TTSK",
+        "network:wikidata": "Q12771417;Q131360442",
+        "operator": "Arriva Trnava",
+        "operator:wikidata": "Q131698585",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12470779489,
+      "lat": 48.3767282,
+      "lon": 17.5723676,
+      "tags": {
+        "bus": "yes",
+        "name": "Šafárikova",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
       "id": 12470779490,
       "lat": 48.3766766,
       "lon": 17.5723851,
@@ -4977,6 +6840,18 @@
         "network": "Mestský bus",
         "public_transport": "platform",
         "route_ref": "3"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12470779491,
+      "lat": 48.3766494,
+      "lon": 17.5718184,
+      "tags": {
+        "bus": "yes",
+        "name": "Šafárikova",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
       }
     },
     {
@@ -4994,6 +6869,18 @@
         "operator": "Arriva Trnava",
         "public_transport": "platform",
         "route_ref": "3"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12470779493,
+      "lat": 48.3752227,
+      "lon": 17.5690547,
+      "tags": {
+        "bus": "yes",
+        "name": "Botanická",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
       }
     },
     {
@@ -5024,6 +6911,30 @@
     },
     {
       "type": "node",
+      "id": 12470779495,
+      "lat": 48.3682601,
+      "lon": 17.5769751,
+      "tags": {
+        "bus": "yes",
+        "name": "Úrad práce",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12470779496,
+      "lat": 48.3679991,
+      "lon": 17.5764344,
+      "tags": {
+        "bus": "yes",
+        "name": "Úrad práce",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
       "id": 12470779497,
       "lat": 48.3681991,
       "lon": 17.5770359,
@@ -5050,6 +6961,196 @@
         "network": "Mestský bus",
         "public_transport": "platform",
         "route_ref": "5;6"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12470779499,
+      "lat": 48.369832,
+      "lon": 17.5764001,
+      "tags": {
+        "bus": "yes",
+        "name": "Úrad práce",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12470779500,
+      "lat": 48.3669684,
+      "lon": 17.5699437,
+      "tags": {
+        "bus": "yes",
+        "name": "J. G. Tajovského",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12470798501,
+      "lat": 48.3690949,
+      "lon": 17.5676389,
+      "tags": {
+        "bus": "yes",
+        "name": "Prednádražie",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12470798502,
+      "lat": 48.3692591,
+      "lon": 17.5677381,
+      "tags": {
+        "bus": "yes",
+        "name": "Prednádražie",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12470798503,
+      "lat": 48.3717883,
+      "lon": 17.5754447,
+      "tags": {
+        "bus": "yes",
+        "name": "MTF",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12470798504,
+      "lat": 48.3720593,
+      "lon": 17.5753127,
+      "tags": {
+        "bus": "yes",
+        "name": "MTF",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12470798505,
+      "lat": 48.3669835,
+      "lon": 17.6116185,
+      "tags": {
+        "bus": "yes",
+        "name": "TMT",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12470798506,
+      "lat": 48.3739457,
+      "lon": 17.6092941,
+      "tags": {
+        "bus": "yes",
+        "name": "ŽOS",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12470798507,
+      "lat": 48.373773,
+      "lon": 17.608486,
+      "tags": {
+        "bus": "yes",
+        "name": "ŽOS",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12470798508,
+      "lat": 48.3842938,
+      "lon": 17.5764641,
+      "tags": {
+        "bus": "yes",
+        "fare_zone:IDSBK": "401",
+        "name": "Pri Kalvárii",
+        "network": "Mestský bus;Prímestská autobusová doprava Trnavského samosprávneho kraja",
+        "network:short": "PAD TTSK",
+        "network:wikidata": "Q12771417;Q131360442",
+        "operator": "Arriva Trnava;Arriva Mobility Solutions",
+        "operator:wikidata": "Q131698585",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12470798509,
+      "lat": 48.3834641,
+      "lon": 17.5774589,
+      "tags": {
+        "bus": "yes",
+        "fare_zone:IDSBK": "401",
+        "name": "Pri Kalvárii",
+        "network": "Mestský bus;Prímestská autobusová doprava Trnavského samosprávneho kraja",
+        "network:short": "PAD TTSK",
+        "network:wikidata": "Q12771417;Q131360442",
+        "operator": "Arriva Trnava;Arriva Mobility Solutions",
+        "operator:wikidata": "Q131698585",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12470798510,
+      "lat": 48.3862009,
+      "lon": 17.573683,
+      "tags": {
+        "bus": "yes",
+        "name": "City Park",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12470798511,
+      "lat": 48.3881577,
+      "lon": 17.5701694,
+      "tags": {
+        "bus": "yes",
+        "name": "Trstínska",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12470798512,
+      "lat": 48.3888766,
+      "lon": 17.5688727,
+      "tags": {
+        "bus": "yes",
+        "name": "Trstínska",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12470798513,
+      "lat": 48.3863974,
+      "lon": 17.5923179,
+      "tags": {
+        "bus": "yes",
+        "name": "Na hlinách",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
       }
     },
     {
@@ -5088,6 +7189,151 @@
     },
     {
       "type": "node",
+      "id": 12470949041,
+      "lat": 48.3838933,
+      "lon": 17.5718918,
+      "tags": {
+        "bus": "yes",
+        "name": "Slovenská",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12470949042,
+      "lat": 48.3841249,
+      "lon": 17.571903,
+      "tags": {
+        "bus": "yes",
+        "name": "Slovenská",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12470949043,
+      "lat": 48.3805518,
+      "lon": 17.5719576,
+      "tags": {
+        "bus": "yes",
+        "name": "Š. Moyzesa",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12470949044,
+      "lat": 48.3812194,
+      "lon": 17.5718408,
+      "tags": {
+        "bus": "yes",
+        "name": "Š. Moyzesa",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12471285800,
+      "lat": 48.3680191,
+      "lon": 17.5859985,
+      "tags": {
+        "bus": "yes",
+        "name": "Dohnányho",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12471341001,
+      "lat": 48.3715995,
+      "lon": 17.5809867,
+      "tags": {
+        "bus": "yes",
+        "name": "Ferka Urbánka",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12471341002,
+      "lat": 48.3714032,
+      "lon": 17.5805962,
+      "tags": {
+        "bus": "yes",
+        "name": "Ferka Urbánka",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12471384744,
+      "lat": 48.3589633,
+      "lon": 17.5885071,
+      "tags": {
+        "bus": "yes",
+        "name": "Trnavan",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12471384745,
+      "lat": 48.3585919,
+      "lon": 17.588567,
+      "tags": {
+        "bus": "yes",
+        "name": "Trnavan",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12471384746,
+      "lat": 48.362603,
+      "lon": 17.5884912,
+      "tags": {
+        "bus": "yes",
+        "name": "Nevädzová",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12471384747,
+      "lat": 48.3645514,
+      "lon": 17.5884298,
+      "tags": {
+        "bus": "yes",
+        "fare_zone:IDSBK": "401",
+        "name": "Zelenečská",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12471384748,
+      "lat": 48.3654228,
+      "lon": 17.5882672,
+      "tags": {
+        "bus": "yes",
+        "name": "Zelenečská",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
       "id": 12759975283,
       "lat": 48.3765486,
       "lon": 17.6192908,
@@ -5120,6 +7366,54 @@
     },
     {
       "type": "node",
+      "id": 12949164970,
+      "lat": 48.4166713,
+      "lon": 17.5800877,
+      "tags": {
+        "bus": "yes",
+        "name": "Trnava, Peklo",
+        "network": "Prímestská autobusová doprava Trnavského samosprávneho kraja",
+        "network:short": "PAD TTSK",
+        "network:wikidata": "Q131360442",
+        "operator": "Arriva Trnava",
+        "operator:wikidata": "Q131698585",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12949164971,
+      "lat": 48.4162479,
+      "lon": 17.5802426,
+      "tags": {
+        "bus": "yes",
+        "name": "Trnava, Peklo",
+        "network": "Prímestská autobusová doprava Trnavského samosprávneho kraja",
+        "network:short": "PAD TTSK",
+        "network:wikidata": "Q131360442",
+        "operator": "Arriva Trnava",
+        "operator:wikidata": "Q131698585",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12951536598,
+      "lat": 48.3618675,
+      "lon": 17.5320348,
+      "tags": {
+        "bus": "yes",
+        "name": "Biely Kostol, otoč",
+        "network": "Prímestská autobusová doprava Trnavského samosprávneho kraja",
+        "network:short": "PAD TTSK",
+        "network:wikidata": "Q131360442",
+        "operator": "Arriva Trnava",
+        "operator:wikidata": "Q131698585",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
       "id": 12951563170,
       "lat": 48.4005607,
       "lon": 17.5022522,
@@ -5142,6 +7436,137 @@
     },
     {
       "type": "node",
+      "id": 12951563171,
+      "lat": 48.4006094,
+      "lon": 17.5022819,
+      "tags": {
+        "bus": "yes",
+        "name": "Zvončín, OcÚ",
+        "network": "Prímestská autobusová doprava Trnavského samosprávneho kraja",
+        "network:short": "PAD TTSK",
+        "network:wikidata": "Q131360442",
+        "operator": "Arriva Trnava",
+        "operator:wikidata": "Q131698585",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12951563185,
+      "lat": 48.4049073,
+      "lon": 17.5135023,
+      "tags": {
+        "bus": "yes",
+        "fare_zone:IDSBK": "401",
+        "name": "Zvončín, rázc.",
+        "network": "Prímestská autobusová doprava Trnavského samosprávneho kraja;Integrovaný dopravný systém Bratislavského kraja",
+        "network:short": "PAD TTSK;IDS BK",
+        "network:wikidata": "Q131360442;Q4241634",
+        "operator": "Arriva Trnava;Arriva Mobility Solutions",
+        "operator:wikidata": "Q131698585",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12951565903,
+      "lat": 48.3686991,
+      "lon": 17.5290789,
+      "tags": {
+        "bus": "yes",
+        "local_ref": "A",
+        "name": "Biely Kostol, Pionierske námestie",
+        "network": "Prímestská autobusová doprava Trnavského samosprávneho kraja",
+        "network:short": "PAD TTSK",
+        "network:wikidata": "Q131360442",
+        "operator": "Arriva Trnava",
+        "operator:wikidata": "Q131698585",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12951565916,
+      "lat": 48.3691365,
+      "lon": 17.5289835,
+      "tags": {
+        "bus": "yes",
+        "local_ref": "B",
+        "name": "Biely Kostol, Pionierske námestie",
+        "network": "Prímestská autobusová doprava Trnavského samosprávneho kraja",
+        "network:short": "PAD TTSK",
+        "network:wikidata": "Q131360442",
+        "operator": "Arriva Trnava",
+        "operator:wikidata": "Q131698585",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12951565927,
+      "lat": 48.3663326,
+      "lon": 17.5348166,
+      "tags": {
+        "bus": "yes",
+        "name": "Biely Kostol, Rybná",
+        "network": "Prímestská autobusová doprava Trnavského samosprávneho kraja",
+        "network:short": "PAD TTSK",
+        "network:wikidata": "Q131360442",
+        "operator": "Arriva Trnava",
+        "operator:wikidata": "Q131698585",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12951670331,
+      "lat": 48.3658062,
+      "lon": 17.5291859,
+      "tags": {
+        "bus": "yes",
+        "name": "Biely Kostol, cintorín",
+        "network": "Prímestská autobusová doprava Trnavského samosprávneho kraja",
+        "network:short": "PAD TTSK",
+        "network:wikidata": "Q131360442",
+        "operator": "Arriva Trnava",
+        "operator:wikidata": "Q131698585",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12985791543,
+      "lat": 48.3247602,
+      "lon": 17.6570306,
+      "tags": {
+        "bus": "yes",
+        "name": "Križovany n.Dudváhom,,pošta",
+        "network": "Prímestská autobusová doprava Trnavského samosprávneho kraja",
+        "network:short": "PAD TTSK",
+        "network:wikidata": "Q131360442",
+        "operator": "Arriva Trnava",
+        "operator:wikidata": "Q131698585",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12985791549,
+      "lat": 48.3246592,
+      "lon": 17.6568788,
+      "tags": {
+        "bus": "yes",
+        "name": "Križovany n.Dudváhom,,pošta",
+        "network": "Prímestská autobusová doprava Trnavského samosprávneho kraja",
+        "network:short": "PAD TTSK",
+        "network:wikidata": "Q131360442",
+        "operator": "Arriva Trnava",
+        "operator:wikidata": "Q131698585",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
       "id": 12985791550,
       "lat": 48.3245972,
       "lon": 17.6568908,
@@ -5156,6 +7581,38 @@
         "operator": "Arriva Trnava",
         "operator:wikidata": "Q131698585",
         "public_transport": "platform"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12985791556,
+      "lat": 48.3195285,
+      "lon": 17.6523257,
+      "tags": {
+        "bus": "yes",
+        "name": "Križovany n.Dudváhom,,ZŠ",
+        "network": "Prímestská autobusová doprava Trnavského samosprávneho kraja",
+        "network:short": "PAD TTSK",
+        "network:wikidata": "Q131360442",
+        "operator": "Arriva Trnava",
+        "operator:wikidata": "Q131698585",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12985791558,
+      "lat": 48.3188308,
+      "lon": 17.6515458,
+      "tags": {
+        "bus": "yes",
+        "name": "Križovany n.Dudváhom,,ZŠ",
+        "network": "Prímestská autobusová doprava Trnavského samosprávneho kraja",
+        "network:short": "PAD TTSK",
+        "network:wikidata": "Q131360442",
+        "operator": "Arriva Trnava",
+        "operator:wikidata": "Q131698585",
+        "public_transport": "stop_position"
       }
     },
     {
@@ -5214,6 +7671,61 @@
     },
     {
       "type": "node",
+      "id": 12995922799,
+      "lat": 48.3706995,
+      "lon": 17.5844395,
+      "tags": {
+        "bus": "yes",
+        "fare_zone": "400",
+        "local_ref": "B",
+        "name": "Železničná stanica",
+        "public_transport": "stop_position",
+        "short_name": "Žel. stanica"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12995944901,
+      "lat": 48.3742347,
+      "lon": 17.5985373,
+      "tags": {
+        "bus": "yes",
+        "local_ref": "B",
+        "name": "Spartakovská",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12995944902,
+      "lat": 48.3774992,
+      "lon": 17.5993722,
+      "tags": {
+        "bus": "yes",
+        "local_ref": "A",
+        "name": "V. Clementisa",
+        "network": "Mestský bus",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 13001910335,
+      "lat": 48.3934623,
+      "lon": 17.5994375,
+      "tags": {
+        "bus": "yes",
+        "local_ref": "A",
+        "name": "Viktoríniho námestie",
+        "network": "Mestský bus",
+        "operator": "Mesto Trnava",
+        "public_transport": "stop_position",
+        "short_name": "Viktoríniho nám."
+      }
+    },
+    {
+      "type": "node",
       "id": 13001975313,
       "lat": 48.3541761,
       "lon": 17.5745711,
@@ -5263,6 +7775,107 @@
         "name": "Biely Kostol,,Parnas",
         "public_transport": "platform",
         "shelter": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 13026200285,
+      "lat": 48.3410081,
+      "lon": 17.5657319,
+      "tags": {
+        "bus": "yes",
+        "direction": "backward",
+        "name": "Hrnčiarovce n.Parnou, Vinohradnícka",
+        "network": "Prímestská autobusová doprava Trnavského samosprávneho kraja",
+        "network:short": "PAD TTSK",
+        "network:wikidata": "Q131360442",
+        "operator": "Arriva Trnava",
+        "operator:wikidata": "Q131698585",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 13028537035,
+      "lat": 48.3978846,
+      "lon": 17.5908906,
+      "tags": {
+        "bus": "yes",
+        "local_ref": "A",
+        "name": "Pekné pole",
+        "network": "Mestský bus",
+        "operator": "Mesto Trnava",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 13028537036,
+      "lat": 48.3959594,
+      "lon": 17.5879654,
+      "tags": {
+        "bus": "yes",
+        "local_ref": "B",
+        "name": "Dobšinského",
+        "network": "Mestský bus",
+        "operator": "Mesto Trnava",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 13028537037,
+      "lat": 48.3955438,
+      "lon": 17.5886208,
+      "tags": {
+        "bus": "yes",
+        "local_ref": "A",
+        "name": "Dobšinského",
+        "network": "Mestský bus",
+        "operator": "Mesto Trnava",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 13028582317,
+      "lat": 48.3542076,
+      "lon": 17.5746368,
+      "tags": {
+        "bus": "yes",
+        "local_ref": "A",
+        "name": "Strojárenská",
+        "network": "Mestský bus",
+        "operator": "Mesto Trnava",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 13028582318,
+      "lat": 48.3544524,
+      "lon": 17.5743739,
+      "tags": {
+        "bus": "yes",
+        "local_ref": "B",
+        "name": "Strojárenská",
+        "network": "Mestský bus",
+        "operator": "Mesto Trnava",
+        "public_transport": "stop_position"
+      }
+    },
+    {
+      "type": "node",
+      "id": 13028676598,
+      "lat": 48.3673459,
+      "lon": 17.5935236,
+      "tags": {
+        "bus": "yes",
+        "local_ref": "C",
+        "name": "Tamaškovičova",
+        "network": "Mestský bus",
+        "operator": "Mesto Trnava",
+        "public_transport": "stop_position"
       }
     },
     {
@@ -5401,6 +8014,21 @@
         "lit": "yes",
         "public_transport": "platform",
         "tactile_paving": "yes"
+      }
+    },
+    {
+      "type": "way",
+      "id": 190632480,
+      "center": {
+        "lat": 48.3696496,
+        "lon": 17.5820847
+      },
+      "tags": {
+        "amenity": "bus_station",
+        "bus": "yes",
+        "name": "Trnava, Autobusová stanica",
+        "public_transport": "station",
+        "short_name": "Trnava,,AS"
       }
     },
     {
@@ -5847,6 +8475,36 @@
         "shelter": "yes",
         "tactile_paving": "no",
         "wheelchair": "no"
+      }
+    },
+    {
+      "type": "way",
+      "id": 848523194,
+      "center": {
+        "lat": 48.3708075,
+        "lon": 17.582992
+      },
+      "tags": {
+        "addr:city": "Trnava",
+        "addr:conscriptionnumber": "9169",
+        "addr:country": "SK",
+        "addr:housenumber": "9169/64",
+        "addr:postcode": "91701",
+        "addr:street": "Andreja Hlinku",
+        "addr:streetnumber": "64",
+        "addr:suburb": "Trnava",
+        "amenity": "bus_station",
+        "building": "industrial",
+        "bus": "yes",
+        "name": "Arriva",
+        "opening_hours": "Mo-Fr 07:00-17:00",
+        "operator": "Arriva Trnava",
+        "phone": "+421 900 218 222",
+        "public_transport": "station",
+        "ref:minvskaddress": "7101611836",
+        "source": "kapor2",
+        "source:addr": "minvskaddress 2023-01",
+        "website": "https://www.sadtrnava.sk/"
       }
     },
     {

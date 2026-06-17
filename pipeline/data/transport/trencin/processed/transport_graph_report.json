@@ -1,12 +1,12 @@
 {
   "city": "trencin",
   "provider": "imhd_trencin",
-  "generated_at": "2026-05-12T14:59:19Z",
+  "generated_at": "2026-05-25T08:05:04Z",
   "source_document_count": 44,
   "parsed_document_count": 44,
   "variant_count": 66,
-  "total_stops": 162,
-  "matched_stops": 162,
+  "total_stops": 163,
+  "matched_stops": 163,
   "unmatched_stop_count": 0,
   "total_lines": 66,
   "total_connections": 987,
@@ -21,7 +21,5 @@
   "empty_service_bucket_count": 0,
   "line_without_trip_count": 0,
   "warnings_count": 3,
-  "coverage_ratio": 1.0,
-  "validation_warning_count": 0,
-  "validation_warnings": []
+  "coverage_ratio": 1.0
 }
