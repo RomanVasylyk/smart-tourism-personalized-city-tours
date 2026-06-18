@@ -418,3 +418,70 @@ def test_generate_route_prefers_exact_trip_times_when_available(monkeypatch):
     assert body["legs"][0]["segments"][1]["arrival_time"] == "2026-04-27T10:18"
     assert body["legs"][0]["segments"][1]["wait_minutes_before_departure"] == 3
     assert body["legs"][0]["segments"][1]["in_vehicle_minutes"] == 13
+
+
+def route_session_payload(device_id="device-1"):
+    return {
+        "id": "00000000-0000-4000-8000-000000000001",
+        "device_id": device_id,
+        "city": "nitra",
+        "status": "in_progress",
+        "start_lat": 48.3076,
+        "start_lon": 18.0845,
+        "available_minutes": 120,
+        "pace": "normal",
+        "return_to_start": True,
+        "opening_hours_enabled": True,
+        "started_at": "2026-04-19T10:00:00Z",
+        "finished_at": None,
+        "used_minutes": 0,
+        "total_walk_minutes": 0,
+        "total_visit_minutes": 0,
+        "route_snapshot_json": {"route": []},
+    }
+
+
+def test_create_route_session_requires_device_header():
+    response = client.post("/route-sessions", json=route_session_payload())
+
+    assert response.status_code == 422
+
+
+def test_create_route_session_rejects_mismatched_device_header():
+    response = client.post(
+        "/route-sessions",
+        json=route_session_payload(device_id="device-1"),
+        headers={"X-Device-Id": "device-2"},
+    )
+
+    assert response.status_code == 403
+    assert response.json()["detail"] == "Device id does not match authenticated device."
+
+
+def test_create_route_session_passes_authenticated_device(monkeypatch):
+    def fake_create_route_session(request, authenticated_device_id):
+        assert request.device_id == "device-1"
+        assert authenticated_device_id == "device-1"
+        return {"id": str(request.id), "device_id": request.device_id}
+
+    monkeypatch.setattr("app.api.routes.create_route_session", fake_create_route_session)
+
+    response = client.post(
+        "/route-sessions",
+        json=route_session_payload(device_id="device-1"),
+        headers={"X-Device-Id": "device-1"},
+    )
+
+    assert response.status_code == 200
+    assert response.json()["device_id"] == "device-1"
+
+
+def test_get_route_sessions_rejects_mismatched_device_header():
+    response = client.get(
+        "/route-sessions",
+        params={"device_id": "device-1"},
+        headers={"X-Device-Id": "device-2"},
+    )
+
+    assert response.status_code == 403
+    assert response.json()["detail"] == "Device id does not match authenticated device."

@@ -10,11 +10,12 @@ from app.db.database import get_connection
 from app.services.city_lookup import find_city_row
 
 SESSION_STATUSES = {"not_started", "in_progress", "paused", "completed", "cancelled"}
+MAX_DEVICE_ID_LENGTH = 128
 
 
 class RouteSessionCreateRequest(BaseModel):
     id: UUID | None = None
-    device_id: str = Field(min_length=1)
+    device_id: str = Field(min_length=1, max_length=MAX_DEVICE_ID_LENGTH)
     city: str = "nitra"
     status: str = "in_progress"
     start_lat: float
@@ -53,8 +54,9 @@ class RouteFeedbackRequest(BaseModel):
     comment: str | None = None
 
 
-def create_route_session(request: RouteSessionCreateRequest) -> dict:
+def create_route_session(request: RouteSessionCreateRequest, authenticated_device_id: str) -> dict:
     validate_status(request.status)
+    device_id = require_matching_device_id(request.device_id, authenticated_device_id)
     session_id = request.id or uuid4()
     started_at = request.started_at or now_utc()
 
@@ -116,11 +118,12 @@ def create_route_session(request: RouteSessionCreateRequest) -> dict:
                     total_visit_minutes = EXCLUDED.total_visit_minutes,
                     route_snapshot_json = EXCLUDED.route_snapshot_json,
                     updated_at = NOW()
+                WHERE route_sessions.device_id = EXCLUDED.device_id
                 RETURNING *
                 """,
                 {
                     "id": session_id,
-                    "device_id": request.device_id,
+                    "device_id": device_id,
                     "city_id": city_id,
                     "status": request.status,
                     "start_lat": request.start_lat,
@@ -138,16 +141,23 @@ def create_route_session(request: RouteSessionCreateRequest) -> dict:
                 },
             )
             session = cur.fetchone()
+            if session is None:
+                raise_not_found()
             upsert_session_pois(cur, session_id, request.route_snapshot_json)
             conn.commit()
 
-    return get_route_session(session_id)
+    return get_route_session(session_id, device_id)
 
 
-def update_route_session(session_id: UUID, request: RouteSessionUpdateRequest) -> dict:
+def update_route_session(
+    session_id: UUID,
+    request: RouteSessionUpdateRequest,
+    authenticated_device_id: str,
+) -> dict:
+    device_id = require_authenticated_device_id(authenticated_device_id)
     update_values = request.model_dump(exclude_unset=True)
     if not update_values:
-        return get_route_session(session_id)
+        return get_route_session(session_id, device_id)
 
     if "status" in update_values and update_values["status"] is not None:
         validate_status(update_values["status"])
@@ -156,7 +166,7 @@ def update_route_session(session_id: UUID, request: RouteSessionUpdateRequest) -
     assignments.append("updated_at = NOW()")
     if "route_snapshot_json" in update_values and update_values["route_snapshot_json"] is not None:
         update_values["route_snapshot_json"] = Jsonb(update_values["route_snapshot_json"])
-    params = {**update_values, "id": session_id}
+    params = {**update_values, "id": session_id, "device_id": device_id}
 
     with get_connection() as conn:
         with conn.cursor() as cur:
@@ -165,6 +175,7 @@ def update_route_session(session_id: UUID, request: RouteSessionUpdateRequest) -
                 UPDATE route_sessions
                 SET {", ".join(assignments)}
                 WHERE id = %(id)s
+                  AND device_id = %(device_id)s
                 RETURNING id
                 """,
                 params,
@@ -177,19 +188,21 @@ def update_route_session(session_id: UUID, request: RouteSessionUpdateRequest) -
 
             conn.commit()
 
-    return get_route_session(session_id)
+    return get_route_session(session_id, device_id)
 
 
 def mark_route_session_poi_visited(
     session_id: UUID,
     poi_id: int,
     request: RouteSessionPoiVisitRequest,
+    authenticated_device_id: str,
 ) -> dict:
+    device_id = require_authenticated_device_id(authenticated_device_id)
     visited_at = request.visited_at or now_utc()
 
     with get_connection() as conn:
         with conn.cursor() as cur:
-            ensure_session_exists(cur, session_id)
+            ensure_session_owned(cur, session_id, device_id)
             cur.execute(
                 """
                 UPDATE route_session_pois
@@ -215,10 +228,15 @@ def mark_route_session_poi_visited(
     return poi_row
 
 
-def save_route_feedback(session_id: UUID, request: RouteFeedbackRequest) -> dict:
+def save_route_feedback(
+    session_id: UUID,
+    request: RouteFeedbackRequest,
+    authenticated_device_id: str,
+) -> dict:
+    device_id = require_authenticated_device_id(authenticated_device_id)
     with get_connection() as conn:
         with conn.cursor() as cur:
-            ensure_session_exists(cur, session_id)
+            ensure_session_owned(cur, session_id, device_id)
             cur.execute(
                 "DELETE FROM route_feedback WHERE session_id = %s",
                 (session_id,),
@@ -258,7 +276,8 @@ def save_route_feedback(session_id: UUID, request: RouteFeedbackRequest) -> dict
     return feedback
 
 
-def get_route_session(session_id: UUID) -> dict:
+def get_route_session(session_id: UUID, authenticated_device_id: str) -> dict:
+    device_id = require_authenticated_device_id(authenticated_device_id)
     with get_connection() as conn:
         with conn.cursor() as cur:
             cur.execute(
@@ -270,8 +289,9 @@ def get_route_session(session_id: UUID) -> dict:
                 FROM route_sessions rs
                          JOIN cities c ON c.id = rs.city_id
                 WHERE rs.id = %s
+                  AND rs.device_id = %s
                 """,
-                (session_id,),
+                (session_id, device_id),
             )
             session = cur.fetchone()
             if session is None:
@@ -280,7 +300,8 @@ def get_route_session(session_id: UUID) -> dict:
             return session_with_children(cur, session)
 
 
-def get_route_sessions_for_device(device_id: str) -> list[dict]:
+def get_route_sessions_for_device(device_id: str, authenticated_device_id: str) -> list[dict]:
+    device_id = require_matching_device_id(device_id, authenticated_device_id)
     with get_connection() as conn:
         with conn.cursor() as cur:
             cur.execute(
@@ -380,13 +401,39 @@ def get_city_id(cur, city: str) -> int:
     return city_row["id"]
 
 
-def ensure_session_exists(cur, session_id: UUID) -> None:
+def ensure_session_owned(cur, session_id: UUID, device_id: str) -> None:
     cur.execute(
-        "SELECT id FROM route_sessions WHERE id = %s",
-        (session_id,),
+        """
+        SELECT id
+        FROM route_sessions
+        WHERE id = %s
+          AND device_id = %s
+        """,
+        (session_id, device_id),
     )
     if cur.fetchone() is None:
         raise_not_found()
+
+
+def require_authenticated_device_id(device_id: str | None) -> str:
+    normalized_device_id = (device_id or "").strip()
+    if not normalized_device_id:
+        raise HTTPException(status_code=401, detail="X-Device-Id header is required.")
+    if len(normalized_device_id) > MAX_DEVICE_ID_LENGTH:
+        raise HTTPException(status_code=400, detail="Device id is too long.")
+    return normalized_device_id
+
+
+def require_matching_device_id(device_id: str | None, authenticated_device_id: str | None) -> str:
+    normalized_device_id = (device_id or "").strip()
+    if not normalized_device_id:
+        raise HTTPException(status_code=400, detail="Device id is required.")
+
+    authenticated_device_id = require_authenticated_device_id(authenticated_device_id)
+    if normalized_device_id != authenticated_device_id:
+        raise HTTPException(status_code=403, detail="Device id does not match authenticated device.")
+
+    return normalized_device_id
 
 
 def validate_status(status: str) -> None:

@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Header
 
 from app.db.database import get_connection
 from app.services.city_lookup import find_city_row
@@ -108,13 +108,20 @@ def generate_route_leg_endpoint(request: RouteLegRequest):
 
 
 @router.post("/route-sessions")
-def create_route_session_endpoint(request: RouteSessionCreateRequest):
-    return create_route_session(request)
+def create_route_session_endpoint(
+    request: RouteSessionCreateRequest,
+    x_device_id: str = Header(..., alias="X-Device-Id"),
+):
+    return create_route_session(request, x_device_id)
 
 
 @router.patch("/route-sessions/{session_id}")
-def update_route_session_endpoint(session_id: UUID, request: RouteSessionUpdateRequest):
-    return update_route_session(session_id, request)
+def update_route_session_endpoint(
+    session_id: UUID,
+    request: RouteSessionUpdateRequest,
+    x_device_id: str = Header(..., alias="X-Device-Id"),
+):
+    return update_route_session(session_id, request, x_device_id)
 
 
 @router.post("/route-sessions/{session_id}/pois/{poi_id}/visit")
@@ -122,20 +129,31 @@ def mark_route_session_poi_visited_endpoint(
     session_id: UUID,
     poi_id: int,
     request: RouteSessionPoiVisitRequest,
+    x_device_id: str = Header(..., alias="X-Device-Id"),
 ):
-    return mark_route_session_poi_visited(session_id, poi_id, request)
+    return mark_route_session_poi_visited(session_id, poi_id, request, x_device_id)
 
 
 @router.post("/route-sessions/{session_id}/feedback")
-def save_route_feedback_endpoint(session_id: UUID, request: RouteFeedbackRequest):
-    return save_route_feedback(session_id, request)
+def save_route_feedback_endpoint(
+    session_id: UUID,
+    request: RouteFeedbackRequest,
+    x_device_id: str = Header(..., alias="X-Device-Id"),
+):
+    return save_route_feedback(session_id, request, x_device_id)
 
 
 @router.get("/route-sessions/{session_id}")
-def get_route_session_endpoint(session_id: UUID):
-    return get_route_session(session_id)
+def get_route_session_endpoint(
+    session_id: UUID,
+    x_device_id: str = Header(..., alias="X-Device-Id"),
+):
+    return get_route_session(session_id, x_device_id)
 
 
 @router.get("/route-sessions")
-def get_route_sessions_endpoint(device_id: str):
-    return get_route_sessions_for_device(device_id)
+def get_route_sessions_endpoint(
+    device_id: str,
+    x_device_id: str = Header(..., alias="X-Device-Id"),
+):
+    return get_route_sessions_for_device(device_id, x_device_id)
