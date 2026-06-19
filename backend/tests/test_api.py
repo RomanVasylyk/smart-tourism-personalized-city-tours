@@ -139,7 +139,7 @@ def test_generate_route_returns_planned_stop(monkeypatch):
         }
     ]
 
-    monkeypatch.setattr("app.services.route_planner.get_connection", lambda: FakeConnection(rows))
+    monkeypatch.setattr("app.repositories.poi_candidates.get_connection", lambda: FakeConnection(rows))
     monkeypatch.setattr("app.services.route_planner.get_routing_service", lambda: FakeRoutingService())
 
     response = client.post(
@@ -272,7 +272,7 @@ def test_generate_route_can_return_transit_segments(monkeypatch):
         board_options_by_stop={},
     )
 
-    monkeypatch.setattr("app.services.route_planner.get_connection", lambda: FakeConnection(rows))
+    monkeypatch.setattr("app.repositories.poi_candidates.get_connection", lambda: FakeConnection(rows))
     monkeypatch.setattr("app.services.route_planner.get_routing_service", lambda: MixedRoutingService())
     monkeypatch.setattr("app.services.route_planner.city_profile_by_token", lambda city: city_profile)
     monkeypatch.setattr("app.services.transport_planner.load_transport_graph", lambda city: fake_graph)
@@ -389,7 +389,7 @@ def test_generate_route_prefers_exact_trip_times_when_available(monkeypatch):
         },
     )
 
-    monkeypatch.setattr("app.services.route_planner.get_connection", lambda: FakeConnection(rows))
+    monkeypatch.setattr("app.repositories.poi_candidates.get_connection", lambda: FakeConnection(rows))
     monkeypatch.setattr("app.services.route_planner.get_routing_service", lambda: MixedRoutingService())
     monkeypatch.setattr("app.services.route_planner.city_profile_by_token", lambda city: city_profile)
     monkeypatch.setattr("app.services.transport_planner.load_transport_graph", lambda city: fake_graph)

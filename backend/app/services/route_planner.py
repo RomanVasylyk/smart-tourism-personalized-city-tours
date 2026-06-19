@@ -1,13 +1,10 @@
 import re
 from datetime import datetime, timedelta
-from typing import Literal
 
 from fastapi import HTTPException
-from pydantic import BaseModel, Field
-from psycopg import Error as PsycopgError
 
-from app.db.database import get_connection
-from app.services.city_lookup import find_city_row
+from app.repositories.poi_candidates import get_route_candidates
+from app.schemas.route import RouteGenerateRequest, RouteLegRequest
 from app.services.city_profiles import city_profile_by_token
 from app.services.feedback_stats import load_planner_feedback_profile
 from app.services.route_planning.opening_hours import is_poi_open_for_visit
@@ -32,34 +29,6 @@ DEFAULT_MAX_EXACT_POI_EVALUATIONS_PER_STEP_TRANSIT = 28
 APPROXIMATE_DISTANCE_INFLATION_FACTOR = 1.2
 
 
-class RouteGenerateRequest(BaseModel):
-    city: str = "nitra"
-    start_lat: float
-    start_lon: float
-    available_minutes: int = Field(ge=30, le=720)
-    interests: list[str] = Field(default_factory=list)
-    pace: str = "normal"
-    return_to_start: bool = True
-    start_datetime: str | None = None
-    respect_opening_hours: bool = True
-    exclude_poi_ids: list[int] = Field(default_factory=list)
-    preferred_poi_ids: list[int] = Field(default_factory=list)
-    transport_mode: Literal["walk", "walk_or_mhd"] = TRANSPORT_MODE_WALK
-
-
-class RouteLegRequest(BaseModel):
-    city: str = "nitra"
-    start_lat: float
-    start_lon: float
-    end_lat: float
-    end_lon: float
-    end_poi_id: int
-    end_name: str | None = None
-    pace: str = "normal"
-    start_datetime: str | None = None
-    transport_mode: Literal["walk", "walk_or_mhd"] = TRANSPORT_MODE_WALK
-
-
 def parse_start_datetime(raw_value: str | None) -> datetime:
     if raw_value is None:
         return datetime.now().replace(second=0, microsecond=0)
@@ -71,129 +40,6 @@ def parse_start_datetime(raw_value: str | None) -> datetime:
             status_code=400,
             detail="Invalid start_datetime. Use ISO local datetime, for example 2026-04-19T14:30.",
         ) from exc
-
-
-def get_route_candidates(request: RouteGenerateRequest) -> list[dict]:
-    city_profile = city_profile_by_token(request.city) or {}
-    routing_limits = city_profile.get("routing_limits") or {}
-    limit = int(routing_limits.get("max_poi_candidates") or 300)
-
-    base_select = """
-        SELECT
-            p.id,
-            p.name,
-            p.category,
-            p.lat,
-            p.lon,
-            p.opening_hours_raw,
-            p.visit_duration_min,
-            p.base_score,
-            p.wikipedia_url
-        FROM pois p
-        JOIN cities c ON c.id = p.city_id
-    """
-    feedback_joins = """
-        LEFT JOIN poi_feedback_stats pfs ON pfs.poi_id = p.id
-        LEFT JOIN category_feedback_stats cfs
-            ON cfs.city_id = c.id
-           AND cfs.category = p.category
-    """
-    feedback_columns = """
-        ,
-        pfs.average_rating AS poi_feedback_average_rating,
-        pfs.completion_rate AS poi_feedback_completion_rate,
-        pfs.skip_rate AS poi_feedback_skip_rate,
-        pfs.too_much_walking_rate AS poi_feedback_too_much_walking_rate,
-        pfs.interesting_pois_rate AS poi_feedback_interesting_pois_rate,
-        pfs.convenient_rate AS poi_feedback_convenient_rate,
-        pfs.session_count AS poi_feedback_session_count,
-        pfs.feedback_count AS poi_feedback_feedback_count,
-        pfs.planned_count AS poi_feedback_planned_count,
-        pfs.visited_count AS poi_feedback_visited_count,
-        pfs.skipped_count AS poi_feedback_skipped_count,
-        pfs.completed_session_count AS poi_feedback_completed_session_count,
-        cfs.average_rating AS category_feedback_average_rating,
-        cfs.completion_rate AS category_feedback_completion_rate,
-        cfs.skip_rate AS category_feedback_skip_rate,
-        cfs.too_much_walking_rate AS category_feedback_too_much_walking_rate,
-        cfs.interesting_pois_rate AS category_feedback_interesting_pois_rate,
-        cfs.convenient_rate AS category_feedback_convenient_rate,
-        cfs.session_count AS category_feedback_session_count,
-        cfs.feedback_count AS category_feedback_feedback_count,
-        cfs.planned_count AS category_feedback_planned_count,
-        cfs.visited_count AS category_feedback_visited_count,
-        cfs.skipped_count AS category_feedback_skipped_count,
-        cfs.completed_session_count AS category_feedback_completed_session_count
-    """
-
-    def build_sql(include_feedback: bool, city_id: int) -> tuple[str, list]:
-        sql = base_select
-        if include_feedback:
-            sql = sql.replace("p.wikipedia_url", f"p.wikipedia_url{feedback_columns}")
-            sql += feedback_joins
-
-        sql += """
-            WHERE c.id = %s
-              AND p.is_active = TRUE
-        """
-        params: list = [city_id]
-
-        if request.interests:
-            sql += " AND p.category = ANY(%s)"
-            params.append(request.interests)
-
-        if request.exclude_poi_ids:
-            sql += " AND NOT (p.id = ANY(%s))"
-            params.append(request.exclude_poi_ids)
-
-        sql += """
-            ORDER BY p.base_score DESC NULLS LAST, p.name
-            LIMIT %s
-        """
-        params.append(limit)
-        return sql, params
-
-    with get_connection() as conn:
-        with conn.cursor() as cur:
-            city_row = find_city_row(cur, city_profile.get("name") or request.city)
-            if city_row is None:
-                return []
-
-            city_id = int(city_row["id"])
-            sql, params = build_sql(include_feedback=True, city_id=city_id)
-            try:
-                cur.execute(sql, params)
-            except PsycopgError:
-                fallback_sql, fallback_params = build_sql(include_feedback=False, city_id=city_id)
-                cur.execute(fallback_sql, fallback_params)
-            rows = cur.fetchall()
-
-            excluded_ids = {int(poi_id) for poi_id in request.exclude_poi_ids}
-            preferred_ids = [
-                int(poi_id)
-                for poi_id in request.preferred_poi_ids
-                if int(poi_id) not in excluded_ids
-            ]
-            if not preferred_ids:
-                return rows
-
-            existing_ids = {int(row["id"]) for row in rows}
-            missing_preferred_ids = [poi_id for poi_id in preferred_ids if poi_id not in existing_ids]
-            if not missing_preferred_ids:
-                return rows
-
-            preferred_sql = base_select
-            preferred_sql += feedback_joins
-            preferred_sql = preferred_sql.replace("p.wikipedia_url", f"p.wikipedia_url{feedback_columns}")
-            preferred_sql += """
-                WHERE c.id = %s
-                  AND p.is_active = TRUE
-                  AND p.id = ANY(%s)
-            """
-            cur.execute(preferred_sql, (city_id, missing_preferred_ids))
-            preferred_rows = cur.fetchall()
-            return rows + preferred_rows
-
 
 def max_exact_poi_evaluations_per_step(
     city_profile: dict,

@@ -5,7 +5,8 @@ from fastapi import APIRouter, Header
 from app.db.database import get_connection
 from app.services.city_lookup import find_city_row
 from app.services.city_profiles import city_profile_by_token, load_city_profiles, normalized_city_token
-from app.services.route_planner import RouteGenerateRequest, RouteLegRequest, generate_route, generate_route_leg
+from app.schemas.route import RouteGenerateRequest, RouteLegRequest
+from app.services.route_planner import generate_route, generate_route_leg
 from app.services.route_sessions import (
     RouteFeedbackRequest,
     RouteSessionCreateRequest,
