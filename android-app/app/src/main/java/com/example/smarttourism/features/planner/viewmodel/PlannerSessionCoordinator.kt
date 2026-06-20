@@ -1,5 +1,7 @@
 package com.example.smarttourism.features.planner.viewmodel
 
+import com.example.smarttourism.core.logging.AndroidLogErrorReporter
+import com.example.smarttourism.core.logging.ErrorReporter
 import com.example.smarttourism.data.model.ActiveRouteSession
 import com.example.smarttourism.data.model.RouteFeedback
 import com.example.smarttourism.data.model.RouteHistoryEntry
@@ -37,7 +39,8 @@ internal class PlannerSessionCoordinator(
     private val offlineSyncRepository: OfflineSyncRepository,
     private val activeRouteController: ActiveRouteController,
     private val routeHistoryController: RouteHistoryController,
-    private val messages: PlannerMessages
+    private val messages: PlannerMessages,
+    private val errorReporter: ErrorReporter = AndroidLogErrorReporter
 ) {
     fun currentRouteSnapshot(): SavedRouteSnapshot? =
         state.currentRouteSnapshot()
@@ -352,6 +355,16 @@ internal class PlannerSessionCoordinator(
                     snapshotOverride = snapshot
                 )
             } catch (e: Exception) {
+                errorReporter.report(
+                    tag = TAG,
+                    message = "Failed to reroute active route",
+                    throwable = e,
+                    metadata = rerouteMetadata(
+                        autoTriggered = autoTriggered,
+                        routeId = state.routeId,
+                        targetPoiId = nextTarget?.poiId
+                    )
+                )
                 state.routeError = e.toUserMessage(messages.routeGenerationFailed)
                 state.routeResponse = response
             } finally {
@@ -402,7 +415,17 @@ internal class PlannerSessionCoordinator(
                         snapshotOverride = snapshot
                     )
                 }
-            } catch (_: Exception) {
+            } catch (error: Exception) {
+                errorReporter.report(
+                    tag = TAG,
+                    message = "Failed to refresh active route approach leg",
+                    throwable = error,
+                    metadata = rerouteMetadata(
+                        autoTriggered = autoTriggered,
+                        routeId = state.routeId,
+                        targetPoiId = nextTarget.poiId
+                    )
+                )
                 currentRouteSnapshot()?.let { snapshot ->
                     routePlanningRepository.saveSnapshot(snapshot)
                 }
@@ -414,5 +437,20 @@ internal class PlannerSessionCoordinator(
                 state.isRerouting = false
             }
         }
+    }
+
+    private fun rerouteMetadata(
+        autoTriggered: Boolean,
+        routeId: String?,
+        targetPoiId: Int?
+    ): Map<String, String> =
+        buildMap {
+            put("autoTriggered", autoTriggered.toString())
+            routeId?.let { put("routeId", it) }
+            targetPoiId?.let { put("targetPoiId", it.toString()) }
+        }
+
+    private companion object {
+        const val TAG = "PlannerSession"
     }
 }
