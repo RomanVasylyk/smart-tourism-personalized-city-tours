@@ -93,8 +93,8 @@ internal class ActiveRouteController @Inject constructor(
         if (state.hasPendingRouteChanges) {
             return null
         }
-        val response = state.routeResponse
-        if (response?.route.isNullOrEmpty() || state.currentRouteRequest == null) {
+        val response = state.routeResponse ?: return null
+        if (response.route.isEmpty() || state.currentRouteRequest == null) {
             return null
         }
 
@@ -117,7 +117,7 @@ internal class ActiveRouteController @Inject constructor(
         val updatedState = state.copy(
             routeId = activeRouteId,
             routeStartedAt = activeStartedAt,
-            currentTargetPoiId = nextPendingPoi(response!!.route, visitedPoiIds, skippedPoiIds)?.poiId,
+            currentTargetPoiId = nextPendingPoi(response.route, visitedPoiIds, skippedPoiIds)?.poiId,
             visitedPoiIds = visitedPoiIds,
             skippedPoiIds = skippedPoiIds,
             routeFeedback = if (shouldStartFreshSession) null else state.routeFeedback,

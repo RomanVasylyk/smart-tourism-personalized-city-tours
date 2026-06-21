@@ -48,8 +48,8 @@ internal fun buildAutoCameraTarget(
             lon = currentLocation.lon
         )
 
-        routeResponse?.route.orEmpty().isNotEmpty() -> {
-            val activeRoute = routeResponse!!
+        routeResponse != null && routeResponse.route.isNotEmpty() -> {
+            val activeRoute = routeResponse
             val firstStop = if (isRouteActive) {
                 activeRoute.route.firstOrNull { stop ->
                     stop.poiId !in visitedPoiIds && stop.poiId !in skippedPoiIds
