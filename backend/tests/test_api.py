@@ -462,7 +462,11 @@ def test_create_route_session_passes_authenticated_device(monkeypatch):
     def fake_create_route_session(request, authenticated_device_id):
         assert request.device_id == "device-1"
         assert authenticated_device_id == "device-1"
-        return {"id": str(request.id), "device_id": request.device_id}
+        return {
+            "id": str(request.id),
+            "device_id": request.device_id,
+            "status": request.status,
+        }
 
     monkeypatch.setattr("app.api.routes.create_route_session", fake_create_route_session)
 

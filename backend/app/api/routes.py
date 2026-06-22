@@ -3,9 +3,19 @@ from uuid import UUID
 from fastapi import APIRouter, Header
 
 from app.db.database import get_connection
+from app.schemas.responses import (
+    CityResponse,
+    HealthResponse,
+    PoiResponse,
+    RouteFeedbackResponse,
+    RouteLegResponse,
+    RouteResponse,
+    RouteSessionPoiResponse,
+    RouteSessionResponse,
+)
+from app.schemas.route import RouteGenerateRequest, RouteLegRequest
 from app.services.city_lookup import find_city_row
 from app.services.city_profiles import city_profile_by_token, load_city_profiles, normalized_city_token
-from app.schemas.route import RouteGenerateRequest, RouteLegRequest
 from app.services.route_planner import generate_route, generate_route_leg
 from app.services.route_sessions import (
     RouteFeedbackRequest,
@@ -23,12 +33,12 @@ from app.services.route_sessions import (
 router = APIRouter()
 
 
-@router.get("/health")
+@router.get("/health", response_model=HealthResponse)
 def health():
     return {"status": "ok"}
 
 
-@router.get("/cities")
+@router.get("/cities", response_model=list[CityResponse])
 def get_cities():
     with get_connection() as conn:
         with conn.cursor() as cur:
@@ -67,7 +77,7 @@ def get_cities():
     return ordered_rows
 
 
-@router.get("/pois")
+@router.get("/pois", response_model=list[PoiResponse])
 def get_pois(city: str = "nitra"):
     city_profile = city_profile_by_token(city) or {}
 
@@ -98,17 +108,17 @@ def get_pois(city: str = "nitra"):
             return cur.fetchall()
 
 
-@router.post("/route/generate")
+@router.post("/route/generate", response_model=RouteResponse)
 def generate_route_endpoint(request: RouteGenerateRequest):
     return generate_route(request)
 
 
-@router.post("/route/leg")
+@router.post("/route/leg", response_model=RouteLegResponse)
 def generate_route_leg_endpoint(request: RouteLegRequest):
     return generate_route_leg(request)
 
 
-@router.post("/route-sessions")
+@router.post("/route-sessions", response_model=RouteSessionResponse)
 def create_route_session_endpoint(
     request: RouteSessionCreateRequest,
     x_device_id: str = Header(..., alias="X-Device-Id"),
@@ -116,7 +126,7 @@ def create_route_session_endpoint(
     return create_route_session(request, x_device_id)
 
 
-@router.patch("/route-sessions/{session_id}")
+@router.patch("/route-sessions/{session_id}", response_model=RouteSessionResponse)
 def update_route_session_endpoint(
     session_id: UUID,
     request: RouteSessionUpdateRequest,
@@ -125,7 +135,7 @@ def update_route_session_endpoint(
     return update_route_session(session_id, request, x_device_id)
 
 
-@router.post("/route-sessions/{session_id}/pois/{poi_id}/visit")
+@router.post("/route-sessions/{session_id}/pois/{poi_id}/visit", response_model=RouteSessionPoiResponse)
 def mark_route_session_poi_visited_endpoint(
     session_id: UUID,
     poi_id: int,
@@ -135,7 +145,7 @@ def mark_route_session_poi_visited_endpoint(
     return mark_route_session_poi_visited(session_id, poi_id, request, x_device_id)
 
 
-@router.post("/route-sessions/{session_id}/feedback")
+@router.post("/route-sessions/{session_id}/feedback", response_model=RouteFeedbackResponse)
 def save_route_feedback_endpoint(
     session_id: UUID,
     request: RouteFeedbackRequest,
@@ -144,7 +154,7 @@ def save_route_feedback_endpoint(
     return save_route_feedback(session_id, request, x_device_id)
 
 
-@router.get("/route-sessions/{session_id}")
+@router.get("/route-sessions/{session_id}", response_model=RouteSessionResponse)
 def get_route_session_endpoint(
     session_id: UUID,
     x_device_id: str = Header(..., alias="X-Device-Id"),
@@ -152,7 +162,7 @@ def get_route_session_endpoint(
     return get_route_session(session_id, x_device_id)
 
 
-@router.get("/route-sessions")
+@router.get("/route-sessions", response_model=list[RouteSessionResponse])
 def get_route_sessions_endpoint(
     device_id: str,
     x_device_id: str = Header(..., alias="X-Device-Id"),

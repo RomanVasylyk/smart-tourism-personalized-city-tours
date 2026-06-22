@@ -1,0 +1,201 @@
+from datetime import datetime
+from typing import Any
+from uuid import UUID
+
+from pydantic import BaseModel, ConfigDict, Field
+
+
+class HealthResponse(BaseModel):
+    status: str
+
+
+class CityBboxResponse(BaseModel):
+    south: float
+    west: float
+    north: float
+    east: float
+
+
+class RoutingLimitsResponse(BaseModel):
+    max_available_minutes: int | None = None
+    max_poi_candidates: int | None = None
+    max_exact_poi_evaluations_per_step: int | None = None
+    max_exact_poi_evaluations_per_step_transit: int | None = None
+
+    model_config = ConfigDict(extra="allow")
+
+
+class TransportProfileResponse(BaseModel):
+    mhd_enabled: bool | None = None
+    provider: str | None = None
+    mode: str | None = None
+
+    model_config = ConfigDict(extra="allow")
+
+
+class CityResponse(BaseModel):
+    id: int
+    slug: str | None = None
+    name: str
+    country: str
+    center_lat: float | None = None
+    center_lon: float | None = None
+    bbox: CityBboxResponse | dict[str, Any] | None = None
+    available_categories: list[str] = []
+    default_zoom: float | None = None
+    routing_limits: RoutingLimitsResponse | dict[str, Any] = {}
+    transport: TransportProfileResponse | dict[str, Any] = {}
+
+
+class PoiResponse(BaseModel):
+    id: int
+    name: str | None = None
+    category: str
+    lat: float
+    lon: float
+    opening_hours_raw: str | None = None
+    visit_duration_min: int | None = None
+    base_score: float | None = None
+    wikipedia_url: str | None = None
+
+
+class RouteCoordinateResponse(BaseModel):
+    lat: float
+    lon: float
+
+
+class RouteLegEndpointResponse(BaseModel):
+    type: str
+    poi_id: int | None = None
+    name: str | None = None
+    lat: float
+    lon: float
+
+
+class RouteSegmentResponse(BaseModel):
+    order: int | None = None
+    mode: str | None = None
+    duration_seconds: float | None = None
+    duration_minutes: int | None = None
+    distance_meters: float | None = None
+    geometry: list[RouteCoordinateResponse] | None = None
+    source: str | None = None
+    line_name: str | None = None
+    from_stop_name: str | None = None
+    to_stop_name: str | None = None
+    departure_time: str | None = None
+    arrival_time: str | None = None
+    wait_minutes_before_departure: int | None = None
+    in_vehicle_minutes: int | None = None
+
+
+class RouteLegResponse(BaseModel):
+    order: int
+    mode: str | None = None
+    from_: RouteLegEndpointResponse = Field(alias="from")
+    to: RouteLegEndpointResponse
+    duration_seconds: float
+    duration_minutes: int
+    distance_meters: float
+    geometry: list[RouteCoordinateResponse]
+    routing_source: str | None = None
+    departure_time: str | None = None
+    arrival_time: str | None = None
+    segments: list[RouteSegmentResponse] | None = None
+
+    model_config = ConfigDict(populate_by_name=True)
+
+
+class RouteItemResponse(BaseModel):
+    order: int
+    poi_id: int
+    name: str | None = None
+    category: str
+    lat: float
+    lon: float
+    travel_minutes_from_previous: int
+    travel_distance_meters_from_previous: float | None = None
+    routing_source_from_previous: str | None = None
+    travel_mode_from_previous: str | None = None
+    visit_duration_min: int
+    arrival_after_min: int
+    departure_after_min: int
+    base_score: float | None = None
+    planner_score: float | None = None
+    planner_score_breakdown: dict[str, Any] | None = None
+    wikipedia_url: str | None = None
+    opening_hours_raw: str | None = None
+
+
+class RouteStartResponse(BaseModel):
+    lat: float
+    lon: float
+
+
+class RouteResponse(BaseModel):
+    city: str
+    start: RouteStartResponse
+    start_datetime: str | None = None
+    pace: str
+    interests: list[str]
+    transport_mode: str | None = None
+    return_to_start: bool
+    respect_opening_hours: bool
+    available_minutes: int
+    used_minutes: int
+    remaining_minutes: int
+    total_visit_minutes: int
+    total_walk_minutes: int
+    return_to_start_minutes: int
+    poi_count: int
+    route: list[RouteItemResponse]
+    legs: list[RouteLegResponse] | None = None
+    full_geometry: list[RouteCoordinateResponse] | None = None
+
+
+class RouteSessionPoiResponse(BaseModel):
+    id: int
+    session_id: UUID
+    poi_id: int
+    visit_order: int
+    planned_arrival_min: int | None = None
+    planned_departure_min: int | None = None
+    visited: bool
+    visited_at: datetime | None = None
+    skipped: bool
+
+
+class RouteFeedbackResponse(BaseModel):
+    id: int
+    session_id: UUID
+    rating: int
+    was_convenient: bool
+    too_much_walking: bool
+    pois_were_interesting: bool
+    comment: str | None = None
+    created_at: datetime
+
+
+class RouteSessionResponse(BaseModel):
+    id: UUID
+    device_id: str
+    city_id: int | None = None
+    city_name: str | None = None
+    city_country: str | None = None
+    status: str
+    start_lat: float | None = None
+    start_lon: float | None = None
+    available_minutes: int | None = None
+    pace: str | None = None
+    return_to_start: bool | None = None
+    opening_hours_enabled: bool | None = None
+    started_at: datetime | None = None
+    finished_at: datetime | None = None
+    used_minutes: int | None = None
+    total_walk_minutes: int | None = None
+    total_visit_minutes: int | None = None
+    route_snapshot_json: RouteResponse | dict[str, Any] | None = None
+    pois: list[RouteSessionPoiResponse] | None = None
+    feedback: list[RouteFeedbackResponse] | None = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None

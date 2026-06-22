@@ -234,6 +234,12 @@ fun RoutePlannerScreen(
         return requiredPoiIds.mapNotNull { poiId -> poisById[poiId] }
     }
 
+    fun hasFineLocationPermission(): Boolean =
+        ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+
     fun requestCurrentDeviceLocation() {
         isLocating = true
         locationError = null
@@ -304,12 +310,7 @@ fun RoutePlannerScreen(
     fun startRoute() {
         isSelectingStart = false
 
-        val hasFineLocationPermission = ContextCompat.checkSelfPermission(
-            context,
-            Manifest.permission.ACCESS_FINE_LOCATION
-        ) == PackageManager.PERMISSION_GRANTED
-
-        if (hasFineLocationPermission) {
+        if (hasFineLocationPermission()) {
             onPlannerEvent(PlannerEvent.ActivateRouteTracking)
         } else {
             trackingPermissionAction = TrackingPermissionAction.START
@@ -320,12 +321,7 @@ fun RoutePlannerScreen(
     fun resumeRoute() {
         isSelectingStart = false
 
-        val hasFineLocationPermission = ContextCompat.checkSelfPermission(
-            context,
-            Manifest.permission.ACCESS_FINE_LOCATION
-        ) == PackageManager.PERMISSION_GRANTED
-
-        if (hasFineLocationPermission) {
+        if (hasFineLocationPermission()) {
             onPlannerEvent(PlannerEvent.ResumeRoute)
         } else {
             trackingPermissionAction = TrackingPermissionAction.RESUME
@@ -353,103 +349,35 @@ fun RoutePlannerScreen(
     )
 
     if (plannerMode == PlannerMode.ACTIVE) {
-        val density = LocalDensity.current
-        val activeLocationButtonBottomPadding = with(density) {
-            if (activeRoutePanelHeightPx > 0) {
-                activeRoutePanelHeightPx.toDp() + 28.dp
-            } else {
-                340.dp
-            }
-        }
-        val activeCurrentLocationCameraYOffset = with(density) {
-            if (activeRoutePanelHeightPx > 0) {
-                (activeRoutePanelHeightPx / 2f).toDp() + 16.dp
-            } else {
-                180.dp
-            }
-        }
-
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .statusBarsPadding()
-        ) {
-            PlannerMapPanel(
-                pois = pois,
-                routeResponse = routeResponse,
-                startPoint = startPoint,
-                defaultZoom = selectedCity?.defaultZoom,
-                currentRouteLocation = currentRouteLocation,
-                visitedPoiIds = visitedPoiIds,
-                skippedPoiIds = skippedPoiIds,
-                isRouteActive = routeSessionStatus == RouteSessionStatus.IN_PROGRESS,
-                isPoiLoading = isPoiLoading,
-                isSelectingStart = false,
-                isSelectingRoutePois = false,
-                selectedRoutePoiIds = requiredPoiIds,
-                onStartPointSelected = ::updateStartPoint,
-                onRoutePoiSelected = {},
-                onOpenFullScreenMap = ::openFullScreenMap,
-                preferCurrentLocationCamera = true,
-                showLocationButton = false,
-                recenterLocationRequestKey = activeMapRecenterRequest,
-                currentLocationCameraYOffset = activeCurrentLocationCameraYOffset,
-                modifier = Modifier.fillMaxSize()
-            )
-
-            if (plannerAlerts.hasVisibleAlerts()) {
-                Column(
-                    modifier = Modifier
-                        .align(Alignment.TopStart)
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    PlannerAlertColumn(alerts = plannerAlerts)
-                }
-            }
-
-            ActiveRouteBottomPanel(
-                status = routeSessionStatus,
-                metrics = progressMetrics,
-                currentLocation = currentRouteLocation,
-                isRerouting = isRerouting,
-                canSkip = canSkipStops,
-                isActionInProgress = isRerouting,
-                nextTarget = progressMetrics.nextTarget,
-                nextTargetIncomingLeg = routeResponse?.legs.orEmpty()
-                    .firstOrNull { leg -> leg.to.poiId == progressMetrics.nextTarget?.poiId },
-                onMarkVisited = {
-                    progressMetrics.nextTarget?.let { target ->
-                        onPlannerEvent(PlannerEvent.MarkRouteStopVisited(target.poiId))
-                    }
-                },
-                onSkip = {
-                    progressMetrics.nextTarget?.let { target ->
-                        onPlannerEvent(PlannerEvent.SkipRouteStop(target.poiId))
-                    }
-                },
-                onPauseRoute = { onPlannerEvent(PlannerEvent.PauseRoute) },
-                onResumeRoute = ::resumeRoute,
-                onFinishRoute = { onPlannerEvent(PlannerEvent.FinishRoute) },
-                onCancelRoute = { onPlannerEvent(PlannerEvent.CancelRoute) },
-                onShowAllStops = { isStopsSheetOpen = true },
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(16.dp)
-                    .onGloballyPositioned { coordinates ->
-                        activeRoutePanelHeightPx = coordinates.size.height
-                    }
-            )
-
-            MapLocationButton(
-                enabled = currentRouteLocation != null,
-                onClick = { activeMapRecenterRequest += 1 },
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(end = 20.dp, bottom = activeLocationButtonBottomPadding)
-            )
-        }
+        ActiveRouteContent(
+            pois = pois,
+            routeResponse = routeResponse,
+            startPoint = startPoint,
+            selectedCity = selectedCity,
+            currentRouteLocation = currentRouteLocation,
+            visitedPoiIds = visitedPoiIds,
+            skippedPoiIds = skippedPoiIds,
+            requiredPoiIds = requiredPoiIds,
+            routeSessionStatus = routeSessionStatus,
+            isPoiLoading = isPoiLoading,
+            plannerAlerts = plannerAlerts,
+            progressMetrics = progressMetrics,
+            isRerouting = isRerouting,
+            canSkipStops = canSkipStops,
+            activeMapRecenterRequest = activeMapRecenterRequest,
+            activeRoutePanelHeightPx = activeRoutePanelHeightPx,
+            onActiveMapRecenterRequest = { activeMapRecenterRequest += 1 },
+            onActiveRoutePanelHeightChange = { height -> activeRoutePanelHeightPx = height },
+            onStartPointSelected = ::updateStartPoint,
+            onOpenFullScreenMap = ::openFullScreenMap,
+            onMarkVisited = { poiId -> onPlannerEvent(PlannerEvent.MarkRouteStopVisited(poiId)) },
+            onSkip = { poiId -> onPlannerEvent(PlannerEvent.SkipRouteStop(poiId)) },
+            onPauseRoute = { onPlannerEvent(PlannerEvent.PauseRoute) },
+            onResumeRoute = ::resumeRoute,
+            onFinishRoute = { onPlannerEvent(PlannerEvent.FinishRoute) },
+            onCancelRoute = { onPlannerEvent(PlannerEvent.CancelRoute) },
+            onShowAllStops = { isStopsSheetOpen = true }
+        )
     } else {
         Column(
             modifier = Modifier
@@ -473,282 +401,118 @@ fun RoutePlannerScreen(
             )
 
             when (currentDestination) {
-                PlannerDestination.PLANNER -> LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    item {
-                        PlannerModeHeader(mode = plannerMode)
-                    }
-
-                    when (plannerMode) {
-                PlannerMode.PLANNING -> {
-                    item {
-                        PlannerMapPanel(
-                            pois = pois,
-                            routeResponse = routeResponse,
-                            startPoint = startPoint,
-                            defaultZoom = selectedCity?.defaultZoom,
-                            currentRouteLocation = currentRouteLocation,
-                            visitedPoiIds = visitedPoiIds,
-                            skippedPoiIds = skippedPoiIds,
-                            isRouteActive = false,
-                            isPoiLoading = isPoiLoading,
-                            isSelectingStart = isSelectingStart,
-                            isSelectingRoutePois = false,
-                            selectedRoutePoiIds = requiredPoiIds,
-                            onStartPointSelected = ::updateStartPoint,
-                            onRoutePoiSelected = {},
-                            onOpenFullScreenMap = ::openFullScreenMap,
-                            fixedHeight = 280.dp
-                        )
-                    }
-
-                    item {
-                        StartPointCard(
-                            startPoint = startPoint,
-                            isSelectingStart = isSelectingStart,
-                            isLocating = isLocating,
-                            enabled = !isPlannerEditingLocked,
-                            onToggleMapSelection = {
-                                val isEnteringSelection = !isSelectingStart
-                                isSelectingStart = isEnteringSelection
-                                if (isEnteringSelection) {
-                                    openFullScreenMap()
-                                }
-                                locationError = null
-                            },
-                            onUseCurrentLocation = {
-                                isSelectingStart = false
-
-                                val hasFineLocationPermission = ContextCompat.checkSelfPermission(
-                                    context,
-                                    Manifest.permission.ACCESS_FINE_LOCATION
-                                ) == PackageManager.PERMISSION_GRANTED
-
-                                if (hasFineLocationPermission) {
-                                    requestCurrentDeviceLocation()
-                                } else {
-                                    locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
-                                }
+                PlannerDestination.PLANNER -> when (plannerMode) {
+                    PlannerMode.PLANNING -> PlanningScreenContent(
+                        selectedCity = selectedCity,
+                        pois = pois,
+                        routeResponse = routeResponse,
+                        startPoint = startPoint,
+                        currentRouteLocation = currentRouteLocation,
+                        visitedPoiIds = visitedPoiIds,
+                        skippedPoiIds = skippedPoiIds,
+                        requiredPoiIds = requiredPoiIds,
+                        selectedRequiredPois = selectedRequiredPois(),
+                        isPoiLoading = isPoiLoading,
+                        isSelectingStart = isSelectingStart,
+                        isLocating = isLocating,
+                        isPlannerEditingLocked = isPlannerEditingLocked,
+                        plannerAlerts = plannerAlerts,
+                        availableMinutes = availableMinutes,
+                        maxAvailableMinutesLimit = maxAvailableMinutesLimit,
+                        selectedCityAvailableCategories = selectedCityAvailableCategories,
+                        selectedInterests = selectedInterests,
+                        pace = pace,
+                        returnToStart = returnToStart,
+                        respectOpeningHours = respectOpeningHours,
+                        isPublicTransportAvailable = isPublicTransportAvailable,
+                        allowPublicTransport = allowPublicTransport,
+                        startDateTime = startDateTime,
+                        isRouteLoading = isRouteLoading,
+                        onStartPointSelected = ::updateStartPoint,
+                        onOpenFullScreenMap = ::openFullScreenMap,
+                        onToggleStartSelection = {
+                            val isEnteringSelection = !isSelectingStart
+                            isSelectingStart = isEnteringSelection
+                            if (isEnteringSelection) {
+                                openFullScreenMap()
                             }
-                        )
-                    }
+                            locationError = null
+                        },
+                        onUseCurrentLocation = {
+                            isSelectingStart = false
+                            if (hasFineLocationPermission()) {
+                                requestCurrentDeviceLocation()
+                            } else {
+                                locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+                            }
+                        },
+                        onChooseRequiredOnMap = ::openRequiredPlacesMapPicker,
+                        onChooseRequiredFromList = { isRequiredPlacesSheetOpen = true },
+                        onMoveRequiredPoi = { poiId, direction -> onPlannerEvent(PlannerEvent.MoveRequiredPoi(poiId, direction)) },
+                        onRemoveRequiredPoi = { poiId -> onPlannerEvent(PlannerEvent.RemoveRequiredPoi(poiId)) },
+                        onClearRequiredPois = { onPlannerEvent(PlannerEvent.ClearRequiredPois) },
+                        onAvailableMinutesChange = { onPlannerEvent(PlannerEvent.UpdateAvailableMinutes(it)) },
+                        onInterestToggle = { interest, checked -> onPlannerEvent(PlannerEvent.ToggleInterest(interest, checked)) },
+                        onPaceChange = { onPlannerEvent(PlannerEvent.UpdatePace(it)) },
+                        onReturnToStartChange = { onPlannerEvent(PlannerEvent.UpdateReturnToStart(it)) },
+                        onRespectOpeningHoursChange = { onPlannerEvent(PlannerEvent.UpdateRespectOpeningHours(it)) },
+                        onAllowPublicTransportChange = { onPlannerEvent(PlannerEvent.UpdateAllowPublicTransport(it)) },
+                        onStartDateTimeChange = { onPlannerEvent(PlannerEvent.UpdateStartDateTime(it)) },
+                        onUseCurrentTime = { onPlannerEvent(PlannerEvent.UseCurrentTime) },
+                        onGenerateRoute = { onPlannerEvent(PlannerEvent.GenerateRoute) }
+                    )
 
-                    item {
-                        RequiredPlacesCard(
-                            selectedPois = selectedRequiredPois(),
-                            availablePoiCount = pois.size,
-                            isEditingEnabled = !isPlannerEditingLocked,
-                            onChooseOnMap = ::openRequiredPlacesMapPicker,
-                            onChooseFromList = { isRequiredPlacesSheetOpen = true },
-                            onMovePoi = { poiId, direction -> onPlannerEvent(PlannerEvent.MoveRequiredPoi(poiId, direction)) },
-                            onRemovePoi = { poiId -> onPlannerEvent(PlannerEvent.RemoveRequiredPoi(poiId)) },
-                            onClearAll = { onPlannerEvent(PlannerEvent.ClearRequiredPois) }
-                        )
-                    }
-
-                    item {
-                        RouteParametersCard(
-                            availableMinutes = availableMinutes,
-                            maxAvailableMinutes = maxAvailableMinutesLimit,
-                            onAvailableMinutesChange = { onPlannerEvent(PlannerEvent.UpdateAvailableMinutes(it)) },
-                            availableInterests = selectedCityAvailableCategories,
-                            selectedInterests = selectedInterests,
-                            onInterestToggle = { interest, checked ->
-                                onPlannerEvent(PlannerEvent.ToggleInterest(interest, checked))
-                            },
-                            pace = pace,
-                            onPaceChange = { onPlannerEvent(PlannerEvent.UpdatePace(it)) },
-                            returnToStart = returnToStart,
-                            onReturnToStartChange = { onPlannerEvent(PlannerEvent.UpdateReturnToStart(it)) },
-                            respectOpeningHours = respectOpeningHours,
-                            onRespectOpeningHoursChange = { onPlannerEvent(PlannerEvent.UpdateRespectOpeningHours(it)) },
-                            isPublicTransportAvailable = isPublicTransportAvailable,
-                            allowPublicTransport = allowPublicTransport,
-                            onAllowPublicTransportChange = { onPlannerEvent(PlannerEvent.UpdateAllowPublicTransport(it)) },
-                            startDateTime = startDateTime,
-                            onStartDateTimeChange = { onPlannerEvent(PlannerEvent.UpdateStartDateTime(it)) },
-                            onUseCurrentTime = { onPlannerEvent(PlannerEvent.UseCurrentTime) },
-                            isEditingEnabled = !isPlannerEditingLocked,
-                            isGenerating = isRouteLoading,
-                            onGenerateRoute = { onPlannerEvent(PlannerEvent.GenerateRoute) }
-                        )
-                    }
-
-                    plannerAlertItems(plannerAlerts)
-                }
-
-                PlannerMode.PREVIEW -> {
-                    item {
-                        PlannerMapPanel(
-                            pois = pois,
-                            routeResponse = routeResponse,
-                            startPoint = startPoint,
-                            defaultZoom = selectedCity?.defaultZoom,
-                            currentRouteLocation = currentRouteLocation,
-                            visitedPoiIds = visitedPoiIds,
-                            skippedPoiIds = skippedPoiIds,
-                            isRouteActive = false,
-                            isPoiLoading = isPoiLoading,
-                            isSelectingStart = false,
-                            isSelectingRoutePois = false,
-                            selectedRoutePoiIds = requiredPoiIds,
-                            onStartPointSelected = ::updateStartPoint,
-                            onRoutePoiSelected = {},
-                            onOpenFullScreenMap = ::openFullScreenMap,
-                            fixedHeight = 360.dp
-                        )
-                    }
-
-                    plannerAlertItems(plannerAlerts)
-
-                    routeResponse?.let { response ->
-                        item {
-                            RoutePreviewSummaryPanel(routeResponse = response)
-                        }
-                    }
-
-                    item {
-                        PreviewActionRow(
-                            canStart = !hasPendingRouteChanges && routeItems.isNotEmpty(),
-                            onStartRoute = ::startRoute,
-                            onEditParameters = { isParameterSheetOpen = true },
-                            onPlanAnotherRoute = ::resetToPlanning
-                        )
-                    }
-
-                    item {
-                        Button(
-                            onClick = { onPlannerEvent(PlannerEvent.SaveCurrentRouteBookmark) },
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text(
-                                stringResource(
-                                    if (isCurrentRouteBookmarked) {
-                                        R.string.action_update_route_bookmark
-                                    } else {
-                                        R.string.action_save_route_bookmark
-                                    }
-                                )
-                            )
-                        }
-                    }
-
-                    routeStopItems(
-                        titleRes = R.string.route_section_all_stops,
-                        routeStops = routeItems,
+                    PlannerMode.PREVIEW -> PreviewScreenContent(
+                        selectedCity = selectedCity,
+                        pois = pois,
                         routeResponse = routeResponse,
+                        startPoint = startPoint,
+                        currentRouteLocation = currentRouteLocation,
                         visitedPoiIds = visitedPoiIds,
                         skippedPoiIds = skippedPoiIds,
-                        isRouteActive = false,
-                        canSkip = canSkipStops,
-                        canReplace = true,
-                        canMove = true,
-                        isActionInProgress = isRerouting,
+                        requiredPoiIds = requiredPoiIds,
+                        isPoiLoading = isPoiLoading,
+                        plannerAlerts = plannerAlerts,
+                        hasPendingRouteChanges = hasPendingRouteChanges,
+                        routeItems = routeItems,
+                        canSkipStops = canSkipStops,
+                        isRerouting = isRerouting,
                         highlightedPoiId = progressMetrics.nextTarget?.poiId,
+                        isCurrentRouteBookmarked = isCurrentRouteBookmarked,
+                        onStartPointSelected = ::updateStartPoint,
+                        onOpenFullScreenMap = ::openFullScreenMap,
+                        onStartRoute = ::startRoute,
+                        onEditParameters = { isParameterSheetOpen = true },
+                        onPlanAnotherRoute = ::resetToPlanning,
+                        onSaveBookmark = { onPlannerEvent(PlannerEvent.SaveCurrentRouteBookmark) },
                         onMarkVisited = { poiId -> onPlannerEvent(PlannerEvent.MarkRouteStopVisited(poiId)) },
-                        onSkip = { poiId -> onPlannerEvent(PlannerEvent.RemovePreviewStop(poiId)) },
-                        onMove = { poiId, direction -> onPlannerEvent(PlannerEvent.MovePreviewStop(poiId, direction)) },
-                        onReplace = { poiId -> replacingPoiId = poiId }
+                        onRemovePreviewStop = { poiId -> onPlannerEvent(PlannerEvent.RemovePreviewStop(poiId)) },
+                        onMovePreviewStop = { poiId, direction -> onPlannerEvent(PlannerEvent.MovePreviewStop(poiId, direction)) },
+                        onReplacePreviewStop = { poiId -> replacingPoiId = poiId }
                     )
-                }
 
-                PlannerMode.COMPLETED -> {
-                    item {
-                        PlannerMapPanel(
-                            pois = pois,
-                            routeResponse = routeResponse,
-                            startPoint = startPoint,
-                            defaultZoom = selectedCity?.defaultZoom,
-                            currentRouteLocation = currentRouteLocation,
-                            visitedPoiIds = visitedPoiIds,
-                            skippedPoiIds = skippedPoiIds,
-                            isRouteActive = false,
-                            isPoiLoading = isPoiLoading,
-                            isSelectingStart = false,
-                            isSelectingRoutePois = false,
-                            selectedRoutePoiIds = requiredPoiIds,
-                            onStartPointSelected = ::updateStartPoint,
-                            onRoutePoiSelected = {},
-                            onOpenFullScreenMap = ::openFullScreenMap,
-                            fixedHeight = 320.dp
-                        )
-                    }
-
-                    routeResponse?.let { response ->
-                        item {
-                            RoutePreviewSummaryPanel(routeResponse = response)
-                        }
-                    }
-
-                    item {
-                        Button(
-                            onClick = ::resetToPlanning,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text(stringResource(R.string.action_plan_another_route))
-                        }
-                    }
-
-                    item {
-                        Button(
-                            onClick = { onPlannerEvent(PlannerEvent.SaveCurrentRouteBookmark) },
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text(
-                                stringResource(
-                                    if (isCurrentRouteBookmarked) {
-                                        R.string.action_update_route_bookmark
-                                    } else {
-                                        R.string.action_save_route_bookmark
-                                    }
-                                )
-                            )
-                        }
-                    }
-
-                    item {
-                        OutlinedButton(
-                            onClick = { isFeedbackDialogOpen = true },
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text(
-                                stringResource(
-                                    if (routeFeedback == null) {
-                                        R.string.action_leave_feedback
-                                    } else {
-                                        R.string.action_edit_feedback
-                                    }
-                                )
-                            )
-                        }
-                    }
-
-                    plannerAlertItems(plannerAlerts)
-
-                    routeStopItems(
-                        titleRes = R.string.route_section_all_stops,
-                        routeStops = routeItems,
+                    PlannerMode.COMPLETED -> CompletedRouteContent(
+                        selectedCity = selectedCity,
+                        pois = pois,
                         routeResponse = routeResponse,
+                        startPoint = startPoint,
+                        currentRouteLocation = currentRouteLocation,
                         visitedPoiIds = visitedPoiIds,
                         skippedPoiIds = skippedPoiIds,
-                        isRouteActive = false,
-                        canSkip = false,
-                        canReplace = false,
-                        canMove = false,
-                        isActionInProgress = false,
-                        highlightedPoiId = null,
-                        onMarkVisited = {},
-                        onSkip = {},
-                        onMove = { _, _ -> },
-                        onReplace = {}
+                        requiredPoiIds = requiredPoiIds,
+                        isPoiLoading = isPoiLoading,
+                        plannerAlerts = plannerAlerts,
+                        routeItems = routeItems,
+                        isCurrentRouteBookmarked = isCurrentRouteBookmarked,
+                        hasFeedback = routeFeedback != null,
+                        onStartPointSelected = ::updateStartPoint,
+                        onOpenFullScreenMap = ::openFullScreenMap,
+                        onPlanAnotherRoute = ::resetToPlanning,
+                        onSaveBookmark = { onPlannerEvent(PlannerEvent.SaveCurrentRouteBookmark) },
+                        onOpenFeedback = { isFeedbackDialogOpen = true }
                     )
-                }
 
-                PlannerMode.ACTIVE -> Unit
-                    }
+                    PlannerMode.ACTIVE -> Unit
                 }
 
                 PlannerDestination.SAVED_ROUTES -> LazyColumn(
@@ -809,277 +573,119 @@ fun RoutePlannerScreen(
         }
     }
 
-    if (isParameterSheetOpen) {
-        ModalBottomSheet(
-            onDismissRequest = { isParameterSheetOpen = false }
-        ) {
-            LazyColumn(
-                modifier = Modifier.fillMaxWidth(),
-                contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 32.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                item {
-                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        Text(
-                            text = stringResource(R.string.route_preview_edit_title),
-                            style = MaterialTheme.typography.headlineSmall,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                        Text(
-                            text = stringResource(R.string.route_preview_edit_body),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-
-                item {
-                    StartPointCard(
-                        startPoint = startPoint,
-                        isSelectingStart = isSelectingStart,
-                        isLocating = isLocating,
-                        enabled = !isPlannerEditingLocked,
-                        onToggleMapSelection = {
-                            val isEnteringSelection = !isSelectingStart
-                            isSelectingStart = isEnteringSelection
-                            isSelectingRequiredPlacesOnMap = false
-                            if (isEnteringSelection) {
-                                openFullScreenMap()
-                            }
-                            locationError = null
-                        },
-                        onUseCurrentLocation = {
-                            isSelectingStart = false
-
-                            val hasFineLocationPermission = ContextCompat.checkSelfPermission(
-                                context,
-                                Manifest.permission.ACCESS_FINE_LOCATION
-                            ) == PackageManager.PERMISSION_GRANTED
-
-                            if (hasFineLocationPermission) {
-                                requestCurrentDeviceLocation()
-                            } else {
-                                locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
-                            }
-                        }
-                    )
-                }
-
-                item {
-                    RequiredPlacesCard(
-                        selectedPois = selectedRequiredPois(),
-                        availablePoiCount = pois.size,
-                        isEditingEnabled = !isPlannerEditingLocked,
-                        onChooseOnMap = ::openRequiredPlacesMapPicker,
-                        onChooseFromList = { isRequiredPlacesSheetOpen = true },
-                        onMovePoi = { poiId, direction -> onPlannerEvent(PlannerEvent.MoveRequiredPoi(poiId, direction)) },
-                        onRemovePoi = { poiId -> onPlannerEvent(PlannerEvent.RemoveRequiredPoi(poiId)) },
-                        onClearAll = { onPlannerEvent(PlannerEvent.ClearRequiredPois) }
-                    )
-                }
-
-                item {
-                    RouteParametersCard(
-                        availableMinutes = availableMinutes,
-                        maxAvailableMinutes = maxAvailableMinutesLimit,
-                        onAvailableMinutesChange = { onPlannerEvent(PlannerEvent.UpdateAvailableMinutes(it)) },
-                        availableInterests = selectedCityAvailableCategories,
-                        selectedInterests = selectedInterests,
-                        onInterestToggle = { interest, checked ->
-                            onPlannerEvent(PlannerEvent.ToggleInterest(interest, checked))
-                        },
-                        pace = pace,
-                        onPaceChange = { onPlannerEvent(PlannerEvent.UpdatePace(it)) },
-                        returnToStart = returnToStart,
-                        onReturnToStartChange = { onPlannerEvent(PlannerEvent.UpdateReturnToStart(it)) },
-                        respectOpeningHours = respectOpeningHours,
-                        onRespectOpeningHoursChange = { onPlannerEvent(PlannerEvent.UpdateRespectOpeningHours(it)) },
-                        isPublicTransportAvailable = isPublicTransportAvailable,
-                        allowPublicTransport = allowPublicTransport,
-                        onAllowPublicTransportChange = { onPlannerEvent(PlannerEvent.UpdateAllowPublicTransport(it)) },
-                        startDateTime = startDateTime,
-                        onStartDateTimeChange = { onPlannerEvent(PlannerEvent.UpdateStartDateTime(it)) },
-                        onUseCurrentTime = { onPlannerEvent(PlannerEvent.UseCurrentTime) },
-                        isEditingEnabled = !isPlannerEditingLocked,
-                        isGenerating = isRouteLoading,
-                        onGenerateRoute = {
-                            onPlannerEvent(PlannerEvent.GenerateRoute)
-                            isParameterSheetOpen = false
-                        }
-                    )
-                }
+    PlannerSheets(
+        isParameterSheetOpen = isParameterSheetOpen,
+        isRequiredPlacesSheetOpen = isRequiredPlacesSheetOpen,
+        isStopsSheetOpen = isStopsSheetOpen,
+        replacingPoiId = replacingPoiId,
+        pois = pois,
+        routeResponse = routeResponse,
+        routeItems = routeItems,
+        startPoint = startPoint,
+        isSelectingStart = isSelectingStart,
+        isLocating = isLocating,
+        isPlannerEditingLocked = isPlannerEditingLocked,
+        selectedRequiredPois = selectedRequiredPois(),
+        requiredPoiIds = requiredPoiIds,
+        availableMinutes = availableMinutes,
+        maxAvailableMinutesLimit = maxAvailableMinutesLimit,
+        selectedCityAvailableCategories = selectedCityAvailableCategories,
+        selectedInterests = selectedInterests,
+        pace = pace,
+        returnToStart = returnToStart,
+        respectOpeningHours = respectOpeningHours,
+        isPublicTransportAvailable = isPublicTransportAvailable,
+        allowPublicTransport = allowPublicTransport,
+        startDateTime = startDateTime,
+        isRouteLoading = isRouteLoading,
+        routeSessionStatus = routeSessionStatus,
+        visitedPoiIds = visitedPoiIds,
+        skippedPoiIds = skippedPoiIds,
+        canSkipStops = canSkipStops,
+        isRerouting = isRerouting,
+        highlightedPoiId = progressMetrics.nextTarget?.poiId,
+        replacementCandidatesForPoi = plannerViewModel::previewReplacementCandidates,
+        onDismissParameterSheet = { isParameterSheetOpen = false },
+        onDismissRequiredPlacesSheet = { isRequiredPlacesSheetOpen = false },
+        onDismissStopsSheet = { isStopsSheetOpen = false },
+        onDismissReplacementSheet = { replacingPoiId = null },
+        onToggleStartSelection = {
+            val isEnteringSelection = !isSelectingStart
+            isSelectingStart = isEnteringSelection
+            isSelectingRequiredPlacesOnMap = false
+            if (isEnteringSelection) {
+                openFullScreenMap()
             }
-        }
-    }
-
-    if (isRequiredPlacesSheetOpen) {
-        ModalBottomSheet(
-            onDismissRequest = { isRequiredPlacesSheetOpen = false }
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 16.dp, end = 16.dp, bottom = 32.dp)
-            ) {
-                RequiredPlacesPickerSheetContent(
-                    pois = pois,
-                    selectedPoiIds = requiredPoiIds,
-                    isEditingEnabled = !isPlannerEditingLocked,
-                    onTogglePoi = { poiId -> onPlannerEvent(PlannerEvent.ToggleRequiredPoi(poiId)) }
-                )
+            locationError = null
+        },
+        onUseCurrentLocation = {
+            isSelectingStart = false
+            if (hasFineLocationPermission()) {
+                requestCurrentDeviceLocation()
+            } else {
+                locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
             }
-        }
-    }
+        },
+        onChooseRequiredOnMap = ::openRequiredPlacesMapPicker,
+        onChooseRequiredFromList = { isRequiredPlacesSheetOpen = true },
+        onMoveRequiredPoi = { poiId, direction -> onPlannerEvent(PlannerEvent.MoveRequiredPoi(poiId, direction)) },
+        onRemoveRequiredPoi = { poiId -> onPlannerEvent(PlannerEvent.RemoveRequiredPoi(poiId)) },
+        onClearRequiredPois = { onPlannerEvent(PlannerEvent.ClearRequiredPois) },
+        onAvailableMinutesChange = { onPlannerEvent(PlannerEvent.UpdateAvailableMinutes(it)) },
+        onInterestToggle = { interest, checked -> onPlannerEvent(PlannerEvent.ToggleInterest(interest, checked)) },
+        onPaceChange = { onPlannerEvent(PlannerEvent.UpdatePace(it)) },
+        onReturnToStartChange = { onPlannerEvent(PlannerEvent.UpdateReturnToStart(it)) },
+        onRespectOpeningHoursChange = { onPlannerEvent(PlannerEvent.UpdateRespectOpeningHours(it)) },
+        onAllowPublicTransportChange = { onPlannerEvent(PlannerEvent.UpdateAllowPublicTransport(it)) },
+        onStartDateTimeChange = { onPlannerEvent(PlannerEvent.UpdateStartDateTime(it)) },
+        onUseCurrentTime = { onPlannerEvent(PlannerEvent.UseCurrentTime) },
+        onGenerateRoute = {
+            onPlannerEvent(PlannerEvent.GenerateRoute)
+            isParameterSheetOpen = false
+        },
+        onToggleRequiredPoi = { poiId -> onPlannerEvent(PlannerEvent.ToggleRequiredPoi(poiId)) },
+        onUseBestReplacement = { targetPoiId ->
+            onPlannerEvent(PlannerEvent.ReplacePreviewStop(targetPoiId))
+            replacingPoiId = null
+        },
+        onChooseReplacementCandidate = { targetPoiId, preferredPoiId ->
+            onPlannerEvent(PlannerEvent.ReplacePreviewStop(targetPoiId, preferredPoiId))
+            replacingPoiId = null
+        },
+        onMarkVisited = { poiId -> onPlannerEvent(PlannerEvent.MarkRouteStopVisited(poiId)) },
+        onSkip = { poiId -> onPlannerEvent(PlannerEvent.SkipRouteStop(poiId)) }
+    )
 
-    selectedHistoryEntry?.let { historyEntry ->
-        RouteHistoryDetailsDialog(
-            entry = historyEntry,
-            onDismiss = { selectedHistoryEntry = null }
-        )
-    }
-
-    replacingPoiId?.let { targetPoiId ->
-        val targetStop = routeItems.firstOrNull { item -> item.poiId == targetPoiId }
-        if (targetStop != null) {
-            ModalBottomSheet(
-                onDismissRequest = { replacingPoiId = null }
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = 16.dp, end = 16.dp, bottom = 32.dp)
-                ) {
-                    ReplaceRouteStopSheetContent(
-                        targetStopName = targetStop.name,
-                        candidates = plannerViewModel.previewReplacementCandidates(targetPoiId),
-                        isActionInProgress = isRerouting,
-                        onUseBestSuggestion = {
-                            onPlannerEvent(PlannerEvent.ReplacePreviewStop(targetPoiId))
-                            replacingPoiId = null
-                        },
-                        onChooseCandidate = { preferredPoiId ->
-                            onPlannerEvent(PlannerEvent.ReplacePreviewStop(targetPoiId, preferredPoiId))
-                            replacingPoiId = null
-                        }
-                    )
-                }
+    PlannerDialogs(
+        selectedHistoryEntry = selectedHistoryEntry,
+        isFeedbackDialogOpen = isFeedbackDialogOpen,
+        isMapFullScreen = isMapFullScreen,
+        pois = pois,
+        routeResponse = routeResponse,
+        startPoint = startPoint,
+        selectedCity = selectedCity,
+        currentRouteLocation = currentRouteLocation,
+        visitedPoiIds = visitedPoiIds,
+        skippedPoiIds = skippedPoiIds,
+        routeSessionStatus = routeSessionStatus,
+        isPoiLoading = isPoiLoading,
+        isSelectingStart = isSelectingStart,
+        isSelectingRequiredPlacesOnMap = isSelectingRequiredPlacesOnMap,
+        requiredPoiIds = requiredPoiIds,
+        routeFeedback = routeFeedback,
+        onDismissHistoryEntry = { selectedHistoryEntry = null },
+        onDismissFeedback = { isFeedbackDialogOpen = false },
+        onFeedbackChange = { feedback -> onPlannerEvent(PlannerEvent.UpdateFeedback(feedback)) },
+        onDismissFullScreenMap = {
+            isMapFullScreen = false
+            if (isSelectingStart) {
+                isSelectingStart = false
             }
-        }
-    }
-
-    if (isStopsSheetOpen) {
-        ModalBottomSheet(
-            onDismissRequest = { isStopsSheetOpen = false }
-        ) {
-            LazyColumn(
-                modifier = Modifier.fillMaxWidth(),
-                contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 32.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                routeStopItems(
-                    titleRes = R.string.route_section_all_stops,
-                    routeStops = routeItems,
-                    routeResponse = routeResponse,
-                    visitedPoiIds = visitedPoiIds,
-                    skippedPoiIds = skippedPoiIds,
-                    isRouteActive = routeSessionStatus == RouteSessionStatus.IN_PROGRESS,
-                    canSkip = canSkipStops,
-                    canReplace = false,
-                    canMove = false,
-                    isActionInProgress = isRerouting,
-                    highlightedPoiId = progressMetrics.nextTarget?.poiId,
-                    onMarkVisited = { poiId -> onPlannerEvent(PlannerEvent.MarkRouteStopVisited(poiId)) },
-                    onSkip = { poiId -> onPlannerEvent(PlannerEvent.SkipRouteStop(poiId)) },
-                    onMove = { _, _ -> },
-                    onReplace = {}
-                )
+            if (isSelectingRequiredPlacesOnMap) {
+                isSelectingRequiredPlacesOnMap = false
             }
-        }
-    }
-
-    if (isFeedbackDialogOpen) {
-        Dialog(
-            onDismissRequest = { isFeedbackDialogOpen = false }
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(24.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                ElevatedCard(
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    RouteFeedbackCard(
-                        feedback = routeFeedback,
-                        onFeedbackChange = { feedback -> onPlannerEvent(PlannerEvent.UpdateFeedback(feedback)) },
-                        framed = false
-                    )
-                }
-                Button(
-                    onClick = { isFeedbackDialogOpen = false },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(stringResource(R.string.action_done))
-                }
-            }
-        }
-    }
-
-    if (isMapFullScreen) {
-        Dialog(
-            onDismissRequest = {
-                isMapFullScreen = false
-                if (isSelectingStart) {
-                    isSelectingStart = false
-                }
-                if (isSelectingRequiredPlacesOnMap) {
-                    isSelectingRequiredPlacesOnMap = false
-                }
-            },
-            properties = DialogProperties(
-                usePlatformDefaultWidth = false,
-                decorFitsSystemWindows = false
-            )
-        ) {
-            Box(modifier = Modifier.fillMaxSize()) {
-                PoiMapScreen(
-                    pois = pois,
-                    routeResponse = routeResponse,
-                    startLat = startPoint.lat,
-                    startLon = startPoint.lon,
-                    defaultZoom = selectedCity?.defaultZoom,
-                    currentLocation = currentRouteLocation,
-                    visitedPoiIds = visitedPoiIds.toSet(),
-                    skippedPoiIds = skippedPoiIds.toSet(),
-                    isRouteActive = routeSessionStatus == RouteSessionStatus.IN_PROGRESS,
-                    isLoading = isPoiLoading,
-                    isFullScreen = true,
-                    isSelectingStart = isSelectingStart,
-                    isSelectingRoutePois = isSelectingRequiredPlacesOnMap,
-                    selectedRoutePoiIds = requiredPoiIds.toSet(),
-                    onStartPointSelected = ::updateStartPoint,
-                    onRoutePoiSelected = { poi -> onPlannerEvent(PlannerEvent.ToggleRequiredPoi(poi.id)) },
-                    modifier = Modifier.fillMaxSize()
-                )
-                OutlinedButton(
-                    onClick = {
-                        isMapFullScreen = false
-                        if (isSelectingStart) {
-                            isSelectingStart = false
-                        }
-                        if (isSelectingRequiredPlacesOnMap) {
-                            isSelectingRequiredPlacesOnMap = false
-                        }
-                    },
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .statusBarsPadding()
-                        .padding(16.dp)
-                ) {
-                    Text(stringResource(R.string.action_close_map))
-                }
-            }
-        }
-    }
+        },
+        onStartPointSelected = ::updateStartPoint,
+        onRoutePoiSelected = { poi -> onPlannerEvent(PlannerEvent.ToggleRequiredPoi(poi.id)) }
+    )
 }
