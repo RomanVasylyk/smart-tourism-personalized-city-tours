@@ -84,5 +84,8 @@ internal object PlannerNetworkModule {
     @Provides
     @Singleton
     fun providePoiApi(deviceIdStore: DeviceIdStore): PoiApi =
-        ApiModule.createPoiApi(deviceIdStore::getOrCreateDeviceId)
+        ApiModule.createPoiApi(
+            deviceIdProvider = deviceIdStore::getOrCreateDeviceId,
+            deviceTokenProvider = deviceIdStore::getOrCreateDeviceToken
+        )
 }

@@ -116,7 +116,7 @@ def test_get_pois_returns_database_rows(monkeypatch):
         }
     ]
 
-    monkeypatch.setattr("app.api.routes.get_connection", lambda: FakeConnection(rows))
+    monkeypatch.setattr("app.repositories.pois.get_connection", lambda: FakeConnection(rows))
 
     response = client.get("/pois", params={"city": "nitra"})
 
@@ -441,8 +441,25 @@ def route_session_payload(device_id="device-1"):
     }
 
 
+def route_session_headers(device_id="device-1", device_token="token-1"):
+    return {
+        "X-Device-Id": device_id,
+        "X-Device-Token": device_token,
+    }
+
+
 def test_create_route_session_requires_device_header():
     response = client.post("/route-sessions", json=route_session_payload())
+
+    assert response.status_code == 422
+
+
+def test_create_route_session_requires_device_token_header():
+    response = client.post(
+        "/route-sessions",
+        json=route_session_payload(),
+        headers={"X-Device-Id": "device-1"},
+    )
 
     assert response.status_code == 422
 
@@ -451,7 +468,7 @@ def test_create_route_session_rejects_mismatched_device_header():
     response = client.post(
         "/route-sessions",
         json=route_session_payload(device_id="device-1"),
-        headers={"X-Device-Id": "device-2"},
+        headers=route_session_headers(device_id="device-2"),
     )
 
     assert response.status_code == 403
@@ -459,9 +476,10 @@ def test_create_route_session_rejects_mismatched_device_header():
 
 
 def test_create_route_session_passes_authenticated_device(monkeypatch):
-    def fake_create_route_session(request, authenticated_device_id):
+    def fake_create_route_session(request, authenticated_device_id, authenticated_device_token):
         assert request.device_id == "device-1"
         assert authenticated_device_id == "device-1"
+        assert authenticated_device_token == "token-1"
         return {
             "id": str(request.id),
             "device_id": request.device_id,
@@ -473,7 +491,7 @@ def test_create_route_session_passes_authenticated_device(monkeypatch):
     response = client.post(
         "/route-sessions",
         json=route_session_payload(device_id="device-1"),
-        headers={"X-Device-Id": "device-1"},
+        headers=route_session_headers(device_id="device-1", device_token="token-1"),
     )
 
     assert response.status_code == 200
@@ -484,7 +502,7 @@ def test_get_route_sessions_rejects_mismatched_device_header():
     response = client.get(
         "/route-sessions",
         params={"device_id": "device-1"},
-        headers={"X-Device-Id": "device-2"},
+        headers=route_session_headers(device_id="device-2"),
     )
 
     assert response.status_code == 403

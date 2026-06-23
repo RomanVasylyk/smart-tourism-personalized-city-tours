@@ -39,6 +39,7 @@ CREATE INDEX IF NOT EXISTS idx_pois_geom ON pois USING GIST (geom);
 CREATE TABLE IF NOT EXISTS route_sessions (
     id UUID PRIMARY KEY,
     device_id TEXT NOT NULL,
+    device_token_hash TEXT NOT NULL,
     city_id INTEGER NOT NULL REFERENCES cities(id),
     status TEXT NOT NULL CHECK (status IN ('not_started', 'in_progress', 'paused', 'completed', 'cancelled')),
     start_lat DOUBLE PRECISION NOT NULL,
@@ -152,6 +153,7 @@ CREATE TABLE IF NOT EXISTS transport_mode_feedback_stats (
 );
 
 CREATE INDEX IF NOT EXISTS idx_route_sessions_device_id ON route_sessions(device_id);
+CREATE INDEX IF NOT EXISTS idx_route_sessions_device_auth ON route_sessions(device_id, device_token_hash);
 CREATE INDEX IF NOT EXISTS idx_route_sessions_city_id ON route_sessions(city_id);
 CREATE INDEX IF NOT EXISTS idx_route_sessions_status ON route_sessions(status);
 CREATE INDEX IF NOT EXISTS idx_route_session_pois_session_id ON route_session_pois(session_id);

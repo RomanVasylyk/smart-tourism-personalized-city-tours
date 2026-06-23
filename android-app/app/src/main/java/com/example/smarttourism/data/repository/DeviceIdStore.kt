@@ -28,8 +28,25 @@ class DeviceIdStore @Inject constructor(
         return deviceId
     }
 
+    fun getOrCreateDeviceToken(): String {
+        val preferences = appContext.getSharedPreferences(PreferencesName, Context.MODE_PRIVATE)
+        val existingDeviceToken = preferences.getString(DeviceTokenKey, null)
+        if (!existingDeviceToken.isNullOrBlank()) {
+            return existingDeviceToken
+        }
+
+        val deviceToken = UUID.randomUUID().toString()
+        preferences
+            .edit()
+            .putString(DeviceTokenKey, deviceToken)
+            .apply()
+
+        return deviceToken
+    }
+
     private companion object {
         const val PreferencesName = "route_storage"
         const val DeviceIdKey = "device_id"
+        const val DeviceTokenKey = "device_token"
     }
 }

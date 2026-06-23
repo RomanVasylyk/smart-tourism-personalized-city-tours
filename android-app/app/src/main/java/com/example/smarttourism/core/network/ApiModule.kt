@@ -8,13 +8,20 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
 object ApiModule {
-    fun createPoiApi(deviceIdProvider: () -> String): PoiApi {
+    fun createPoiApi(
+        deviceIdProvider: () -> String,
+        deviceTokenProvider: () -> String
+    ): PoiApi {
         val httpClient = OkHttpClient.Builder()
             .addInterceptor { chain ->
                 val deviceId = deviceIdProvider().trim()
+                val deviceToken = deviceTokenProvider().trim()
                 val requestBuilder = chain.request().newBuilder()
                 if (deviceId.isNotEmpty()) {
                     requestBuilder.header("X-Device-Id", deviceId)
+                }
+                if (deviceToken.isNotEmpty()) {
+                    requestBuilder.header("X-Device-Token", deviceToken)
                 }
                 chain.proceed(requestBuilder.build())
             }

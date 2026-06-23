@@ -15,3 +15,27 @@ machine or deployment environment.
 cp .env.example .env
 docker compose up --build
 ```
+
+## Quality checks
+
+Install Python dev tooling and ktlint once on your machine:
+
+```bash
+python3 -m pip install -r requirements-dev.txt
+brew install ktlint
+pre-commit install
+```
+
+Run all configured static checks:
+
+```bash
+pre-commit run --all-files
+```
+
+Useful direct commands:
+
+```bash
+python3 -m ruff check backend pipeline
+python3 -m black --check backend pipeline
+ktlint "android-app/**/*.kt"
+```
