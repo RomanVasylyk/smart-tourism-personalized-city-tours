@@ -1,14 +1,12 @@
-import re
 from datetime import datetime, timedelta
-
-from fastapi import HTTPException
 
 from app.repositories.poi_candidates import get_route_candidates
 from app.schemas.route import RouteGenerateRequest, RouteLegRequest
 from app.services.city_profiles import city_profile_by_token
 from app.services.feedback_stats import load_planner_feedback_profile
 from app.services.route_planning.opening_hours import is_poi_open_for_visit
-from app.services.route_planning.response import append_geometry, leg_dict, point_dict
+from app.services.route_planning.response import append_geometry, leg_dict, point_dict, route_response_dict
+from app.services.route_planning.result import RoutePlanningResult
 from app.services.route_planning.scoring import (
     BASE_SCORE_MULTIPLIER,
     PREFERRED_POI_BONUS,
@@ -23,6 +21,7 @@ from app.services.transport_planner import (
     normalized_transport_mode,
     plan_travel,
 )
+from fastapi import HTTPException
 
 DEFAULT_MAX_EXACT_POI_EVALUATIONS_PER_STEP = 60
 DEFAULT_MAX_EXACT_POI_EVALUATIONS_PER_STEP_TRANSIT = 28
@@ -40,6 +39,7 @@ def parse_start_datetime(raw_value: str | None) -> datetime:
             status_code=400,
             detail="Invalid start_datetime. Use ISO local datetime, for example 2026-04-19T14:30.",
         ) from exc
+
 
 def max_exact_poi_evaluations_per_step(
     city_profile: dict,
@@ -210,14 +210,16 @@ def shortlist_route_candidates(
     preferred_candidates = [poi for poi in remaining_candidates if int(poi["id"]) in preferred_poi_ids]
     preferred_candidate_ids = {int(poi["id"]) for poi in preferred_candidates}
     shortlisted = preferred_candidates + [
-        poi
-        for _, _, poi in scored_candidates
-        if int(poi["id"]) not in preferred_candidate_ids
+        poi for _, _, poi in scored_candidates if int(poi["id"]) not in preferred_candidate_ids
     ]
     return shortlisted[: max(exact_limit, len(preferred_candidates))]
 
 
 def generate_route(request: RouteGenerateRequest) -> dict:
+    return route_response_dict(plan_route(request))
+
+
+def plan_route(request: RouteGenerateRequest) -> RoutePlanningResult:
     start_dt = parse_start_datetime(request.start_datetime)
     city_profile = city_profile_by_token(request.city) or {}
     effective_transport_mode = normalized_transport_mode(request.transport_mode, city_profile)
@@ -239,11 +241,7 @@ def generate_route(request: RouteGenerateRequest) -> dict:
     used_ids: set[int] = set()
     excluded_poi_ids = {int(poi_id) for poi_id in request.exclude_poi_ids}
     ordered_preferred_poi_ids = list(
-        dict.fromkeys(
-            int(poi_id)
-            for poi_id in request.preferred_poi_ids
-            if int(poi_id) not in excluded_poi_ids
-        )
+        dict.fromkeys(int(poi_id) for poi_id in request.preferred_poi_ids if int(poi_id) not in excluded_poi_ids)
     )
     preferred_poi_ids = set(ordered_preferred_poi_ids)
     candidates_by_id = {int(poi["id"]): poi for poi in candidates}
@@ -266,7 +264,7 @@ def generate_route(request: RouteGenerateRequest) -> dict:
         best_travel_leg = None
         best_visit_minutes = None
         best_score_breakdown = None
-        best_utility = -10**9
+        best_utility = -(10**9)
         departure_dt = start_dt + timedelta(seconds=elapsed_actual_seconds)
         forced_preferred_poi = next(
             (
@@ -312,10 +310,14 @@ def generate_route(request: RouteGenerateRequest) -> dict:
             visit_minutes = poi["visit_duration_min"] or 20
             arrival_dt = departure_dt + timedelta(seconds=travel_plan.duration_seconds)
 
-            if not is_forced_preferred and request.respect_opening_hours and not is_poi_open_for_visit(
-                poi.get("opening_hours_raw"),
-                arrival_dt,
-                visit_minutes,
+            if (
+                not is_forced_preferred
+                and request.respect_opening_hours
+                and not is_poi_open_for_visit(
+                    poi.get("opening_hours_raw"),
+                    arrival_dt,
+                    visit_minutes,
+                )
             ):
                 continue
 
@@ -436,23 +438,22 @@ def generate_route(request: RouteGenerateRequest) -> dict:
             detail=f"Required POIs were not included in generated route: {missing_preferred_ids}",
         )
 
-    return {
-        "city": request.city,
-        "start": {"lat": request.start_lat, "lon": request.start_lon},
-        "start_datetime": start_dt.isoformat(timespec="minutes"),
-        "pace": request.pace,
-        "interests": request.interests,
-        "transport_mode": effective_transport_mode,
-        "return_to_start": request.return_to_start,
-        "respect_opening_hours": request.respect_opening_hours,
-        "available_minutes": request.available_minutes,
-        "used_minutes": elapsed_minutes,
-        "remaining_minutes": max(0, request.available_minutes - elapsed_minutes),
-        "total_visit_minutes": total_visit_minutes,
-        "total_walk_minutes": total_walk_minutes,
-        "return_to_start_minutes": return_to_start_minutes,
-        "poi_count": len(route_items),
-        "route": route_items,
-        "legs": legs,
-        "full_geometry": full_geometry,
-    }
+    return RoutePlanningResult(
+        city=request.city,
+        start_lat=request.start_lat,
+        start_lon=request.start_lon,
+        start_datetime=start_dt,
+        pace=request.pace,
+        interests=request.interests,
+        transport_mode=effective_transport_mode,
+        return_to_start=request.return_to_start,
+        respect_opening_hours=request.respect_opening_hours,
+        available_minutes=request.available_minutes,
+        used_minutes=elapsed_minutes,
+        total_visit_minutes=total_visit_minutes,
+        total_walk_minutes=total_walk_minutes,
+        return_to_start_minutes=return_to_start_minutes,
+        route_items=route_items,
+        legs=legs,
+        full_geometry=full_geometry,
+    )

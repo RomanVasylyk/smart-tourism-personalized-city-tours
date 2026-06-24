@@ -2,7 +2,6 @@ package com.example.smarttourism.features.planner.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -32,7 +31,6 @@ import com.example.smarttourism.features.planner.domain.model.Poi
 import com.example.smarttourism.features.planner.ui.formatters.categoryLabel
 
 @Composable
-@OptIn(ExperimentalLayoutApi::class)
 internal fun RequiredPlacesCard(
     selectedPois: List<Poi>,
     availablePoiCount: Int,

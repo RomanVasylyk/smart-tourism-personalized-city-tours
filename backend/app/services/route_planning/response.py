@@ -2,7 +2,9 @@ from __future__ import annotations
 
 from datetime import datetime
 
+from app.services.route_planning.result import RoutePlanningResult
 from app.services.transport_planner import TravelPlan, TravelSegment
+
 
 def point_dict(point_type: str, lat: float, lon: float, poi: dict | None = None) -> dict:
     return {
@@ -12,6 +14,7 @@ def point_dict(point_type: str, lat: float, lon: float, poi: dict | None = None)
         "lat": lat,
         "lon": lon,
     }
+
 
 def leg_dict(
     order: int,
@@ -33,11 +36,9 @@ def leg_dict(
         "routing_source": travel_plan.source,
         "departure_time": format_optional_datetime(first_segment.departure_time if first_segment else None),
         "arrival_time": format_optional_datetime(last_segment.arrival_time if last_segment else None),
-        "segments": [
-            segment_dict(index + 1, segment)
-            for index, segment in enumerate(travel_plan.segments)
-        ],
+        "segments": [segment_dict(index + 1, segment) for index, segment in enumerate(travel_plan.segments)],
     }
+
 
 def segment_dict(order: int, segment: TravelSegment) -> dict:
     return {
@@ -57,10 +58,12 @@ def segment_dict(order: int, segment: TravelSegment) -> dict:
         "in_vehicle_minutes": segment.in_vehicle_minutes,
     }
 
+
 def format_optional_datetime(value: datetime | None) -> str | None:
     if value is None:
         return None
     return value.isoformat(timespec="minutes")
+
 
 def append_geometry(full_geometry: list[dict], leg_geometry: list[dict]) -> None:
     if not leg_geometry:
@@ -71,3 +74,26 @@ def append_geometry(full_geometry: list[dict], leg_geometry: list[dict]) -> None
         return
 
     full_geometry.extend(leg_geometry[1:])
+
+
+def route_response_dict(result: RoutePlanningResult) -> dict:
+    return {
+        "city": result.city,
+        "start": {"lat": result.start_lat, "lon": result.start_lon},
+        "start_datetime": result.start_datetime.isoformat(timespec="minutes"),
+        "pace": result.pace,
+        "interests": result.interests,
+        "transport_mode": result.transport_mode,
+        "return_to_start": result.return_to_start,
+        "respect_opening_hours": result.respect_opening_hours,
+        "available_minutes": result.available_minutes,
+        "used_minutes": result.used_minutes,
+        "remaining_minutes": max(0, result.available_minutes - result.used_minutes),
+        "total_visit_minutes": result.total_visit_minutes,
+        "total_walk_minutes": result.total_walk_minutes,
+        "return_to_start_minutes": result.return_to_start_minutes,
+        "poi_count": len(result.route_items),
+        "route": result.route_items,
+        "legs": result.legs,
+        "full_geometry": result.full_geometry,
+    }

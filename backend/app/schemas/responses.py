@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import Any
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -33,6 +32,15 @@ class TransportProfileResponse(BaseModel):
     model_config = ConfigDict(extra="allow")
 
 
+class CityProfileResponse(BaseModel):
+    slug: str | None = None
+    bbox: CityBboxResponse | None = None
+    available_categories: list[str] = Field(default_factory=list)
+    default_zoom: float | None = None
+    routing_limits: RoutingLimitsResponse = Field(default_factory=RoutingLimitsResponse)
+    transport: TransportProfileResponse = Field(default_factory=TransportProfileResponse)
+
+
 class CityResponse(BaseModel):
     id: int
     slug: str | None = None
@@ -40,11 +48,11 @@ class CityResponse(BaseModel):
     country: str
     center_lat: float | None = None
     center_lon: float | None = None
-    bbox: CityBboxResponse | dict[str, Any] | None = None
-    available_categories: list[str] = []
+    bbox: CityBboxResponse | None = None
+    available_categories: list[str] = Field(default_factory=list)
     default_zoom: float | None = None
-    routing_limits: RoutingLimitsResponse | dict[str, Any] = {}
-    transport: TransportProfileResponse | dict[str, Any] = {}
+    routing_limits: RoutingLimitsResponse = Field(default_factory=RoutingLimitsResponse)
+    transport: TransportProfileResponse = Field(default_factory=TransportProfileResponse)
 
 
 class PoiResponse(BaseModel):
@@ -106,6 +114,20 @@ class RouteLegResponse(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 
 
+class PlannerScoreBreakdownResponse(BaseModel):
+    base_score: float | None = None
+    preferred_bonus: float | None = None
+    poi_bonus: float | None = None
+    category_bonus: float | None = None
+    completion_bonus: float | None = None
+    transport_bonus: float | None = None
+    travel_penalty: float | None = None
+    walking_penalty: float | None = None
+    skip_penalty: float | None = None
+    repeat_penalty: float | None = None
+    final_score: float | None = None
+
+
 class RouteItemResponse(BaseModel):
     order: int
     poi_id: int
@@ -122,7 +144,7 @@ class RouteItemResponse(BaseModel):
     departure_after_min: int
     base_score: float | None = None
     planner_score: float | None = None
-    planner_score_breakdown: dict[str, Any] | None = None
+    planner_score_breakdown: PlannerScoreBreakdownResponse | None = None
     wikipedia_url: str | None = None
     opening_hours_raw: str | None = None
 
@@ -151,6 +173,27 @@ class RouteResponse(BaseModel):
     route: list[RouteItemResponse]
     legs: list[RouteLegResponse] | None = None
     full_geometry: list[RouteCoordinateResponse] | None = None
+
+
+class RouteSnapshotResponse(BaseModel):
+    city: str | None = None
+    start: RouteStartResponse | None = None
+    start_datetime: str | None = None
+    pace: str | None = None
+    interests: list[str] = Field(default_factory=list)
+    transport_mode: str | None = None
+    return_to_start: bool | None = None
+    respect_opening_hours: bool | None = None
+    available_minutes: int | None = None
+    used_minutes: int | None = None
+    remaining_minutes: int | None = None
+    total_visit_minutes: int | None = None
+    total_walk_minutes: int | None = None
+    return_to_start_minutes: int | None = None
+    poi_count: int | None = None
+    route: list[RouteItemResponse] = Field(default_factory=list)
+    legs: list[RouteLegResponse] = Field(default_factory=list)
+    full_geometry: list[RouteCoordinateResponse] = Field(default_factory=list)
 
 
 class RouteSessionPoiResponse(BaseModel):
@@ -194,7 +237,7 @@ class RouteSessionResponse(BaseModel):
     used_minutes: int | None = None
     total_walk_minutes: int | None = None
     total_visit_minutes: int | None = None
-    route_snapshot_json: RouteResponse | dict[str, Any] | None = None
+    route_snapshot_json: RouteSnapshotResponse | None = None
     pois: list[RouteSessionPoiResponse] | None = None
     feedback: list[RouteFeedbackResponse] | None = None
     created_at: datetime | None = None

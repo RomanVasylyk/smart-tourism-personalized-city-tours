@@ -1,5 +1,3 @@
-from fastapi.testclient import TestClient
-
 from app.main import app
 from app.services.routing_service import RoutePoint, RoutingLeg
 from app.services.transport_planner import (
@@ -10,6 +8,7 @@ from app.services.transport_planner import (
     TransportGraph,
     TripBoardOption,
 )
+from fastapi.testclient import TestClient
 
 client = TestClient(app)
 
@@ -275,7 +274,7 @@ def test_generate_route_can_return_transit_segments(monkeypatch):
     monkeypatch.setattr("app.repositories.poi_candidates.get_connection", lambda: FakeConnection(rows))
     monkeypatch.setattr("app.services.route_planner.get_routing_service", lambda: MixedRoutingService())
     monkeypatch.setattr("app.services.route_planner.city_profile_by_token", lambda city: city_profile)
-    monkeypatch.setattr("app.services.transport_planner.load_transport_graph", lambda city: fake_graph)
+    monkeypatch.setattr("app.domain.transport.nearest_stops.load_transport_graph", lambda city: fake_graph)
 
     response = client.post(
         "/route/generate",
@@ -392,7 +391,7 @@ def test_generate_route_prefers_exact_trip_times_when_available(monkeypatch):
     monkeypatch.setattr("app.repositories.poi_candidates.get_connection", lambda: FakeConnection(rows))
     monkeypatch.setattr("app.services.route_planner.get_routing_service", lambda: MixedRoutingService())
     monkeypatch.setattr("app.services.route_planner.city_profile_by_token", lambda city: city_profile)
-    monkeypatch.setattr("app.services.transport_planner.load_transport_graph", lambda city: fake_graph)
+    monkeypatch.setattr("app.domain.transport.nearest_stops.load_transport_graph", lambda city: fake_graph)
 
     response = client.post(
         "/route/generate",

@@ -1,49 +1,20 @@
 package com.example.smarttourism.features.planner.components
 
-import android.Manifest
-import android.content.Context
-import android.content.pm.PackageManager
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
-import android.location.Location
-import android.location.LocationListener
-import android.location.LocationManager
-import android.os.Build
-import android.os.Looper
 import android.text.format.DateFormat
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.animation.animateContentSize
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.IntrinsicSize
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.FilterChip
@@ -57,74 +28,27 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.Checkbox
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat
-import com.example.smarttourism.data.model.ActiveRouteSession
-import com.example.smarttourism.data.model.RouteBookmark
-import com.example.smarttourism.core.network.ApiModule
-import com.example.smarttourism.features.planner.domain.model.City
-import com.example.smarttourism.core.platform.NetworkMonitor
-import com.example.smarttourism.features.planner.domain.model.Poi
-import com.example.smarttourism.data.model.RouteFeedback
-import com.example.smarttourism.data.model.RouteHistoryEntry
-import com.example.smarttourism.features.planner.domain.model.RouteLeg
-import com.example.smarttourism.features.planner.domain.model.PlannerPreferences
-import com.example.smarttourism.features.planner.domain.model.RoutePlan
-import com.example.smarttourism.features.planner.domain.model.RouteSegment
-import com.example.smarttourism.features.planner.domain.model.RouteSession
-import com.example.smarttourism.features.planner.domain.model.RoutePoint
-import com.example.smarttourism.features.planner.domain.model.RouteStop
-import com.example.smarttourism.data.model.SavedRouteSnapshot
-import com.example.smarttourism.sync.OfflineSyncScheduler
 import com.example.smarttourism.R
-import com.example.smarttourism.features.map.offline.OfflineCityRegion
-import com.example.smarttourism.features.map.offline.OfflineMapManager
-import com.example.smarttourism.features.map.offline.OfflineStoredRegion
+import com.example.smarttourism.features.planner.domain.model.City
+import com.example.smarttourism.features.planner.domain.model.RoutePoint
 import com.example.smarttourism.features.planner.state.AvailableMinutesStepMinutes
 import com.example.smarttourism.features.planner.state.MinimumAvailableMinutes
 import com.example.smarttourism.features.planner.state.OfflineDownloadProgress
 import com.example.smarttourism.features.planner.state.PaceOptions
-import com.example.smarttourism.features.planner.state.PoiVisitedRadiusMeters
-import com.example.smarttourism.features.planner.state.RouteProgressMetrics
-import com.example.smarttourism.features.planner.state.RouteSessionStatus
 import com.example.smarttourism.features.planner.state.RouteTimeFormatter
 import com.example.smarttourism.features.planner.ui.formatters.categoryLabel
 import com.example.smarttourism.features.planner.ui.formatters.formatCoordinate
-import com.example.smarttourism.features.planner.ui.formatters.formatDistanceMeters
 import com.example.smarttourism.features.planner.ui.formatters.paceLabel
-import com.example.smarttourism.features.planner.domain.route.requiredCompletionCount
-import com.example.smarttourism.features.planner.ui.formatters.routeSegmentLabel
-import com.example.smarttourism.features.planner.ui.formatters.routeSessionStatusLabel
-import com.example.smarttourism.features.planner.ui.formatters.toRouteDateTimeLabel
-import com.example.smarttourism.features.planner.ui.formatters.toRouteTimeOfDayLabel
-import kotlinx.coroutines.launch
 import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
-import java.time.temporal.ChronoUnit
-import java.util.Locale
-import java.util.UUID
-import kotlin.math.ceil
 import kotlin.math.roundToInt
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 
 @Composable
 internal fun OfflineSupportCard(
@@ -693,221 +617,5 @@ private fun formatAvailableMinutes(totalMinutes: Int): String {
         hours == 0 -> "${minutes} min"
         minutes == 0 -> "${hours} h"
         else -> "${hours} h ${minutes} min"
-    }
-}
-
-@Composable
-internal fun RouteTrackingCard(
-    status: RouteSessionStatus,
-    routeId: String?,
-    startedAt: String?,
-    metrics: RouteProgressMetrics,
-    currentLocation: RoutePoint?,
-    isRerouting: Boolean,
-    canStartCurrentRoute: Boolean,
-    onStartRoute: () -> Unit,
-    onPauseRoute: () -> Unit,
-    onResumeRoute: () -> Unit,
-    onFinishRoute: () -> Unit,
-    onCancelRoute: () -> Unit
-) {
-    val progress = if (metrics.totalCount == 0) {
-        0f
-    } else {
-        metrics.visitedCount.toFloat() / metrics.totalCount.toFloat()
-    }
-    val nextTargetName = metrics.nextTarget?.name ?: stringResource(R.string.route_tracking_no_next_target)
-    val canPause = status == RouteSessionStatus.IN_PROGRESS
-    val canResume = status == RouteSessionStatus.PAUSED
-    val canStart = status == RouteSessionStatus.NOT_STARTED ||
-        status == RouteSessionStatus.COMPLETED ||
-        status == RouteSessionStatus.CANCELLED
-
-    ElevatedCard {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            Text(
-                text = stringResource(R.string.route_tracking_title),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold
-            )
-            Text(
-                text = routeSessionStatusLabel(status),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            if (!routeId.isNullOrBlank()) {
-                Text(
-                    text = stringResource(R.string.route_tracking_route_id, routeId.takeLast(8)),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-            if (!startedAt.isNullOrBlank()) {
-                Text(
-                    text = stringResource(
-                        R.string.route_tracking_started_at,
-                        startedAt.toRouteDateTimeLabel(stringResource(R.string.common_unknown))
-                    ),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-            LinearProgressIndicator(
-                progress = { progress },
-                modifier = Modifier.fillMaxWidth()
-            )
-            Text(
-                text = stringResource(
-                    R.string.route_tracking_visited_count,
-                    metrics.visitedCount,
-                    metrics.totalCount
-                )
-            )
-            Text(
-                text = stringResource(R.string.route_tracking_next_target, nextTargetName),
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.SemiBold
-            )
-            Text(
-                text = stringResource(
-                    R.string.route_tracking_distance_to_next,
-                    metrics.distanceToNextTargetMeters?.let(::formatDistanceMeters)
-                        ?: stringResource(R.string.common_unknown)
-                )
-            )
-            Text(
-                text = stringResource(
-                    R.string.route_tracking_estimated_remaining,
-                    metrics.estimatedRemainingMinutes
-                )
-            )
-            if (status == RouteSessionStatus.IN_PROGRESS && currentLocation == null) {
-                Text(
-                    text = stringResource(R.string.route_tracking_waiting_for_gps),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-            if (currentLocation != null) {
-                Text(
-                    text = stringResource(
-                        R.string.route_tracking_current_location,
-                        formatCoordinate(currentLocation.lat),
-                        formatCoordinate(currentLocation.lon)
-                    ),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-            if (metrics.isOffRoute || isRerouting) {
-                Text(
-                    text = stringResource(R.string.status_off_route_title),
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.error
-                )
-                Text(
-                    text = if (isRerouting) {
-                        stringResource(R.string.status_off_route_rerouting_body)
-                    } else {
-                        stringResource(R.string.status_off_route_body)
-                    },
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                if (isRerouting) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(18.dp),
-                            strokeWidth = 2.dp
-                        )
-                        Text(
-                            text = stringResource(R.string.action_recalculating_route),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-            }
-            Text(
-                text = if (metrics.totalCount == 0) {
-                    stringResource(R.string.route_tracking_no_stops)
-                } else {
-                    stringResource(R.string.route_tracking_auto_visit_hint, PoiVisitedRadiusMeters.toInt())
-                },
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                when {
-                    canStart -> Button(
-                        onClick = onStartRoute,
-                        modifier = Modifier.weight(1f),
-                        enabled = metrics.totalCount > 0 && canStartCurrentRoute
-                    ) {
-                        Text(stringResource(R.string.action_start_route))
-                    }
-
-                    canPause -> OutlinedButton(
-                        onClick = onPauseRoute,
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text(stringResource(R.string.action_pause_route))
-                    }
-
-                    canResume -> OutlinedButton(
-                        onClick = onResumeRoute,
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text(stringResource(R.string.action_resume_route))
-                    }
-                }
-            }
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                OutlinedButton(
-                    onClick = onFinishRoute,
-                    modifier = Modifier.weight(1f),
-                    enabled = metrics.canComplete &&
-                        (status == RouteSessionStatus.IN_PROGRESS || status == RouteSessionStatus.PAUSED)
-                ) {
-                    Text(stringResource(R.string.action_finish_route))
-                }
-                OutlinedButton(
-                    onClick = onCancelRoute,
-                    modifier = Modifier.weight(1f),
-                    enabled = status == RouteSessionStatus.IN_PROGRESS || status == RouteSessionStatus.PAUSED
-                ) {
-                    Text(stringResource(R.string.action_cancel_route))
-                }
-            }
-            if (!metrics.canComplete &&
-                metrics.totalCount > 0 &&
-                (status == RouteSessionStatus.IN_PROGRESS || status == RouteSessionStatus.PAUSED)
-            ) {
-                Text(
-                    text = stringResource(
-                        R.string.route_tracking_finish_requirement,
-                        requiredCompletionCount(metrics.totalCount),
-                        metrics.totalCount
-                    ),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
     }
 }

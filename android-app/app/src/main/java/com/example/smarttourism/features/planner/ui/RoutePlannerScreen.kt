@@ -8,28 +8,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -38,48 +20,21 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.smarttourism.R
 import com.example.smarttourism.core.i18n.AppLanguage
 import com.example.smarttourism.data.model.RouteHistoryEntry
-import com.example.smarttourism.features.planner.domain.model.City
 import com.example.smarttourism.features.planner.domain.model.Poi
-import com.example.smarttourism.features.planner.domain.model.RouteStop
-import com.example.smarttourism.features.planner.domain.model.RoutePlan
 import com.example.smarttourism.features.planner.domain.model.RoutePoint
-import com.example.smarttourism.features.map.MapLocationButton
-import com.example.smarttourism.features.map.PoiMapScreen
-import com.example.smarttourism.features.planner.components.ActiveRouteBottomPanel
-import com.example.smarttourism.features.planner.components.CitySelectorCard
 import com.example.smarttourism.features.planner.components.OfflineSupportCard
-import com.example.smarttourism.features.planner.components.ReplaceRouteStopSheetContent
-import com.example.smarttourism.features.planner.components.RequiredPlacesCard
-import com.example.smarttourism.features.planner.components.RequiredPlacesPickerSheetContent
 import com.example.smarttourism.features.planner.components.RouteBookmarksSheetContent
-import com.example.smarttourism.features.planner.components.RouteFeedbackCard
-import com.example.smarttourism.features.planner.components.RouteHistoryDetailsDialog
 import com.example.smarttourism.features.planner.components.RouteHistorySheetContent
-import com.example.smarttourism.features.planner.components.RouteParametersCard
-import com.example.smarttourism.features.planner.components.RoutePreviewSummaryPanel
-import com.example.smarttourism.features.planner.components.RouteStopTimelineItem
-import com.example.smarttourism.features.planner.components.RouteSummaryCard
-import com.example.smarttourism.features.planner.components.RouteTrackingCard
-import com.example.smarttourism.features.planner.components.StartPointCard
-import com.example.smarttourism.features.planner.components.StatusCard
 import com.example.smarttourism.features.planner.state.PlannerMode
 import com.example.smarttourism.features.planner.state.PlannerEvent
 import com.example.smarttourism.features.planner.state.RouteSessionStatus
@@ -88,7 +43,6 @@ import com.example.smarttourism.features.planner.viewmodel.RoutePlannerViewModel
 import com.example.smarttourism.features.planner.location.fetchCurrentLocation
 import com.example.smarttourism.features.planner.location.startRouteLocationTracking
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RoutePlannerScreen(
     selectedLanguage: AppLanguage,
@@ -573,16 +527,22 @@ fun RoutePlannerScreen(
         }
     }
 
-    PlannerSheets(
+    val plannerScreenState = PlannerScreenState(
         isParameterSheetOpen = isParameterSheetOpen,
         isRequiredPlacesSheetOpen = isRequiredPlacesSheetOpen,
         isStopsSheetOpen = isStopsSheetOpen,
         replacingPoiId = replacingPoiId,
+        selectedHistoryEntry = selectedHistoryEntry,
+        isFeedbackDialogOpen = isFeedbackDialogOpen,
+        isMapFullScreen = isMapFullScreen,
         pois = pois,
         routeResponse = routeResponse,
         routeItems = routeItems,
         startPoint = startPoint,
+        selectedCity = selectedCity,
+        currentRouteLocation = currentRouteLocation,
         isSelectingStart = isSelectingStart,
+        isSelectingRequiredPlacesOnMap = isSelectingRequiredPlacesOnMap,
         isLocating = isLocating,
         isPlannerEditingLocked = isPlannerEditingLocked,
         selectedRequiredPois = selectedRequiredPois(),
@@ -604,7 +564,11 @@ fun RoutePlannerScreen(
         canSkipStops = canSkipStops,
         isRerouting = isRerouting,
         highlightedPoiId = progressMetrics.nextTarget?.poiId,
-        replacementCandidatesForPoi = plannerViewModel::previewReplacementCandidates,
+        routeFeedback = routeFeedback,
+        isPoiLoading = isPoiLoading
+    )
+
+    val plannerActions = PlannerActions(
         onDismissParameterSheet = { isParameterSheetOpen = false },
         onDismissRequiredPlacesSheet = { isRequiredPlacesSheetOpen = false },
         onDismissStopsSheet = { isStopsSheetOpen = false },
@@ -653,26 +617,7 @@ fun RoutePlannerScreen(
             replacingPoiId = null
         },
         onMarkVisited = { poiId -> onPlannerEvent(PlannerEvent.MarkRouteStopVisited(poiId)) },
-        onSkip = { poiId -> onPlannerEvent(PlannerEvent.SkipRouteStop(poiId)) }
-    )
-
-    PlannerDialogs(
-        selectedHistoryEntry = selectedHistoryEntry,
-        isFeedbackDialogOpen = isFeedbackDialogOpen,
-        isMapFullScreen = isMapFullScreen,
-        pois = pois,
-        routeResponse = routeResponse,
-        startPoint = startPoint,
-        selectedCity = selectedCity,
-        currentRouteLocation = currentRouteLocation,
-        visitedPoiIds = visitedPoiIds,
-        skippedPoiIds = skippedPoiIds,
-        routeSessionStatus = routeSessionStatus,
-        isPoiLoading = isPoiLoading,
-        isSelectingStart = isSelectingStart,
-        isSelectingRequiredPlacesOnMap = isSelectingRequiredPlacesOnMap,
-        requiredPoiIds = requiredPoiIds,
-        routeFeedback = routeFeedback,
+        onSkip = { poiId -> onPlannerEvent(PlannerEvent.SkipRouteStop(poiId)) },
         onDismissHistoryEntry = { selectedHistoryEntry = null },
         onDismissFeedback = { isFeedbackDialogOpen = false },
         onFeedbackChange = { feedback -> onPlannerEvent(PlannerEvent.UpdateFeedback(feedback)) },
@@ -687,5 +632,16 @@ fun RoutePlannerScreen(
         },
         onStartPointSelected = ::updateStartPoint,
         onRoutePoiSelected = { poi -> onPlannerEvent(PlannerEvent.ToggleRequiredPoi(poi.id)) }
+    )
+
+    PlannerSheets(
+        state = plannerScreenState,
+        actions = plannerActions,
+        replacementCandidatesForPoi = plannerViewModel::previewReplacementCandidates,
+    )
+
+    PlannerDialogs(
+        state = plannerScreenState,
+        actions = plannerActions
     )
 }
