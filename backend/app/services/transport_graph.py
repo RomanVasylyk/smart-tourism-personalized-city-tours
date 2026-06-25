@@ -3,11 +3,13 @@ from __future__ import annotations
 from dataclasses import dataclass, replace
 from datetime import date
 
-from psycopg import Error as PsycopgError
-
+from app.core.logging import get_logger
 from app.db.database import get_connection
 from app.services.city_lookup import find_city_row
 from app.services.routing_service import RoutePoint
+from psycopg import Error as PsycopgError
+
+logger = get_logger(__name__)
 
 
 @dataclass(frozen=True)
@@ -245,7 +247,7 @@ def load_transport_graph(city_profile: dict) -> TransportGraph | None:
                     )
                 )
 
-        for stop_id, options in board_options_by_stop.items():
+        for _stop_id, options in board_options_by_stop.items():
             options.sort(
                 key=lambda option: trips_by_id[option.trip_id].stop_times[option.stop_index].time_minutes,
             )
@@ -259,6 +261,14 @@ def load_transport_graph(city_profile: dict) -> TransportGraph | None:
                 board_options_by_stop=board_options_by_stop,
             )
     except PsycopgError:
+        logger.exception(
+            "Failed to load transport graph; falling back to non-transit routing",
+            extra={
+                "city": city_name,
+                "country": country,
+                "provider": (city_profile.get("transport") or {}).get("provider"),
+            },
+        )
         graph = None
 
     if graph is not None:

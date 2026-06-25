@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import os
+import subprocess
 import sys
 from pathlib import Path
 
@@ -10,97 +12,10 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from utils.cities import load_city
-from utils.db import get_connection
+from utils.cities import load_city  # noqa: E402
+from utils.db import get_connection  # noqa: E402
 
-TRANSPORT_SCHEMA_SQL = """
-CREATE EXTENSION IF NOT EXISTS postgis;
-
-CREATE TABLE IF NOT EXISTS transport_stops (
-    id SERIAL PRIMARY KEY,
-    city_id INTEGER NOT NULL REFERENCES cities(id) ON DELETE CASCADE,
-    provider_stop_code TEXT,
-    name TEXT NOT NULL,
-    normalized_name TEXT NOT NULL,
-    lat DOUBLE PRECISION NOT NULL,
-    lon DOUBLE PRECISION NOT NULL,
-    geom geometry(Point, 4326) NOT NULL,
-    source TEXT NOT NULL,
-    source_reference TEXT,
-    platform_ref TEXT,
-    matched_by TEXT,
-    is_active BOOLEAN NOT NULL DEFAULT TRUE
-);
-
-CREATE TABLE IF NOT EXISTS transport_lines (
-    id SERIAL PRIMARY KEY,
-    city_id INTEGER NOT NULL REFERENCES cities(id) ON DELETE CASCADE,
-    provider TEXT NOT NULL,
-    provider_line_id TEXT NOT NULL,
-    name TEXT NOT NULL,
-    direction_name TEXT,
-    service_bucket TEXT,
-    source_url TEXT,
-    valid_from DATE,
-    valid_to DATE,
-    is_active BOOLEAN NOT NULL DEFAULT TRUE
-);
-
-CREATE TABLE IF NOT EXISTS transport_line_stops (
-    id BIGSERIAL PRIMARY KEY,
-    line_id INTEGER NOT NULL REFERENCES transport_lines(id) ON DELETE CASCADE,
-    stop_id INTEGER NOT NULL REFERENCES transport_stops(id),
-    stop_sequence INTEGER NOT NULL,
-    UNIQUE (line_id, stop_sequence)
-);
-
-CREATE TABLE IF NOT EXISTS transport_trips (
-    id BIGSERIAL PRIMARY KEY,
-    line_id INTEGER NOT NULL REFERENCES transport_lines(id) ON DELETE CASCADE,
-    trip_code TEXT NOT NULL,
-    service_bucket TEXT NOT NULL,
-    source_url TEXT,
-    valid_from DATE,
-    valid_to DATE,
-    is_active BOOLEAN NOT NULL DEFAULT TRUE,
-    UNIQUE (line_id, trip_code)
-);
-
-CREATE TABLE IF NOT EXISTS transport_trip_stop_times (
-    id BIGSERIAL PRIMARY KEY,
-    trip_id BIGINT NOT NULL REFERENCES transport_trips(id) ON DELETE CASCADE,
-    stop_id INTEGER NOT NULL REFERENCES transport_stops(id),
-    stop_sequence INTEGER NOT NULL,
-    time_minutes INTEGER NOT NULL,
-    UNIQUE (trip_id, stop_sequence)
-);
-
-CREATE TABLE IF NOT EXISTS transport_connections (
-    id BIGSERIAL PRIMARY KEY,
-    city_id INTEGER NOT NULL REFERENCES cities(id) ON DELETE CASCADE,
-    line_id INTEGER NOT NULL REFERENCES transport_lines(id) ON DELETE CASCADE,
-    from_stop_id INTEGER NOT NULL REFERENCES transport_stops(id),
-    to_stop_id INTEGER NOT NULL REFERENCES transport_stops(id),
-    from_sequence INTEGER NOT NULL,
-    to_sequence INTEGER NOT NULL,
-    avg_travel_seconds DOUBLE PRECISION NOT NULL,
-    distance_meters DOUBLE PRECISION NOT NULL,
-    source_url TEXT,
-    is_active BOOLEAN NOT NULL DEFAULT TRUE,
-    UNIQUE (line_id, from_stop_id, to_stop_id, from_sequence, to_sequence)
-);
-
-CREATE INDEX IF NOT EXISTS idx_transport_stops_city_id ON transport_stops(city_id);
-CREATE INDEX IF NOT EXISTS idx_transport_stops_geom ON transport_stops USING GIST (geom);
-CREATE INDEX IF NOT EXISTS idx_transport_lines_city_id ON transport_lines(city_id);
-CREATE INDEX IF NOT EXISTS idx_transport_trips_line_id ON transport_trips(line_id);
-CREATE INDEX IF NOT EXISTS idx_transport_trip_stop_times_trip_id ON transport_trip_stop_times(trip_id);
-CREATE INDEX IF NOT EXISTS idx_transport_trip_stop_times_stop_id ON transport_trip_stop_times(stop_id);
-CREATE INDEX IF NOT EXISTS idx_transport_connections_city_id ON transport_connections(city_id);
-CREATE INDEX IF NOT EXISTS idx_transport_connections_from_stop_id ON transport_connections(from_stop_id);
-CREATE INDEX IF NOT EXISTS idx_transport_connections_to_stop_id ON transport_connections(to_stop_id);
-CREATE INDEX IF NOT EXISTS idx_transport_connections_line_id ON transport_connections(line_id);
-"""
+REPO_ROOT = ROOT.parent
 
 
 def get_center(city: dict) -> tuple[float, float]:
@@ -159,21 +74,19 @@ def ensure_city(conn, city: dict) -> int:
 def transport_graph_path(city: dict) -> Path:
     transport = city.get("transport") or {}
     relative_path = str(
-        transport.get("processed_graph_path")
-        or f"transport/{city['slug']}/processed/transport_graph.json"
+        transport.get("processed_graph_path") or f"transport/{city['slug']}/processed/transport_graph.json"
     )
     return ROOT / "data" / relative_path.removeprefix("data/")
 
 
-def ensure_transport_schema(conn) -> None:
-    with conn.cursor() as cur:
-        cur.execute(TRANSPORT_SCHEMA_SQL)
-        cur.execute("ALTER TABLE transport_stops ADD COLUMN IF NOT EXISTS platform_ref TEXT;")
-        cur.execute("ALTER TABLE transport_lines ADD COLUMN IF NOT EXISTS service_bucket TEXT;")
-        cur.execute("ALTER TABLE transport_stops DROP CONSTRAINT IF EXISTS transport_stops_city_id_normalized_name_key;")
-        cur.execute("DROP INDEX IF EXISTS idx_transport_stops_city_source_reference_unique;")
-        cur.execute("ALTER TABLE transport_lines DROP CONSTRAINT IF EXISTS transport_lines_city_id_provider_provider_line_id_direction_key;")
-        cur.execute("ALTER TABLE transport_line_stops DROP CONSTRAINT IF EXISTS transport_line_stops_line_id_stop_id_key;")
+def ensure_transport_schema() -> None:
+    env = os.environ.copy()
+    subprocess.run(
+        [sys.executable, "-m", "alembic", "upgrade", "head"],
+        cwd=REPO_ROOT,
+        env=env,
+        check=True,
+    )
 
 
 def ensure_transport_unique_indexes(conn) -> None:
@@ -209,7 +122,10 @@ def delete_existing_transport(conn, city_id: int) -> None:
             """,
             (city_id,),
         )
-        cur.execute("DELETE FROM transport_line_stops WHERE line_id IN (SELECT id FROM transport_lines WHERE city_id = %s);", (city_id,))
+        cur.execute(
+            "DELETE FROM transport_line_stops WHERE line_id IN (SELECT id FROM transport_lines WHERE city_id = %s);",
+            (city_id,),
+        )
         cur.execute("DELETE FROM transport_lines WHERE city_id = %s;", (city_id,))
         cur.execute("DELETE FROM transport_stops WHERE city_id = %s;", (city_id,))
 
@@ -230,8 +146,8 @@ def main() -> None:
     inserted_stop_times = 0
     inserted_connections = 0
 
+    ensure_transport_schema()
     with get_connection() as conn:
-        ensure_transport_schema(conn)
         city_id = ensure_city(conn, city)
         delete_existing_transport(conn, city_id)
         ensure_transport_unique_indexes(conn)

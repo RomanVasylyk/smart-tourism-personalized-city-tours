@@ -5,10 +5,22 @@ from pathlib import Path
 from typing import Any
 
 from .constants import SERVICE_BUCKETS
-from .matching import choose_variant_stop_assignments, haversine_km, match_provider_stop_candidates, mean
-from .models import TransportIssue, VariantAccumulator
+from .matching import choose_variant_stop_assignments, haversine_km, mean
+from .models import (
+    GraphConnectionRecord,
+    GraphLineRecord,
+    GraphLineStopRecord,
+    GraphStopRecord,
+    GraphTripRecord,
+    GraphTripStopTimeRecord,
+    TransportGraphData,
+    TransportIssue,
+    TransportQualityReport,
+    VariantAccumulator,
+)
 from .parser import add_issue
 from .text import lookup_local_connection_rule, normalize_display_text, normalize_stop_base_name, normalize_stop_name
+
 
 def line_sort_key(variant: VariantAccumulator) -> tuple[int, str, tuple[str, ...]]:
     try:
@@ -16,6 +28,7 @@ def line_sort_key(variant: VariantAccumulator) -> tuple[int, str, tuple[str, ...
     except ValueError:
         numeric_line_number = 999_999
     return numeric_line_number, variant.service_bucket, tuple(variant.stop_names)
+
 
 def sanitize_consecutive_assignments(
     assignments: list[tuple[int, dict, str]],
@@ -46,6 +59,7 @@ def sanitize_consecutive_assignments(
         sanitized_assignments.append((original_index, stop_record, matched_by))
 
     return sanitized_assignments
+
 
 def sanitize_trip_stop_times(
     trip_stop_times: list[dict[str, Any]],
@@ -85,7 +99,7 @@ def sanitize_trip_stop_times(
 
     if any(
         later["time_minutes"] < earlier["time_minutes"]
-        for earlier, later in zip(deduplicated_stop_times, deduplicated_stop_times[1:])
+        for earlier, later in zip(deduplicated_stop_times, deduplicated_stop_times[1:], strict=False)
     ):
         metrics["invalid_trip_count"] += 1
         metrics["descending_time_trip_count"] += 1
@@ -103,6 +117,7 @@ def sanitize_trip_stop_times(
         stop_time["sequence"] = sequence
 
     return deduplicated_stop_times
+
 
 def direct_connection_duration_samples(
     variant: VariantAccumulator,
@@ -130,6 +145,7 @@ def direct_connection_duration_samples(
 
     return positive_samples, comparable_count, zero_delta_count
 
+
 def estimated_zero_delta_connection_seconds(from_stop: dict[str, Any], to_stop: dict[str, Any], city: dict) -> float:
     transport = city.get("transport") or {}
     speed_kmh = float(transport.get("transit_speed_kmh") or 24.0)
@@ -139,6 +155,7 @@ def estimated_zero_delta_connection_seconds(from_stop: dict[str, Any], to_stop: 
     distance_meters = haversine_km(from_stop["lat"], from_stop["lon"], to_stop["lat"], to_stop["lon"]) * 1_000
     seconds = distance_meters / max(speed_kmh * (1_000 / 3_600), 0.1)
     return round(min(180.0, max(20.0, seconds)), 1)
+
 
 def is_same_station_transfer_candidate(from_stop: dict[str, Any], to_stop: dict[str, Any]) -> bool:
     if from_stop["graph_stop_key"] == to_stop["graph_stop_key"]:
@@ -264,6 +281,7 @@ def add_estimated_variant_stop_assignments(
 
     return enriched_assignments
 
+
 def build_processed_graph(
     city: dict,
     variants: list[VariantAccumulator],
@@ -274,9 +292,9 @@ def build_processed_graph(
     provider = str((city.get("transport") or {}).get("provider") or "transport_provider")
     stops_by_graph_key: dict[str, dict[str, Any]] = {}
     unmatched_stops_by_name: dict[str, dict[str, Any]] = {}
-    lines: list[dict[str, Any]] = []
-    connections: list[dict[str, Any]] = []
-    trips: list[dict[str, Any]] = []
+    lines: list[GraphLineRecord] = []
+    connections: list[GraphConnectionRecord] = []
+    trips: list[GraphTripRecord] = []
     line_counter = 0
     trip_counter = 0
     metrics = {
@@ -396,15 +414,18 @@ def build_processed_graph(
             )
             continue
 
-        ordered_stops: list[dict[str, Any]] = []
-        line_connections: list[dict[str, Any]] = []
-        for sequence, (original_index, stop_record, provider_stop_name) in enumerate(matched_stops_with_indices, start=1):
+        ordered_stops: list[GraphLineStopRecord] = []
+        line_connections: list[GraphConnectionRecord] = []
+        for sequence, (_original_index, stop_record, provider_stop_name) in enumerate(
+            matched_stops_with_indices,
+            start=1,
+        ):
             ordered_stops.append(
-                {
-                    "sequence": sequence,
-                    "provider_stop_name": provider_stop_name,
-                    "graph_stop_key": stop_record["graph_stop_key"],
-                }
+                GraphLineStopRecord(
+                    sequence=sequence,
+                    provider_stop_name=provider_stop_name,
+                    graph_stop_key=stop_record["graph_stop_key"],
+                )
             )
 
         for index in range(len(matched_stops_with_indices) - 1):
@@ -460,17 +481,19 @@ def build_processed_graph(
                 continue
 
             line_connections.append(
-                {
-                    "from_sequence": index + 1,
-                    "to_sequence": index + 2,
-                    "from_stop_key": from_stop["graph_stop_key"],
-                    "to_stop_key": to_stop["graph_stop_key"],
-                    "avg_travel_seconds": round(mean(edge_duration_samples), 1),
-                    "distance_meters": round(
+                GraphConnectionRecord(
+                    line_id=line_id,
+                    source_url=source_url,
+                    from_sequence=index + 1,
+                    to_sequence=index + 2,
+                    from_stop_key=from_stop["graph_stop_key"],
+                    to_stop_key=to_stop["graph_stop_key"],
+                    avg_travel_seconds=round(mean(edge_duration_samples), 1),
+                    distance_meters=round(
                         haversine_km(from_stop["lat"], from_stop["lon"], to_stop["lat"], to_stop["lon"]) * 1_000,
                         1,
                     ),
-                }
+                )
             )
 
         if not line_connections:
@@ -482,19 +505,19 @@ def build_processed_graph(
             )
             continue
 
-        direction_name = f"{ordered_stops[0]['provider_stop_name']} -> {ordered_stops[-1]['provider_stop_name']}"
+        direction_name = f"{ordered_stops[0].provider_stop_name} -> {ordered_stops[-1].provider_stop_name}"
         lines.append(
-            {
-                "line_id": line_id,
-                "provider_line_id": variant.line_number,
-                "name": f"Bus {variant.line_number}",
-                "direction_name": direction_name,
-                "service_bucket": variant.service_bucket,
-                "source_url": source_url,
-                "valid_from": variant.valid_from,
-                "valid_to": variant.valid_to,
-                "stops": ordered_stops,
-            }
+            GraphLineRecord(
+                line_id=line_id,
+                provider_line_id=variant.line_number,
+                name=f"Bus {variant.line_number}",
+                direction_name=direction_name,
+                service_bucket=variant.service_bucket,
+                source_url=source_url,
+                valid_from=variant.valid_from,
+                valid_to=variant.valid_to,
+                stops=ordered_stops,
+            )
         )
 
         line_trip_count = 0
@@ -502,7 +525,9 @@ def build_processed_graph(
             trip_counter += 1
             trip_id = f"{line_id}:trip:{trip_counter}"
             trip_stop_times: list[dict[str, Any]] = []
-            for sequence, (original_index, stop_record, provider_stop_name) in enumerate(matched_stops_with_indices, start=1):
+            for sequence, (original_index, stop_record, provider_stop_name) in enumerate(
+                matched_stops_with_indices, start=1
+            ):
                 if original_index >= len(trip_column):
                     continue
                 time_minutes = trip_column[original_index]
@@ -528,15 +553,23 @@ def build_processed_graph(
                 continue
 
             trips.append(
-                {
-                    "trip_id": trip_id,
-                    "line_id": line_id,
-                    "service_bucket": variant.service_bucket,
-                    "source_url": source_url,
-                    "valid_from": variant.valid_from,
-                    "valid_to": variant.valid_to,
-                    "stop_times": sanitized_trip_stop_times,
-                }
+                GraphTripRecord(
+                    trip_id=trip_id,
+                    line_id=line_id,
+                    service_bucket=variant.service_bucket,
+                    source_url=source_url,
+                    valid_from=variant.valid_from,
+                    valid_to=variant.valid_to,
+                    stop_times=[
+                        GraphTripStopTimeRecord(
+                            sequence=int(stop_time["sequence"]),
+                            graph_stop_key=stop_time["graph_stop_key"],
+                            provider_stop_name=stop_time["provider_stop_name"],
+                            time_minutes=int(stop_time["time_minutes"]),
+                        )
+                        for stop_time in sanitized_trip_stop_times
+                    ],
+                )
             )
             line_trip_count += 1
 
@@ -549,14 +582,7 @@ def build_processed_graph(
                 line_number=line_id,
             )
 
-        for connection in line_connections:
-            connections.append(
-                {
-                    "line_id": line_id,
-                    "source_url": source_url,
-                    **connection,
-                }
-            )
+        connections.extend(line_connections)
 
     unmatched_stop_details = [
         {
@@ -568,17 +594,32 @@ def build_processed_graph(
     ]
     unmatched_stop_details.sort(key=lambda item: (-item["occurrences"], item["stop_name"]))
 
-    graph = {
-        "city": city["slug"],
-        "provider": provider,
-        "generated_at": datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
-        "stops": sorted(stops_by_graph_key.values(), key=lambda item: (item["name"], item["source_reference"])),
-        "lines": lines,
-        "connections": connections,
-        "trips": trips,
-        "unmatched_stops": [record["stop_name"] for record in unmatched_stop_details],
-    }
-    return graph, metrics, unmatched_stop_details
+    stop_records = [
+        GraphStopRecord(
+            graph_stop_key=stop["graph_stop_key"],
+            name=stop["name"],
+            normalized_name=stop["normalized_name"],
+            lat=float(stop["lat"]),
+            lon=float(stop["lon"]),
+            platform_ref=stop.get("platform_ref"),
+            source=stop["source"],
+            source_reference=stop.get("source_reference"),
+            matched_by=stop.get("matched_by"),
+        )
+        for stop in sorted(stops_by_graph_key.values(), key=lambda item: (item["name"], item["source_reference"]))
+    ]
+    graph = TransportGraphData(
+        city=city["slug"],
+        provider=provider,
+        generated_at=datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
+        stops=stop_records,
+        lines=lines,
+        connections=connections,
+        trips=trips,
+        unmatched_stops=[record["stop_name"] for record in unmatched_stop_details],
+    )
+    return graph.to_dict(), metrics, unmatched_stop_details
+
 
 def compute_quality_report(
     graph: dict[str, Any],
@@ -612,7 +653,7 @@ def compute_quality_report(
         line_stops = line.get("stops") or []
         duplicate_consecutive_line_stops = sum(
             1
-            for current_stop, next_stop in zip(line_stops, line_stops[1:])
+            for current_stop, next_stop in zip(line_stops, line_stops[1:], strict=False)
             if current_stop.get("graph_stop_key") == next_stop.get("graph_stop_key")
         )
         total_duplicate_consecutive_stops += duplicate_consecutive_line_stops
@@ -624,14 +665,14 @@ def compute_quality_report(
             invalid_trip_count += 1
         if any(
             later.get("time_minutes", 0) < earlier.get("time_minutes", 0)
-            for earlier, later in zip(stop_times, stop_times[1:])
+            for earlier, later in zip(stop_times, stop_times[1:], strict=False)
         ):
             invalid_trip_count += 1
             descending_time_trip_count += 1
             total_invalid_stop_times += len(stop_times)
         duplicate_consecutive_trip_stops = sum(
             1
-            for current_stop, next_stop in zip(stop_times, stop_times[1:])
+            for current_stop, next_stop in zip(stop_times, stop_times[1:], strict=False)
             if current_stop.get("graph_stop_key") == next_stop.get("graph_stop_key")
         )
         total_duplicate_consecutive_stops += duplicate_consecutive_trip_stops
@@ -641,28 +682,28 @@ def compute_quality_report(
     denominator = matched_stops + unmatched_stop_count
     coverage_ratio = round(matched_stops / denominator, 4) if denominator else 0.0
 
-    return {
-        "city": graph.get("city"),
-        "provider": graph.get("provider"),
-        "generated_at": graph.get("generated_at"),
-        "source_document_count": source_document_count,
-        "parsed_document_count": parsed_document_count,
-        "variant_count": variant_count,
-        "total_stops": matched_stops,
-        "matched_stops": matched_stops,
-        "unmatched_stop_count": unmatched_stop_count,
-        "total_lines": len(graph.get("lines") or []),
-        "total_connections": len(graph.get("connections") or []),
-        "total_trips": len(graph.get("trips") or []),
-        "total_stop_times": total_stop_times,
-        "invalid_trip_count": invalid_trip_count,
-        "dropped_trip_count": dropped_trip_count,
-        "descending_time_trip_count": descending_time_trip_count,
-        "duplicate_consecutive_stop_count": total_duplicate_consecutive_stops,
-        "invalid_stop_times": total_invalid_stop_times,
-        "invalid_validity_count": lines_with_invalid_validity,
-        "empty_service_bucket_count": empty_service_bucket_count + lines_without_service_bucket,
-        "line_without_trip_count": line_without_trip_count,
-        "warnings_count": len(graph.get("warnings") or []),
-        "coverage_ratio": coverage_ratio,
-    }
+    return TransportQualityReport(
+        city=graph.get("city"),
+        provider=graph.get("provider"),
+        generated_at=graph.get("generated_at"),
+        source_document_count=source_document_count,
+        parsed_document_count=parsed_document_count,
+        variant_count=variant_count,
+        total_stops=matched_stops,
+        matched_stops=matched_stops,
+        unmatched_stop_count=unmatched_stop_count,
+        total_lines=len(graph.get("lines") or []),
+        total_connections=len(graph.get("connections") or []),
+        total_trips=len(graph.get("trips") or []),
+        total_stop_times=total_stop_times,
+        invalid_trip_count=invalid_trip_count,
+        dropped_trip_count=dropped_trip_count,
+        descending_time_trip_count=descending_time_trip_count,
+        duplicate_consecutive_stop_count=total_duplicate_consecutive_stops,
+        invalid_stop_times=total_invalid_stop_times,
+        invalid_validity_count=lines_with_invalid_validity,
+        empty_service_bucket_count=empty_service_bucket_count + lines_without_service_bucket,
+        line_without_trip_count=line_without_trip_count,
+        warnings_count=len(graph.get("warnings") or []),
+        coverage_ratio=coverage_ratio,
+    ).to_dict()

@@ -11,9 +11,20 @@ import com.example.smarttourism.data.local.PendingPoiVisitSyncEntity
 import com.example.smarttourism.data.local.PendingRouteSessionSyncEntity
 import com.example.smarttourism.data.local.RouteHistoryEntryEntity
 import com.example.smarttourism.data.model.CacheEnvelopeType
+import com.example.smarttourism.data.remote.api.PoiApi
+import com.example.smarttourism.data.remote.dto.CityDto
+import com.example.smarttourism.data.remote.dto.PoiDto
+import com.example.smarttourism.data.remote.dto.RouteFeedbackDto
 import com.example.smarttourism.data.remote.dto.RouteFeedbackRequest
+import com.example.smarttourism.data.remote.dto.RouteLegDto
+import com.example.smarttourism.data.remote.dto.RouteLegRequest
+import com.example.smarttourism.data.remote.dto.RouteRequest
+import com.example.smarttourism.data.remote.dto.RouteResponse
 import com.example.smarttourism.data.remote.dto.RouteSessionCreateRequest
+import com.example.smarttourism.data.remote.dto.RouteSessionDto
+import com.example.smarttourism.data.remote.dto.RouteSessionPoiDto
 import com.example.smarttourism.data.remote.dto.RouteSessionPoiVisitRequest
+import com.example.smarttourism.data.remote.dto.RouteSessionUpdateRequest
 import com.example.smarttourism.features.planner.data.mapper.toDto
 import com.example.smarttourism.features.planner.sampleSnapshot
 import com.google.gson.Gson
@@ -121,6 +132,59 @@ class OfflineCacheRepositoryEnvelopeTest {
         assertEquals(3, store.getPendingSyncOperationCount())
     }
 
+    @Test
+    fun syncPendingOperationsDeletesSuccessfullySyncedOfflineQueueItems() = runBlocking {
+        val dao = FakeOfflineCacheDao()
+        val store = OfflineCacheStore(dao = dao, gson = Gson())
+        val snapshot = sampleSnapshot()
+
+        store.enqueuePendingRouteSession(
+            RouteSessionCreateRequest(
+                id = "session-1",
+                device_id = "device-1",
+                city = "nitra",
+                status = "in_progress",
+                start_lat = snapshot.response.start.lat,
+                start_lon = snapshot.response.start.lon,
+                available_minutes = snapshot.response.availableMinutes,
+                pace = snapshot.response.pace,
+                return_to_start = snapshot.response.returnToStart,
+                opening_hours_enabled = snapshot.response.respectOpeningHours,
+                started_at = "2026-05-19T10:00:00",
+                finished_at = null,
+                used_minutes = snapshot.response.usedMinutes,
+                total_walk_minutes = snapshot.response.totalWalkMinutes,
+                total_visit_minutes = snapshot.response.totalVisitMinutes,
+                route_snapshot_json = snapshot.response.toDto()
+            )
+        )
+        store.enqueuePendingPoiVisit(
+            sessionId = "session-1",
+            poiId = 1,
+            request = RouteSessionPoiVisitRequest(
+                visited_at = "2026-05-19T10:15:00",
+                skipped = false
+            )
+        )
+        store.enqueuePendingFeedback(
+            sessionId = "session-1",
+            request = RouteFeedbackRequest(
+                rating = 5,
+                was_convenient = true,
+                too_much_walking = false,
+                pois_were_interesting = true
+            )
+        )
+
+        val summary = store.syncPendingOperations(SuccessfulOfflineSyncApi())
+
+        assertFalse(summary.hasFailures)
+        assertEquals(1, summary.syncedRouteSessions)
+        assertEquals(1, summary.syncedPoiVisits)
+        assertEquals(1, summary.syncedFeedback)
+        assertEquals(0, store.getPendingSyncOperationCount())
+    }
+
     private class FakeOfflineCacheDao : OfflineCacheDao {
         var lastRoute: CachedLastRouteEntity? = null
         private val routeSessions = linkedMapOf<String, PendingRouteSessionSyncEntity>()
@@ -212,5 +276,86 @@ class OfflineCacheRepositoryEnvelopeTest {
 
         override suspend fun getPendingPoiVisitSyncCount(): Int =
             poiVisits.size
+    }
+
+    private class SuccessfulOfflineSyncApi : PoiApi {
+        override suspend fun getCities(): List<CityDto> =
+            error("Unused in offline sync tests")
+
+        override suspend fun getPois(city: String): List<PoiDto> =
+            error("Unused in offline sync tests")
+
+        override suspend fun generateRoute(request: RouteRequest): RouteResponse =
+            error("Unused in offline sync tests")
+
+        override suspend fun generateRouteLeg(request: RouteLegRequest): RouteLegDto =
+            error("Unused in offline sync tests")
+
+        override suspend fun createRouteSession(request: RouteSessionCreateRequest): RouteSessionDto =
+            RouteSessionDto(
+                id = request.id,
+                device_id = request.device_id,
+                city_id = 1,
+                city_name = request.city,
+                status = request.status,
+                start_lat = request.start_lat,
+                start_lon = request.start_lon,
+                available_minutes = request.available_minutes,
+                pace = request.pace,
+                return_to_start = request.return_to_start,
+                opening_hours_enabled = request.opening_hours_enabled,
+                started_at = request.started_at ?: "2026-05-19T10:00:00",
+                finished_at = request.finished_at,
+                used_minutes = request.used_minutes,
+                total_walk_minutes = request.total_walk_minutes,
+                total_visit_minutes = request.total_visit_minutes,
+                route_snapshot_json = null,
+                pois = emptyList(),
+                feedback = emptyList()
+            )
+
+        override suspend fun updateRouteSession(
+            sessionId: String,
+            request: RouteSessionUpdateRequest
+        ): RouteSessionDto =
+            error("Unused in offline sync tests")
+
+        override suspend fun markRouteSessionPoiVisited(
+            sessionId: String,
+            poiId: Int,
+            request: RouteSessionPoiVisitRequest
+        ): RouteSessionPoiDto =
+            RouteSessionPoiDto(
+                id = 1,
+                session_id = sessionId,
+                poi_id = poiId,
+                visit_order = 1,
+                planned_arrival_min = null,
+                planned_departure_min = null,
+                visited = true,
+                visited_at = request.visited_at,
+                skipped = request.skipped
+            )
+
+        override suspend fun saveRouteFeedback(
+            sessionId: String,
+            request: RouteFeedbackRequest
+        ): RouteFeedbackDto =
+            RouteFeedbackDto(
+                id = 1,
+                session_id = sessionId,
+                rating = request.rating,
+                was_convenient = request.was_convenient,
+                too_much_walking = request.too_much_walking,
+                pois_were_interesting = request.pois_were_interesting,
+                comment = request.comment,
+                created_at = "2026-05-19T10:20:00"
+            )
+
+        override suspend fun getRouteSession(sessionId: String): RouteSessionDto =
+            error("Unused in offline sync tests")
+
+        override suspend fun getRouteSessions(deviceId: String): List<RouteSessionDto> =
+            error("Unused in offline sync tests")
     }
 }

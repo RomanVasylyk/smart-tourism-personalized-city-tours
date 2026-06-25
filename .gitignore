@@ -14,9 +14,13 @@ local.properties
 *.iml
 
 # Data
-pipeline/data/raw/
-pipeline/data/processed/
-pipeline/data/temp/
+pipeline/data/**
+!pipeline/data/
+!pipeline/data/README.md
+!pipeline/data/sample/
+!pipeline/data/sample/**
+!pipeline/data/fixtures/
+!pipeline/data/fixtures/**
 routing-data/
 
 # OS

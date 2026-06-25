@@ -2,82 +2,19 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from psycopg import Error as PsycopgError
-
+from app.core.logging import get_logger
 from app.db.database import get_connection
 from app.services.city_profiles import city_profile_by_token
+from psycopg import Error as PsycopgError
 
-FEEDBACK_STATS_SCHEMA_SQL = """
-CREATE TABLE IF NOT EXISTS poi_feedback_stats (
-    poi_id INTEGER PRIMARY KEY REFERENCES pois(id) ON DELETE CASCADE,
-    session_count INTEGER NOT NULL DEFAULT 0,
-    feedback_count INTEGER NOT NULL DEFAULT 0,
-    planned_count INTEGER NOT NULL DEFAULT 0,
-    visited_count INTEGER NOT NULL DEFAULT 0,
-    skipped_count INTEGER NOT NULL DEFAULT 0,
-    completed_session_count INTEGER NOT NULL DEFAULT 0,
-    average_rating DOUBLE PRECISION,
-    completion_rate DOUBLE PRECISION,
-    skip_rate DOUBLE PRECISION,
-    too_much_walking_rate DOUBLE PRECISION,
-    interesting_pois_rate DOUBLE PRECISION,
-    convenient_rate DOUBLE PRECISION,
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
+logger = get_logger(__name__)
 
-CREATE TABLE IF NOT EXISTS category_feedback_stats (
-    city_id INTEGER NOT NULL REFERENCES cities(id) ON DELETE CASCADE,
-    category TEXT NOT NULL,
-    session_count INTEGER NOT NULL DEFAULT 0,
-    feedback_count INTEGER NOT NULL DEFAULT 0,
-    planned_count INTEGER NOT NULL DEFAULT 0,
-    visited_count INTEGER NOT NULL DEFAULT 0,
-    skipped_count INTEGER NOT NULL DEFAULT 0,
-    completed_session_count INTEGER NOT NULL DEFAULT 0,
-    average_rating DOUBLE PRECISION,
-    completion_rate DOUBLE PRECISION,
-    skip_rate DOUBLE PRECISION,
-    too_much_walking_rate DOUBLE PRECISION,
-    interesting_pois_rate DOUBLE PRECISION,
-    convenient_rate DOUBLE PRECISION,
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    PRIMARY KEY (city_id, category)
-);
-
-CREATE TABLE IF NOT EXISTS city_feedback_stats (
-    city_id INTEGER PRIMARY KEY REFERENCES cities(id) ON DELETE CASCADE,
-    session_count INTEGER NOT NULL DEFAULT 0,
-    feedback_count INTEGER NOT NULL DEFAULT 0,
-    planned_count INTEGER NOT NULL DEFAULT 0,
-    skipped_count INTEGER NOT NULL DEFAULT 0,
-    completed_session_count INTEGER NOT NULL DEFAULT 0,
-    average_rating DOUBLE PRECISION,
-    completion_rate DOUBLE PRECISION,
-    skip_rate DOUBLE PRECISION,
-    too_much_walking_rate DOUBLE PRECISION,
-    interesting_pois_rate DOUBLE PRECISION,
-    convenient_rate DOUBLE PRECISION,
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-CREATE TABLE IF NOT EXISTS transport_mode_feedback_stats (
-    city_id INTEGER NOT NULL REFERENCES cities(id) ON DELETE CASCADE,
-    transport_mode TEXT NOT NULL,
-    session_count INTEGER NOT NULL DEFAULT 0,
-    feedback_count INTEGER NOT NULL DEFAULT 0,
-    planned_count INTEGER NOT NULL DEFAULT 0,
-    skipped_count INTEGER NOT NULL DEFAULT 0,
-    completed_session_count INTEGER NOT NULL DEFAULT 0,
-    average_rating DOUBLE PRECISION,
-    completion_rate DOUBLE PRECISION,
-    skip_rate DOUBLE PRECISION,
-    too_much_walking_rate DOUBLE PRECISION,
-    interesting_pois_rate DOUBLE PRECISION,
-    convenient_rate DOUBLE PRECISION,
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    PRIMARY KEY (city_id, transport_mode)
-);
-"""
+REQUIRED_FEEDBACK_STATS_TABLES = (
+    "poi_feedback_stats",
+    "category_feedback_stats",
+    "city_feedback_stats",
+    "transport_mode_feedback_stats",
+)
 
 POI_FEEDBACK_RECOMPUTE_SQL = """
 INSERT INTO poi_feedback_stats (
@@ -282,7 +219,7 @@ class PlannerFeedbackStats:
     completed_session_count: int = 0
 
     @classmethod
-    def from_row(cls, row: dict | None, prefix: str = "") -> "PlannerFeedbackStats":
+    def from_row(cls, row: dict | None, prefix: str = "") -> PlannerFeedbackStats:
         if row is None:
             return cls()
 
@@ -315,8 +252,7 @@ class PlannerFeedbackProfile:
 def ensure_feedback_stats_schema() -> None:
     with get_connection() as conn:
         with conn.cursor() as cur:
-            cur.execute(FEEDBACK_STATS_SCHEMA_SQL)
-        conn.commit()
+            ensure_feedback_stats_tables(cur)
 
 
 def recompute_feedback_stats(city: str | None = None) -> dict[str, int | str | None]:
@@ -328,7 +264,7 @@ def recompute_feedback_stats(city: str | None = None) -> dict[str, int | str | N
 
     with get_connection() as conn:
         with conn.cursor() as cur:
-            cur.execute(FEEDBACK_STATS_SCHEMA_SQL)
+            ensure_feedback_stats_tables(cur)
 
             if city_name is not None:
                 cur.execute(
@@ -348,7 +284,9 @@ def recompute_feedback_stats(city: str | None = None) -> dict[str, int | str | N
                 city_name = city_row["name"]
                 _delete_city_feedback_stats(cur, city_id)
             else:
-                cur.execute("TRUNCATE poi_feedback_stats, category_feedback_stats, city_feedback_stats, transport_mode_feedback_stats")
+                cur.execute(
+                    "TRUNCATE poi_feedback_stats, category_feedback_stats, city_feedback_stats, transport_mode_feedback_stats"
+                )
 
             params = {"city_id": city_id}
             cur.execute(POI_FEEDBACK_RECOMPUTE_SQL, params)
@@ -417,6 +355,10 @@ def load_planner_feedback_profile(city: str, transport_mode: str) -> PlannerFeed
                 )
                 row = cur.fetchone()
     except PsycopgError:
+        logger.exception(
+            "Failed to load planner feedback profile; falling back to neutral feedback stats",
+            extra={"city": city, "transport_mode": transport_mode},
+        )
         return PlannerFeedbackProfile()
 
     if row is None:
@@ -441,3 +383,17 @@ def _delete_city_feedback_stats(cur, city_id: int) -> None:
     cur.execute("DELETE FROM category_feedback_stats WHERE city_id = %s", (city_id,))
     cur.execute("DELETE FROM city_feedback_stats WHERE city_id = %s", (city_id,))
     cur.execute("DELETE FROM transport_mode_feedback_stats WHERE city_id = %s", (city_id,))
+
+
+def ensure_feedback_stats_tables(cur) -> None:
+    missing_tables: list[str] = []
+    for table_name in REQUIRED_FEEDBACK_STATS_TABLES:
+        cur.execute("SELECT to_regclass(%s) IS NOT NULL AS exists", (table_name,))
+        row = cur.fetchone()
+        if not row or not row["exists"]:
+            missing_tables.append(table_name)
+
+    if missing_tables:
+        raise RuntimeError(
+            "Feedback stats schema is missing. Run Alembic migrations first: " + ", ".join(missing_tables)
+        )

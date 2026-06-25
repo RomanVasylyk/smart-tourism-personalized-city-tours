@@ -1,3 +1,5 @@
+from hashlib import sha256
+
 from app.main import app
 from app.services.routing_service import RoutePoint, RoutingLeg
 from app.services.transport_planner import (
@@ -98,6 +100,40 @@ def test_health_returns_ok():
 
     assert response.status_code == 200
     assert response.json() == {"status": "ok"}
+
+
+def test_openapi_declares_explicit_response_contracts():
+    response = client.get("/openapi.json")
+
+    assert response.status_code == 200
+    openapi = response.json()
+    schemas = openapi["components"]["schemas"]
+
+    for schema_name in (
+        "CityResponse",
+        "PoiResponse",
+        "RouteResponse",
+        "RouteSessionResponse",
+        "RouteSnapshotResponse",
+        "PlannerScoreBreakdownResponse",
+    ):
+        assert schema_name in schemas
+
+    cities_response = openapi["paths"]["/cities"]["get"]["responses"]["200"]
+    assert (
+        cities_response["content"]["application/json"]["schema"]["items"]["$ref"] == "#/components/schemas/CityResponse"
+    )
+
+    route_response = openapi["paths"]["/route/generate"]["post"]["responses"]["200"]
+    assert route_response["content"]["application/json"]["schema"]["$ref"] == "#/components/schemas/RouteResponse"
+
+    session_response = openapi["paths"]["/route-sessions/{session_id}"]["get"]["responses"]["200"]
+    assert (
+        session_response["content"]["application/json"]["schema"]["$ref"] == "#/components/schemas/RouteSessionResponse"
+    )
+
+    route_snapshot_schema = schemas["RouteSessionResponse"]["properties"]["route_snapshot_json"]["anyOf"][0]
+    assert route_snapshot_schema["$ref"] == "#/components/schemas/RouteSnapshotResponse"
 
 
 def test_get_pois_returns_database_rows(monkeypatch):
@@ -299,6 +335,59 @@ def test_generate_route_can_return_transit_segments(monkeypatch):
     assert body["legs"][0]["mode"] == "transit"
     assert [segment["mode"] for segment in body["legs"][0]["segments"]] == ["walk", "transit", "walk"]
     assert body["legs"][0]["segments"][1]["line_name"] == "Bus 9"
+
+
+def test_generate_route_falls_back_to_walking_when_transport_graph_is_missing(monkeypatch):
+    rows = [
+        {
+            "id": 13,
+            "name": "Remote viewpoint",
+            "category": "viewpoint",
+            "lat": 48.3425,
+            "lon": 18.1049,
+            "opening_hours_raw": None,
+            "visit_duration_min": 20,
+            "base_score": 0.95,
+            "wikipedia_url": None,
+        }
+    ]
+    city_profile = {
+        "transport": {
+            "mhd_enabled": True,
+            "provider": "test_mhd",
+            "mode": "static",
+            "min_direct_distance_meters": 1000,
+        }
+    }
+
+    monkeypatch.setattr("app.repositories.poi_candidates.get_connection", lambda: FakeConnection(rows))
+    monkeypatch.setattr("app.services.route_planner.get_routing_service", lambda: SlowWalkingRoutingService())
+    monkeypatch.setattr("app.services.route_planner.city_profile_by_token", lambda city: city_profile)
+    monkeypatch.setattr("app.domain.transport.nearest_stops.load_transport_graph", lambda city: None)
+
+    response = client.post(
+        "/route/generate",
+        json={
+            "city": "nitra",
+            "start_lat": 48.3076,
+            "start_lon": 18.0845,
+            "available_minutes": 160,
+            "interests": ["viewpoint"],
+            "pace": "normal",
+            "return_to_start": False,
+            "start_datetime": "2026-04-19T10:00",
+            "respect_opening_hours": True,
+            "transport_mode": "walk_or_mhd",
+        },
+    )
+
+    body = response.json()
+
+    assert response.status_code == 200
+    assert body["transport_mode"] == "walk_or_mhd"
+    assert body["legs"][0]["mode"] == "walk"
+    assert body["legs"][0]["routing_source"] == "test_walk"
+    assert [segment["mode"] for segment in body["legs"][0]["segments"]] == ["walk"]
 
 
 def test_generate_route_prefers_exact_trip_times_when_available(monkeypatch):
@@ -506,3 +595,32 @@ def test_get_route_sessions_rejects_mismatched_device_header():
 
     assert response.status_code == 403
     assert response.json()["detail"] == "Device id does not match authenticated device."
+
+
+def test_get_route_session_requires_matching_device_token(monkeypatch):
+    session_id = "00000000-0000-4000-8000-000000000001"
+    owner_token_hash = sha256(b"owner-token").hexdigest()
+
+    def fake_get_route_session(*, session_id, device_id, device_token_hash):
+        if device_id != "device-1" or device_token_hash != owner_token_hash:
+            return None
+        return {
+            "id": session_id,
+            "device_id": device_id,
+            "status": "in_progress",
+        }
+
+    monkeypatch.setattr("app.repositories.route_sessions.get_route_session", fake_get_route_session)
+
+    rejected_response = client.get(
+        f"/route-sessions/{session_id}",
+        headers=route_session_headers(device_id="device-1", device_token="wrong-token"),
+    )
+    accepted_response = client.get(
+        f"/route-sessions/{session_id}",
+        headers=route_session_headers(device_id="device-1", device_token="owner-token"),
+    )
+
+    assert rejected_response.status_code == 404
+    assert accepted_response.status_code == 200
+    assert accepted_response.json()["device_id"] == "device-1"

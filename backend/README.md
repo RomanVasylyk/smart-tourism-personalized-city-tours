@@ -8,6 +8,6 @@ Run schema migrations from the repository root:
 python -m alembic upgrade head
 ```
 
-The baseline migration reuses `backend/sql/init.sql` for the current schema.
-Future schema changes should be added as Alembic revisions under
-`backend/migrations/versions`.
+Alembic migrations are the single source of truth for the database schema.
+Future schema changes should be added as revisions under `backend/migrations/versions`.
+The Docker backend container runs `alembic upgrade head` before starting the API.
