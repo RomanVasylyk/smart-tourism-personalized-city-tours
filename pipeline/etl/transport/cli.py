@@ -11,6 +11,7 @@ from .parser import add_issue, load_osm_stops, parse_document_variants
 from .paths import load_manifest, save_outputs, transport_paths
 from .text import load_stop_aliases
 
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Normalize transport PDFs and OSM stops into a transport graph with warnings and validation reports.",

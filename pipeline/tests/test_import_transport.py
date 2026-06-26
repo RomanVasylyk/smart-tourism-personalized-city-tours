@@ -44,8 +44,8 @@ def test_build_stop_query_includes_all_transport_query_areas():
 
     query = build_stop_query(city)
 
-    assert '(10.0,20.0,30.0,40.0);' in query
-    assert '(11.0,21.0,31.0,41.0);' in query
+    assert "(10.0,20.0,30.0,40.0);" in query
+    assert "(11.0,21.0,31.0,41.0);" in query
     assert query.count('node["highway"="bus_stop"]') == 2
     assert query.count('way["public_transport"="platform"]') == 2
     assert query.count('node["public_transport"="stop_position"]["bus"="yes"]') == 2

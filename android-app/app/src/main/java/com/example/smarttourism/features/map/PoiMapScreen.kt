@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.example.smarttourism.features.map
 
 import androidx.compose.foundation.layout.Box

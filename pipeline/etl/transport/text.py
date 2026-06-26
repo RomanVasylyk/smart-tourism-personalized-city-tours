@@ -14,8 +14,6 @@ from .constants import (
     METADATA_CONTAINS_MARKERS,
     METADATA_EXACT_MARKERS,
     PLATFORM_SUFFIX_PATTERNS,
-    ROOT,
-    SERVICE_BUCKETS,
     STOP_ALIAS_CONFIG_FILE,
     STOP_NAME_ABBREVIATIONS,
     STOP_NOTE_TAIL_PATTERN,
@@ -26,25 +24,27 @@ from .constants import (
 )
 from .models import StopRow
 
+
 def strip_accents(value: str) -> str:
-    return "".join(
-        char for char in unicodedata.normalize("NFKD", value)
-        if not unicodedata.combining(char)
-    )
+    return "".join(char for char in unicodedata.normalize("NFKD", value) if not unicodedata.combining(char))
+
 
 def normalize_display_text(value: str) -> str:
     value = str(value or "")
-    value = value.replace("\u00A0", " ").replace("–", "-").replace("—", "-").replace("−", "-")
+    value = value.replace("\u00a0", " ").replace("–", "-").replace("—", "-").replace("−", "-")
     value = " ".join(value.split())
     value = re.sub(r"\s*([(),/;-])\s*", r" \1 ", value)
     value = re.sub(r"\s+", " ", value)
     return value.strip(" ,;/")
 
+
 def normalize_connection_rule_key(value: str) -> str:
     return normalize_display_text(value).casefold()
 
+
 def alias_lookup_key(value: str) -> str:
     return normalize_display_text(value).casefold()
+
 
 def load_stop_aliases(city_slug: str) -> dict[str, str]:
     if not STOP_ALIAS_CONFIG_FILE.exists():
@@ -62,9 +62,11 @@ def load_stop_aliases(city_slug: str) -> dict[str, str]:
             merged_aliases[alias_lookup_key(str(alias))] = normalize_display_text(str(canonical))
     return merged_aliases
 
+
 def apply_stop_alias(value: str, stop_aliases: dict[str, str]) -> str:
     normalized_value = normalize_display_text(value)
     return stop_aliases.get(alias_lookup_key(normalized_value), normalized_value)
+
 
 def normalized_platform_token(value: str | None) -> str | None:
     if not value:
@@ -73,12 +75,14 @@ def normalized_platform_token(value: str | None) -> str | None:
     token = re.sub(r"[^A-Z0-9]", "", token)
     return token or None
 
+
 def strip_row_prefix(value: str) -> str:
     normalized_value = normalize_display_text(value)
     match = STOP_ROW_PATTERN.match(normalized_value)
     if match is None:
         return normalized_value.strip()
     return match.group("body").strip()
+
 
 def split_stop_name_components(value: str, stop_aliases: dict[str, str] | None = None) -> tuple[str, str | None]:
     stop_aliases = stop_aliases or {}
@@ -92,6 +96,7 @@ def split_stop_name_components(value: str, stop_aliases: dict[str, str] | None =
         canonical_value = canonical_value[: match.start()].strip(" ,;/()-")
         break
     return canonical_value.strip(), platform_token
+
 
 def normalize_stop_base_name(value: str) -> str:
     normalized_value = strip_accents(normalize_display_text(value)).upper()
@@ -109,12 +114,14 @@ def normalize_stop_base_name(value: str) -> str:
     normalized_value = re.sub(r"\s+", " ", normalized_value)
     return normalized_value.strip().lower()
 
+
 def normalize_stop_name(value: str, stop_aliases: dict[str, str] | None = None) -> str:
     base_name, platform_token = split_stop_name_components(value, stop_aliases)
     normalized_base_name = normalize_stop_base_name(base_name)
     if platform_token:
         return f"{normalized_base_name} platform {platform_token.lower()}"
     return normalized_base_name
+
 
 def lookup_local_connection_rule(city: dict[str, Any], from_stop_name: str, to_stop_name: str) -> dict[str, Any] | None:
     city_slug = str(city.get("slug") or "").strip().casefold()
@@ -130,6 +137,7 @@ def lookup_local_connection_rule(city: dict[str, Any], from_stop_name: str, to_s
         ):
             return rule
     return None
+
 
 def build_stop_match_keys(
     stop_name: str,
@@ -157,6 +165,7 @@ def build_stop_match_keys(
                 keys.add(f"{locality_stripped_base_name} platform {ref_token.lower()}")
     return {key for key in keys if key}
 
+
 def build_city_prefixed_stop_match_keys(
     stop_name: str,
     city_name: str,
@@ -174,10 +183,11 @@ def build_city_prefixed_stop_match_keys(
     if not normalized_stop_name_key.startswith(normalized_city_name_key):
         return set()
 
-    remainder = normalized_stop_name[len(normalized_city_name):].strip(" ,;/")
+    remainder = normalized_stop_name[len(normalized_city_name) :].strip(" ,;/")
     if not remainder:
         return set()
     return build_stop_match_keys(remainder, ref, stop_aliases)
+
 
 def detect_service_bucket(page_text: str) -> str:
     normalized_text = strip_accents(page_text).upper()
@@ -188,6 +198,7 @@ def detect_service_bucket(page_text: str) -> str:
     if "SOBOTY" in normalized_text or "NEDELE" in normalized_text:
         return "weekends_holidays"
     return "all_days"
+
 
 def split_page_sections(page_text: str) -> list[tuple[str, str]]:
     sections: list[tuple[str, str]] = []
@@ -213,6 +224,7 @@ def split_page_sections(page_text: str) -> list[tuple[str, str]]:
         return sections
     return [(detect_service_bucket(page_text), page_text)]
 
+
 def parse_date(raw_value: str | None) -> str | None:
     if not raw_value:
         return None
@@ -221,17 +233,20 @@ def parse_date(raw_value: str | None) -> str | None:
     except ValueError:
         return None
 
+
 def parse_validity(text: str) -> tuple[str | None, str | None]:
     match = VALIDITY_PATTERN.search(strip_accents(text))
     if not match:
         return None, None
     return parse_date(match.group(1)), parse_date(match.group(2))
 
+
 def extract_line_number(lines: list[str], fallback_line_number: str) -> str:
     for line in lines[:5]:
         if LINE_NUMBER_PATTERN.fullmatch(strip_accents(line).strip()):
             return str(int(strip_accents(line).strip()))
     return fallback_line_number
+
 
 def extract_time_columns(raw_text: str) -> list[int | None]:
     columns: list[int | None] = []
@@ -250,11 +265,14 @@ def extract_time_columns(raw_text: str) -> list[int | None]:
         columns.append((hour * 60) + minute)
     return columns
 
+
 def contains_time_tokens(value: str) -> bool:
     return TIME_TOKEN_PATTERN.search(value) is not None
 
+
 def looks_like_stop_row_start(value: str) -> bool:
     return STOP_ROW_PATTERN.match(normalize_display_text(value)) is not None
+
 
 def is_metadata_line(value: str) -> bool:
     normalized_value = strip_accents(normalize_display_text(value)).upper()
@@ -269,6 +287,7 @@ def is_metadata_line(value: str) -> bool:
     if re.fullmatch(r"[A-Z]{1,3}(?:\s+[A-Z]{1,3})+", normalized_value):
         return True
     return False
+
 
 def combine_wrapped_row_lines(page_text: str) -> list[str]:
     logical_rows: list[str] = []
@@ -303,6 +322,7 @@ def combine_wrapped_row_lines(page_text: str) -> list[str]:
 
     return logical_rows
 
+
 def parse_stop_row_text(row_text: str) -> StopRow | None:
     match = STOP_ROW_PATTERN.match(normalize_display_text(row_text))
     if match is None:
@@ -320,6 +340,7 @@ def parse_stop_row_text(row_text: str) -> StopRow | None:
 
     return StopRow(name=normalize_display_text(stop_name), times=times)
 
+
 def parse_stop_rows(page_text: str) -> list[StopRow]:
     rows: list[StopRow] = []
     for row_text in combine_wrapped_row_lines(page_text):
@@ -327,6 +348,7 @@ def parse_stop_rows(page_text: str) -> list[StopRow]:
         if parsed_row is not None:
             rows.append(parsed_row)
     return rows
+
 
 def compact_repeated_stop_rows(rows: list[StopRow]) -> list[StopRow]:
     total_rows = len(rows)
@@ -343,6 +365,7 @@ def compact_repeated_stop_rows(rows: list[StopRow]) -> list[StopRow]:
 
     return rows
 
+
 def collapse_identical_consecutive_rows(rows: list[StopRow]) -> list[StopRow]:
     collapsed_rows: list[StopRow] = []
     for row in rows:
@@ -350,6 +373,7 @@ def collapse_identical_consecutive_rows(rows: list[StopRow]) -> list[StopRow]:
             continue
         collapsed_rows.append(row)
     return collapsed_rows
+
 
 def collapse_zero_delta_duplicate_name_rows(rows: list[StopRow]) -> list[StopRow]:
     collapsed_rows: list[StopRow] = []
@@ -375,6 +399,7 @@ def collapse_zero_delta_duplicate_name_rows(rows: list[StopRow]) -> list[StopRow
 
     return collapsed_rows
 
+
 def should_split_row_block(previous_row: StopRow, current_row: StopRow) -> bool:
     comparable_deltas = [
         current_time - previous_time
@@ -390,6 +415,7 @@ def should_split_row_block(previous_row: StopRow, current_row: StopRow) -> bool:
     if len(comparable_deltas) >= 4 and len(negative_deltas) * 4 >= len(comparable_deltas) * 3:
         return True
     return False
+
 
 def split_stop_row_blocks(rows: list[StopRow]) -> list[list[StopRow]]:
     if len(rows) < 2:

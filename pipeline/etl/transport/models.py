@@ -23,6 +23,87 @@ class VariantAccumulator:
 
 
 @dataclass(frozen=True)
+class MatchedStopAssignment:
+    original_index: int
+    stop_record: dict[str, Any]
+    provider_stop_name: str
+
+    @property
+    def graph_stop_key(self) -> str:
+        return str(self.stop_record["graph_stop_key"])
+
+    @property
+    def name(self) -> str:
+        return str(self.stop_record["name"])
+
+    @property
+    def lat(self) -> float:
+        return float(self.stop_record["lat"])
+
+    @property
+    def lon(self) -> float:
+        return float(self.stop_record["lon"])
+
+
+@dataclass
+class TripStopDraft:
+    sequence: int
+    graph_stop_key: str
+    provider_stop_name: str
+    time_minutes: int
+
+    def to_record(self) -> GraphTripStopTimeRecord:
+        return GraphTripStopTimeRecord(
+            sequence=self.sequence,
+            graph_stop_key=self.graph_stop_key,
+            provider_stop_name=self.provider_stop_name,
+            time_minutes=self.time_minutes,
+        )
+
+
+@dataclass
+class GraphBuildMetrics:
+    variant_count: int
+    invalid_trip_count: int = 0
+    dropped_trip_count: int = 0
+    descending_time_trip_count: int = 0
+    duplicate_consecutive_stop_count: int = 0
+    invalid_validity_count: int = 0
+    empty_service_bucket_count: int = 0
+    line_without_trip_count: int = 0
+
+    def to_dict(self) -> dict[str, int]:
+        return {
+            "variant_count": self.variant_count,
+            "invalid_trip_count": self.invalid_trip_count,
+            "dropped_trip_count": self.dropped_trip_count,
+            "descending_time_trip_count": self.descending_time_trip_count,
+            "duplicate_consecutive_stop_count": self.duplicate_consecutive_stop_count,
+            "invalid_validity_count": self.invalid_validity_count,
+            "empty_service_bucket_count": self.empty_service_bucket_count,
+            "line_without_trip_count": self.line_without_trip_count,
+        }
+
+
+@dataclass
+class UnmatchedStopRecord:
+    stop_name: str
+    normalized_name: str
+    occurrences: int = 0
+    line_numbers: set[str] = field(default_factory=set)
+    source_urls: set[str] = field(default_factory=set)
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "stop_name": self.stop_name,
+            "normalized_name": self.normalized_name,
+            "occurrences": self.occurrences,
+            "line_numbers": sorted(self.line_numbers),
+            "source_urls": sorted(self.source_urls),
+        }
+
+
+@dataclass(frozen=True)
 class GraphStopRecord:
     graph_stop_key: str
     name: str

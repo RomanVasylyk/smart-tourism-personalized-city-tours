@@ -18,7 +18,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         PendingPoiVisitSyncEntity::class
     ],
     version = 4,
-    exportSchema = false
+    exportSchema = true
 )
 abstract class OfflineCacheDatabase : RoomDatabase() {
     abstract fun offlineCacheDao(): OfflineCacheDao

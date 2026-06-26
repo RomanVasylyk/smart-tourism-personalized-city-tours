@@ -2,10 +2,9 @@ from datetime import datetime
 from typing import Any
 from uuid import UUID
 
-from psycopg.types.json import Jsonb
-
 from app.db.database import get_connection
 from app.services.city_lookup import find_city_row
+from psycopg.types.json import Jsonb
 
 SESSION_UPDATE_FIELDS = {
     "status",
@@ -146,11 +145,7 @@ def update_route_session(
     device_token_hash: str,
     update_values: dict[str, Any],
 ) -> bool:
-    filtered_values = {
-        key: value
-        for key, value in update_values.items()
-        if key in SESSION_UPDATE_FIELDS
-    }
+    filtered_values = {key: value for key, value in update_values.items() if key in SESSION_UPDATE_FIELDS}
     if not filtered_values:
         return True
 

@@ -1,9 +1,8 @@
 import pytest
-from fastapi import HTTPException
-
 from app.services.feedback_stats import PlannerFeedbackProfile, PlannerFeedbackStats
 from app.services.route_planner import RouteGenerateRequest, generate_route
 from app.services.transport_planner import TravelPlan, TravelSegment
+from fastapi import HTTPException
 
 
 def make_candidate(

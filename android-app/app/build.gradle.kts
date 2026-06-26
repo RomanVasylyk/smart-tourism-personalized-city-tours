@@ -6,6 +6,28 @@ plugins {
     id("com.google.dagger.hilt.android")
 }
 
+fun quoted(value: String): String =
+    "\"${value.replace("\\", "\\\\").replace("\"", "\\\"")}\""
+
+val debugApiTarget = providers.gradleProperty("smartTourismDebugApiTarget")
+    .orElse("phone")
+    .get()
+    .trim()
+    .lowercase()
+
+val debugApiBaseUrl = providers.gradleProperty("smartTourismDebugApiBaseUrl")
+    .orElse(
+        when (debugApiTarget) {
+            "emulator" -> "http://10.0.2.2:8000/"
+            "phone" -> "http://127.0.0.1:8000/"
+            else -> error(
+                "Unsupported smartTourismDebugApiTarget='$debugApiTarget'. " +
+                    "Use phone, emulator, or set -PsmartTourismDebugApiBaseUrl=http://host:port/."
+            )
+        }
+    )
+    .get()
+
 android {
     namespace = "com.example.smarttourism"
     compileSdk = 35
@@ -25,7 +47,7 @@ android {
 
     buildTypes {
         debug {
-            buildConfigField("String", "API_BASE_URL", "\"http://10.0.2.2:8000/\"")
+            buildConfigField("String", "API_BASE_URL", quoted(debugApiBaseUrl))
         }
         create("staging") {
             initWith(getByName("debug"))
@@ -57,6 +79,14 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+    sourceSets {
+        getByName("androidTest").assets.srcDir("$projectDir/schemas")
+    }
+}
+
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
+    arg("room.incremental", "true")
 }
 
 dependencies {
@@ -80,9 +110,11 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 
     testImplementation("junit:junit:4.13.2")
+    androidTestImplementation("androidx.test:core:1.6.1")
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
+    androidTestImplementation("androidx.room:room-testing:2.6.1")
 
     implementation("org.maplibre.gl:android-sdk:13.0.2")
     implementation("com.squareup.retrofit2:retrofit:3.0.0")

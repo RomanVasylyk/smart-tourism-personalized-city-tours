@@ -8,23 +8,28 @@ TRAVEL_MINUTE_PENALTY = 0.35
 REPEAT_CATEGORY_PENALTY = 0.8
 PREFERRED_POI_BONUS = 32.0
 
+
 def clamp(value: float, minimum: float, maximum: float) -> float:
     return max(minimum, min(maximum, value))
+
 
 def rating_signal(value: float | None) -> float:
     if value is None:
         return 0.0
     return clamp((value - 3.0) / 2.0, -1.0, 1.0)
 
+
 def rate_signal(value: float | None, neutral: float = 0.5) -> float:
     if value is None:
         return 0.0
     return clamp(value - neutral, -1.0, 1.0)
 
+
 def stats_confidence(stats: PlannerFeedbackStats, full_weight_after: int) -> float:
     if full_weight_after <= 0:
         return 1.0
     return clamp(stats.sample_size / full_weight_after, 0.0, 1.0)
+
 
 def walking_discomfort_signal(
     feedback_profile: PlannerFeedbackProfile,
@@ -41,6 +46,7 @@ def walking_discomfort_signal(
         )
 
     return discomfort
+
 
 def score_candidate(
     poi: dict,
@@ -65,12 +71,10 @@ def score_candidate(
     repeat_penalty = REPEAT_CATEGORY_PENALTY * category_counts.get(poi["category"], 0)
 
     poi_bonus = poi_confidence * (
-        (rating_signal(poi_stats.average_rating) * 1.8)
-        + (rate_signal(poi_stats.interesting_pois_rate) * 1.3)
+        (rating_signal(poi_stats.average_rating) * 1.8) + (rate_signal(poi_stats.interesting_pois_rate) * 1.3)
     )
     category_bonus = category_confidence * (
-        (rating_signal(category_stats.average_rating) * 0.9)
-        + (rate_signal(category_stats.interesting_pois_rate) * 0.8)
+        (rating_signal(category_stats.average_rating) * 0.9) + (rate_signal(category_stats.interesting_pois_rate) * 0.8)
     )
     completion_bonus = (
         (poi_confidence * rate_signal(poi_stats.completion_rate) * 2.0)
@@ -130,6 +134,7 @@ def score_candidate(
         "repeat_penalty": repeat_penalty,
         "final_score": final_score,
     }
+
 
 def rounded_score_breakdown(score_breakdown: dict[str, float]) -> dict[str, float]:
     return {key: round(value, 3) for key, value in score_breakdown.items()}

@@ -1,7 +1,5 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Header
-
 from app.repositories.cities import list_city_rows
 from app.repositories.pois import list_poi_rows
 from app.schemas.responses import (
@@ -30,6 +28,7 @@ from app.services.route_sessions import (
     save_route_feedback,
     update_route_session,
 )
+from fastapi import APIRouter, Header
 
 router = APIRouter()
 

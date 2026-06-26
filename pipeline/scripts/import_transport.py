@@ -64,16 +64,11 @@ def fetch_overpass_query(session: requests.Session, label: str, query: str) -> d
                 try:
                     return response.json()
                 except ValueError as exc:
-                    errors.append(
-                        f"{url} [{label}] attempt {attempt}/{MAX_ATTEMPTS_PER_URL}: invalid JSON: {exc}"
-                    )
+                    errors.append(f"{url} [{label}] attempt {attempt}/{MAX_ATTEMPTS_PER_URL}: invalid JSON: {exc}")
                     break
 
             body = summarize_response_body(response)
-            error = (
-                f"{url} [{label}] attempt {attempt}/{MAX_ATTEMPTS_PER_URL}: "
-                f"HTTP {response.status_code}: {body}"
-            )
+            error = f"{url} [{label}] attempt {attempt}/{MAX_ATTEMPTS_PER_URL}: " f"HTTP {response.status_code}: {body}"
             if response.status_code in RETRYABLE_STATUS_CODES and attempt < MAX_ATTEMPTS_PER_URL:
                 retry_after = response.headers.get("Retry-After")
                 wait_seconds = int(retry_after) if retry_after and retry_after.isdigit() else attempt * 2
@@ -455,9 +450,8 @@ def download_documents(documents: list[dict], output_dir: Path, session: request
             {
                 **document,
                 "filename": filename,
-                "document_format": document.get("document_format") or (
-                    "pdf" if filename.lower().endswith(".pdf") else "html"
-                ),
+                "document_format": document.get("document_format")
+                or ("pdf" if filename.lower().endswith(".pdf") else "html"),
                 "size_bytes": path.stat().st_size,
             }
         )

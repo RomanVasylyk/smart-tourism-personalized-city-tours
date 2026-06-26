@@ -6,6 +6,7 @@ from difflib import get_close_matches
 from .constants import BASE_KEY_FUZZY_CUTOFF, FULL_KEY_FUZZY_CUTOFF
 from .text import build_stop_match_keys, normalize_stop_base_name, normalize_stop_name, split_stop_name_components
 
+
 def build_osm_stop_index(stops: list[dict]) -> dict[str, list[dict]]:
     index: dict[str, list[dict]] = {}
     for stop in stops:
@@ -14,6 +15,7 @@ def build_osm_stop_index(stops: list[dict]) -> dict[str, list[dict]]:
     for candidates in index.values():
         candidates.sort(key=lambda item: (item["distance_to_center_meters"], item["osm_id"]))
     return index
+
 
 def deduplicate_candidates(candidates: list[dict]) -> list[dict]:
     deduplicated_candidates: list[dict] = []
@@ -26,11 +28,13 @@ def deduplicate_candidates(candidates: list[dict]) -> list[dict]:
         deduplicated_candidates.append(candidate)
     return deduplicated_candidates
 
+
 def fuzzy_match_key(target_key: str, available_keys: list[str], cutoff: float) -> str | None:
     if not target_key or not available_keys:
         return None
     matches = get_close_matches(target_key, available_keys, n=1, cutoff=cutoff)
     return matches[0] if matches else None
+
 
 def match_provider_stop_candidates(
     stop_name: str,
@@ -106,16 +110,21 @@ def match_provider_stop_candidates(
 
     return [], None
 
+
 def transition_cost(previous_stop: dict, current_stop: dict) -> float:
-    distance_cost = haversine_km(
-        previous_stop["lat"],
-        previous_stop["lon"],
-        current_stop["lat"],
-        current_stop["lon"],
-    ) * 1_000
+    distance_cost = (
+        haversine_km(
+            previous_stop["lat"],
+            previous_stop["lon"],
+            current_stop["lat"],
+            current_stop["lon"],
+        )
+        * 1_000
+    )
     if previous_stop["osm_id"] == current_stop["osm_id"]:
         distance_cost += 150
     return distance_cost
+
 
 def choose_variant_stop_assignments(
     stop_names: list[str],
@@ -193,17 +202,16 @@ def choose_variant_stop_assignments(
     assignments.reverse()
     return assignments
 
+
 def haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     radius_km = 6_371.0088
     lat1_rad, lon1_rad = math.radians(lat1), math.radians(lon1)
     lat2_rad, lon2_rad = math.radians(lat2), math.radians(lon2)
     delta_lat = lat2_rad - lat1_rad
     delta_lon = lon2_rad - lon1_rad
-    a = (
-        math.sin(delta_lat / 2) ** 2
-        + math.cos(lat1_rad) * math.cos(lat2_rad) * math.sin(delta_lon / 2) ** 2
-    )
+    a = math.sin(delta_lat / 2) ** 2 + math.cos(lat1_rad) * math.cos(lat2_rad) * math.sin(delta_lon / 2) ** 2
     return 2 * radius_km * math.asin(math.sqrt(a))
+
 
 def mean(values: list[float]) -> float:
     return sum(values) / len(values)

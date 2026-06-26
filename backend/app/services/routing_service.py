@@ -1,8 +1,8 @@
-import os
 from dataclasses import dataclass
 from math import asin, cos, radians, sin, sqrt
 
 import httpx
+from app.core.config import get_settings
 
 
 @dataclass(frozen=True)
@@ -31,10 +31,11 @@ class RoutingService:
         timeout_seconds: float | None = None,
         enabled: bool | None = None,
     ):
-        self.base_url = (base_url or os.getenv("ROUTING_BASE_URL", "https://router.project-osrm.org")).rstrip("/")
-        self.profile = profile or os.getenv("ROUTING_PROFILE", "foot")
-        self.timeout_seconds = timeout_seconds or float(os.getenv("ROUTING_TIMEOUT_SECONDS", "0.75"))
-        self.enabled = enabled if enabled is not None else os.getenv("ROUTING_ENABLED", "true").lower() == "true"
+        settings = get_settings()
+        self.base_url = (base_url or settings.routing_base_url).rstrip("/")
+        self.profile = profile or settings.routing_profile
+        self.timeout_seconds = timeout_seconds or settings.routing_timeout_seconds
+        self.enabled = enabled if enabled is not None else settings.routing_enabled
         self._cache: dict[tuple[float, float, float, float, str, str, bool], RoutingLeg] = {}
         self._external_routing_failed = False
 
@@ -138,7 +139,9 @@ class RoutingService:
                 return None
 
             return RoutingLeg(
-                duration_seconds=duration_seconds * pace_duration_multiplier(pace) if apply_pace_multiplier else duration_seconds,
+                duration_seconds=(
+                    duration_seconds * pace_duration_multiplier(pace) if apply_pace_multiplier else duration_seconds
+                ),
                 distance_meters=distance_meters,
                 geometry=route_coordinates,
                 source="osrm",
@@ -167,10 +170,7 @@ def haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     r = 6371.0
     dlat = radians(lat2 - lat1)
     dlon = radians(lon2 - lon1)
-    a = (
-        sin(dlat / 2) ** 2
-        + cos(radians(lat1)) * cos(radians(lat2)) * sin(dlon / 2) ** 2
-    )
+    a = sin(dlat / 2) ** 2 + cos(radians(lat1)) * cos(radians(lat2)) * sin(dlon / 2) ** 2
     c = 2 * asin(sqrt(a))
     return r * c
 

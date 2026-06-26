@@ -52,6 +52,7 @@ DAY_TOKEN_PATTERN = re.compile(
 )
 TIME_RANGE_PATTERN = re.compile(r"(\d{1,2})(?::(\d{2}))?\s*-\s*(\d{1,2})(?::(\d{2}))?")
 
+
 def normalize_opening_hours(raw_value: str) -> str:
     normalized = raw_value.strip()
     normalized = normalized.replace("–", "-").replace("—", "-")
@@ -59,6 +60,7 @@ def normalize_opening_hours(raw_value: str) -> str:
     normalized = re.sub(r"\s+", " ", normalized)
     normalized = re.sub(r"(?<=\d)\s+(?=(Mo|Tu|We|Th|Fr|Sa|Su)\b)", "; ", normalized)
     return normalized
+
 
 def parse_day_spec(day_spec: str) -> list[int]:
     days: list[int] = []
@@ -86,6 +88,7 @@ def parse_day_spec(day_spec: str) -> list[int]:
 
     return list(dict.fromkeys(days))
 
+
 def parse_time_range(raw_value: str) -> tuple[int, int] | None:
     match = TIME_RANGE_PATTERN.search(raw_value.strip())
     if not match:
@@ -106,6 +109,7 @@ def parse_time_range(raw_value: str) -> tuple[int, int] | None:
         return None
 
     return start_total, end_total
+
 
 def parse_opening_hours(raw_value: str | None) -> dict[int, list[tuple[int, int]]] | None:
     if not raw_value:
@@ -147,6 +151,7 @@ def parse_opening_hours(raw_value: str | None) -> dict[int, list[tuple[int, int]
         parsed_any = True
 
     return schedule if parsed_any else None
+
 
 def is_poi_open_for_visit(raw_value: str | None, arrival_dt: datetime, visit_minutes: int) -> bool:
     schedule = parse_opening_hours(raw_value)

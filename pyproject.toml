@@ -18,4 +18,9 @@ extend-exclude = [
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]
-ignore = ["E501"]
+ignore = ["E501", "B905"]
+
+[tool.ruff.lint.per-file-ignores]
+"backend/scripts/*.py" = ["E402"]
+"pipeline/scripts/*.py" = ["E402"]
+"pipeline/tests/*.py" = ["E402"]

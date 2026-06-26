@@ -81,10 +81,7 @@ def main() -> None:
             f"used {multimodal['used_minutes']:3d} min, POIs {multimodal['poi_count']}, "
             f"transit legs {transit_leg_count(multimodal)}"
         )
-        print(
-            f"  delta        -> saved {saved_minutes:+d} travel min, "
-            f"extra POIs {extra_pois:+d}"
-        )
+        print(f"  delta        -> saved {saved_minutes:+d} travel min, " f"extra POIs {extra_pois:+d}")
 
 
 if __name__ == "__main__":

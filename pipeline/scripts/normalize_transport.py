@@ -10,6 +10,5 @@ if str(ROOT) not in sys.path:
 from etl.transport import *  # noqa: F401,F403
 from etl.transport import main
 
-
 if __name__ == "__main__":
     main()

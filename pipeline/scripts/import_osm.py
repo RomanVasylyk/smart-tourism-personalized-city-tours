@@ -41,6 +41,7 @@ HTTP_TIMEOUT_SECONDS = 180
 MAX_ATTEMPTS_PER_URL = 2
 PAUSE_BETWEEN_BATCHES_SECONDS = 1
 
+
 def build_query(city: dict, element_type: str) -> str:
     bbox = city.get("bbox") or {}
     south = bbox.get("south")
@@ -52,9 +53,7 @@ def build_query(city: dict, element_type: str) -> str:
 
     query_lines = [f"[out:json][timeout:{QUERY_TIMEOUT_SECONDS}];", "("]
     for key, value in TAG_FILTERS:
-        query_lines.append(
-            f'  {element_type}["{key}"="{value}"]({south},{west},{north},{east});'
-        )
+        query_lines.append(f'  {element_type}["{key}"="{value}"]({south},{west},{north},{east});')
     query_lines.extend((");", "out center tags;"))
     return "\n".join(query_lines)
 
@@ -81,16 +80,11 @@ def fetch_query(session: requests.Session, label: str, query: str) -> dict:
                 try:
                     return response.json()
                 except ValueError as exc:
-                    errors.append(
-                        f"{url} [{label}] attempt {attempt}/{MAX_ATTEMPTS_PER_URL}: invalid JSON: {exc}"
-                    )
+                    errors.append(f"{url} [{label}] attempt {attempt}/{MAX_ATTEMPTS_PER_URL}: invalid JSON: {exc}")
                     break
 
             body = summarize_response_body(response)
-            error = (
-                f"{url} [{label}] attempt {attempt}/{MAX_ATTEMPTS_PER_URL}: "
-                f"HTTP {response.status_code}: {body}"
-            )
+            error = f"{url} [{label}] attempt {attempt}/{MAX_ATTEMPTS_PER_URL}: " f"HTTP {response.status_code}: {body}"
             if response.status_code in RETRYABLE_STATUS_CODES and attempt < MAX_ATTEMPTS_PER_URL:
                 retry_after = response.headers.get("Retry-After")
                 wait_seconds = int(retry_after) if retry_after and retry_after.isdigit() else attempt * 2

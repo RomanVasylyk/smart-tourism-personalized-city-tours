@@ -13,6 +13,7 @@ if str(ROOT) not in sys.path:
 from utils.cities import load_city
 from utils.db import get_connection
 
+
 def get_center(city: dict) -> tuple[float, float]:
     center = city.get("center") or {}
     lat = center.get("lat")

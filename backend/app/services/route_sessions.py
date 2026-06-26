@@ -1,8 +1,6 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from hashlib import sha256
 from uuid import UUID, uuid4
-
-from fastapi import HTTPException
 
 from app.repositories import route_sessions as route_session_repository
 from app.schemas.route_sessions import (
@@ -13,6 +11,7 @@ from app.schemas.route_sessions import (
     RouteSessionPoiVisitRequest,
     RouteSessionUpdateRequest,
 )
+from fastapi import HTTPException
 
 SESSION_STATUSES = {"not_started", "in_progress", "paused", "completed", "cancelled"}
 
@@ -207,4 +206,4 @@ def raise_not_found() -> None:
 
 
 def now_utc() -> datetime:
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)

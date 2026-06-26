@@ -20,8 +20,8 @@ from scripts.normalize_transport import (
     normalize_stop_name,
     parse_imhd_html_variants,
     parse_stop_rows,
-    split_stop_row_blocks,
     split_page_sections,
+    split_stop_row_blocks,
 )
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures" / "transport"

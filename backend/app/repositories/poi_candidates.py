@@ -1,10 +1,8 @@
-from psycopg import Error as PsycopgError
-
 from app.db.database import get_connection
 from app.schemas.route import RouteGenerateRequest
 from app.services.city_lookup import find_city_row
 from app.services.city_profiles import city_profile_by_token
-
+from psycopg import Error as PsycopgError
 
 CANDIDATE_COLUMNS = """
     p.id,
@@ -75,7 +73,9 @@ def candidate_limit(city_profile: dict) -> int:
     return int(routing_limits.get("max_poi_candidates") or 300)
 
 
-def select_candidates_with_feedback_fallback(cur, request: RouteGenerateRequest, city_id: int, limit: int) -> list[dict]:
+def select_candidates_with_feedback_fallback(
+    cur, request: RouteGenerateRequest, city_id: int, limit: int
+) -> list[dict]:
     try:
         return select_candidates(cur, request, city_id, limit, include_feedback=True)
     except PsycopgError:
@@ -131,11 +131,7 @@ def select_preferred_candidates(cur, city_id: int, preferred_ids: list[int], *, 
 
 def missing_preferred_candidate_ids(request: RouteGenerateRequest, existing_rows: list[dict]) -> list[int]:
     excluded_ids = {int(poi_id) for poi_id in request.exclude_poi_ids}
-    preferred_ids = [
-        int(poi_id)
-        for poi_id in request.preferred_poi_ids
-        if int(poi_id) not in excluded_ids
-    ]
+    preferred_ids = [int(poi_id) for poi_id in request.preferred_poi_ids if int(poi_id) not in excluded_ids]
     if not preferred_ids:
         return []
 

@@ -24,10 +24,10 @@ from .text import (
     parse_date,
     parse_stop_rows,
     parse_validity,
-    strip_accents,
     split_page_sections,
     split_stop_name_components,
     split_stop_row_blocks,
+    strip_accents,
 )
 
 IMHD_VALID_FROM_PATTERN = re.compile(r"Plat[ií]\s+od\s+(\d{1,2}\.\d{1,2}\.\d{4})", re.IGNORECASE)
@@ -36,6 +36,7 @@ IMHD_CONTINUATION_NOTE_PATTERN = re.compile(
     r"Zo\s+zast[aá]vky\s+(?P<stop>.+?)\s+pokra[cč]uje\s+v\s+smere\s+(?P<direction>.+?)(?:[.;]|$)",
     re.IGNORECASE,
 )
+
 
 def add_issue(
     issues: list[TransportIssue],
@@ -64,6 +65,7 @@ def add_issue(
         )
     )
 
+
 def sanitize_trip_column(column_times: list[int | None]) -> list[int | None]:
     return list(column_times)
 
@@ -78,6 +80,7 @@ def parse_document_variants(
     if document_format == "imhd_html":
         return parse_imhd_html_variants(document_path, source_url, fallback_line_number, issues)
     return parse_pdf_variants(document_path, source_url, fallback_line_number, issues)
+
 
 def parse_pdf_variants(
     pdf_path: Path,
@@ -135,7 +138,9 @@ def parse_pdf_variants(
                 stop_names = [row.name for row in stop_rows]
                 max_columns = max(len(row.times) for row in stop_rows)
                 padded_rows = [
-                    StopRow(name=row.name, times=sanitize_trip_column(row.times + [None] * (max_columns - len(row.times))))
+                    StopRow(
+                        name=row.name, times=sanitize_trip_column(row.times + [None] * (max_columns - len(row.times)))
+                    )
                     for row in stop_rows
                 ]
 
@@ -159,10 +164,7 @@ def parse_pdf_variants(
                     non_empty_times = [minutes for minutes in column_times if minutes is not None]
                     if len(non_empty_times) < 2:
                         continue
-                    if any(
-                        later < earlier
-                        for earlier, later in zip(non_empty_times, non_empty_times[1:])
-                    ):
+                    if any(later < earlier for earlier, later in zip(non_empty_times, non_empty_times[1:])):
                         descending_column_count += 1
                         continue
                     trip_columns.append(column_times)
@@ -278,7 +280,9 @@ def parse_imhd_stop_rows(soup: BeautifulSoup) -> tuple[list[str], list[int]]:
                     continue
                 time_candidates.extend(int(value) for value in re.findall(r"\d{1,3}", span.get_text(" ", strip=True)))
             if not time_candidates:
-                time_candidates.extend(int(value) for value in re.findall(r"\d{1,3}", stop_time_cell.get_text(" ", strip=True)))
+                time_candidates.extend(
+                    int(value) for value in re.findall(r"\d{1,3}", stop_time_cell.get_text(" ", strip=True))
+                )
             if time_candidates:
                 offset_minutes = max(time_candidates)
 
@@ -473,6 +477,7 @@ def parse_imhd_html_variants(
 
     return list(variants.values())
 
+
 def load_osm_stops(raw_dir: Path, city: dict, stop_aliases: dict[str, str]) -> list[dict]:
     raw_file = raw_dir / "osm_stops_raw.json"
     payload = json.loads(raw_file.read_text(encoding="utf-8"))
@@ -488,9 +493,7 @@ def load_osm_stops(raw_dir: Path, city: dict, stop_aliases: dict[str, str]) -> l
         if not name:
             continue
         alternate_names = [
-            str(tags.get(key) or "").strip()
-            for key in ("name:sk", "name:hu")
-            if str(tags.get(key) or "").strip()
+            str(tags.get(key) or "").strip() for key in ("name:sk", "name:hu") if str(tags.get(key) or "").strip()
         ]
 
         point = element.get("center") or element
@@ -508,9 +511,7 @@ def load_osm_stops(raw_dir: Path, city: dict, stop_aliases: dict[str, str]) -> l
         for alternate_name in alternate_names:
             match_keys.update(build_stop_match_keys(alternate_name, ref, stop_aliases))
             if city_name:
-                match_keys.update(
-                    build_city_prefixed_stop_match_keys(alternate_name, city_name, ref, stop_aliases)
-                )
+                match_keys.update(build_city_prefixed_stop_match_keys(alternate_name, city_name, ref, stop_aliases))
         stops.append(
             {
                 "osm_id": f"{element['type']}/{element['id']}",
