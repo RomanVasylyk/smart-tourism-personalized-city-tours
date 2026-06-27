@@ -34,6 +34,10 @@
     <string name="status_no_stops_body">Немає точок маршруту, які відповідають вибраному часу, інтересам і обмеженням годин роботи.</string>
     <string name="status_no_route_title">Маршруту ще немає</string>
     <string name="status_no_route_body">Виберіть стартову точку й параметри, потім згенеруйте маршрут. Останній успішний маршрут автоматично відновлюється під час запуску додатка.</string>
+    <string name="status_poi_loading_title">Завантаження місць</string>
+    <string name="status_poi_loading_body">Карта готує POI для вибраного міста.</string>
+    <string name="status_poi_empty_title">Немає доступних місць</string>
+    <string name="status_poi_empty_body">Для цього міста ще немає кешованих POI або backend їх не повернув.</string>
 
     <string name="error_location_permission_denied">Доступ до місцезнаходження відхилено.</string>
     <string name="error_location_service_unavailable">Сервіс місцезнаходження недоступний.</string>
@@ -92,8 +96,23 @@
     <string name="action_leave_feedback">Залишити відгук</string>
     <string name="action_edit_feedback">Редагувати відгук</string>
     <string name="action_done">Готово</string>
+    <string name="action_retry_route_generation">Спробувати ще раз</string>
+    <string name="action_use_walking_only">Лише пішки</string>
 
     <string name="route_parameters_title">Параметри маршруту</string>
+    <string name="planning_step_city_time_title">Місто і час</string>
+    <string name="planning_step_city_time_body">Перевірте, де і коли починається маршрут.</string>
+    <string name="planning_step_interests_places_title">Інтереси та місця</string>
+    <string name="planning_step_interests_places_body">Виберіть тематику маршруту і POI, які треба обовʼязково відвідати.</string>
+    <string name="planning_step_route_title">Маршрут</string>
+    <string name="planning_step_route_body">Налаштуйте фінальні обмеження і згенеруйте міський круговий маршрут.</string>
+    <string name="planning_generate_ready_body">Генеруйте маршрут, коли три кроки готові.</string>
+    <string name="planning_generate_loading_body">Планую маршрут і перевіряю час пересування.</string>
+    <string name="route_timing_title">Час і темп</string>
+    <string name="route_interests_title">Інтереси маршруту</string>
+    <string name="route_interests_body">Виберіть категорії, які мають впливати на рекомендації POI.</string>
+    <string name="route_options_title">Опції маршруту</string>
+    <string name="route_transport_unavailable_body">MHD для цього міста ще не налаштовано. Маршрут буде побудовано як пішохідний круг.</string>
     <string name="route_start_time_label">Час початку маршруту</string>
     <string name="action_pick_date">Дата</string>
     <string name="action_pick_time">Час</string>

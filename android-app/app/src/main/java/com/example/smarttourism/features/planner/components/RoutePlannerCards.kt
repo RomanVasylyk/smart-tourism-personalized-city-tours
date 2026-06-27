@@ -548,6 +548,267 @@ internal fun RouteParametersCard(
 
 @Composable
 @OptIn(ExperimentalLayoutApi::class)
+internal fun RouteTimingCard(
+    availableMinutes: Int,
+    maxAvailableMinutes: Int,
+    onAvailableMinutesChange: (Int) -> Unit,
+    pace: String,
+    onPaceChange: (String) -> Unit,
+    startDateTime: LocalDateTime,
+    onStartDateTimeChange: (LocalDateTime) -> Unit,
+    onUseCurrentTime: () -> Unit,
+    isEditingEnabled: Boolean
+) {
+    val context = LocalContext.current
+    val datePickerDialog = remember(context, startDateTime, onStartDateTimeChange) {
+        DatePickerDialog(
+            context,
+            { _, year, month, dayOfMonth ->
+                onStartDateTimeChange(
+                    startDateTime
+                        .withYear(year)
+                        .withMonth(month + 1)
+                        .withDayOfMonth(dayOfMonth)
+                )
+            },
+            startDateTime.year,
+            startDateTime.monthValue - 1,
+            startDateTime.dayOfMonth
+        )
+    }
+    val timePickerDialog = remember(context, startDateTime, onStartDateTimeChange) {
+        TimePickerDialog(
+            context,
+            { _, hourOfDay, minute ->
+                onStartDateTimeChange(
+                    startDateTime
+                        .withHour(hourOfDay)
+                        .withMinute(minute)
+                )
+            },
+            startDateTime.hour,
+            startDateTime.minute,
+            DateFormat.is24HourFormat(context)
+        )
+    }
+
+    ElevatedCard {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Text(
+                text = stringResource(R.string.route_timing_title),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold
+            )
+
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = stringResource(R.string.route_start_time_label),
+                        style = MaterialTheme.typography.labelLarge
+                    )
+                    Text(
+                        text = startDateTime.format(RouteTimeFormatter),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    OutlinedButton(
+                        onClick = { datePickerDialog.show() },
+                        enabled = isEditingEnabled
+                    ) {
+                        Text(stringResource(R.string.action_pick_date))
+                    }
+                    OutlinedButton(
+                        onClick = { timePickerDialog.show() },
+                        enabled = isEditingEnabled
+                    ) {
+                        Text(stringResource(R.string.action_pick_time))
+                    }
+                    TextButton(
+                        onClick = onUseCurrentTime,
+                        enabled = isEditingEnabled
+                    ) {
+                        Text(stringResource(R.string.action_use_now))
+                    }
+                }
+            }
+
+            Text(
+                text = stringResource(R.string.available_time_label),
+                style = MaterialTheme.typography.labelLarge
+            )
+            val sliderMaximum = maxOf(MinimumAvailableMinutes, maxAvailableMinutes)
+            val sliderSteps = ((sliderMaximum - MinimumAvailableMinutes) / AvailableMinutesStepMinutes - 1)
+                .coerceAtLeast(0)
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = formatAvailableMinutes(availableMinutes),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Text(
+                        text = "${formatAvailableMinutes(MinimumAvailableMinutes)} - ${formatAvailableMinutes(sliderMaximum)}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                Slider(
+                    value = availableMinutes.toFloat(),
+                    onValueChange = { rawValue ->
+                        val steppedValue = rawValue.roundToInt()
+                        onAvailableMinutesChange(steppedValue)
+                    },
+                    valueRange = MinimumAvailableMinutes.toFloat()..sliderMaximum.toFloat(),
+                    steps = sliderSteps,
+                    enabled = isEditingEnabled
+                )
+            }
+
+            Text(
+                text = stringResource(R.string.pace_label),
+                style = MaterialTheme.typography.labelLarge
+            )
+            SingleChoiceChipRow(
+                options = PaceOptions,
+                selectedOption = pace,
+                enabled = isEditingEnabled,
+                label = { option -> Text(paceLabel(option)) },
+                onOptionSelected = onPaceChange
+            )
+        }
+    }
+}
+
+@Composable
+@OptIn(ExperimentalLayoutApi::class)
+internal fun RouteInterestsCard(
+    availableInterests: List<String>,
+    selectedInterests: List<String>,
+    onInterestToggle: (String, Boolean) -> Unit,
+    isEditingEnabled: Boolean
+) {
+    ElevatedCard {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Text(
+                text = stringResource(R.string.route_interests_title),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold
+            )
+            Text(
+                text = stringResource(R.string.route_interests_body),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
+            if (availableInterests.isEmpty()) {
+                Text(
+                    text = stringResource(R.string.interests_unavailable),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            } else {
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    availableInterests.forEach { interest ->
+                        val checked = interest in selectedInterests
+                        FilterChip(
+                            selected = checked,
+                            onClick = { onInterestToggle(interest, !checked) },
+                            enabled = isEditingEnabled,
+                            label = { Text(categoryLabel(interest)) }
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+internal fun RouteOptionsCard(
+    respectOpeningHours: Boolean,
+    onRespectOpeningHoursChange: (Boolean) -> Unit,
+    returnToStart: Boolean,
+    onReturnToStartChange: (Boolean) -> Unit,
+    isPublicTransportAvailable: Boolean,
+    allowPublicTransport: Boolean,
+    onAllowPublicTransportChange: (Boolean) -> Unit,
+    isEditingEnabled: Boolean
+) {
+    ElevatedCard {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Text(
+                text = stringResource(R.string.route_options_title),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold
+            )
+
+            CompactToggleRow(
+                title = stringResource(R.string.respect_opening_hours_label),
+                body = stringResource(R.string.respect_opening_hours_body),
+                checked = respectOpeningHours,
+                enabled = isEditingEnabled,
+                onCheckedChange = onRespectOpeningHoursChange
+            )
+
+            CompactToggleRow(
+                title = stringResource(R.string.return_to_start_label),
+                body = stringResource(R.string.return_to_start_body),
+                checked = returnToStart,
+                enabled = isEditingEnabled,
+                onCheckedChange = onReturnToStartChange
+            )
+
+            if (isPublicTransportAvailable) {
+                CompactToggleRow(
+                    title = stringResource(R.string.allow_public_transport_label),
+                    body = stringResource(R.string.allow_public_transport_body),
+                    checked = allowPublicTransport,
+                    enabled = isEditingEnabled,
+                    onCheckedChange = onAllowPublicTransportChange
+                )
+            } else {
+                Text(
+                    text = stringResource(R.string.route_transport_unavailable_body),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+    }
+}
+
+@Composable
+@OptIn(ExperimentalLayoutApi::class)
 private fun <T> SingleChoiceChipRow(
     options: List<T>,
     selectedOption: T,

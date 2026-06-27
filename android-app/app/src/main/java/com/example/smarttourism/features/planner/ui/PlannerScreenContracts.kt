@@ -48,7 +48,16 @@ internal data class PlannerScreenState(
     val isRerouting: Boolean,
     val highlightedPoiId: Int?,
     val routeFeedback: RouteFeedback?,
-    val isPoiLoading: Boolean
+    val isPoiLoading: Boolean,
+    val errorDialog: PlannerErrorDialogState?
+)
+
+internal data class PlannerErrorDialogState(
+    val key: String,
+    val title: String,
+    val body: String,
+    val canRetryRoute: Boolean,
+    val canFallbackToWalking: Boolean
 )
 
 internal data class PlannerActions(
@@ -78,6 +87,9 @@ internal data class PlannerActions(
     val onMarkVisited: (Int) -> Unit,
     val onSkip: (Int) -> Unit,
     val onDismissHistoryEntry: () -> Unit,
+    val onDismissErrorDialog: () -> Unit,
+    val onRetryRouteGeneration: () -> Unit,
+    val onFallbackToWalking: () -> Unit,
     val onDismissFeedback: () -> Unit,
     val onFeedbackChange: (RouteFeedback) -> Unit,
     val onDismissFullScreenMap: () -> Unit,

@@ -332,6 +332,9 @@ internal fun PlannerMapPanel(
     Box(
         modifier = containerModifier.clip(MaterialTheme.shapes.extraLarge)
     ) {
+        val shouldShowPoiLoadingState = isPoiLoading && pois.isEmpty() && routeResponse == null
+        val shouldShowPoiEmptyState = !isPoiLoading && pois.isEmpty() && routeResponse == null
+
         PoiMapScreen(
             pois = pois,
             routeResponse = routeResponse,
@@ -363,6 +366,49 @@ internal fun PlannerMapPanel(
                 .padding(12.dp)
         ) {
             Text(stringResource(R.string.action_open_full_screen_map))
+        }
+
+        when {
+            shouldShowPoiLoadingState -> MapStatusOverlay(
+                title = stringResource(R.string.status_poi_loading_title),
+                body = stringResource(R.string.status_poi_loading_body),
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .padding(12.dp)
+            )
+
+            shouldShowPoiEmptyState -> MapStatusOverlay(
+                title = stringResource(R.string.status_poi_empty_title),
+                body = stringResource(R.string.status_poi_empty_body),
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .padding(12.dp)
+            )
+        }
+    }
+}
+
+@Composable
+private fun MapStatusOverlay(
+    title: String,
+    body: String,
+    modifier: Modifier = Modifier
+) {
+    ElevatedCard(modifier = modifier.fillMaxWidth(0.82f)) {
+        Column(
+            modifier = Modifier.padding(12.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.SemiBold
+            )
+            Text(
+                text = body,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
     }
 }
@@ -420,7 +466,11 @@ internal fun PlannerAlerts.hasVisibleAlerts(): Boolean =
         hasPendingRouteChanges
 
 @Composable
-internal fun PlannerAlertColumn(alerts: PlannerAlerts) {
+internal fun PlannerAlertColumn(
+    alerts: PlannerAlerts,
+    onRetryRouteGeneration: (() -> Unit)? = null,
+    onFallbackToWalking: (() -> Unit)? = null
+) {
     alerts.locationError?.let { message ->
         StatusCard(
             title = stringResource(R.string.status_location_unavailable),
@@ -438,14 +488,22 @@ internal fun PlannerAlertColumn(alerts: PlannerAlerts) {
     alerts.routeError?.let { message ->
         StatusCard(
             title = stringResource(R.string.status_route_generation_failed),
-            body = message
+            body = message,
+            actionLabel = onRetryRouteGeneration?.let { stringResource(R.string.action_retry_route_generation) },
+            onAction = onRetryRouteGeneration,
+            secondaryActionLabel = onFallbackToWalking?.let { stringResource(R.string.action_use_walking_only) },
+            onSecondaryAction = onFallbackToWalking
         )
     }
 
     if (alerts.hasNoGeneratedStops) {
         StatusCard(
             title = stringResource(R.string.status_no_stops_title),
-            body = stringResource(R.string.status_no_stops_body)
+            body = stringResource(R.string.status_no_stops_body),
+            actionLabel = onRetryRouteGeneration?.let { stringResource(R.string.action_retry_route_generation) },
+            onAction = onRetryRouteGeneration,
+            secondaryActionLabel = onFallbackToWalking?.let { stringResource(R.string.action_use_walking_only) },
+            onSecondaryAction = onFallbackToWalking
         )
     }
 
@@ -464,14 +522,22 @@ internal fun PlannerAlertColumn(alerts: PlannerAlerts) {
     }
 }
 
-internal fun LazyListScope.plannerAlertItems(alerts: PlannerAlerts) {
+internal fun LazyListScope.plannerAlertItems(
+    alerts: PlannerAlerts,
+    onRetryRouteGeneration: (() -> Unit)? = null,
+    onFallbackToWalking: (() -> Unit)? = null
+) {
     if (!alerts.hasVisibleAlerts()) {
         return
     }
 
     item {
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            PlannerAlertColumn(alerts = alerts)
+            PlannerAlertColumn(
+                alerts = alerts,
+                onRetryRouteGeneration = onRetryRouteGeneration,
+                onFallbackToWalking = onFallbackToWalking
+            )
         }
     }
 }

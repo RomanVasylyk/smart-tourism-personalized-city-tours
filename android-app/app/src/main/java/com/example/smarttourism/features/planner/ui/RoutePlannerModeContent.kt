@@ -3,14 +3,23 @@ package com.example.smarttourism.features.planner.ui
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -18,13 +27,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.smarttourism.R
 import com.example.smarttourism.features.map.MapLocationButton
 import com.example.smarttourism.features.planner.components.ActiveRouteBottomPanel
 import com.example.smarttourism.features.planner.components.RequiredPlacesCard
-import com.example.smarttourism.features.planner.components.RouteParametersCard
+import com.example.smarttourism.features.planner.components.RouteInterestsCard
+import com.example.smarttourism.features.planner.components.RouteOptionsCard
 import com.example.smarttourism.features.planner.components.RoutePreviewSummaryPanel
+import com.example.smarttourism.features.planner.components.RouteTimingCard
 import com.example.smarttourism.features.planner.components.StartPointCard
 import com.example.smarttourism.features.planner.domain.model.City
 import com.example.smarttourism.features.planner.domain.model.Poi
@@ -206,87 +218,214 @@ internal fun PlanningScreenContent(
     onUseCurrentTime: () -> Unit,
     onGenerateRoute: () -> Unit
 ) {
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+    val canGenerateRoute = selectedCity != null && !isPlannerEditingLocked && !isRouteLoading
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 120.dp),
+            verticalArrangement = Arrangement.spacedBy(18.dp)
+        ) {
+            item {
+                PlannerModeHeader(mode = com.example.smarttourism.features.planner.state.PlannerMode.PLANNING)
+            }
+
+            item {
+                PlanningStepSection(
+                    number = 1,
+                    title = stringResource(R.string.planning_step_city_time_title),
+                    body = stringResource(R.string.planning_step_city_time_body)
+                ) {
+                    PlannerMapPanel(
+                        pois = pois,
+                        routeResponse = routeResponse,
+                        startPoint = startPoint,
+                        defaultZoom = selectedCity?.defaultZoom,
+                        currentRouteLocation = currentRouteLocation,
+                        visitedPoiIds = visitedPoiIds,
+                        skippedPoiIds = skippedPoiIds,
+                        isRouteActive = false,
+                        isPoiLoading = isPoiLoading,
+                        isSelectingStart = isSelectingStart,
+                        isSelectingRoutePois = false,
+                        selectedRoutePoiIds = requiredPoiIds,
+                        onStartPointSelected = onStartPointSelected,
+                        onRoutePoiSelected = {},
+                        onOpenFullScreenMap = onOpenFullScreenMap,
+                        fixedHeight = 280.dp
+                    )
+
+                    StartPointCard(
+                        startPoint = startPoint,
+                        isSelectingStart = isSelectingStart,
+                        isLocating = isLocating,
+                        enabled = !isPlannerEditingLocked,
+                        onToggleMapSelection = onToggleStartSelection,
+                        onUseCurrentLocation = onUseCurrentLocation
+                    )
+
+                    RouteTimingCard(
+                        availableMinutes = availableMinutes,
+                        maxAvailableMinutes = maxAvailableMinutesLimit,
+                        onAvailableMinutesChange = onAvailableMinutesChange,
+                        pace = pace,
+                        onPaceChange = onPaceChange,
+                        startDateTime = startDateTime,
+                        onStartDateTimeChange = onStartDateTimeChange,
+                        onUseCurrentTime = onUseCurrentTime,
+                        isEditingEnabled = !isPlannerEditingLocked
+                    )
+                }
+            }
+
+            item {
+                PlanningStepSection(
+                    number = 2,
+                    title = stringResource(R.string.planning_step_interests_places_title),
+                    body = stringResource(R.string.planning_step_interests_places_body)
+                ) {
+                    RouteInterestsCard(
+                        availableInterests = selectedCityAvailableCategories,
+                        selectedInterests = selectedInterests,
+                        onInterestToggle = onInterestToggle,
+                        isEditingEnabled = !isPlannerEditingLocked
+                    )
+
+                    RequiredPlacesCard(
+                        selectedPois = selectedRequiredPois,
+                        availablePoiCount = pois.size,
+                        isEditingEnabled = !isPlannerEditingLocked,
+                        onChooseOnMap = onChooseRequiredOnMap,
+                        onChooseFromList = onChooseRequiredFromList,
+                        onMovePoi = onMoveRequiredPoi,
+                        onRemovePoi = onRemoveRequiredPoi,
+                        onClearAll = onClearRequiredPois
+                    )
+                }
+            }
+
+            item {
+                PlanningStepSection(
+                    number = 3,
+                    title = stringResource(R.string.planning_step_route_title),
+                    body = stringResource(R.string.planning_step_route_body)
+                ) {
+                    RouteOptionsCard(
+                        respectOpeningHours = respectOpeningHours,
+                        onRespectOpeningHoursChange = onRespectOpeningHoursChange,
+                        returnToStart = returnToStart,
+                        onReturnToStartChange = onReturnToStartChange,
+                        isPublicTransportAvailable = isPublicTransportAvailable,
+                        allowPublicTransport = allowPublicTransport,
+                        onAllowPublicTransportChange = onAllowPublicTransportChange,
+                        isEditingEnabled = !isPlannerEditingLocked
+                    )
+                }
+            }
+
+            if (plannerAlerts.hasPendingRouteChanges) {
+                plannerAlertItems(alerts = plannerAlerts)
+            }
+        }
+
+        PlanningGenerateBottomBar(
+            isGenerating = isRouteLoading,
+            enabled = canGenerateRoute,
+            onGenerateRoute = onGenerateRoute,
+            modifier = Modifier.align(Alignment.BottomCenter)
+        )
+    }
+}
+
+@Composable
+private fun PlanningStepSection(
+    number: Int,
+    title: String,
+    body: String,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Surface(
+                shape = CircleShape,
+                color = MaterialTheme.colorScheme.primaryContainer,
+                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+            ) {
+                Text(
+                    text = number.toString(),
+                    modifier = Modifier.padding(horizontal = 11.dp, vertical = 6.dp),
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Text(
+                    text = body,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+
+        content()
+    }
+}
+
+@Composable
+private fun PlanningGenerateBottomBar(
+    isGenerating: Boolean,
+    enabled: Boolean,
+    onGenerateRoute: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        tonalElevation = 6.dp,
+        shadowElevation = 8.dp
     ) {
-        item {
-            PlannerModeHeader(mode = com.example.smarttourism.features.planner.state.PlannerMode.PLANNING)
-        }
-
-        item {
-            PlannerMapPanel(
-                pois = pois,
-                routeResponse = routeResponse,
-                startPoint = startPoint,
-                defaultZoom = selectedCity?.defaultZoom,
-                currentRouteLocation = currentRouteLocation,
-                visitedPoiIds = visitedPoiIds,
-                skippedPoiIds = skippedPoiIds,
-                isRouteActive = false,
-                isPoiLoading = isPoiLoading,
-                isSelectingStart = isSelectingStart,
-                isSelectingRoutePois = false,
-                selectedRoutePoiIds = requiredPoiIds,
-                onStartPointSelected = onStartPointSelected,
-                onRoutePoiSelected = {},
-                onOpenFullScreenMap = onOpenFullScreenMap,
-                fixedHeight = 280.dp
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .navigationBarsPadding()
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                text = stringResource(
+                    if (isGenerating) {
+                        R.string.planning_generate_loading_body
+                    } else {
+                        R.string.planning_generate_ready_body
+                    }
+                ),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
+            Button(
+                onClick = onGenerateRoute,
+                enabled = enabled,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                if (isGenerating) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(18.dp),
+                        strokeWidth = 2.dp
+                    )
+                    Spacer(modifier = Modifier.size(12.dp))
+                    Text(stringResource(R.string.action_generating_route))
+                } else {
+                    Text(stringResource(R.string.action_generate_route))
+                }
+            }
         }
-
-        item {
-            StartPointCard(
-                startPoint = startPoint,
-                isSelectingStart = isSelectingStart,
-                isLocating = isLocating,
-                enabled = !isPlannerEditingLocked,
-                onToggleMapSelection = onToggleStartSelection,
-                onUseCurrentLocation = onUseCurrentLocation
-            )
-        }
-
-        item {
-            RequiredPlacesCard(
-                selectedPois = selectedRequiredPois,
-                availablePoiCount = pois.size,
-                isEditingEnabled = !isPlannerEditingLocked,
-                onChooseOnMap = onChooseRequiredOnMap,
-                onChooseFromList = onChooseRequiredFromList,
-                onMovePoi = onMoveRequiredPoi,
-                onRemovePoi = onRemoveRequiredPoi,
-                onClearAll = onClearRequiredPois
-            )
-        }
-
-        item {
-            RouteParametersCard(
-                availableMinutes = availableMinutes,
-                maxAvailableMinutes = maxAvailableMinutesLimit,
-                onAvailableMinutesChange = onAvailableMinutesChange,
-                availableInterests = selectedCityAvailableCategories,
-                selectedInterests = selectedInterests,
-                onInterestToggle = onInterestToggle,
-                pace = pace,
-                onPaceChange = onPaceChange,
-                returnToStart = returnToStart,
-                onReturnToStartChange = onReturnToStartChange,
-                respectOpeningHours = respectOpeningHours,
-                onRespectOpeningHoursChange = onRespectOpeningHoursChange,
-                isPublicTransportAvailable = isPublicTransportAvailable,
-                allowPublicTransport = allowPublicTransport,
-                onAllowPublicTransportChange = onAllowPublicTransportChange,
-                startDateTime = startDateTime,
-                onStartDateTimeChange = onStartDateTimeChange,
-                onUseCurrentTime = onUseCurrentTime,
-                isEditingEnabled = !isPlannerEditingLocked,
-                isGenerating = isRouteLoading,
-                onGenerateRoute = onGenerateRoute
-            )
-        }
-
-        plannerAlertItems(plannerAlerts)
     }
 }
 

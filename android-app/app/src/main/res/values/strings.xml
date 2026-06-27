@@ -34,6 +34,10 @@
     <string name="status_no_stops_body">No route stops match the selected time budget, interests, and opening-hours constraints.</string>
     <string name="status_no_route_title">No route yet</string>
     <string name="status_no_route_body">Choose a start point and parameters, then generate a route. The last successful route is restored automatically on app launch.</string>
+    <string name="status_poi_loading_title">Loading places</string>
+    <string name="status_poi_loading_body">The map is preparing POIs for the selected city.</string>
+    <string name="status_poi_empty_title">No places available</string>
+    <string name="status_poi_empty_body">This city has no cached POIs yet, or the backend could not provide them.</string>
 
     <string name="error_location_permission_denied">Location permission denied.</string>
     <string name="error_location_service_unavailable">Location service is unavailable.</string>
@@ -92,8 +96,23 @@
     <string name="action_leave_feedback">Leave feedback</string>
     <string name="action_edit_feedback">Edit feedback</string>
     <string name="action_done">Done</string>
+    <string name="action_retry_route_generation">Retry</string>
+    <string name="action_use_walking_only">Use walking only</string>
 
     <string name="route_parameters_title">Route parameters</string>
+    <string name="planning_step_city_time_title">City and time</string>
+    <string name="planning_step_city_time_body">Confirm where and when the route starts.</string>
+    <string name="planning_step_interests_places_title">Interests and places</string>
+    <string name="planning_step_interests_places_body">Choose route themes and any must-see POIs.</string>
+    <string name="planning_step_route_title">Route</string>
+    <string name="planning_step_route_body">Set final constraints, then generate the city loop.</string>
+    <string name="planning_generate_ready_body">Generate when the three steps look right.</string>
+    <string name="planning_generate_loading_body">Planning the route and checking travel times.</string>
+    <string name="route_timing_title">Time and pace</string>
+    <string name="route_interests_title">Route interests</string>
+    <string name="route_interests_body">Select categories that should influence POI recommendations.</string>
+    <string name="route_options_title">Route options</string>
+    <string name="route_transport_unavailable_body">MHD is not configured for this city yet. The route will be planned as a walking loop.</string>
     <string name="route_start_time_label">Route start time</string>
     <string name="action_pick_date">Date</string>
     <string name="action_pick_time">Time</string>

@@ -6,28 +6,6 @@ plugins {
     id("com.google.dagger.hilt.android")
 }
 
-fun quoted(value: String): String =
-    "\"${value.replace("\\", "\\\\").replace("\"", "\\\"")}\""
-
-val debugApiTarget = providers.gradleProperty("smartTourismDebugApiTarget")
-    .orElse("phone")
-    .get()
-    .trim()
-    .lowercase()
-
-val debugApiBaseUrl = providers.gradleProperty("smartTourismDebugApiBaseUrl")
-    .orElse(
-        when (debugApiTarget) {
-            "emulator" -> "http://10.0.2.2:8000/"
-            "phone" -> "http://127.0.0.1:8000/"
-            else -> error(
-                "Unsupported smartTourismDebugApiTarget='$debugApiTarget'. " +
-                    "Use phone, emulator, or set -PsmartTourismDebugApiBaseUrl=http://host:port/."
-            )
-        }
-    )
-    .get()
-
 android {
     namespace = "com.example.smarttourism"
     compileSdk = 35
@@ -47,7 +25,7 @@ android {
 
     buildTypes {
         debug {
-            buildConfigField("String", "API_BASE_URL", quoted(debugApiBaseUrl))
+            buildConfigField("String", "API_BASE_URL", "\"http://127.0.0.1:8000/\"")
         }
         create("staging") {
             initWith(getByName("debug"))

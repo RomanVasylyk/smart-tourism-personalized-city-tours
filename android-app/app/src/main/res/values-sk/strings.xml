@@ -34,6 +34,10 @@
     <string name="status_no_stops_body">Vybranému času, záujmom a otváracím hodinám nezodpovedajú žiadne zastávky trasy.</string>
     <string name="status_no_route_title">Zatiaľ žiadna trasa</string>
     <string name="status_no_route_body">Vyberte štart a parametre, potom vygenerujte trasu. Posledná úspešná trasa sa po spustení aplikácie obnoví automaticky.</string>
+    <string name="status_poi_loading_title">Načítavam miesta</string>
+    <string name="status_poi_loading_body">Mapa pripravuje miesta pre vybrané mesto.</string>
+    <string name="status_poi_empty_title">Nie sú dostupné žiadne miesta</string>
+    <string name="status_poi_empty_body">Toto mesto zatiaľ nemá uložené miesta alebo ich backend neposkytol.</string>
 
     <string name="error_location_permission_denied">Povolenie polohy bolo odmietnuté.</string>
     <string name="error_location_service_unavailable">Služba polohy nie je dostupná.</string>
@@ -92,8 +96,23 @@
     <string name="action_leave_feedback">Pridať spätnú väzbu</string>
     <string name="action_edit_feedback">Upraviť spätnú väzbu</string>
     <string name="action_done">Hotovo</string>
+    <string name="action_retry_route_generation">Skúsiť znova</string>
+    <string name="action_use_walking_only">Iba pešo</string>
 
     <string name="route_parameters_title">Parametre trasy</string>
+    <string name="planning_step_city_time_title">Mesto a čas</string>
+    <string name="planning_step_city_time_body">Skontrolujte, kde a kedy sa trasa začne.</string>
+    <string name="planning_step_interests_places_title">Záujmy a body</string>
+    <string name="planning_step_interests_places_body">Vyberte tematiku trasy a miesta, ktoré chcete určite navštíviť.</string>
+    <string name="planning_step_route_title">Trasa</string>
+    <string name="planning_step_route_body">Nastavte posledné obmedzenia a vygenerujte mestský okruh.</string>
+    <string name="planning_generate_ready_body">Vygenerujte trasu, keď sú tri kroky pripravené.</string>
+    <string name="planning_generate_loading_body">Plánujem trasu a kontrolujem časy presunov.</string>
+    <string name="route_timing_title">Čas a tempo</string>
+    <string name="route_interests_title">Záujmy trasy</string>
+    <string name="route_interests_body">Vyberte kategórie, ktoré majú ovplyvniť odporúčané miesta.</string>
+    <string name="route_options_title">Možnosti trasy</string>
+    <string name="route_transport_unavailable_body">MHD pre toto mesto zatiaľ nie je nakonfigurovaná. Trasa sa naplánuje ako peší okruh.</string>
     <string name="route_start_time_label">Čas začiatku trasy</string>
     <string name="action_pick_date">Dátum</string>
     <string name="action_pick_time">Čas</string>

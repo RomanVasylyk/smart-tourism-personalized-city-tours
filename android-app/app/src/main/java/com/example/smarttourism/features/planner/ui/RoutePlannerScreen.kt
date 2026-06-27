@@ -119,6 +119,7 @@ fun RoutePlannerScreen(
     var selectedHistoryEntry by remember { mutableStateOf<RouteHistoryEntry?>(null) }
     var replacingPoiId by remember { mutableStateOf<Int?>(null) }
     var locationError by remember { mutableStateOf<String?>(null) }
+    var dismissedPlannerErrorDialogKey by remember { mutableStateOf<String?>(null) }
     var trackingPermissionAction by remember { mutableStateOf(TrackingPermissionAction.START) }
     var autoOpenedFeedbackToken by remember { mutableStateOf<String?>(null) }
     var activeMapRecenterRequest by remember { mutableIntStateOf(0) }
@@ -301,6 +302,53 @@ fun RoutePlannerScreen(
         hasNoGeneratedStops = hasNoGeneratedStops,
         hasPendingRouteChanges = hasPendingRouteChanges && routeResponse != null
     )
+    val currentLocationError = locationError
+    val plannerErrorDialog = when {
+        routeError != null -> PlannerErrorDialogState(
+            key = "route:$routeError:$allowPublicTransport",
+            title = stringResource(R.string.status_route_generation_failed),
+            body = routeError,
+            canRetryRoute = true,
+            canFallbackToWalking = allowPublicTransport
+        )
+        hasNoGeneratedStops -> PlannerErrorDialogState(
+            key = "empty-route:$allowPublicTransport",
+            title = stringResource(R.string.status_no_stops_title),
+            body = stringResource(R.string.status_no_stops_body),
+            canRetryRoute = true,
+            canFallbackToWalking = allowPublicTransport
+        )
+        poiError != null -> PlannerErrorDialogState(
+            key = "poi:$poiError",
+            title = stringResource(R.string.status_poi_preview_unavailable),
+            body = poiError,
+            canRetryRoute = false,
+            canFallbackToWalking = false
+        )
+        currentLocationError != null -> PlannerErrorDialogState(
+            key = "location:$currentLocationError",
+            title = stringResource(R.string.status_location_unavailable),
+            body = currentLocationError,
+            canRetryRoute = false,
+            canFallbackToWalking = false
+        )
+        trackingError != null -> PlannerErrorDialogState(
+            key = "tracking:$trackingError",
+            title = stringResource(R.string.status_gps_tracking_unavailable),
+            body = trackingError,
+            canRetryRoute = false,
+            canFallbackToWalking = false
+        )
+        else -> null
+    }
+    val visiblePlannerErrorDialog = plannerErrorDialog
+        ?.takeUnless { dialog -> dialog.key == dismissedPlannerErrorDialogKey }
+
+    LaunchedEffect(plannerErrorDialog?.key, isRouteLoading) {
+        if (plannerErrorDialog == null || isRouteLoading) {
+            dismissedPlannerErrorDialogKey = null
+        }
+    }
 
     if (plannerMode == PlannerMode.ACTIVE) {
         ActiveRouteContent(
@@ -565,7 +613,8 @@ fun RoutePlannerScreen(
         isRerouting = isRerouting,
         highlightedPoiId = progressMetrics.nextTarget?.poiId,
         routeFeedback = routeFeedback,
-        isPoiLoading = isPoiLoading
+        isPoiLoading = isPoiLoading,
+        errorDialog = visiblePlannerErrorDialog
     )
 
     val plannerActions = PlannerActions(
@@ -619,6 +668,18 @@ fun RoutePlannerScreen(
         onMarkVisited = { poiId -> onPlannerEvent(PlannerEvent.MarkRouteStopVisited(poiId)) },
         onSkip = { poiId -> onPlannerEvent(PlannerEvent.SkipRouteStop(poiId)) },
         onDismissHistoryEntry = { selectedHistoryEntry = null },
+        onDismissErrorDialog = {
+            dismissedPlannerErrorDialogKey = plannerErrorDialog?.key
+        },
+        onRetryRouteGeneration = {
+            dismissedPlannerErrorDialogKey = null
+            onPlannerEvent(PlannerEvent.GenerateRoute)
+        },
+        onFallbackToWalking = {
+            dismissedPlannerErrorDialogKey = null
+            onPlannerEvent(PlannerEvent.UpdateAllowPublicTransport(false))
+            onPlannerEvent(PlannerEvent.GenerateRoute)
+        },
         onDismissFeedback = { isFeedbackDialogOpen = false },
         onFeedbackChange = { feedback -> onPlannerEvent(PlannerEvent.UpdateFeedback(feedback)) },
         onDismissFullScreenMap = {

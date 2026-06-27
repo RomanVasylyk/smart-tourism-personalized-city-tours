@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.OutlinedButton
@@ -29,6 +30,42 @@ internal fun PlannerDialogs(
     state: PlannerScreenState,
     actions: PlannerActions
 ) {
+    state.errorDialog?.let { errorDialog ->
+        AlertDialog(
+            onDismissRequest = actions.onDismissErrorDialog,
+            title = { Text(errorDialog.title) },
+            text = { Text(errorDialog.body) },
+            confirmButton = {
+                Button(
+                    onClick = if (errorDialog.canRetryRoute) {
+                        actions.onRetryRouteGeneration
+                    } else {
+                        actions.onDismissErrorDialog
+                    }
+                ) {
+                    Text(
+                        stringResource(
+                            if (errorDialog.canRetryRoute) {
+                                R.string.action_retry_route_generation
+                            } else {
+                                R.string.action_done
+                            }
+                        )
+                    )
+                }
+            },
+            dismissButton = if (errorDialog.canFallbackToWalking) {
+                {
+                    OutlinedButton(onClick = actions.onFallbackToWalking) {
+                        Text(stringResource(R.string.action_use_walking_only))
+                    }
+                }
+            } else {
+                null
+            }
+        )
+    }
+
     state.selectedHistoryEntry?.let { historyEntry ->
         RouteHistoryDetailsDialog(
             entry = historyEntry,

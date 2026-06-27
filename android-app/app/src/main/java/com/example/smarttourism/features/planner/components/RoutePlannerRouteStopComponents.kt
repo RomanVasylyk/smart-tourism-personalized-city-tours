@@ -519,14 +519,18 @@ internal fun RouteStopCard(
 @Composable
 internal fun StatusCard(
     title: String,
-    body: String
+    body: String,
+    actionLabel: String? = null,
+    onAction: (() -> Unit)? = null,
+    secondaryActionLabel: String? = null,
+    onSecondaryAction: (() -> Unit)? = null
 ) {
     ElevatedCard {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(6.dp)
+            verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             Text(
                 text = title,
@@ -537,6 +541,29 @@ internal fun StatusCard(
                 text = body,
                 style = MaterialTheme.typography.bodyMedium
             )
+            if ((actionLabel != null && onAction != null) || (secondaryActionLabel != null && onSecondaryAction != null)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    if (secondaryActionLabel != null && onSecondaryAction != null) {
+                        OutlinedButton(
+                            onClick = onSecondaryAction,
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text(secondaryActionLabel)
+                        }
+                    }
+                    if (actionLabel != null && onAction != null) {
+                        Button(
+                            onClick = onAction,
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text(actionLabel)
+                        }
+                    }
+                }
+            }
         }
     }
 }
