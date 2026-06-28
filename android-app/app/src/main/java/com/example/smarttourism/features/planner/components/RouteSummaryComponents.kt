@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
@@ -37,14 +38,14 @@ internal fun RoutePreviewSummaryPanel(routeResponse: RoutePlan) {
 
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedCornerShape(PlannerUiTokens.CardRadius),
         tonalElevation = 3.dp
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp)
+                .padding(PlannerUiTokens.CardPadding),
+            verticalArrangement = Arrangement.spacedBy(PlannerUiTokens.SectionSpacing)
         ) {
             Text(
                 text = stringResource(R.string.route_summary_title),
@@ -93,7 +94,7 @@ internal fun SummaryMetric(
 ) {
     Surface(
         modifier = modifier,
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(PlannerUiTokens.CompactCardRadius),
         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.65f)
     ) {
         Column(
@@ -139,13 +140,13 @@ internal fun ActiveRouteBottomPanel(
 
     ElevatedCard(
         modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(24.dp)
+        shape = RoundedCornerShape(PlannerUiTokens.CardRadius)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp)
+                .padding(PlannerUiTokens.CardPadding),
+            verticalArrangement = Arrangement.spacedBy(PlannerUiTokens.SectionSpacing)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -244,35 +245,45 @@ internal fun ActiveRouteBottomPanel(
                 Button(
                     onClick = onMarkVisited,
                     enabled = nextTarget != null && !isActionInProgress && status == RouteSessionStatus.IN_PROGRESS,
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(PlannerUiTokens.ButtonHeight)
                 ) {
                     Text(stringResource(R.string.action_mark_visited))
                 }
                 OutlinedButton(
                     onClick = onSkip,
                     enabled = nextTarget != null && canSkip && !isActionInProgress,
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(PlannerUiTokens.ButtonHeight)
                 ) {
                     Text(stringResource(R.string.action_skip_stop))
                 }
                 when {
                     canPause -> OutlinedButton(
                         onClick = onPauseRoute,
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(PlannerUiTokens.ButtonHeight)
                     ) {
                         Text(stringResource(R.string.action_pause_route))
                     }
 
                     canResume -> OutlinedButton(
                         onClick = onResumeRoute,
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(PlannerUiTokens.ButtonHeight)
                     ) {
                         Text(stringResource(R.string.action_resume_route))
                     }
 
                     else -> OutlinedButton(
                         onClick = onShowAllStops,
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(PlannerUiTokens.ButtonHeight)
                     ) {
                         Text(stringResource(R.string.action_view_all_stops))
                     }
@@ -290,7 +301,8 @@ internal fun ActiveRouteBottomPanel(
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     OutlinedButton(
                         onClick = onFinishRoute,
-                        enabled = metrics.canComplete
+                        enabled = metrics.canComplete,
+                        modifier = Modifier.height(PlannerUiTokens.ButtonHeight)
                     ) {
                         Text(stringResource(R.string.action_finish_route))
                     }

@@ -148,6 +148,11 @@
     <string name="route_tracking_auto_visit_hint">Miesta sa označia ako navštívené automaticky do %1$d m alebo ručne pri každej zastávke.</string>
     <string name="route_tracking_finish_requirement">Dokončenie trasy je dostupné po návšteve aspoň %1$d / %2$d miest.</string>
     <string name="route_tracking_no_stops">Pre túto trasu nie sú dostupné žiadne miesta.</string>
+    <string name="route_tracking_done_chip">Hotovo %1$d/%2$d</string>
+    <string name="route_tracking_current_chip">Aktuálne: %1$s</string>
+    <string name="route_tracking_upcoming_chip">Čaká %1$d</string>
+    <string name="route_tracking_distance_chip">%1$s ďaleko</string>
+    <string name="route_tracking_remaining_chip">Zostáva %1$d min</string>
     <string name="route_preview_outdated_title">Náhľad trasy treba obnoviť</string>
     <string name="route_preview_outdated_body">Parametre sa zmenili. Vygenerujte trasu znova, aby sa použili.</string>
     <string name="route_preview_edit_title">Upraviť trasu</string>
@@ -246,6 +251,11 @@
     <string name="route_stop_status_pending">Naplánované</string>
     <string name="route_stop_summary_compact">%1$d min presun • %2$d min návšteva</string>
     <string name="route_stop_arrival_departure">Príchod %1$d min • Odchod %2$d min</string>
+    <string name="route_stop_walk_badge">Pešo %1$d min</string>
+    <string name="route_stop_bus_badge">Bus %1$d min</string>
+    <string name="route_stop_bus_line_badge">%1$s bus %2$d min</string>
+    <string name="route_stop_visit_badge">Návšteva %1$d min</string>
+    <string name="route_stop_time_window_badge">%1$d-%2$d min</string>
     <string name="action_view_stop_details">Zobraziť detaily</string>
     <string name="action_hide_stop_details">Skryť detaily</string>
     <string name="action_mark_visited">Označiť ako navštívené</string>
@@ -257,9 +267,14 @@
     <string name="map_start_marker_label">Štart</string>
     <string name="map_route_stop_snippet">%1$s &#8226; pešo %2$d min &#8226; návšteva %3$d min</string>
     <string name="map_current_location_title">Aktuálna GPS poloha</string>
+    <string name="map_current_location_button">Vycentrovať mapu na aktuálnu polohu</string>
     <string name="map_visited_route_stop_title">Navštívené: %1$s</string>
     <string name="map_poi_selection_hint">Ťuknutím na značky miest ich pridáte do trasy. Vybrané: %1$d</string>
     <string name="map_poi_selected_snippet">%1$s &#8226; vybrané pre trasu</string>
+    <string name="map_route_legend_title">Trasa</string>
+    <string name="map_route_legend_active">Aktívna chôdza</string>
+    <string name="map_route_legend_upcoming">Ďalšie úseky</string>
+    <string name="map_route_legend_transit">Linka MHD</string>
 
     <string name="category_attraction">Atrakcia</string>
     <string name="category_museum">Múzeum</string>

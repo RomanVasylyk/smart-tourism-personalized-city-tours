@@ -1,6 +1,7 @@
 package com.example.smarttourism.features.planner.components
 
 import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -12,6 +13,8 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
@@ -34,12 +37,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.smarttourism.features.planner.domain.model.RouteLeg
 import com.example.smarttourism.features.planner.domain.model.RoutePlan
+import com.example.smarttourism.features.planner.domain.model.RouteSegment
 import com.example.smarttourism.features.planner.domain.model.RouteStop
 import com.example.smarttourism.R
+import com.example.smarttourism.features.map.TransitLineColors
 import com.example.smarttourism.features.planner.ui.formatters.categoryLabel
 import com.example.smarttourism.features.planner.ui.formatters.formatCoordinate
 import com.example.smarttourism.features.planner.ui.formatters.paceLabel
@@ -49,7 +58,7 @@ import com.example.smarttourism.features.planner.ui.formatters.toRouteTimeOfDayL
 
 @Composable
 internal fun RouteSummaryCard(routeResponse: RoutePlan) {
-    ElevatedCard {
+    ElevatedCard(shape = RoundedCornerShape(PlannerUiTokens.CardRadius)) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -151,8 +160,15 @@ internal fun RouteStopTimelineItem(
         Column(
             modifier = Modifier
                 .weight(1f)
-                .clip(RoundedCornerShape(18.dp))
-                .clickable { expanded = !expanded }
+                .clip(RoundedCornerShape(PlannerUiTokens.CardRadius))
+                .clickable(
+                    role = Role.Button,
+                    onClick = { expanded = !expanded }
+                )
+                .semantics {
+                    contentDescription = "$statusLabel, ${item.name}"
+                    role = Role.Button
+                }
                 .animateContentSize()
                 .padding(start = 4.dp, bottom = 12.dp)
         ) {
@@ -163,7 +179,7 @@ internal fun RouteStopTimelineItem(
                 Surface(
                     shape = CircleShape,
                     color = statusColor.copy(alpha = 0.14f),
-                    border = androidx.compose.foundation.BorderStroke(1.dp, statusColor)
+                    border = BorderStroke(1.dp, statusColor)
                 ) {
                     Text(
                         text = item.order.toString(),
@@ -202,22 +218,20 @@ internal fun RouteStopTimelineItem(
             }
 
             Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = routeStopCompactSummary(item, incomingLeg),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+            RouteStopChipRow(
+                item = item,
+                incomingLeg = incomingLeg
             )
 
             if (expanded) {
                 Spacer(modifier = Modifier.height(10.dp))
-                Text(
-                    text = stringResource(
-                        R.string.route_stop_arrival_departure,
+                RouteTimelineChip(
+                    label = stringResource(
+                        R.string.route_stop_time_window_badge,
                         item.arrivalAfterMin,
                         item.departureAfterMin
                     ),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.secondary
                 )
                 incomingLeg?.segments
                     .orEmpty()
@@ -226,19 +240,10 @@ internal fun RouteStopTimelineItem(
                         mode == "transit" || (segment.durationMinutes ?: 0) > 0
                     }
                     .forEach { segment ->
-                        Text(
-                            text = routeSegmentLabel(segment),
-                            style = MaterialTheme.typography.bodySmall
+                        RouteSegmentDetail(
+                            segment = segment,
+                            fallbackLabel = routeSegmentLabel(segment)
                         )
-                        val fromStopName = segment.fromStopName
-                        val toStopName = segment.toStopName
-                        if (segment.mode == "transit" && !fromStopName.isNullOrBlank() && !toStopName.isNullOrBlank()) {
-                            Text(
-                                text = stringResource(R.string.route_stop_segment_stops, fromStopName, toStopName),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
                     }
                 if (!item.openingHoursRaw.isNullOrBlank()) {
                     Text(
@@ -256,14 +261,18 @@ internal fun RouteStopTimelineItem(
                         OutlinedButton(
                             onClick = onMoveUp,
                             enabled = canMoveUp && !isActionInProgress,
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(PlannerUiTokens.ButtonHeight)
                         ) {
                             Text(stringResource(R.string.action_move_up))
                         }
                         OutlinedButton(
                             onClick = onMoveDown,
                             enabled = canMoveDown && !isActionInProgress,
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(PlannerUiTokens.ButtonHeight)
                         ) {
                             Text(stringResource(R.string.action_move_down))
                         }
@@ -279,7 +288,9 @@ internal fun RouteStopTimelineItem(
                             OutlinedButton(
                                 onClick = onSkip,
                                 enabled = !isActionInProgress,
-                                modifier = Modifier.weight(1f)
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(PlannerUiTokens.ButtonHeight)
                             ) {
                                 Text(
                                     stringResource(
@@ -296,7 +307,9 @@ internal fun RouteStopTimelineItem(
                             OutlinedButton(
                                 onClick = onReplace,
                                 enabled = !isActionInProgress,
-                                modifier = Modifier.weight(1f)
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(PlannerUiTokens.ButtonHeight)
                             ) {
                                 Text(stringResource(R.string.action_replace_stop))
                             }
@@ -305,7 +318,9 @@ internal fun RouteStopTimelineItem(
                             Button(
                                 onClick = onMarkVisited,
                                 enabled = !isActionInProgress,
-                                modifier = Modifier.weight(1f)
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(PlannerUiTokens.ButtonHeight)
                             ) {
                                 Text(stringResource(R.string.action_mark_visited))
                             }
@@ -329,6 +344,114 @@ internal fun RouteStopTimelineItem(
 }
 
 @Composable
+private fun RouteStopChipRow(
+    item: RouteStop,
+    incomingLeg: RouteLeg?
+) {
+    val transitSegment = incomingLeg?.segments.orEmpty().firstOrNull { segment -> segment.mode == "transit" }
+    val travelMinutes = incomingLeg?.durationMinutes ?: item.travelMinutesFromPrevious
+
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            RouteTimelineChip(
+                label = stringResource(R.string.route_stop_walk_badge, travelMinutes),
+                color = MaterialTheme.colorScheme.primary
+            )
+            RouteTimelineChip(
+                label = stringResource(R.string.route_stop_visit_badge, item.visitDurationMin),
+                color = MaterialTheme.colorScheme.tertiary
+            )
+        }
+        if (transitSegment != null) {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                RouteTimelineChip(
+                    label = transitSegment.lineName
+                        ?.takeIf { it.isNotBlank() }
+                        ?.let { stringResource(R.string.route_stop_bus_line_badge, it, transitSegment.durationMinutes ?: 0) }
+                        ?: stringResource(R.string.route_stop_bus_badge, transitSegment.durationMinutes ?: 0),
+                    color = transitLineComposeColor(transitSegment.lineName)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun RouteSegmentDetail(
+    segment: RouteSegment,
+    fallbackLabel: String
+) {
+    val accent = if (segment.mode == "transit") {
+        transitLineComposeColor(segment.lineName)
+    } else {
+        MaterialTheme.colorScheme.primary
+    }
+
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        RouteTimelineChip(
+            label = if (segment.mode == "transit") {
+                segment.lineName
+                    ?.takeIf { it.isNotBlank() }
+                    ?.let { stringResource(R.string.route_stop_bus_line_badge, it, segment.durationMinutes ?: 0) }
+                    ?: stringResource(R.string.route_stop_bus_badge, segment.durationMinutes ?: 0)
+            } else {
+                fallbackLabel
+            },
+            color = accent
+        )
+        val fromStopName = segment.fromStopName
+        val toStopName = segment.toStopName
+        if (segment.mode == "transit" && !fromStopName.isNullOrBlank() && !toStopName.isNullOrBlank()) {
+            Text(
+                text = stringResource(R.string.route_stop_segment_stops, fromStopName, toStopName),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        val departureLabel = segment.departureTime.toRouteTimeOfDayLabel()
+        val arrivalLabel = segment.arrivalTime.toRouteTimeOfDayLabel()
+        if (segment.mode == "transit" && departureLabel != null && arrivalLabel != null) {
+            Text(
+                text = stringResource(R.string.route_stop_segment_schedule, departureLabel, arrivalLabel),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        val waitMinutes = segment.waitMinutesBeforeDeparture ?: 0
+        val inVehicleMinutes = segment.inVehicleMinutes ?: 0
+        if (segment.mode == "transit" && (waitMinutes > 0 || inVehicleMinutes > 0)) {
+            Text(
+                text = stringResource(R.string.route_stop_segment_wait_ride, waitMinutes, inVehicleMinutes),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
+
+@Composable
+internal fun RouteTimelineChip(
+    label: String,
+    color: Color,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        modifier = modifier.defaultMinSize(minHeight = 32.dp),
+        shape = RoundedCornerShape(999.dp),
+        color = color.copy(alpha = 0.12f),
+        border = BorderStroke(1.dp, color.copy(alpha = 0.5f))
+    ) {
+        Text(
+            text = label,
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 7.dp),
+            style = MaterialTheme.typography.labelMedium,
+            color = color,
+            fontWeight = FontWeight.SemiBold
+        )
+    }
+}
+
+@Composable
 private fun TimelineMarker(
     color: Color,
     isLast: Boolean
@@ -336,6 +459,7 @@ private fun TimelineMarker(
     Canvas(
         modifier = Modifier
             .width(28.dp)
+            .defaultMinSize(minHeight = 48.dp)
             .fillMaxHeight()
     ) {
         val centerX = size.width / 2f
@@ -354,6 +478,16 @@ private fun TimelineMarker(
             center = androidx.compose.ui.geometry.Offset(centerX, centerY)
         )
     }
+}
+
+private fun transitLineComposeColor(lineName: String?): Color {
+    val key = lineName?.takeIf { it.isNotBlank() } ?: "transit"
+    var hash = 0
+    key.forEach { character ->
+        hash = (hash * 31) + character.code
+    }
+    val colorValue = TransitLineColors[(hash and Int.MAX_VALUE) % TransitLineColors.size]
+    return Color(android.graphics.Color.parseColor(colorValue))
 }
 
 @Composable
@@ -401,7 +535,7 @@ internal fun RouteStopCard(
     onMarkVisited: () -> Unit,
     onSkip: () -> Unit
 ) {
-    Card {
+    Card(shape = RoundedCornerShape(PlannerUiTokens.CardRadius)) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -442,7 +576,8 @@ internal fun RouteStopCard(
                         if (canSkip) {
                             OutlinedButton(
                                 onClick = onSkip,
-                                enabled = !isActionInProgress
+                                enabled = !isActionInProgress,
+                                modifier = Modifier.height(PlannerUiTokens.ButtonHeight)
                             ) {
                                 Text(stringResource(R.string.action_skip_stop))
                             }
@@ -450,7 +585,8 @@ internal fun RouteStopCard(
                         if (isRouteActive) {
                             OutlinedButton(
                                 onClick = onMarkVisited,
-                                enabled = !isActionInProgress
+                                enabled = !isActionInProgress,
+                                modifier = Modifier.height(PlannerUiTokens.ButtonHeight)
                             ) {
                                 Text(stringResource(R.string.action_mark_visited))
                             }
@@ -458,7 +594,10 @@ internal fun RouteStopCard(
                     }
                 }
             }
-            Text(stringResource(R.string.route_stop_walk_from_previous, item.travelMinutesFromPrevious))
+            RouteStopChipRow(
+                item = item,
+                incomingLeg = incomingLeg
+            )
             incomingLeg?.segments
                 .orEmpty()
                 .filter { segment ->
@@ -466,45 +605,15 @@ internal fun RouteStopCard(
                     mode == "transit" || (segment.durationMinutes ?: 0) > 0
                 }
                 .forEach { segment ->
-                    Text(
-                        text = routeSegmentLabel(segment),
-                        style = MaterialTheme.typography.bodyMedium
+                    RouteSegmentDetail(
+                        segment = segment,
+                        fallbackLabel = routeSegmentLabel(segment)
                     )
-                    val fromStopName = segment.fromStopName
-                    val toStopName = segment.toStopName
-                    if (segment.mode == "transit" && !fromStopName.isNullOrBlank() && !toStopName.isNullOrBlank()) {
-                        Text(
-                            text = stringResource(R.string.route_stop_segment_stops, fromStopName, toStopName),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                    val departureLabel = segment.departureTime.toRouteTimeOfDayLabel()
-                    val arrivalLabel = segment.arrivalTime.toRouteTimeOfDayLabel()
-                    if (segment.mode == "transit" && departureLabel != null && arrivalLabel != null) {
-                        Text(
-                            text = stringResource(R.string.route_stop_segment_schedule, departureLabel, arrivalLabel),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                    val waitMinutes = segment.waitMinutesBeforeDeparture ?: 0
-                    val inVehicleMinutes = segment.inVehicleMinutes ?: 0
-                    if (segment.mode == "transit" && (waitMinutes > 0 || inVehicleMinutes > 0)) {
-                        Text(
-                            text = stringResource(
-                                R.string.route_stop_segment_wait_ride,
-                                waitMinutes,
-                                inVehicleMinutes
-                            ),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
                 }
-            Text(stringResource(R.string.route_stop_visit_duration, item.visitDurationMin))
-            Text(stringResource(R.string.route_stop_arrival_after_start, item.arrivalAfterMin))
-            Text(stringResource(R.string.route_stop_departure_after_start, item.departureAfterMin))
+            RouteTimelineChip(
+                label = stringResource(R.string.route_stop_time_window_badge, item.arrivalAfterMin, item.departureAfterMin),
+                color = MaterialTheme.colorScheme.secondary
+            )
             if (!item.openingHoursRaw.isNullOrBlank()) {
                 Text(
                     text = stringResource(R.string.route_stop_opening_hours, item.openingHoursRaw),
@@ -525,7 +634,7 @@ internal fun StatusCard(
     secondaryActionLabel: String? = null,
     onSecondaryAction: (() -> Unit)? = null
 ) {
-    ElevatedCard {
+    ElevatedCard(shape = RoundedCornerShape(PlannerUiTokens.CardRadius)) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -549,7 +658,9 @@ internal fun StatusCard(
                     if (secondaryActionLabel != null && onSecondaryAction != null) {
                         OutlinedButton(
                             onClick = onSecondaryAction,
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(PlannerUiTokens.ButtonHeight)
                         ) {
                             Text(secondaryActionLabel)
                         }
@@ -557,7 +668,9 @@ internal fun StatusCard(
                     if (actionLabel != null && onAction != null) {
                         Button(
                             onClick = onAction,
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(PlannerUiTokens.ButtonHeight)
                         ) {
                             Text(actionLabel)
                         }
@@ -578,8 +691,9 @@ internal fun SelectableRow(
         modifier = Modifier
             .fillMaxWidth()
             .clip(MaterialTheme.shapes.medium)
-            .clickable(enabled = enabled, onClick = onClick)
-            .padding(horizontal = 4.dp, vertical = 2.dp),
+            .clickable(enabled = enabled, role = Role.Button, onClick = onClick)
+            .defaultMinSize(minHeight = PlannerUiTokens.ButtonHeight)
+            .padding(horizontal = 4.dp, vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Start,
         content = content

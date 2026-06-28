@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -62,12 +63,12 @@ internal fun OfflineSupportCard(
     onDownloadOfflineMap: () -> Unit,
     onDeleteOfflineMap: () -> Unit
 ) {
-    ElevatedCard {
+    ElevatedCard(shape = RoundedCornerShape(PlannerUiTokens.CardRadius)) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+                .padding(PlannerUiTokens.CardPadding),
+            verticalArrangement = Arrangement.spacedBy(PlannerUiTokens.ItemSpacing)
         ) {
             Text(
                 text = stringResource(R.string.offline_support_title),
@@ -128,7 +129,9 @@ internal fun OfflineSupportCard(
                         OutlinedButton(
                             onClick = onDeleteOfflineMap,
                             enabled = !isOfflineMapBusy,
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(PlannerUiTokens.ButtonHeight)
                         ) {
                             Text(stringResource(R.string.action_delete_offline_map))
                         }
@@ -136,7 +139,9 @@ internal fun OfflineSupportCard(
                         Button(
                             onClick = onDownloadOfflineMap,
                             enabled = !isOfflineMapBusy,
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(PlannerUiTokens.ButtonHeight)
                         ) {
                             Text(stringResource(R.string.action_download_offline_map))
                         }
@@ -179,12 +184,12 @@ internal fun CitySelectorCard(
     enabled: Boolean = true,
     onCitySelected: (City) -> Unit
 ) {
-    ElevatedCard {
+    ElevatedCard(shape = RoundedCornerShape(PlannerUiTokens.CardRadius)) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+                .padding(PlannerUiTokens.CardPadding),
+            verticalArrangement = Arrangement.spacedBy(PlannerUiTokens.ItemSpacing)
         ) {
             Text(
                 text = stringResource(R.string.city_selector_title),
@@ -238,12 +243,12 @@ internal fun StartPointCard(
     onToggleMapSelection: () -> Unit,
     onUseCurrentLocation: () -> Unit
 ) {
-    ElevatedCard {
+    ElevatedCard(shape = RoundedCornerShape(PlannerUiTokens.CardRadius)) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+                .padding(PlannerUiTokens.CardPadding),
+            verticalArrangement = Arrangement.spacedBy(PlannerUiTokens.ItemSpacing)
         ) {
             Text(
                 text = stringResource(R.string.start_point_title),
@@ -273,7 +278,9 @@ internal fun StartPointCard(
             ) {
                 OutlinedButton(
                     onClick = onToggleMapSelection,
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(PlannerUiTokens.ButtonHeight),
                     enabled = enabled
                 ) {
                     Text(
@@ -286,7 +293,9 @@ internal fun StartPointCard(
                 }
                 Button(
                     onClick = onUseCurrentLocation,
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(PlannerUiTokens.ButtonHeight),
                     enabled = enabled && !isLocating
                 ) {
                     if (isLocating) {
@@ -367,12 +376,12 @@ internal fun RouteParametersCard(
         )
     }
 
-    ElevatedCard {
+    ElevatedCard(shape = RoundedCornerShape(PlannerUiTokens.CardRadius)) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .padding(PlannerUiTokens.CardPadding),
+            verticalArrangement = Arrangement.spacedBy(PlannerUiTokens.SectionSpacing)
         ) {
             Text(
                 text = stringResource(R.string.route_parameters_title),
@@ -404,13 +413,15 @@ internal fun RouteParametersCard(
                 ) {
                     OutlinedButton(
                         onClick = { datePickerDialog.show() },
-                        enabled = isEditingEnabled
+                        enabled = isEditingEnabled,
+                        modifier = Modifier.height(PlannerUiTokens.ButtonHeight)
                     ) {
                         Text(stringResource(R.string.action_pick_date))
                     }
                     OutlinedButton(
                         onClick = { timePickerDialog.show() },
-                        enabled = isEditingEnabled
+                        enabled = isEditingEnabled,
+                        modifier = Modifier.height(PlannerUiTokens.ButtonHeight)
                     ) {
                         Text(stringResource(R.string.action_pick_time))
                     }
@@ -529,7 +540,9 @@ internal fun RouteParametersCard(
             Button(
                 onClick = onGenerateRoute,
                 enabled = isEditingEnabled && !isGenerating,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(PlannerUiTokens.ButtonHeight)
             ) {
                 if (isGenerating) {
                     CircularProgressIndicator(
@@ -592,12 +605,12 @@ internal fun RouteTimingCard(
         )
     }
 
-    ElevatedCard {
+    ElevatedCard(shape = RoundedCornerShape(PlannerUiTokens.CardRadius)) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .padding(PlannerUiTokens.CardPadding),
+            verticalArrangement = Arrangement.spacedBy(PlannerUiTokens.SectionSpacing)
         ) {
             Text(
                 text = stringResource(R.string.route_timing_title),
@@ -626,13 +639,15 @@ internal fun RouteTimingCard(
                 ) {
                     OutlinedButton(
                         onClick = { datePickerDialog.show() },
-                        enabled = isEditingEnabled
+                        enabled = isEditingEnabled,
+                        modifier = Modifier.height(PlannerUiTokens.ButtonHeight)
                     ) {
                         Text(stringResource(R.string.action_pick_date))
                     }
                     OutlinedButton(
                         onClick = { timePickerDialog.show() },
-                        enabled = isEditingEnabled
+                        enabled = isEditingEnabled,
+                        modifier = Modifier.height(PlannerUiTokens.ButtonHeight)
                     ) {
                         Text(stringResource(R.string.action_pick_time))
                     }
@@ -704,12 +719,12 @@ internal fun RouteInterestsCard(
     onInterestToggle: (String, Boolean) -> Unit,
     isEditingEnabled: Boolean
 ) {
-    ElevatedCard {
+    ElevatedCard(shape = RoundedCornerShape(PlannerUiTokens.CardRadius)) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+                .padding(PlannerUiTokens.CardPadding),
+            verticalArrangement = Arrangement.spacedBy(PlannerUiTokens.ItemSpacing)
         ) {
             Text(
                 text = stringResource(R.string.route_interests_title),
@@ -759,12 +774,12 @@ internal fun RouteOptionsCard(
     onAllowPublicTransportChange: (Boolean) -> Unit,
     isEditingEnabled: Boolean
 ) {
-    ElevatedCard {
+    ElevatedCard(shape = RoundedCornerShape(PlannerUiTokens.CardRadius)) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+                .padding(PlannerUiTokens.CardPadding),
+            verticalArrangement = Arrangement.spacedBy(PlannerUiTokens.ItemSpacing)
         ) {
             Text(
                 text = stringResource(R.string.route_options_title),
@@ -840,7 +855,7 @@ private fun CompactToggleRow(
     onCheckedChange: (Boolean) -> Unit
 ) {
     Surface(
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(PlannerUiTokens.CompactCardRadius),
         tonalElevation = 2.dp,
         modifier = Modifier.fillMaxWidth()
     ) {

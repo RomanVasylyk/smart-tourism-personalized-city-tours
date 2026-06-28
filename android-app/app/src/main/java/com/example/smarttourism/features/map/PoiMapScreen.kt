@@ -245,6 +245,20 @@ fun PoiMapScreen(
             )
         }
 
+        if (!isSelectingStart && !isSelectingRoutePois && routeResponse != null) {
+            MapRouteLegend(
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .windowInsetsPadding(
+                        WindowInsets.safeDrawing.only(WindowInsetsSides.Start)
+                    )
+                    .padding(
+                        start = if (isFullScreen) 24.dp else 16.dp,
+                        bottom = locationButtonBottomPadding ?: if (isFullScreen) 104.dp else 20.dp
+                    )
+            )
+        }
+
         if (showLocationButton) {
             MapLocationButton(
                 enabled = currentLocation != null,

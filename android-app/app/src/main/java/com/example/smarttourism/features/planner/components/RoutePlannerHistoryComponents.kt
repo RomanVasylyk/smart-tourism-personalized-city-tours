@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -74,15 +75,15 @@ internal fun RouteBookmarksSheetContent(
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 bookmarks.forEach { bookmark ->
                     Surface(
-                        shape = RoundedCornerShape(18.dp),
+                        shape = RoundedCornerShape(PlannerUiTokens.CardRadius),
                         tonalElevation = 2.dp,
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(10.dp)
+                                .padding(PlannerUiTokens.CardPadding),
+                            verticalArrangement = Arrangement.spacedBy(PlannerUiTokens.ItemSpacing)
                         ) {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
@@ -130,13 +131,17 @@ internal fun RouteBookmarksSheetContent(
                             ) {
                                 Button(
                                     onClick = { onOpenBookmark(bookmark.id) },
-                                    modifier = Modifier.weight(1f)
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .height(PlannerUiTokens.ButtonHeight)
                                 ) {
                                     Text(stringResource(R.string.action_open_bookmark))
                                 }
                                 OutlinedButton(
                                     onClick = { onDeleteBookmark(bookmark.id) },
-                                    modifier = Modifier.weight(1f)
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .height(PlannerUiTokens.ButtonHeight)
                                 ) {
                                     Text(stringResource(R.string.action_delete_bookmark))
                                 }
@@ -188,15 +193,19 @@ internal fun RouteHistorySheetContent(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
-            Column(
-                horizontalAlignment = Alignment.End,
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                OutlinedButton(onClick = onRefresh, enabled = !isLoading) {
-                    Text(stringResource(R.string.action_refresh_history))
+                Column(
+                    horizontalAlignment = Alignment.End,
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    OutlinedButton(
+                        onClick = onRefresh,
+                        enabled = !isLoading,
+                        modifier = Modifier.height(PlannerUiTokens.ButtonHeight)
+                    ) {
+                        Text(stringResource(R.string.action_refresh_history))
+                    }
                 }
             }
-        }
 
             if (errorMessage != null) {
                 Text(
@@ -227,15 +236,15 @@ internal fun RouteHistorySheetContent(
                             stringResource(R.string.route_history_rating_value, rating)
                         } ?: stringResource(R.string.route_history_rating_missing)
                         Surface(
-                            shape = RoundedCornerShape(18.dp),
+                            shape = RoundedCornerShape(PlannerUiTokens.CardRadius),
                             tonalElevation = 2.dp,
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Column(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(16.dp),
-                                verticalArrangement = Arrangement.spacedBy(10.dp)
+                                    .padding(PlannerUiTokens.CardPadding),
+                                verticalArrangement = Arrangement.spacedBy(PlannerUiTokens.ItemSpacing)
                             ) {
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
@@ -302,7 +311,9 @@ internal fun RouteHistorySheetContent(
 
                                 Button(
                                     onClick = { onOpenEntry(entry) },
-                                    modifier = Modifier.fillMaxWidth()
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(PlannerUiTokens.ButtonHeight)
                                 ) {
                                     Text(stringResource(R.string.action_view_history_details))
                                 }
@@ -330,7 +341,7 @@ internal fun RouteHistoryDetailsDialog(
                 .fillMaxWidth()
                 .fillMaxHeight(0.92f)
                 .padding(16.dp),
-            shape = RoundedCornerShape(28.dp),
+            shape = RoundedCornerShape(PlannerUiTokens.CardRadius),
             tonalElevation = 6.dp
         ) {
             LazyColumn(
@@ -431,7 +442,9 @@ internal fun RouteHistoryDetailsDialog(
                 item {
                     OutlinedButton(
                         onClick = onDismiss,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(PlannerUiTokens.ButtonHeight)
                     ) {
                         Text(stringResource(R.string.action_close_history_details))
                     }
@@ -445,14 +458,14 @@ internal fun RouteHistoryDetailsDialog(
 internal fun RouteFeedbackSummaryCard(feedback: RouteFeedback?) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedCornerShape(PlannerUiTokens.CardRadius),
         tonalElevation = 3.dp
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+                .padding(PlannerUiTokens.CardPadding),
+            verticalArrangement = Arrangement.spacedBy(PlannerUiTokens.ItemSpacing)
         ) {
             Text(
                 text = stringResource(R.string.route_history_feedback_title),
@@ -541,7 +554,9 @@ internal fun ReplaceRouteStopSheetContent(
         Button(
             onClick = onUseBestSuggestion,
             enabled = !isActionInProgress,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(PlannerUiTokens.ButtonHeight)
         ) {
             Text(stringResource(R.string.action_replace_with_best))
         }
@@ -564,7 +579,7 @@ internal fun ReplaceRouteStopSheetContent(
                     key = { poi -> poi.id }
                 ) { poi ->
                     Surface(
-                        shape = RoundedCornerShape(18.dp),
+                        shape = RoundedCornerShape(PlannerUiTokens.CardRadius),
                         tonalElevation = 2.dp,
                         modifier = Modifier.fillMaxWidth()
                     ) {
@@ -588,7 +603,8 @@ internal fun ReplaceRouteStopSheetContent(
                             }
                             OutlinedButton(
                                 onClick = { onChooseCandidate(poi.id) },
-                                enabled = !isActionInProgress
+                                enabled = !isActionInProgress,
+                                modifier = Modifier.height(PlannerUiTokens.ButtonHeight)
                             ) {
                                 Text(stringResource(R.string.action_choose_stop))
                             }

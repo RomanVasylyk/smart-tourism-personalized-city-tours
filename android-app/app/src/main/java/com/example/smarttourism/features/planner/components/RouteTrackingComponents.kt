@@ -4,8 +4,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
@@ -57,12 +59,12 @@ internal fun RouteTrackingCard(
         status == RouteSessionStatus.COMPLETED ||
         status == RouteSessionStatus.CANCELLED
 
-    ElevatedCard {
+    ElevatedCard(shape = RoundedCornerShape(PlannerUiTokens.CardRadius)) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
+                .padding(PlannerUiTokens.CardPadding),
+            verticalArrangement = Arrangement.spacedBy(PlannerUiTokens.ItemSpacing)
         ) {
             Text(
                 text = stringResource(R.string.route_tracking_title),
@@ -95,31 +97,38 @@ internal fun RouteTrackingCard(
                 progress = { progress },
                 modifier = Modifier.fillMaxWidth()
             )
-            Text(
-                text = stringResource(
-                    R.string.route_tracking_visited_count,
-                    metrics.visitedCount,
-                    metrics.totalCount
-                )
+            RouteTrackingStatusRow(
+                visitedCount = metrics.visitedCount,
+                totalCount = metrics.totalCount,
+                nextTargetName = nextTargetName
             )
             Text(
                 text = stringResource(R.string.route_tracking_next_target, nextTargetName),
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.SemiBold
             )
-            Text(
-                text = stringResource(
-                    R.string.route_tracking_distance_to_next,
-                    metrics.distanceToNextTargetMeters?.let(::formatDistanceMeters)
-                        ?: stringResource(R.string.common_unknown)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                RouteTimelineChip(
+                    label = stringResource(
+                        R.string.route_tracking_distance_chip,
+                        metrics.distanceToNextTargetMeters?.let(::formatDistanceMeters)
+                            ?: stringResource(R.string.common_unknown)
+                    ),
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.weight(1f)
                 )
-            )
-            Text(
-                text = stringResource(
-                    R.string.route_tracking_estimated_remaining,
-                    metrics.estimatedRemainingMinutes
+                RouteTimelineChip(
+                    label = stringResource(
+                        R.string.route_tracking_remaining_chip,
+                        metrics.estimatedRemainingMinutes
+                    ),
+                    color = MaterialTheme.colorScheme.tertiary,
+                    modifier = Modifier.weight(1f)
                 )
-            )
+            }
             if (status == RouteSessionStatus.IN_PROGRESS && currentLocation == null) {
                 Text(
                     text = stringResource(R.string.route_tracking_waiting_for_gps),
@@ -187,7 +196,9 @@ internal fun RouteTrackingCard(
                 when {
                     canStart -> Button(
                         onClick = onStartRoute,
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(PlannerUiTokens.ButtonHeight),
                         enabled = metrics.totalCount > 0 && canStartCurrentRoute
                     ) {
                         Text(stringResource(R.string.action_start_route))
@@ -195,14 +206,18 @@ internal fun RouteTrackingCard(
 
                     canPause -> OutlinedButton(
                         onClick = onPauseRoute,
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(PlannerUiTokens.ButtonHeight)
                     ) {
                         Text(stringResource(R.string.action_pause_route))
                     }
 
                     canResume -> OutlinedButton(
                         onClick = onResumeRoute,
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(PlannerUiTokens.ButtonHeight)
                     ) {
                         Text(stringResource(R.string.action_resume_route))
                     }
@@ -214,7 +229,9 @@ internal fun RouteTrackingCard(
             ) {
                 OutlinedButton(
                     onClick = onFinishRoute,
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(PlannerUiTokens.ButtonHeight),
                     enabled = metrics.canComplete &&
                         (status == RouteSessionStatus.IN_PROGRESS || status == RouteSessionStatus.PAUSED)
                 ) {
@@ -222,7 +239,9 @@ internal fun RouteTrackingCard(
                 }
                 OutlinedButton(
                     onClick = onCancelRoute,
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(PlannerUiTokens.ButtonHeight),
                     enabled = status == RouteSessionStatus.IN_PROGRESS || status == RouteSessionStatus.PAUSED
                 ) {
                     Text(stringResource(R.string.action_cancel_route))
@@ -243,5 +262,34 @@ internal fun RouteTrackingCard(
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun RouteTrackingStatusRow(
+    visitedCount: Int,
+    totalCount: Int,
+    nextTargetName: String
+) {
+    val upcomingCount = (totalCount - visitedCount).coerceAtLeast(0)
+
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            RouteTimelineChip(
+                label = stringResource(R.string.route_tracking_done_chip, visitedCount, totalCount),
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.weight(1f)
+            )
+            RouteTimelineChip(
+                label = stringResource(R.string.route_tracking_upcoming_chip, upcomingCount),
+                color = MaterialTheme.colorScheme.outline,
+                modifier = Modifier.weight(1f)
+            )
+        }
+        RouteTimelineChip(
+            label = stringResource(R.string.route_tracking_current_chip, nextTargetName),
+            color = MaterialTheme.colorScheme.secondary,
+            modifier = Modifier.fillMaxWidth()
+        )
     }
 }

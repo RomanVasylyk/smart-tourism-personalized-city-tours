@@ -5,9 +5,15 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -15,9 +21,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import com.example.smarttourism.R
 
 @Composable
 internal fun MapSelectionHint(
@@ -38,6 +51,7 @@ internal fun MapLocationButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val description = stringResource(R.string.map_current_location_button)
     val containerColor = if (enabled) {
         MaterialTheme.colorScheme.surface
     } else {
@@ -51,7 +65,7 @@ internal fun MapLocationButton(
 
     Box(
         modifier = modifier
-            .size(48.dp)
+            .size(56.dp)
             .clip(CircleShape)
             .background(containerColor)
             .border(
@@ -59,7 +73,11 @@ internal fun MapLocationButton(
                 color = MaterialTheme.colorScheme.outlineVariant,
                 shape = CircleShape
             )
-            .clickable(enabled = enabled, onClick = onClick),
+            .clickable(enabled = enabled, role = Role.Button, onClick = onClick)
+            .semantics {
+                contentDescription = description
+                role = Role.Button
+            },
         contentAlignment = Alignment.Center
     ) {
         Canvas(modifier = Modifier.size(22.dp)) {
@@ -108,5 +126,65 @@ internal fun MapLocationButton(
                 cap = StrokeCap.Round
             )
         }
+    }
+}
+
+@Composable
+internal fun MapRouteLegend(
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        modifier = modifier,
+        shape = RoundedCornerShape(16.dp),
+        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.92f),
+        tonalElevation = 4.dp,
+        shadowElevation = 4.dp
+    ) {
+        Column(
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+            verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                text = stringResource(R.string.map_route_legend_title),
+                style = MaterialTheme.typography.labelLarge
+            )
+            MapLegendItem(
+                color = Color(android.graphics.Color.parseColor(RoutePrimaryLineColor)),
+                label = stringResource(R.string.map_route_legend_active)
+            )
+            MapLegendItem(
+                color = Color(android.graphics.Color.parseColor(RouteSecondaryLineColor)),
+                label = stringResource(R.string.map_route_legend_upcoming)
+            )
+            MapLegendItem(
+                color = Color(android.graphics.Color.parseColor(TransitLineColors.first())),
+                label = stringResource(R.string.map_route_legend_transit)
+            )
+        }
+    }
+}
+
+@Composable
+private fun MapLegendItem(
+    color: Color,
+    label: String
+) {
+    Row(
+        modifier = Modifier.defaultMinSize(minHeight = 28.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .width(28.dp)
+                .height(4.dp)
+                .clip(RoundedCornerShape(999.dp))
+                .background(color)
+        )
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }

@@ -148,6 +148,11 @@
     <string name="route_tracking_auto_visit_hint">POIs are marked visited automatically within %1$d m, or manually from each stop.</string>
     <string name="route_tracking_finish_requirement">Finish route is available after at least %1$d / %2$d POIs are visited.</string>
     <string name="route_tracking_no_stops">No POIs are available for this route.</string>
+    <string name="route_tracking_done_chip">Done %1$d/%2$d</string>
+    <string name="route_tracking_current_chip">Current: %1$s</string>
+    <string name="route_tracking_upcoming_chip">Upcoming %1$d</string>
+    <string name="route_tracking_distance_chip">%1$s away</string>
+    <string name="route_tracking_remaining_chip">%1$d min left</string>
     <string name="route_preview_outdated_title">Route preview needs refresh</string>
     <string name="route_preview_outdated_body">Parameters changed. Generate route again to apply them.</string>
     <string name="route_preview_edit_title">Edit route</string>
@@ -246,6 +251,11 @@
     <string name="route_stop_status_pending">Planned</string>
     <string name="route_stop_summary_compact">%1$d min travel • %2$d min visit</string>
     <string name="route_stop_arrival_departure">Arrive %1$d min • Leave %2$d min</string>
+    <string name="route_stop_walk_badge">Walk %1$d min</string>
+    <string name="route_stop_bus_badge">Bus %1$d min</string>
+    <string name="route_stop_bus_line_badge">%1$s bus %2$d min</string>
+    <string name="route_stop_visit_badge">Visit %1$d min</string>
+    <string name="route_stop_time_window_badge">%1$d-%2$d min</string>
     <string name="action_view_stop_details">View details</string>
     <string name="action_hide_stop_details">Hide details</string>
     <string name="action_mark_visited">Mark visited</string>
@@ -257,9 +267,14 @@
     <string name="map_start_marker_label">Start</string>
     <string name="map_route_stop_snippet">%1$s &#8226; walk %2$d min &#8226; visit %3$d min</string>
     <string name="map_current_location_title">Current GPS location</string>
+    <string name="map_current_location_button">Center map on current location</string>
     <string name="map_visited_route_stop_title">Visited: %1$s</string>
     <string name="map_poi_selection_hint">Tap POI markers to include them in the route. Selected: %1$d</string>
     <string name="map_poi_selected_snippet">%1$s &#8226; selected for route</string>
+    <string name="map_route_legend_title">Route</string>
+    <string name="map_route_legend_active">Active walk</string>
+    <string name="map_route_legend_upcoming">Upcoming</string>
+    <string name="map_route_legend_transit">MHD line</string>
 
     <string name="category_attraction">Attraction</string>
     <string name="category_museum">Museum</string>
