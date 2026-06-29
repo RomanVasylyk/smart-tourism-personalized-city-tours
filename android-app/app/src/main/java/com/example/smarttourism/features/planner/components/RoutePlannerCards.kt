@@ -10,7 +10,7 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -131,7 +131,7 @@ internal fun OfflineSupportCard(
                             enabled = !isOfflineMapBusy,
                             modifier = Modifier
                                 .weight(1f)
-                                .height(PlannerUiTokens.ButtonHeight)
+                                .heightIn(min = PlannerUiTokens.ButtonHeight)
                         ) {
                             Text(stringResource(R.string.action_delete_offline_map))
                         }
@@ -141,7 +141,7 @@ internal fun OfflineSupportCard(
                             enabled = !isOfflineMapBusy,
                             modifier = Modifier
                                 .weight(1f)
-                                .height(PlannerUiTokens.ButtonHeight)
+                                .heightIn(min = PlannerUiTokens.ButtonHeight)
                         ) {
                             Text(stringResource(R.string.action_download_offline_map))
                         }
@@ -280,7 +280,7 @@ internal fun StartPointCard(
                     onClick = onToggleMapSelection,
                     modifier = Modifier
                         .weight(1f)
-                        .height(PlannerUiTokens.ButtonHeight),
+                        .heightIn(min = PlannerUiTokens.ButtonHeight),
                     enabled = enabled
                 ) {
                     Text(
@@ -295,7 +295,7 @@ internal fun StartPointCard(
                     onClick = onUseCurrentLocation,
                     modifier = Modifier
                         .weight(1f)
-                        .height(PlannerUiTokens.ButtonHeight),
+                        .heightIn(min = PlannerUiTokens.ButtonHeight),
                     enabled = enabled && !isLocating
                 ) {
                     if (isLocating) {
@@ -414,14 +414,14 @@ internal fun RouteParametersCard(
                     OutlinedButton(
                         onClick = { datePickerDialog.show() },
                         enabled = isEditingEnabled,
-                        modifier = Modifier.height(PlannerUiTokens.ButtonHeight)
+                        modifier = Modifier.heightIn(min = PlannerUiTokens.ButtonHeight)
                     ) {
                         Text(stringResource(R.string.action_pick_date))
                     }
                     OutlinedButton(
                         onClick = { timePickerDialog.show() },
                         enabled = isEditingEnabled,
-                        modifier = Modifier.height(PlannerUiTokens.ButtonHeight)
+                        modifier = Modifier.heightIn(min = PlannerUiTokens.ButtonHeight)
                     ) {
                         Text(stringResource(R.string.action_pick_time))
                     }
@@ -542,7 +542,7 @@ internal fun RouteParametersCard(
                 enabled = isEditingEnabled && !isGenerating,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(PlannerUiTokens.ButtonHeight)
+                    .heightIn(min = PlannerUiTokens.ButtonHeight)
             ) {
                 if (isGenerating) {
                     CircularProgressIndicator(
@@ -640,14 +640,14 @@ internal fun RouteTimingCard(
                     OutlinedButton(
                         onClick = { datePickerDialog.show() },
                         enabled = isEditingEnabled,
-                        modifier = Modifier.height(PlannerUiTokens.ButtonHeight)
+                        modifier = Modifier.heightIn(min = PlannerUiTokens.ButtonHeight)
                     ) {
                         Text(stringResource(R.string.action_pick_date))
                     }
                     OutlinedButton(
                         onClick = { timePickerDialog.show() },
                         enabled = isEditingEnabled,
-                        modifier = Modifier.height(PlannerUiTokens.ButtonHeight)
+                        modifier = Modifier.heightIn(min = PlannerUiTokens.ButtonHeight)
                     ) {
                         Text(stringResource(R.string.action_pick_time))
                     }

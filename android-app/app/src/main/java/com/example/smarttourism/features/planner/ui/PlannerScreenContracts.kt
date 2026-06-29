@@ -16,6 +16,7 @@ internal data class PlannerScreenState(
     val isStopsSheetOpen: Boolean,
     val replacingPoiId: Int?,
     val selectedHistoryEntry: RouteHistoryEntry?,
+    val selectedMapPoiForAction: Poi?,
     val isFeedbackDialogOpen: Boolean,
     val isMapFullScreen: Boolean,
     val pois: List<Poi>,
@@ -49,6 +50,7 @@ internal data class PlannerScreenState(
     val highlightedPoiId: Int?,
     val routeFeedback: RouteFeedback?,
     val isPoiLoading: Boolean,
+    val mapRecenterRequestKey: Int,
     val errorDialog: PlannerErrorDialogState?
 )
 
@@ -93,6 +95,9 @@ internal data class PlannerActions(
     val onDismissFeedback: () -> Unit,
     val onFeedbackChange: (RouteFeedback) -> Unit,
     val onDismissFullScreenMap: () -> Unit,
+    val onDismissMapPoiAction: () -> Unit,
+    val onConfirmMapPoiToggle: (Poi) -> Unit,
+    val onCurrentLocationRequested: () -> Unit,
     val onStartPointSelected: (Double, Double) -> Unit,
     val onRoutePoiSelected: (Poi) -> Unit
 )

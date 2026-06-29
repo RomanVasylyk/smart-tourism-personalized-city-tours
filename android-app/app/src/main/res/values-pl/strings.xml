@@ -32,6 +32,10 @@
     <string name="status_off_route_rerouting_body">Trasa jest aktualizowana od twojej bieżącej lokalizacji.</string>
     <string name="status_no_stops_title">Nie wygenerowano przystanków</string>
     <string name="status_no_stops_body">Żadne przystanki trasy nie pasują do wybranego czasu, zainteresowań i godzin otwarcia.</string>
+    <string name="status_poi_loading_title">Ładowanie miejsc</string>
+    <string name="status_poi_loading_body">Mapa przygotowuje POI dla wybranego miasta.</string>
+    <string name="status_poi_empty_title">Brak dostępnych miejsc</string>
+    <string name="status_poi_empty_body">To miasto nie ma jeszcze POI w pamięci podręcznej albo backend nie mógł ich dostarczyć.</string>
     <string name="status_no_route_title">Brak trasy</string>
     <string name="status_no_route_body">Wybierz punkt startowy i parametry, a potem wygeneruj trasę. Ostatnia udana trasa zostanie automatycznie przywrócona przy starcie aplikacji.</string>
 
@@ -89,11 +93,29 @@
     <string name="action_choose_required_places_on_map">Mapa</string>
     <string name="action_choose_required_places_from_list">Lista</string>
     <string name="action_clear_required_places">Wyczyść wybrane miejsca</string>
+    <string name="action_add_required_place_to_route">Dodaj do trasy</string>
+    <string name="action_remove_required_place_from_route">Usuń z trasy</string>
+    <string name="action_dismiss_selected_place">Zamknij</string>
     <string name="action_leave_feedback">Zostaw opinię</string>
     <string name="action_edit_feedback">Edytuj opinię</string>
     <string name="action_done">Gotowe</string>
+    <string name="action_retry_route_generation">Spróbuj ponownie</string>
+    <string name="action_use_walking_only">Tylko pieszo</string>
 
     <string name="route_parameters_title">Parametry trasy</string>
+    <string name="planning_step_city_time_title">Miasto i czas</string>
+    <string name="planning_step_city_time_body">Potwierdź, gdzie i kiedy zaczyna się trasa.</string>
+    <string name="planning_step_interests_places_title">Zainteresowania i miejsca</string>
+    <string name="planning_step_interests_places_body">Wybierz tematy trasy i obowiązkowe POI.</string>
+    <string name="planning_step_route_title">Trasa</string>
+    <string name="planning_step_route_body">Ustaw końcowe ograniczenia, a potem wygeneruj miejską pętlę.</string>
+    <string name="planning_generate_ready_body">Wygeneruj, gdy trzy kroki wyglądają dobrze.</string>
+    <string name="planning_generate_loading_body">Planowanie trasy i sprawdzanie czasów przejazdu.</string>
+    <string name="route_timing_title">Czas i tempo</string>
+    <string name="route_interests_title">Zainteresowania trasy</string>
+    <string name="route_interests_body">Wybierz kategorie, które mają wpływać na rekomendacje POI.</string>
+    <string name="route_options_title">Opcje trasy</string>
+    <string name="route_transport_unavailable_body">Komunikacja miejska nie jest jeszcze skonfigurowana dla tego miasta. Trasa zostanie zaplanowana jako piesza pętla.</string>
     <string name="route_start_time_label">Czas rozpoczęcia trasy</string>
     <string name="action_pick_date">Data</string>
     <string name="action_pick_time">Godzina</string>
@@ -126,6 +148,11 @@
     <string name="route_tracking_estimated_remaining">Szacowany pozostały czas: %1$d min</string>
     <string name="route_tracking_waiting_for_gps">Oczekiwanie na sygnał GPS...</string>
     <string name="route_tracking_current_location">GPS: szerokość %1$s, długość %2$s</string>
+    <string name="route_tracking_current_chip">Aktualne</string>
+    <string name="route_tracking_done_chip">Gotowe</string>
+    <string name="route_tracking_upcoming_chip">Planowane</string>
+    <string name="route_tracking_distance_chip">Dystans</string>
+    <string name="route_tracking_remaining_chip">Pozostało</string>
     <string name="route_tracking_auto_visit_hint">Miejsca w promieniu %1$d m są automatycznie oznaczane jako odwiedzone, można też oznaczyć je ręcznie przy każdym przystanku.</string>
     <string name="route_tracking_finish_requirement">Zakończenie trasy będzie dostępne po odwiedzeniu co najmniej %1$d / %2$d miejsc.</string>
     <string name="route_tracking_no_stops">Brak miejsc dla tej trasy.</string>
@@ -227,6 +254,11 @@
     <string name="route_stop_status_pending">Zaplanowane</string>
     <string name="route_stop_summary_compact">%1$d min drogi • %2$d min wizyty</string>
     <string name="route_stop_arrival_departure">Przybycie %1$d min • wyjście %2$d min</string>
+    <string name="route_stop_walk_badge">Pieszo %1$d min</string>
+    <string name="route_stop_bus_badge">Bus %1$d min</string>
+    <string name="route_stop_bus_line_badge">%1$s bus %2$d min</string>
+    <string name="route_stop_visit_badge">Wizyta %1$d min</string>
+    <string name="route_stop_time_window_badge">%1$d-%2$d min</string>
     <string name="action_view_stop_details">Pokaż szczegóły</string>
     <string name="action_hide_stop_details">Ukryj szczegóły</string>
     <string name="action_mark_visited">Oznacz jako odwiedzone</string>
@@ -238,9 +270,15 @@
     <string name="map_start_marker_label">Start</string>
     <string name="map_route_stop_snippet">%1$s &#8226; pieszo %2$d min &#8226; wizyta %3$d min</string>
     <string name="map_current_location_title">Bieżąca lokalizacja GPS</string>
+    <string name="map_current_location_button">Wycentruj mapę na aktualnej lokalizacji</string>
     <string name="map_visited_route_stop_title">Odwiedzone: %1$s</string>
     <string name="map_poi_selection_hint">Dotknij markerów POI, aby dodać je do trasy. Wybrano: %1$d</string>
     <string name="map_poi_selected_snippet">%1$s &#8226; wybrane do trasy</string>
+    <string name="map_selected_poi_title">Wybrane miejsce</string>
+    <string name="map_route_legend_title">Trasa</string>
+    <string name="map_route_legend_active">Aktywny spacer</string>
+    <string name="map_route_legend_upcoming">Nadchodzące</string>
+    <string name="map_route_legend_transit">Linia komunikacji</string>
 
     <string name="category_attraction">Atrakcja</string>
     <string name="category_museum">Muzeum</string>

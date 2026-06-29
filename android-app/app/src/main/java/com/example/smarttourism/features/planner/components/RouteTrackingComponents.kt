@@ -4,7 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -198,7 +198,7 @@ internal fun RouteTrackingCard(
                         onClick = onStartRoute,
                         modifier = Modifier
                             .weight(1f)
-                            .height(PlannerUiTokens.ButtonHeight),
+                            .heightIn(min = PlannerUiTokens.ButtonHeight),
                         enabled = metrics.totalCount > 0 && canStartCurrentRoute
                     ) {
                         Text(stringResource(R.string.action_start_route))
@@ -208,7 +208,7 @@ internal fun RouteTrackingCard(
                         onClick = onPauseRoute,
                         modifier = Modifier
                             .weight(1f)
-                            .height(PlannerUiTokens.ButtonHeight)
+                            .heightIn(min = PlannerUiTokens.ButtonHeight)
                     ) {
                         Text(stringResource(R.string.action_pause_route))
                     }
@@ -217,7 +217,7 @@ internal fun RouteTrackingCard(
                         onClick = onResumeRoute,
                         modifier = Modifier
                             .weight(1f)
-                            .height(PlannerUiTokens.ButtonHeight)
+                            .heightIn(min = PlannerUiTokens.ButtonHeight)
                     ) {
                         Text(stringResource(R.string.action_resume_route))
                     }
@@ -231,7 +231,7 @@ internal fun RouteTrackingCard(
                     onClick = onFinishRoute,
                     modifier = Modifier
                         .weight(1f)
-                        .height(PlannerUiTokens.ButtonHeight),
+                        .heightIn(min = PlannerUiTokens.ButtonHeight),
                     enabled = metrics.canComplete &&
                         (status == RouteSessionStatus.IN_PROGRESS || status == RouteSessionStatus.PAUSED)
                 ) {
@@ -241,7 +241,7 @@ internal fun RouteTrackingCard(
                     onClick = onCancelRoute,
                     modifier = Modifier
                         .weight(1f)
-                        .height(PlannerUiTokens.ButtonHeight),
+                        .heightIn(min = PlannerUiTokens.ButtonHeight),
                     enabled = status == RouteSessionStatus.IN_PROGRESS || status == RouteSessionStatus.PAUSED
                 ) {
                     Text(stringResource(R.string.action_cancel_route))

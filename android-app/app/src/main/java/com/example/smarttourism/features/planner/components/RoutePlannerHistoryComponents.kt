@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -133,7 +132,7 @@ internal fun RouteBookmarksSheetContent(
                                     onClick = { onOpenBookmark(bookmark.id) },
                                     modifier = Modifier
                                         .weight(1f)
-                                        .height(PlannerUiTokens.ButtonHeight)
+                                        .heightIn(min = PlannerUiTokens.ButtonHeight)
                                 ) {
                                     Text(stringResource(R.string.action_open_bookmark))
                                 }
@@ -141,7 +140,7 @@ internal fun RouteBookmarksSheetContent(
                                     onClick = { onDeleteBookmark(bookmark.id) },
                                     modifier = Modifier
                                         .weight(1f)
-                                        .height(PlannerUiTokens.ButtonHeight)
+                                        .heightIn(min = PlannerUiTokens.ButtonHeight)
                                 ) {
                                     Text(stringResource(R.string.action_delete_bookmark))
                                 }
@@ -200,7 +199,7 @@ internal fun RouteHistorySheetContent(
                     OutlinedButton(
                         onClick = onRefresh,
                         enabled = !isLoading,
-                        modifier = Modifier.height(PlannerUiTokens.ButtonHeight)
+                        modifier = Modifier.heightIn(min = PlannerUiTokens.ButtonHeight)
                     ) {
                         Text(stringResource(R.string.action_refresh_history))
                     }
@@ -313,7 +312,7 @@ internal fun RouteHistorySheetContent(
                                     onClick = { onOpenEntry(entry) },
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .height(PlannerUiTokens.ButtonHeight)
+                                        .heightIn(min = PlannerUiTokens.ButtonHeight)
                                 ) {
                                     Text(stringResource(R.string.action_view_history_details))
                                 }
@@ -444,7 +443,7 @@ internal fun RouteHistoryDetailsDialog(
                         onClick = onDismiss,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(PlannerUiTokens.ButtonHeight)
+                            .heightIn(min = PlannerUiTokens.ButtonHeight)
                     ) {
                         Text(stringResource(R.string.action_close_history_details))
                     }
@@ -556,7 +555,7 @@ internal fun ReplaceRouteStopSheetContent(
             enabled = !isActionInProgress,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(PlannerUiTokens.ButtonHeight)
+                .heightIn(min = PlannerUiTokens.ButtonHeight)
         ) {
             Text(stringResource(R.string.action_replace_with_best))
         }
@@ -604,7 +603,7 @@ internal fun ReplaceRouteStopSheetContent(
                             OutlinedButton(
                                 onClick = { onChooseCandidate(poi.id) },
                                 enabled = !isActionInProgress,
-                                modifier = Modifier.height(PlannerUiTokens.ButtonHeight)
+                                modifier = Modifier.heightIn(min = PlannerUiTokens.ButtonHeight)
                             ) {
                                 Text(stringResource(R.string.action_choose_stop))
                             }

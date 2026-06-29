@@ -32,6 +32,10 @@
     <string name="status_off_route_rerouting_body">Az útvonal frissítése az aktuális helyzetedtől történik.</string>
     <string name="status_no_stops_title">Nem készültek megállók</string>
     <string name="status_no_stops_body">Nincs olyan útvonalmegálló, amely megfelel a kiválasztott időkeretnek, érdeklődési köröknek és nyitvatartásnak.</string>
+    <string name="status_poi_loading_title">Helyek betöltése</string>
+    <string name="status_poi_loading_body">A térkép előkészíti a kiválasztott város POI-jait.</string>
+    <string name="status_poi_empty_title">Nincsenek elérhető helyek</string>
+    <string name="status_poi_empty_body">Ehhez a városhoz még nincsenek gyorsítótárazott POI-k, vagy a backend nem tudta biztosítani őket.</string>
     <string name="status_no_route_title">Még nincs útvonal</string>
     <string name="status_no_route_body">Válassz kezdőpontot és paramétereket, majd generálj útvonalat. Az utolsó sikeres útvonal az alkalmazás indításakor automatikusan visszaáll.</string>
 
@@ -89,11 +93,29 @@
     <string name="action_choose_required_places_on_map">Térkép</string>
     <string name="action_choose_required_places_from_list">Lista</string>
     <string name="action_clear_required_places">Kiválasztott helyek törlése</string>
+    <string name="action_add_required_place_to_route">Hozzáadás az útvonalhoz</string>
+    <string name="action_remove_required_place_from_route">Eltávolítás az útvonalból</string>
+    <string name="action_dismiss_selected_place">Bezárás</string>
     <string name="action_leave_feedback">Visszajelzés küldése</string>
     <string name="action_edit_feedback">Visszajelzés szerkesztése</string>
     <string name="action_done">Kész</string>
+    <string name="action_retry_route_generation">Újra</string>
+    <string name="action_use_walking_only">Csak gyalog</string>
 
     <string name="route_parameters_title">Útvonalparaméterek</string>
+    <string name="planning_step_city_time_title">Város és idő</string>
+    <string name="planning_step_city_time_body">Erősítsd meg, hol és mikor indul az útvonal.</string>
+    <string name="planning_step_interests_places_title">Érdeklődési körök és helyek</string>
+    <string name="planning_step_interests_places_body">Válassz útvonaltémákat és kötelező POI-kat.</string>
+    <string name="planning_step_route_title">Útvonal</string>
+    <string name="planning_step_route_body">Állítsd be a végső korlátokat, majd generáld a városi kört.</string>
+    <string name="planning_generate_ready_body">Generálj, ha a három lépés megfelelő.</string>
+    <string name="planning_generate_loading_body">Útvonal tervezése és utazási idők ellenőrzése.</string>
+    <string name="route_timing_title">Idő és tempó</string>
+    <string name="route_interests_title">Útvonal érdeklődési körei</string>
+    <string name="route_interests_body">Válassz kategóriákat, amelyek befolyásolják a POI-ajánlásokat.</string>
+    <string name="route_options_title">Útvonalbeállítások</string>
+    <string name="route_transport_unavailable_body">A tömegközlekedés még nincs konfigurálva ehhez a városhoz. Az útvonal gyalogos körként lesz megtervezve.</string>
     <string name="route_start_time_label">Útvonal kezdési ideje</string>
     <string name="action_pick_date">Dátum</string>
     <string name="action_pick_time">Idő</string>
@@ -126,6 +148,11 @@
     <string name="route_tracking_estimated_remaining">Becsült hátralévő idő: %1$d perc</string>
     <string name="route_tracking_waiting_for_gps">Várakozás GPS-jelre...</string>
     <string name="route_tracking_current_location">GPS: szélesség %1$s, hosszúság %2$s</string>
+    <string name="route_tracking_current_chip">Aktuális</string>
+    <string name="route_tracking_done_chip">Kész</string>
+    <string name="route_tracking_upcoming_chip">Következő</string>
+    <string name="route_tracking_distance_chip">Távolság</string>
+    <string name="route_tracking_remaining_chip">Hátralévő</string>
     <string name="route_tracking_auto_visit_hint">A helyek %1$d m-en belül automatikusan meglátogatottként jelölődnek, vagy kézzel is jelölhetők minden megállónál.</string>
     <string name="route_tracking_finish_requirement">Az útvonal befejezése akkor érhető el, ha legalább %1$d / %2$d helyet meglátogattál.</string>
     <string name="route_tracking_no_stops">Ehhez az útvonalhoz nincsenek helyek.</string>
@@ -227,6 +254,11 @@
     <string name="route_stop_status_pending">Tervezett</string>
     <string name="route_stop_summary_compact">%1$d perc út • %2$d perc látogatás</string>
     <string name="route_stop_arrival_departure">Érkezés %1$d perc • távozás %2$d perc</string>
+    <string name="route_stop_walk_badge">Gyalog %1$d perc</string>
+    <string name="route_stop_bus_badge">Busz %1$d perc</string>
+    <string name="route_stop_bus_line_badge">%1$s busz %2$d perc</string>
+    <string name="route_stop_visit_badge">Látogatás %1$d perc</string>
+    <string name="route_stop_time_window_badge">%1$d-%2$d perc</string>
     <string name="action_view_stop_details">Részletek megjelenítése</string>
     <string name="action_hide_stop_details">Részletek elrejtése</string>
     <string name="action_mark_visited">Megjelölés meglátogatottként</string>
@@ -238,9 +270,15 @@
     <string name="map_start_marker_label">Start</string>
     <string name="map_route_stop_snippet">%1$s &#8226; gyalog %2$d perc &#8226; látogatás %3$d perc</string>
     <string name="map_current_location_title">Aktuális GPS-helyzet</string>
+    <string name="map_current_location_button">Térkép központosítása az aktuális helyzetre</string>
     <string name="map_visited_route_stop_title">Meglátogatva: %1$s</string>
     <string name="map_poi_selection_hint">Érintsd meg a POI-jelölőket, hogy felvedd őket az útvonalba. Kiválasztva: %1$d</string>
     <string name="map_poi_selected_snippet">%1$s &#8226; kiválasztva az útvonalhoz</string>
+    <string name="map_selected_poi_title">Kiválasztott hely</string>
+    <string name="map_route_legend_title">Útvonal</string>
+    <string name="map_route_legend_active">Aktív gyaloglás</string>
+    <string name="map_route_legend_upcoming">Következő</string>
+    <string name="map_route_legend_transit">Tömegközlekedési vonal</string>
 
     <string name="category_attraction">Látnivaló</string>
     <string name="category_museum">Múzeum</string>

@@ -313,6 +313,7 @@ internal fun PlannerMapPanel(
     onStartPointSelected: (Double, Double) -> Unit,
     onRoutePoiSelected: (Poi) -> Unit,
     onOpenFullScreenMap: () -> Unit,
+    onCurrentLocationRequested: (() -> Unit)? = null,
     preferCurrentLocationCamera: Boolean = false,
     locationButtonBottomPadding: Dp? = null,
     showLocationButton: Boolean = true,
@@ -355,6 +356,7 @@ internal fun PlannerMapPanel(
             showLocationButton = showLocationButton,
             recenterLocationRequestKey = recenterLocationRequestKey,
             currentLocationCameraYOffset = currentLocationCameraYOffset,
+            onCurrentLocationRequested = onCurrentLocationRequested,
             onStartPointSelected = onStartPointSelected,
             onRoutePoiSelected = onRoutePoiSelected,
             modifier = Modifier.fillMaxSize()

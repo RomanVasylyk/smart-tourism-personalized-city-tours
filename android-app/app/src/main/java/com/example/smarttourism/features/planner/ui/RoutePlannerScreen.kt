@@ -117,9 +117,13 @@ fun RoutePlannerScreen(
     var isFeedbackDialogOpen by remember { mutableStateOf(false) }
     var currentDestination by remember { mutableStateOf(PlannerDestination.PLANNER) }
     var selectedHistoryEntry by remember { mutableStateOf<RouteHistoryEntry?>(null) }
+    var selectedMapPoiForAction by remember { mutableStateOf<Poi?>(null) }
     var replacingPoiId by remember { mutableStateOf<Int?>(null) }
     var locationError by remember { mutableStateOf<String?>(null) }
     var dismissedPlannerErrorDialogKey by remember { mutableStateOf<String?>(null) }
+    var locationRequestTarget by remember { mutableStateOf(LocationRequestTarget.START_POINT) }
+    var mapCurrentLocation by remember { mutableStateOf<RoutePoint?>(null) }
+    var mapRecenterRequest by remember { mutableIntStateOf(0) }
     var trackingPermissionAction by remember { mutableStateOf(TrackingPermissionAction.START) }
     var autoOpenedFeedbackToken by remember { mutableStateOf<String?>(null) }
     var activeMapRecenterRequest by remember { mutableIntStateOf(0) }
@@ -174,6 +178,7 @@ fun RoutePlannerScreen(
         isSelectingStart = false
         isSelectingRequiredPlacesOnMap = false
         isMapFullScreen = false
+        selectedMapPoiForAction = null
         locationError = null
     }
 
@@ -181,6 +186,7 @@ fun RoutePlannerScreen(
         isSelectingStart = false
         isSelectingRequiredPlacesOnMap = true
         isMapFullScreen = true
+        selectedMapPoiForAction = null
         locationError = null
     }
 
@@ -202,7 +208,26 @@ fun RoutePlannerScreen(
             context = context,
             onSuccess = { lat, lon ->
                 isLocating = false
+                mapCurrentLocation = RoutePoint(lat = lat, lon = lon)
+                mapRecenterRequest += 1
                 updateStartPoint(lat, lon)
+            },
+            onError = { message ->
+                isLocating = false
+                locationError = message
+            }
+        )
+    }
+
+    fun requestMapCurrentLocation() {
+        isLocating = true
+        locationError = null
+        fetchCurrentLocation(
+            context = context,
+            onSuccess = { lat, lon ->
+                isLocating = false
+                mapCurrentLocation = RoutePoint(lat = lat, lon = lon)
+                mapRecenterRequest += 1
             },
             onError = { message ->
                 isLocating = false
@@ -215,10 +240,27 @@ fun RoutePlannerScreen(
         contract = ActivityResultContracts.RequestPermission()
     ) { granted ->
         if (granted) {
-            requestCurrentDeviceLocation()
+            when (locationRequestTarget) {
+                LocationRequestTarget.START_POINT -> requestCurrentDeviceLocation()
+                LocationRequestTarget.MAP_CAMERA -> requestMapCurrentLocation()
+            }
         } else {
             isLocating = false
             locationError = locationPermissionDeniedMessage
+        }
+    }
+
+    fun requestLocationWithPermission(target: LocationRequestTarget) {
+        locationRequestTarget = target
+        if (hasFineLocationPermission()) {
+            when (target) {
+                LocationRequestTarget.START_POINT -> requestCurrentDeviceLocation()
+                LocationRequestTarget.MAP_CAMERA -> requestMapCurrentLocation()
+            }
+        } else {
+            isLocating = true
+            locationError = null
+            locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
         }
     }
 
@@ -291,8 +333,11 @@ fun RoutePlannerScreen(
     fun resetToPlanning() {
         isSelectingStart = false
         isParameterSheetOpen = false
+        selectedMapPoiForAction = null
         onPlannerEvent(PlannerEvent.ClearDisplayedRoute(cancelActiveSession = false))
     }
+
+    val passiveMapLocation = currentRouteLocation ?: mapCurrentLocation
 
     val plannerAlerts = PlannerAlerts(
         locationError = locationError,
@@ -409,7 +454,7 @@ fun RoutePlannerScreen(
                         pois = pois,
                         routeResponse = routeResponse,
                         startPoint = startPoint,
-                        currentRouteLocation = currentRouteLocation,
+                        currentRouteLocation = passiveMapLocation,
                         visitedPoiIds = visitedPoiIds,
                         skippedPoiIds = skippedPoiIds,
                         requiredPoiIds = requiredPoiIds,
@@ -430,7 +475,11 @@ fun RoutePlannerScreen(
                         allowPublicTransport = allowPublicTransport,
                         startDateTime = startDateTime,
                         isRouteLoading = isRouteLoading,
+                        mapRecenterRequestKey = mapRecenterRequest,
                         onStartPointSelected = ::updateStartPoint,
+                        onCurrentLocationRequested = {
+                            requestLocationWithPermission(LocationRequestTarget.MAP_CAMERA)
+                        },
                         onOpenFullScreenMap = ::openFullScreenMap,
                         onToggleStartSelection = {
                             val isEnteringSelection = !isSelectingStart
@@ -442,11 +491,7 @@ fun RoutePlannerScreen(
                         },
                         onUseCurrentLocation = {
                             isSelectingStart = false
-                            if (hasFineLocationPermission()) {
-                                requestCurrentDeviceLocation()
-                            } else {
-                                locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
-                            }
+                            requestLocationWithPermission(LocationRequestTarget.START_POINT)
                         },
                         onChooseRequiredOnMap = ::openRequiredPlacesMapPicker,
                         onChooseRequiredFromList = { isRequiredPlacesSheetOpen = true },
@@ -469,7 +514,7 @@ fun RoutePlannerScreen(
                         pois = pois,
                         routeResponse = routeResponse,
                         startPoint = startPoint,
-                        currentRouteLocation = currentRouteLocation,
+                        currentRouteLocation = passiveMapLocation,
                         visitedPoiIds = visitedPoiIds,
                         skippedPoiIds = skippedPoiIds,
                         requiredPoiIds = requiredPoiIds,
@@ -481,7 +526,11 @@ fun RoutePlannerScreen(
                         isRerouting = isRerouting,
                         highlightedPoiId = progressMetrics.nextTarget?.poiId,
                         isCurrentRouteBookmarked = isCurrentRouteBookmarked,
+                        mapRecenterRequestKey = mapRecenterRequest,
                         onStartPointSelected = ::updateStartPoint,
+                        onCurrentLocationRequested = {
+                            requestLocationWithPermission(LocationRequestTarget.MAP_CAMERA)
+                        },
                         onOpenFullScreenMap = ::openFullScreenMap,
                         onStartRoute = ::startRoute,
                         onEditParameters = { isParameterSheetOpen = true },
@@ -498,7 +547,7 @@ fun RoutePlannerScreen(
                         pois = pois,
                         routeResponse = routeResponse,
                         startPoint = startPoint,
-                        currentRouteLocation = currentRouteLocation,
+                        currentRouteLocation = passiveMapLocation,
                         visitedPoiIds = visitedPoiIds,
                         skippedPoiIds = skippedPoiIds,
                         requiredPoiIds = requiredPoiIds,
@@ -507,7 +556,11 @@ fun RoutePlannerScreen(
                         routeItems = routeItems,
                         isCurrentRouteBookmarked = isCurrentRouteBookmarked,
                         hasFeedback = routeFeedback != null,
+                        mapRecenterRequestKey = mapRecenterRequest,
                         onStartPointSelected = ::updateStartPoint,
+                        onCurrentLocationRequested = {
+                            requestLocationWithPermission(LocationRequestTarget.MAP_CAMERA)
+                        },
                         onOpenFullScreenMap = ::openFullScreenMap,
                         onPlanAnotherRoute = ::resetToPlanning,
                         onSaveBookmark = { onPlannerEvent(PlannerEvent.SaveCurrentRouteBookmark) },
@@ -581,6 +634,7 @@ fun RoutePlannerScreen(
         isStopsSheetOpen = isStopsSheetOpen,
         replacingPoiId = replacingPoiId,
         selectedHistoryEntry = selectedHistoryEntry,
+        selectedMapPoiForAction = selectedMapPoiForAction,
         isFeedbackDialogOpen = isFeedbackDialogOpen,
         isMapFullScreen = isMapFullScreen,
         pois = pois,
@@ -588,7 +642,7 @@ fun RoutePlannerScreen(
         routeItems = routeItems,
         startPoint = startPoint,
         selectedCity = selectedCity,
-        currentRouteLocation = currentRouteLocation,
+        currentRouteLocation = passiveMapLocation,
         isSelectingStart = isSelectingStart,
         isSelectingRequiredPlacesOnMap = isSelectingRequiredPlacesOnMap,
         isLocating = isLocating,
@@ -614,6 +668,7 @@ fun RoutePlannerScreen(
         highlightedPoiId = progressMetrics.nextTarget?.poiId,
         routeFeedback = routeFeedback,
         isPoiLoading = isPoiLoading,
+        mapRecenterRequestKey = mapRecenterRequest,
         errorDialog = visiblePlannerErrorDialog
     )
 
@@ -633,11 +688,7 @@ fun RoutePlannerScreen(
         },
         onUseCurrentLocation = {
             isSelectingStart = false
-            if (hasFineLocationPermission()) {
-                requestCurrentDeviceLocation()
-            } else {
-                locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
-            }
+            requestLocationWithPermission(LocationRequestTarget.START_POINT)
         },
         onChooseRequiredOnMap = ::openRequiredPlacesMapPicker,
         onChooseRequiredFromList = { isRequiredPlacesSheetOpen = true },
@@ -684,6 +735,7 @@ fun RoutePlannerScreen(
         onFeedbackChange = { feedback -> onPlannerEvent(PlannerEvent.UpdateFeedback(feedback)) },
         onDismissFullScreenMap = {
             isMapFullScreen = false
+            selectedMapPoiForAction = null
             if (isSelectingStart) {
                 isSelectingStart = false
             }
@@ -691,8 +743,16 @@ fun RoutePlannerScreen(
                 isSelectingRequiredPlacesOnMap = false
             }
         },
+        onDismissMapPoiAction = { selectedMapPoiForAction = null },
+        onConfirmMapPoiToggle = { poi ->
+            onPlannerEvent(PlannerEvent.ToggleRequiredPoi(poi.id))
+            selectedMapPoiForAction = null
+        },
+        onCurrentLocationRequested = {
+            requestLocationWithPermission(LocationRequestTarget.MAP_CAMERA)
+        },
         onStartPointSelected = ::updateStartPoint,
-        onRoutePoiSelected = { poi -> onPlannerEvent(PlannerEvent.ToggleRequiredPoi(poi.id)) }
+        onRoutePoiSelected = { poi -> selectedMapPoiForAction = poi }
     )
 
     PlannerSheets(
@@ -705,4 +765,9 @@ fun RoutePlannerScreen(
         state = plannerScreenState,
         actions = plannerActions
     )
+}
+
+private enum class LocationRequestTarget {
+    START_POINT,
+    MAP_CAMERA
 }

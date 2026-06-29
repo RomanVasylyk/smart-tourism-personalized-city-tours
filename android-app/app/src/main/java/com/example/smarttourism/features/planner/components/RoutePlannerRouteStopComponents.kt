@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -263,7 +264,7 @@ internal fun RouteStopTimelineItem(
                             enabled = canMoveUp && !isActionInProgress,
                             modifier = Modifier
                                 .weight(1f)
-                                .height(PlannerUiTokens.ButtonHeight)
+                                .heightIn(min = PlannerUiTokens.ButtonHeight)
                         ) {
                             Text(stringResource(R.string.action_move_up))
                         }
@@ -272,7 +273,7 @@ internal fun RouteStopTimelineItem(
                             enabled = canMoveDown && !isActionInProgress,
                             modifier = Modifier
                                 .weight(1f)
-                                .height(PlannerUiTokens.ButtonHeight)
+                                .heightIn(min = PlannerUiTokens.ButtonHeight)
                         ) {
                             Text(stringResource(R.string.action_move_down))
                         }
@@ -290,7 +291,7 @@ internal fun RouteStopTimelineItem(
                                 enabled = !isActionInProgress,
                                 modifier = Modifier
                                     .weight(1f)
-                                    .height(PlannerUiTokens.ButtonHeight)
+                                    .heightIn(min = PlannerUiTokens.ButtonHeight)
                             ) {
                                 Text(
                                     stringResource(
@@ -309,7 +310,7 @@ internal fun RouteStopTimelineItem(
                                 enabled = !isActionInProgress,
                                 modifier = Modifier
                                     .weight(1f)
-                                    .height(PlannerUiTokens.ButtonHeight)
+                                    .heightIn(min = PlannerUiTokens.ButtonHeight)
                             ) {
                                 Text(stringResource(R.string.action_replace_stop))
                             }
@@ -320,7 +321,7 @@ internal fun RouteStopTimelineItem(
                                 enabled = !isActionInProgress,
                                 modifier = Modifier
                                     .weight(1f)
-                                    .height(PlannerUiTokens.ButtonHeight)
+                                    .heightIn(min = PlannerUiTokens.ButtonHeight)
                             ) {
                                 Text(stringResource(R.string.action_mark_visited))
                             }
@@ -577,7 +578,7 @@ internal fun RouteStopCard(
                             OutlinedButton(
                                 onClick = onSkip,
                                 enabled = !isActionInProgress,
-                                modifier = Modifier.height(PlannerUiTokens.ButtonHeight)
+                                modifier = Modifier.heightIn(min = PlannerUiTokens.ButtonHeight)
                             ) {
                                 Text(stringResource(R.string.action_skip_stop))
                             }
@@ -586,7 +587,7 @@ internal fun RouteStopCard(
                             OutlinedButton(
                                 onClick = onMarkVisited,
                                 enabled = !isActionInProgress,
-                                modifier = Modifier.height(PlannerUiTokens.ButtonHeight)
+                                modifier = Modifier.heightIn(min = PlannerUiTokens.ButtonHeight)
                             ) {
                                 Text(stringResource(R.string.action_mark_visited))
                             }
@@ -660,7 +661,7 @@ internal fun StatusCard(
                             onClick = onSecondaryAction,
                             modifier = Modifier
                                 .weight(1f)
-                                .height(PlannerUiTokens.ButtonHeight)
+                                .heightIn(min = PlannerUiTokens.ButtonHeight)
                         ) {
                             Text(secondaryActionLabel)
                         }
@@ -670,7 +671,7 @@ internal fun StatusCard(
                             onClick = onAction,
                             modifier = Modifier
                                 .weight(1f)
-                                .height(PlannerUiTokens.ButtonHeight)
+                                .heightIn(min = PlannerUiTokens.ButtonHeight)
                         ) {
                             Text(actionLabel)
                         }

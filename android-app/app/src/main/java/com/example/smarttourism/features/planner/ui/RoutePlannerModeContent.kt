@@ -199,7 +199,9 @@ internal fun PlanningScreenContent(
     allowPublicTransport: Boolean,
     startDateTime: LocalDateTime,
     isRouteLoading: Boolean,
+    mapRecenterRequestKey: Int,
     onStartPointSelected: (Double, Double) -> Unit,
+    onCurrentLocationRequested: () -> Unit,
     onOpenFullScreenMap: () -> Unit,
     onToggleStartSelection: () -> Unit,
     onUseCurrentLocation: () -> Unit,
@@ -252,6 +254,8 @@ internal fun PlanningScreenContent(
                         onStartPointSelected = onStartPointSelected,
                         onRoutePoiSelected = {},
                         onOpenFullScreenMap = onOpenFullScreenMap,
+                        onCurrentLocationRequested = onCurrentLocationRequested,
+                        recenterLocationRequestKey = mapRecenterRequestKey,
                         fixedHeight = 280.dp
                     )
 
@@ -447,7 +451,9 @@ internal fun PreviewScreenContent(
     isRerouting: Boolean,
     highlightedPoiId: Int?,
     isCurrentRouteBookmarked: Boolean,
+    mapRecenterRequestKey: Int,
     onStartPointSelected: (Double, Double) -> Unit,
+    onCurrentLocationRequested: () -> Unit,
     onOpenFullScreenMap: () -> Unit,
     onStartRoute: () -> Unit,
     onEditParameters: () -> Unit,
@@ -484,6 +490,8 @@ internal fun PreviewScreenContent(
                 onStartPointSelected = onStartPointSelected,
                 onRoutePoiSelected = {},
                 onOpenFullScreenMap = onOpenFullScreenMap,
+                onCurrentLocationRequested = onCurrentLocationRequested,
+                recenterLocationRequestKey = mapRecenterRequestKey,
                 fixedHeight = 360.dp
             )
         }
@@ -547,7 +555,9 @@ internal fun CompletedRouteContent(
     routeItems: List<RouteStop>,
     isCurrentRouteBookmarked: Boolean,
     hasFeedback: Boolean,
+    mapRecenterRequestKey: Int,
     onStartPointSelected: (Double, Double) -> Unit,
+    onCurrentLocationRequested: () -> Unit,
     onOpenFullScreenMap: () -> Unit,
     onPlanAnotherRoute: () -> Unit,
     onSaveBookmark: () -> Unit,
@@ -579,6 +589,8 @@ internal fun CompletedRouteContent(
                 onStartPointSelected = onStartPointSelected,
                 onRoutePoiSelected = {},
                 onOpenFullScreenMap = onOpenFullScreenMap,
+                onCurrentLocationRequested = onCurrentLocationRequested,
+                recenterLocationRequestKey = mapRecenterRequestKey,
                 fixedHeight = 320.dp
             )
         }

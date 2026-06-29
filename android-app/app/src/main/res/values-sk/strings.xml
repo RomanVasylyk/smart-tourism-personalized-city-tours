@@ -93,6 +93,9 @@
     <string name="action_choose_required_places_on_map">Mapa</string>
     <string name="action_choose_required_places_from_list">Zoznam</string>
     <string name="action_clear_required_places">Vymazať vybrané miesta</string>
+    <string name="action_add_required_place_to_route">Pridať do trasy</string>
+    <string name="action_remove_required_place_from_route">Odstrániť z trasy</string>
+    <string name="action_dismiss_selected_place">Zavrieť</string>
     <string name="action_leave_feedback">Pridať spätnú väzbu</string>
     <string name="action_edit_feedback">Upraviť spätnú väzbu</string>
     <string name="action_done">Hotovo</string>
@@ -271,6 +274,7 @@
     <string name="map_visited_route_stop_title">Navštívené: %1$s</string>
     <string name="map_poi_selection_hint">Ťuknutím na značky miest ich pridáte do trasy. Vybrané: %1$d</string>
     <string name="map_poi_selected_snippet">%1$s &#8226; vybrané pre trasu</string>
+    <string name="map_selected_poi_title">Vybrané miesto</string>
     <string name="map_route_legend_title">Trasa</string>
     <string name="map_route_legend_active">Aktívna chôdza</string>
     <string name="map_route_legend_upcoming">Ďalšie úseky</string>

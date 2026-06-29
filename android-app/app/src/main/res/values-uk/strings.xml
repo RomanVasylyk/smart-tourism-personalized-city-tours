@@ -93,6 +93,9 @@
     <string name="action_choose_required_places_on_map">Карта</string>
     <string name="action_choose_required_places_from_list">Список</string>
     <string name="action_clear_required_places">Очистити вибрані місця</string>
+    <string name="action_add_required_place_to_route">Додати в маршрут</string>
+    <string name="action_remove_required_place_from_route">Видалити з маршруту</string>
+    <string name="action_dismiss_selected_place">Закрити</string>
     <string name="action_leave_feedback">Залишити відгук</string>
     <string name="action_edit_feedback">Редагувати відгук</string>
     <string name="action_done">Готово</string>
@@ -271,6 +274,7 @@
     <string name="map_visited_route_stop_title">Відвідано: %1$s</string>
     <string name="map_poi_selection_hint">Натискайте на маркери POI, щоб додати їх у маршрут. Вибрано: %1$d</string>
     <string name="map_poi_selected_snippet">%1$s &#8226; вибрано для маршруту</string>
+    <string name="map_selected_poi_title">Вибране місце</string>
     <string name="map_route_legend_title">Маршрут</string>
     <string name="map_route_legend_active">Активна ходьба</string>
     <string name="map_route_legend_upcoming">Наступні ділянки</string>

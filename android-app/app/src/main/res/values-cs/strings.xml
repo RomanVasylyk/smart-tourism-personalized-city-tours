@@ -32,6 +32,10 @@
     <string name="status_off_route_rerouting_body">Aktualizuji trasu z vaší aktuální polohy.</string>
     <string name="status_no_stops_title">Nebyly vygenerovány žádné zastávky</string>
     <string name="status_no_stops_body">Žádné zastávky trasy neodpovídají vybranému času, zájmům a omezením otevírací doby.</string>
+    <string name="status_poi_loading_title">Načítání míst</string>
+    <string name="status_poi_loading_body">Mapa připravuje POI pro vybrané město.</string>
+    <string name="status_poi_empty_title">Nejsou dostupná žádná místa</string>
+    <string name="status_poi_empty_body">Toto město zatím nemá uložená POI v cache, nebo je backend nemohl poskytnout.</string>
     <string name="status_no_route_title">Zatím žádná trasa</string>
     <string name="status_no_route_body">Vyberte startovní bod a parametry, potom vygenerujte trasu. Poslední úspěšná trasa se při spuštění aplikace automaticky obnoví.</string>
 
@@ -89,11 +93,29 @@
     <string name="action_choose_required_places_on_map">Mapa</string>
     <string name="action_choose_required_places_from_list">Seznam</string>
     <string name="action_clear_required_places">Vymazat vybraná místa</string>
+    <string name="action_add_required_place_to_route">Přidat do trasy</string>
+    <string name="action_remove_required_place_from_route">Odebrat z trasy</string>
+    <string name="action_dismiss_selected_place">Zavřít</string>
     <string name="action_leave_feedback">Zanechat zpětnou vazbu</string>
     <string name="action_edit_feedback">Upravit zpětnou vazbu</string>
     <string name="action_done">Hotovo</string>
+    <string name="action_retry_route_generation">Zkusit znovu</string>
+    <string name="action_use_walking_only">Pouze pěšky</string>
 
     <string name="route_parameters_title">Parametry trasy</string>
+    <string name="planning_step_city_time_title">Město a čas</string>
+    <string name="planning_step_city_time_body">Potvrďte, kde a kdy trasa začne.</string>
+    <string name="planning_step_interests_places_title">Zájmy a místa</string>
+    <string name="planning_step_interests_places_body">Vyberte témata trasy a povinná POI.</string>
+    <string name="planning_step_route_title">Trasa</string>
+    <string name="planning_step_route_body">Nastavte poslední omezení a vygenerujte městský okruh.</string>
+    <string name="planning_generate_ready_body">Generujte, až budou tři kroky v pořádku.</string>
+    <string name="planning_generate_loading_body">Plánuji trasu a ověřuji časy přesunů.</string>
+    <string name="route_timing_title">Čas a tempo</string>
+    <string name="route_interests_title">Zájmy trasy</string>
+    <string name="route_interests_body">Vyberte kategorie, které mají ovlivnit doporučení POI.</string>
+    <string name="route_options_title">Možnosti trasy</string>
+    <string name="route_transport_unavailable_body">MHD zatím není pro toto město nakonfigurovaná. Trasa bude naplánována jako pěší okruh.</string>
     <string name="route_start_time_label">Čas startu trasy</string>
     <string name="action_pick_date">Datum</string>
     <string name="action_pick_time">Čas</string>
@@ -126,6 +148,11 @@
     <string name="route_tracking_estimated_remaining">Odhad zbývajícího času: %1$d min</string>
     <string name="route_tracking_waiting_for_gps">Čeká se na GPS fix...</string>
     <string name="route_tracking_current_location">GPS: šířka %1$s, délka %2$s</string>
+    <string name="route_tracking_current_chip">Aktuální</string>
+    <string name="route_tracking_done_chip">Hotovo</string>
+    <string name="route_tracking_upcoming_chip">Čeká</string>
+    <string name="route_tracking_distance_chip">Vzdálenost</string>
+    <string name="route_tracking_remaining_chip">Zbývá</string>
     <string name="route_tracking_auto_visit_hint">Místa se označí jako navštívená automaticky do %1$d m, nebo ručně u každé zastávky.</string>
     <string name="route_tracking_finish_requirement">Dokončení trasy je dostupné po návštěvě alespoň %1$d / %2$d míst.</string>
     <string name="route_tracking_no_stops">Pro tuto trasu nejsou dostupná žádná místa.</string>
@@ -227,6 +254,11 @@
     <string name="route_stop_status_pending">Plánováno</string>
     <string name="route_stop_summary_compact">%1$d min cesta • %2$d min návštěva</string>
     <string name="route_stop_arrival_departure">Příjezd %1$d min • odchod %2$d min</string>
+    <string name="route_stop_walk_badge">Chůze %1$d min</string>
+    <string name="route_stop_bus_badge">Bus %1$d min</string>
+    <string name="route_stop_bus_line_badge">%1$s bus %2$d min</string>
+    <string name="route_stop_visit_badge">Návštěva %1$d min</string>
+    <string name="route_stop_time_window_badge">%1$d-%2$d min</string>
     <string name="action_view_stop_details">Zobrazit detaily</string>
     <string name="action_hide_stop_details">Skrýt detaily</string>
     <string name="action_mark_visited">Označit jako navštívené</string>
@@ -238,9 +270,15 @@
     <string name="map_start_marker_label">Start</string>
     <string name="map_route_stop_snippet">%1$s &#8226; chůze %2$d min &#8226; návštěva %3$d min</string>
     <string name="map_current_location_title">Aktuální GPS poloha</string>
+    <string name="map_current_location_button">Vycentrovat mapu na aktuální polohu</string>
     <string name="map_visited_route_stop_title">Navštíveno: %1$s</string>
     <string name="map_poi_selection_hint">Klepnutím na značky POI je zahrnete do trasy. Vybráno: %1$d</string>
     <string name="map_poi_selected_snippet">%1$s &#8226; vybráno pro trasu</string>
+    <string name="map_selected_poi_title">Vybrané místo</string>
+    <string name="map_route_legend_title">Trasa</string>
+    <string name="map_route_legend_active">Aktivní chůze</string>
+    <string name="map_route_legend_upcoming">Nadcházející</string>
+    <string name="map_route_legend_transit">Linka MHD</string>
 
     <string name="category_attraction">Atrakce</string>
     <string name="category_museum">Muzeum</string>

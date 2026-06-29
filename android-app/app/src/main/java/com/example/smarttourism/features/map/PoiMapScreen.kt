@@ -3,6 +3,7 @@
 package com.example.smarttourism.features.map
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
@@ -53,6 +54,7 @@ fun PoiMapScreen(
     showLocationButton: Boolean = true,
     recenterLocationRequestKey: Int = 0,
     currentLocationCameraYOffset: Dp = 0.dp,
+    onCurrentLocationRequested: (() -> Unit)? = null,
     onStartPointSelected: (Double, Double) -> Unit,
     onRoutePoiSelected: (Poi) -> Unit = {},
     modifier: Modifier = Modifier
@@ -234,14 +236,14 @@ fun PoiMapScreen(
         if (isSelectingStart) {
             MapSelectionHint(
                 text = stringResource(R.string.map_start_selection_hint),
-                modifier = Modifier.align(Alignment.TopCenter)
+                modifier = selectionHintModifier(isFullScreen)
             )
         }
 
         if (isSelectingRoutePois) {
             MapSelectionHint(
                 text = stringResource(R.string.map_poi_selection_hint, selectedRoutePoiIds.size),
-                modifier = Modifier.align(Alignment.TopCenter)
+                modifier = selectionHintModifier(isFullScreen)
             )
         }
 
@@ -261,10 +263,14 @@ fun PoiMapScreen(
 
         if (showLocationButton) {
             MapLocationButton(
-                enabled = currentLocation != null,
+                enabled = currentLocation != null || onCurrentLocationRequested != null,
                 onClick = {
+                    val location = currentLocation
+                    if (location == null) {
+                        onCurrentLocationRequested?.invoke()
+                        return@MapLocationButton
+                    }
                     val mapInstance = map ?: return@MapLocationButton
-                    val location = currentLocation ?: return@MapLocationButton
                     moveCamera(
                         map = mapInstance,
                         lat = location.lat,
@@ -286,3 +292,16 @@ fun PoiMapScreen(
         }
     }
 }
+
+@Composable
+private fun BoxScope.selectionHintModifier(isFullScreen: Boolean): Modifier =
+    if (isFullScreen) {
+        Modifier
+            .align(Alignment.TopStart)
+            .windowInsetsPadding(
+                WindowInsets.safeDrawing.only(WindowInsetsSides.Top)
+            )
+            .padding(start = 12.dp, top = 12.dp, end = 148.dp)
+    } else {
+        Modifier.align(Alignment.TopCenter)
+    }

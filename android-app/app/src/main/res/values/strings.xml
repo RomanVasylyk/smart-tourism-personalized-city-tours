@@ -93,6 +93,9 @@
     <string name="action_choose_required_places_on_map">Map</string>
     <string name="action_choose_required_places_from_list">List</string>
     <string name="action_clear_required_places">Clear selected places</string>
+    <string name="action_add_required_place_to_route">Add to route</string>
+    <string name="action_remove_required_place_from_route">Remove from route</string>
+    <string name="action_dismiss_selected_place">Close</string>
     <string name="action_leave_feedback">Leave feedback</string>
     <string name="action_edit_feedback">Edit feedback</string>
     <string name="action_done">Done</string>
@@ -271,6 +274,7 @@
     <string name="map_visited_route_stop_title">Visited: %1$s</string>
     <string name="map_poi_selection_hint">Tap POI markers to include them in the route. Selected: %1$d</string>
     <string name="map_poi_selected_snippet">%1$s &#8226; selected for route</string>
+    <string name="map_selected_poi_title">Selected place</string>
     <string name="map_route_legend_title">Route</string>
     <string name="map_route_legend_active">Active walk</string>
     <string name="map_route_legend_upcoming">Upcoming</string>

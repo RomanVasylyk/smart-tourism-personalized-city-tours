@@ -85,13 +85,9 @@ internal class PlannerCatalogActions(
         state.routeBookmarks = localState.bookmarks
         state.routeHistory = localState.history
         val activeSession = localState.activeSession
-        val savedSnapshot = localState.savedSnapshot
-        var restoredCityToken = savedSnapshot?.request?.city ?: savedSnapshot?.response?.city
+        var restoredCityToken = activeSession?.snapshot?.request?.city
+            ?: activeSession?.snapshot?.response?.city
         state.pendingSyncOperationCount = localState.pendingSyncOperationCount
-
-        savedSnapshot?.let { snapshot ->
-            restoreSnapshot(snapshot)
-        }
 
         activeSession?.let { session ->
             sessionCoordinator.restoreActiveSession(session)
