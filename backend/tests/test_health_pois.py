@@ -53,6 +53,7 @@ def test_get_pois_returns_database_rows(client, monkeypatch):
             "opening_hours_raw": None,
             "visit_duration_min": 60,
             "base_score": 0.9,
+            "short_description": "Regional museum in Nitra.",
             "wikipedia_url": "https://sk.wikipedia.org/wiki/Ponitrianske_muzeum",
         }
     ]

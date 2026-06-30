@@ -107,6 +107,7 @@ internal fun PoiDto.toDomain(): Poi =
         openingHoursRaw = opening_hours_raw,
         visitDurationMin = visit_duration_min,
         baseScore = base_score,
+        shortDescription = short_description,
         wikipediaUrl = wikipedia_url
     )
 
@@ -120,6 +121,7 @@ internal fun Poi.toDto(): PoiDto =
         opening_hours_raw = openingHoursRaw,
         visit_duration_min = visitDurationMin,
         base_score = baseScore,
+        short_description = shortDescription,
         wikipedia_url = wikipediaUrl
     )
 
@@ -218,6 +220,7 @@ private fun RouteItemDto.toDomain(): RouteStop =
         arrivalAfterMin = arrival_after_min,
         departureAfterMin = departure_after_min,
         baseScore = base_score,
+        shortDescription = short_description,
         wikipediaUrl = wikipedia_url,
         openingHoursRaw = opening_hours_raw
     )
@@ -235,6 +238,7 @@ private fun RouteStop.toDto(): RouteItemDto =
         arrival_after_min = arrivalAfterMin,
         departure_after_min = departureAfterMin,
         base_score = baseScore,
+        short_description = shortDescription,
         wikipedia_url = wikipediaUrl,
         opening_hours_raw = openingHoursRaw
     )

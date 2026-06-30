@@ -13,6 +13,7 @@ CANDIDATE_COLUMNS = """
     p.opening_hours_raw,
     p.visit_duration_min,
     p.base_score,
+    p.short_description,
     p.wikipedia_url
 """
 

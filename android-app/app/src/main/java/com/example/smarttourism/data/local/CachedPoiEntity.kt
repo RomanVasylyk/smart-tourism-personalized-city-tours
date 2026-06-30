@@ -14,6 +14,7 @@ data class CachedPoiEntity(
     val openingHoursRaw: String?,
     val visitDurationMin: Int?,
     val baseScore: Double?,
+    val shortDescription: String?,
     val wikipediaUrl: String?,
     val updatedAtEpochMs: Long
 )

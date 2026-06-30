@@ -12,6 +12,7 @@ data class RouteItemDto(
     val arrival_after_min: Int,
     val departure_after_min: Int,
     val base_score: Double?,
+    val short_description: String?,
     val wikipedia_url: String?,
     val opening_hours_raw: String?
 )

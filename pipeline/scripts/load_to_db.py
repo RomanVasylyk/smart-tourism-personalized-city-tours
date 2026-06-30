@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import argparse
 import json
 import sys
 from pathlib import Path
@@ -10,7 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from utils.cities import load_city
+from utils.cities import load_city, load_city_profiles
 from utils.db import get_connection
 
 
@@ -67,9 +68,18 @@ def ensure_city(conn, city: dict) -> int:
         return row["id"]
 
 
-def main() -> None:
-    city_slug = sys.argv[1] if len(sys.argv) > 1 else "nitra"
-    city = load_city(city_slug)
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Load normalized POIs into Postgres.")
+    parser.add_argument("city", nargs="?", default="nitra", help="City slug from pipeline/config/cities.yaml")
+    parser.add_argument(
+        "--all-cities",
+        action="store_true",
+        help="Load every city configured in pipeline/config/cities.yaml.",
+    )
+    return parser.parse_args()
+
+
+def load_pois_for_city(city: dict) -> tuple[int, int]:
     in_file = ROOT / "data" / "processed" / f"{city['slug']}_pois_normalized.json"
     pois = json.loads(in_file.read_text(encoding="utf-8"))
 
@@ -78,7 +88,57 @@ def main() -> None:
         city_id = ensure_city(conn, city)
 
         with conn.cursor() as cur:
+            updated_count = 0
             for poi in pois:
+                cur.execute(
+                    """
+                    UPDATE pois
+                    SET
+                        name = %s,
+                        category = %s,
+                        subcategory = %s,
+                        lat = %s,
+                        lon = %s,
+                        geom = ST_SetSRID(ST_MakePoint(%s, %s), 4326),
+                        address = %s,
+                        opening_hours_raw = %s,
+                        visit_duration_min = %s,
+                        base_score = %s,
+                        wikidata_id = %s,
+                        wikipedia_title = %s,
+                        wikipedia_url = %s,
+                        short_description = %s,
+                        source = %s,
+                        is_active = %s
+                    WHERE city_id = %s AND osm_id = %s AND osm_type = %s;
+                    """,
+                    (
+                        poi["name"],
+                        poi["category"],
+                        poi.get("subcategory"),
+                        poi["lat"],
+                        poi["lon"],
+                        poi["lon"],
+                        poi["lat"],
+                        poi.get("address"),
+                        poi.get("opening_hours_raw"),
+                        poi.get("visit_duration_min"),
+                        poi.get("base_score"),
+                        poi.get("wikidata_id"),
+                        poi.get("wikipedia_title"),
+                        poi.get("wikipedia_url"),
+                        poi.get("short_description"),
+                        poi.get("source", "osm"),
+                        poi.get("is_active", True),
+                        city_id,
+                        poi["osm_id"],
+                        poi["osm_type"],
+                    ),
+                )
+                if cur.rowcount:
+                    updated_count += cur.rowcount
+                    continue
+
                 cur.execute(
                     """
                     INSERT INTO pois (
@@ -127,7 +187,18 @@ def main() -> None:
 
         conn.commit()
 
-    print(f"Inserted {inserted_count} POIs into database")
+    return inserted_count, updated_count
+
+
+def main() -> None:
+    args = parse_args()
+    cities = load_city_profiles() if args.all_cities else [load_city(args.city)]
+
+    for city in cities:
+        inserted_count, updated_count = load_pois_for_city(city)
+        print(
+            f"{city['slug']}: inserted {inserted_count} POIs and updated {updated_count} POIs in database",
+        )
 
 
 if __name__ == "__main__":

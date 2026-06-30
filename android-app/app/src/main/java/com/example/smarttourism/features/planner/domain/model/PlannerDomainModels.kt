@@ -41,6 +41,7 @@ data class Poi(
     val openingHoursRaw: String? = null,
     val visitDurationMin: Int? = null,
     val baseScore: Double? = null,
+    val shortDescription: String? = null,
     val wikipediaUrl: String? = null
 )
 
@@ -97,6 +98,7 @@ data class RouteStop(
     val arrivalAfterMin: Int = 0,
     val departureAfterMin: Int = 0,
     val baseScore: Double? = null,
+    val shortDescription: String? = null,
     val wikipediaUrl: String? = null,
     val openingHoursRaw: String? = null
 )

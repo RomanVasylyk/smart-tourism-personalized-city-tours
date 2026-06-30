@@ -64,6 +64,7 @@ class PoiResponse(BaseModel):
     opening_hours_raw: str | None = None
     visit_duration_min: int | None = None
     base_score: float | None = None
+    short_description: str | None = None
     wikipedia_url: str | None = None
 
 
@@ -145,6 +146,7 @@ class RouteItemResponse(BaseModel):
     base_score: float | None = None
     planner_score: float | None = None
     planner_score_breakdown: PlannerScoreBreakdownResponse | None = None
+    short_description: str | None = None
     wikipedia_url: str | None = None
     opening_hours_raw: str | None = None
 

@@ -21,6 +21,7 @@ def test_generate_route_returns_planned_stop(client, monkeypatch):
             "opening_hours_raw": None,
             "visit_duration_min": 30,
             "base_score": 0.95,
+            "short_description": "Castle complex above Nitra.",
             "wikipedia_url": "https://en.wikipedia.org/wiki/Nitra_Castle",
         }
     ]
@@ -52,6 +53,7 @@ def test_generate_route_returns_planned_stop(client, monkeypatch):
     assert body["used_minutes"] <= body["available_minutes"]
     assert body["route"][0]["poi_id"] == 10
     assert body["route"][0]["name"] == "Nitra Castle"
+    assert body["route"][0]["short_description"] == "Castle complex above Nitra."
     assert len(body["legs"]) == 2
     assert body["legs"][0]["duration_minutes"] == 10
     assert body["legs"][0]["distance_meters"] == 800

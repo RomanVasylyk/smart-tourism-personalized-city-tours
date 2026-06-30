@@ -84,6 +84,7 @@ def planned_stop_to_route_item(planned_stop: PlannedStop) -> dict:
         "base_score": poi.base_score,
         "planner_score": round(planned_stop.utility, 3),
         "planner_score_breakdown": rounded_score_breakdown(planned_stop.score_breakdown),
+        "short_description": poi.short_description,
         "wikipedia_url": poi.wikipedia_url,
         "opening_hours_raw": poi.opening_hours_raw,
     }

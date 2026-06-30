@@ -24,6 +24,7 @@ def make_candidate(
         "opening_hours_raw": None,
         "visit_duration_min": visit_duration_min,
         "base_score": base_score,
+        "short_description": None,
         "wikipedia_url": None,
         **feedback_fields,
     }
@@ -75,6 +76,7 @@ def run_route(
         return plan_by_coords[(end.lat, end.lon)]
 
     monkeypatch.setattr("app.services.route_planner.plan_travel", fake_plan_travel)
+    monkeypatch.setattr("app.services.route_planning.candidate_evaluator.plan_travel", fake_plan_travel)
 
     request = RouteGenerateRequest(
         city="nitra",
@@ -270,6 +272,7 @@ def test_generate_route_limits_exact_candidate_evaluations(monkeypatch):
         return make_travel_plan("walk", 40, 3_000)
 
     monkeypatch.setattr("app.services.route_planner.plan_travel", fake_plan_travel)
+    monkeypatch.setattr("app.services.route_planning.candidate_evaluator.plan_travel", fake_plan_travel)
 
     request = RouteGenerateRequest(
         city="nitra",

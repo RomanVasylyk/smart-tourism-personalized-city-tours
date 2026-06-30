@@ -25,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.smarttourism.R
 import com.example.smarttourism.features.planner.domain.model.Poi
@@ -105,6 +106,17 @@ internal fun RequiredPlacesCard(
                                         style = MaterialTheme.typography.labelSmall,
                                         color = MaterialTheme.colorScheme.onPrimaryContainer
                                     )
+                                    poi.shortDescription
+                                        ?.takeIf { description -> description.isNotBlank() }
+                                        ?.let { description ->
+                                            Text(
+                                                text = description,
+                                                style = MaterialTheme.typography.labelSmall,
+                                                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                                maxLines = 2,
+                                                overflow = TextOverflow.Ellipsis
+                                            )
+                                        }
                                 }
                                 Column(
                                     horizontalAlignment = Alignment.CenterHorizontally
@@ -232,6 +244,17 @@ internal fun RequiredPlacesPickerSheetContent(
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
+                            poi.shortDescription
+                                ?.takeIf { description -> description.isNotBlank() }
+                                ?.let { description ->
+                                    Text(
+                                        text = description,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        maxLines = 3,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                }
                         }
                     }
                 }

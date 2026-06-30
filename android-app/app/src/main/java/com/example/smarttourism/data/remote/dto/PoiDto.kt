@@ -9,5 +9,6 @@ data class PoiDto(
     val opening_hours_raw: String?,
     val visit_duration_min: Int?,
     val base_score: Double?,
+    val short_description: String?,
     val wikipedia_url: String?
 )

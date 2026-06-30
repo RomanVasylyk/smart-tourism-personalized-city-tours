@@ -38,6 +38,7 @@ Run the POI import, normalization, and database load for one city:
 ```bash
 python3 pipeline/scripts/import_osm.py nitra
 python3 pipeline/scripts/normalize_categories.py nitra
+python3 pipeline/scripts/enrich_pois.py nitra
 python3 pipeline/scripts/load_to_db.py nitra
 ```
 
@@ -47,9 +48,18 @@ Run it for every configured city:
 for city in nitra trnava nove-zamky trencin zilina; do
   python3 pipeline/scripts/import_osm.py "$city"
   python3 pipeline/scripts/normalize_categories.py "$city"
-  python3 pipeline/scripts/load_to_db.py "$city"
 done
+
+python3 pipeline/scripts/enrich_pois.py --all-cities
+
+python3 pipeline/scripts/load_to_db.py --all-cities
 ```
+
+The enrichment step fills `short_description`, `wikipedia_title`, and
+`wikipedia_url` from Wikipedia/Wikidata. It uses a local cache at
+`pipeline/data/cache/wiki_summaries.json`; set `WIKIMEDIA_USER_AGENT` when
+running it outside local development. Pass `--languages sk,en,cs,de,pl,hu` to
+override the preferred Wikipedia/Wikidata language order.
 
 ## Transport ETL
 
@@ -86,9 +96,9 @@ city data in this order:
 ```bash
 docker compose up -d db
 
-for city in nitra trnava nove-zamky trencin zilina; do
-  python3 pipeline/scripts/load_to_db.py "$city"
-done
+python3 pipeline/scripts/enrich_pois.py --all-cities
+
+python3 pipeline/scripts/load_to_db.py --all-cities
 
 for city in nitra trnava nove-zamky trencin zilina; do
   python3 pipeline/scripts/load_transport_to_db.py "$city"
@@ -97,4 +107,3 @@ done
 
 If the raw source data should be refreshed first, run the POI and transport ETL
 sections before the load commands.
-

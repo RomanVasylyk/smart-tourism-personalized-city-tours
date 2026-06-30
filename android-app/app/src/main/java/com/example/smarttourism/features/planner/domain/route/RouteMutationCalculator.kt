@@ -264,6 +264,7 @@ internal fun rebuildPreviewRouteAfterReplacingPoi(
                 lon = replacementPoi.lon,
                 visitDurationMin = replacementVisitMinutes,
                 baseScore = replacementPoi.baseScore,
+                shortDescription = replacementPoi.shortDescription,
                 wikipediaUrl = replacementPoi.wikipediaUrl,
                 openingHoursRaw = replacementPoi.openingHoursRaw
             )

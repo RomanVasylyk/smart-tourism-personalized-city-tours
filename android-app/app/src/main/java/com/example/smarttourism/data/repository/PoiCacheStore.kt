@@ -22,6 +22,7 @@ internal class PoiCacheStore(
                     openingHoursRaw = poi.opening_hours_raw,
                     visitDurationMin = poi.visit_duration_min,
                     baseScore = poi.base_score,
+                    shortDescription = poi.short_description,
                     wikipediaUrl = poi.wikipedia_url,
                     updatedAtEpochMs = updatedAt
                 )
@@ -40,6 +41,7 @@ internal class PoiCacheStore(
                 opening_hours_raw = entity.openingHoursRaw,
                 visit_duration_min = entity.visitDurationMin,
                 base_score = entity.baseScore,
+                short_description = entity.shortDescription,
                 wikipedia_url = entity.wikipediaUrl
             )
         }

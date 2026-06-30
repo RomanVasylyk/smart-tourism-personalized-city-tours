@@ -16,6 +16,7 @@ class CandidatePoi:
     opening_hours_raw: str | None
     visit_duration_min: int | None
     base_score: float | None
+    short_description: str | None
     wikipedia_url: str | None
     raw: dict
 
@@ -30,6 +31,7 @@ class CandidatePoi:
             opening_hours_raw=row.get("opening_hours_raw"),
             visit_duration_min=row.get("visit_duration_min"),
             base_score=row.get("base_score"),
+            short_description=row.get("short_description"),
             wikipedia_url=row.get("wikipedia_url"),
             raw=row,
         )
