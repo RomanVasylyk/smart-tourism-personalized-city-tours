@@ -250,6 +250,9 @@
     <string name="route_stop_opening_hours">Години роботи: %1$s</string>
     <string name="route_stop_visited">Відвідано</string>
     <string name="route_stop_skipped">Пропущено</string>
+    <string name="route_stop_status_done">Готово</string>
+    <string name="route_stop_status_current">Поточна</string>
+    <string name="route_stop_status_upcoming">Далі</string>
     <string name="route_stop_status_next">Наступна</string>
     <string name="route_stop_status_pending">Заплановано</string>
     <string name="route_stop_summary_compact">%1$d хв шлях • %2$d хв відвідування</string>
@@ -257,6 +260,7 @@
     <string name="route_stop_walk_badge">Пішки %1$d хв</string>
     <string name="route_stop_bus_badge">Автобус %1$d хв</string>
     <string name="route_stop_bus_line_badge">%1$s автобус %2$d хв</string>
+    <string name="route_stop_wait_badge">Очікування %1$d хв</string>
     <string name="route_stop_visit_badge">Візит %1$d хв</string>
     <string name="route_stop_time_window_badge">%1$d-%2$d хв</string>
     <string name="action_view_stop_details">Показати деталі</string>
@@ -274,6 +278,9 @@
     <string name="map_visited_route_stop_title">Відвідано: %1$s</string>
     <string name="map_poi_selection_hint">Натискайте на маркери POI, щоб додати їх у маршрут. Вибрано: %1$d</string>
     <string name="map_poi_selected_snippet">%1$s &#8226; вибрано для маршруту</string>
+    <string name="map_poi_description_missing">Для цього місця поки немає короткого опису.</string>
+    <string name="action_show_full_description">Показати повний опис</string>
+    <string name="action_hide_full_description">Сховати повний опис</string>
     <string name="map_selected_poi_title">Вибране місце</string>
     <string name="map_route_legend_title">Маршрут</string>
     <string name="map_route_legend_active">Активна ходьба</string>

@@ -250,6 +250,9 @@
     <string name="route_stop_opening_hours">Öffnungszeiten: %1$s</string>
     <string name="route_stop_visited">Besucht</string>
     <string name="route_stop_skipped">Übersprungen</string>
+    <string name="route_stop_status_done">Erledigt</string>
+    <string name="route_stop_status_current">Aktuell</string>
+    <string name="route_stop_status_upcoming">Bevorstehend</string>
     <string name="route_stop_status_next">Nächster</string>
     <string name="route_stop_status_pending">Geplant</string>
     <string name="route_stop_summary_compact">%1$d min Weg • %2$d min Besuch</string>
@@ -257,6 +260,7 @@
     <string name="route_stop_walk_badge">Zu Fuß %1$d Min.</string>
     <string name="route_stop_bus_badge">Bus %1$d Min.</string>
     <string name="route_stop_bus_line_badge">%1$s Bus %2$d Min.</string>
+    <string name="route_stop_wait_badge">Warten %1$d Min.</string>
     <string name="route_stop_visit_badge">Besuch %1$d Min.</string>
     <string name="route_stop_time_window_badge">%1$d-%2$d Min.</string>
     <string name="action_view_stop_details">Details anzeigen</string>
@@ -274,6 +278,9 @@
     <string name="map_visited_route_stop_title">Besucht: %1$s</string>
     <string name="map_poi_selection_hint">Tippe auf POI-Marker, um sie in die Route aufzunehmen. Ausgewählt: %1$d</string>
     <string name="map_poi_selected_snippet">%1$s &#8226; für Route ausgewählt</string>
+    <string name="map_poi_description_missing">Für diesen Ort ist noch keine Kurzbeschreibung verfügbar.</string>
+    <string name="action_show_full_description">Vollständige Beschreibung anzeigen</string>
+    <string name="action_hide_full_description">Vollständige Beschreibung ausblenden</string>
     <string name="map_selected_poi_title">Ausgewählter Ort</string>
     <string name="map_route_legend_title">Route</string>
     <string name="map_route_legend_active">Aktiver Fußweg</string>

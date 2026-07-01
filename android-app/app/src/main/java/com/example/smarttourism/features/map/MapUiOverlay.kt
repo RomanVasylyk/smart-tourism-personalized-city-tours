@@ -4,20 +4,32 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -29,8 +41,12 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.smarttourism.R
+import com.example.smarttourism.features.planner.domain.model.Poi
+import com.example.smarttourism.features.planner.ui.formatters.categoryLabel
 
 @Composable
 internal fun MapSelectionHint(
@@ -161,6 +177,131 @@ internal fun MapRouteLegend(
                 label = stringResource(R.string.map_route_legend_transit)
             )
         }
+    }
+}
+
+@Composable
+internal fun MapPoiInfoPanel(
+    poi: Poi,
+    primaryActionLabel: String?,
+    onPrimaryAction: (() -> Unit)?,
+    onDismiss: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var isDescriptionExpanded by rememberSaveable(poi.id) { mutableStateOf(false) }
+    val description = poi.shortDescription
+        ?.takeIf { value -> value.isNotBlank() }
+        ?: stringResource(R.string.map_poi_description_missing)
+    val canExpandDescription = poi.shortDescription
+        ?.takeIf { value -> value.isNotBlank() }
+        ?.let { value ->
+            value.length > CollapsedDescriptionLengthThreshold || value.lineSequence().count() > 3
+        }
+        ?: false
+    val descriptionScrollState = rememberScrollState()
+
+    Surface(
+        modifier = modifier
+            .fillMaxWidth()
+            .heightIn(min = 156.dp, max = 430.dp),
+        shape = RoundedCornerShape(20.dp),
+        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.97f),
+        tonalElevation = 5.dp,
+        shadowElevation = 8.dp
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(10.dp)
+        ) {
+            Text(
+                text = poi.name,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
+            )
+            Row(horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)) {
+                MapInfoChip(label = categoryLabel(poi.category))
+                poi.visitDurationMin?.let { minutes ->
+                    MapInfoChip(label = stringResource(R.string.route_stop_visit_badge, minutes))
+                }
+            }
+            Text(
+                text = description,
+                modifier = if (isDescriptionExpanded) {
+                    Modifier
+                        .heightIn(max = 172.dp)
+                        .verticalScroll(descriptionScrollState)
+                } else {
+                    Modifier
+                },
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = if (isDescriptionExpanded) Int.MAX_VALUE else 3,
+                overflow = if (isDescriptionExpanded) TextOverflow.Clip else TextOverflow.Ellipsis
+            )
+            if (canExpandDescription) {
+                TextButton(
+                    onClick = { isDescriptionExpanded = !isDescriptionExpanded },
+                    modifier = Modifier.align(Alignment.Start)
+                ) {
+                    Text(
+                        stringResource(
+                            if (isDescriptionExpanded) {
+                                R.string.action_hide_full_description
+                            } else {
+                                R.string.action_show_full_description
+                            }
+                        )
+                    )
+                }
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                OutlinedButton(
+                    onClick = onDismiss,
+                    modifier = Modifier
+                        .weight(1f)
+                        .heightIn(min = 44.dp)
+                ) {
+                    Text(stringResource(R.string.action_done))
+                }
+                if (primaryActionLabel != null && onPrimaryAction != null) {
+                    Button(
+                        onClick = onPrimaryAction,
+                        modifier = Modifier
+                            .weight(1f)
+                            .heightIn(min = 44.dp)
+                    ) {
+                        Text(primaryActionLabel)
+                    }
+                } else {
+                    Spacer(modifier = Modifier.weight(1f))
+                }
+            }
+        }
+    }
+}
+
+private const val CollapsedDescriptionLengthThreshold = 140
+
+@Composable
+private fun MapInfoChip(label: String) {
+    Surface(
+        shape = RoundedCornerShape(999.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.72f)
+    ) {
+        Text(
+            text = label,
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
     }
 }
 

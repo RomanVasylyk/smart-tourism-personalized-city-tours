@@ -17,7 +17,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         PendingRouteSessionSyncEntity::class,
         PendingPoiVisitSyncEntity::class
     ],
-    version = 5,
+    version = 7,
     exportSchema = true
 )
 abstract class OfflineCacheDatabase : RoomDatabase() {
@@ -27,7 +27,14 @@ abstract class OfflineCacheDatabase : RoomDatabase() {
         const val DatabaseName = "smart-tourism-offline.db"
 
         val Migrations: Array<Migration>
-            get() = arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
+            get() = arrayOf(
+                MIGRATION_1_2,
+                MIGRATION_2_3,
+                MIGRATION_3_4,
+                MIGRATION_4_5,
+                MIGRATION_5_6,
+                MIGRATION_6_7
+            )
 
         private val MIGRATION_1_2 = object : Migration(1, 2) {
             override fun migrate(database: SupportSQLiteDatabase) {
@@ -132,6 +139,18 @@ abstract class OfflineCacheDatabase : RoomDatabase() {
                     ADD COLUMN shortDescription TEXT
                     """
                 )
+            }
+        }
+
+        private val MIGRATION_5_6 = object : Migration(5, 6) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("DELETE FROM cached_pois")
+            }
+        }
+
+        private val MIGRATION_6_7 = object : Migration(6, 7) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("DELETE FROM cached_pois")
             }
         }
     }

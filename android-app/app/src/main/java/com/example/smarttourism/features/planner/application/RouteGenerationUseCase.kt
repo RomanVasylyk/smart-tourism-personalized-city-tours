@@ -8,6 +8,7 @@ import com.example.smarttourism.features.planner.domain.model.PlannerPreferences
 import com.example.smarttourism.features.planner.domain.model.Poi
 import com.example.smarttourism.features.planner.domain.model.RoutePlan
 import com.example.smarttourism.features.planner.domain.model.RoutePoint
+import com.example.smarttourism.features.planner.domain.model.RouteStop
 import com.example.smarttourism.features.planner.state.DefaultCitySlug
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
@@ -82,7 +83,9 @@ internal class RouteGenerationUseCase @Inject constructor(
         )
 
         return runCatching {
-            val generatedRoute = routePlanningRepository.generateRoute(request)
+            val generatedRoute = routePlanningRepository
+                .generateRoute(request)
+                .withCatalogPoiDetails(input.pois)
             val missingRequiredPlaces = missingRequiredPoiLabels(
                 request = request,
                 response = generatedRoute,
@@ -134,4 +137,32 @@ internal class RouteGenerationUseCase @Inject constructor(
             .filterNot { poiId -> poiId in generatedIds }
             .map { poiId -> poisById[poiId]?.name ?: "#$poiId" }
     }
+
+    private fun RoutePlan.withCatalogPoiDetails(pois: List<Poi>): RoutePlan {
+        if (pois.isEmpty() || route.isEmpty()) {
+            return this
+        }
+
+        val poisById = pois.associateBy { poi -> poi.id }
+        return copy(
+            route = route.map { stop ->
+                stop.withCatalogPoiDetails(poisById[stop.poiId])
+            }
+        )
+    }
+
+    private fun RouteStop.withCatalogPoiDetails(poi: Poi?): RouteStop {
+        if (poi == null) {
+            return this
+        }
+
+        return copy(
+            shortDescription = shortDescription.ifNotBlank() ?: poi.shortDescription.ifNotBlank(),
+            wikipediaUrl = wikipediaUrl.ifNotBlank() ?: poi.wikipediaUrl.ifNotBlank(),
+            openingHoursRaw = openingHoursRaw.ifNotBlank() ?: poi.openingHoursRaw.ifNotBlank()
+        )
+    }
+
+    private fun String?.ifNotBlank(): String? =
+        this?.takeIf { value -> value.isNotBlank() }
 }

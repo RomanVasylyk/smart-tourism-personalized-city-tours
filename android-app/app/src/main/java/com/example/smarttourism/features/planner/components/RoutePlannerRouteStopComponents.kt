@@ -143,37 +143,45 @@ internal fun RouteStopTimelineItem(
         else -> MaterialTheme.colorScheme.outline
     }
     val statusLabel = when {
-        isVisited -> stringResource(R.string.route_stop_visited)
+        isVisited -> stringResource(R.string.route_stop_status_done)
         isSkipped -> stringResource(R.string.route_stop_skipped)
-        isNext -> stringResource(R.string.route_stop_status_next)
-        else -> stringResource(R.string.route_stop_status_pending)
+        isNext -> stringResource(R.string.route_stop_status_current)
+        else -> stringResource(R.string.route_stop_status_upcoming)
     }
 
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(IntrinsicSize.Min),
-        verticalAlignment = Alignment.Top
-    ) {
-        TimelineMarker(
-            color = statusColor,
-            isLast = isLast
-        )
-        Column(
+    Column(modifier = Modifier.fillMaxWidth()) {
+        incomingLeg?.let { leg ->
+            RouteIncomingTravelBlock(
+                leg = leg,
+                isCurrent = isNext,
+                modifier = Modifier.padding(start = 32.dp, bottom = 8.dp)
+            )
+        }
+        Row(
             modifier = Modifier
-                .weight(1f)
-                .clip(RoundedCornerShape(PlannerUiTokens.CardRadius))
-                .clickable(
-                    role = Role.Button,
-                    onClick = { expanded = !expanded }
-                )
-                .semantics {
-                    contentDescription = "$statusLabel, ${item.name}"
-                    role = Role.Button
-                }
-                .animateContentSize()
-                .padding(start = 4.dp, bottom = 12.dp)
+                .fillMaxWidth()
+                .height(IntrinsicSize.Min),
+            verticalAlignment = Alignment.Top
         ) {
+            TimelineMarker(
+                color = statusColor,
+                isLast = isLast
+            )
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .clip(RoundedCornerShape(PlannerUiTokens.CardRadius))
+                    .clickable(
+                        role = Role.Button,
+                        onClick = { expanded = !expanded }
+                    )
+                    .semantics {
+                        contentDescription = "$statusLabel, ${item.name}"
+                        role = Role.Button
+                    }
+                    .animateContentSize()
+                    .padding(start = 4.dp, bottom = 12.dp)
+            ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.Top
@@ -210,8 +218,8 @@ internal fun RouteStopTimelineItem(
                                 text = description,
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                maxLines = 3,
-                                overflow = TextOverflow.Ellipsis
+                                maxLines = if (expanded) Int.MAX_VALUE else 3,
+                                overflow = if (expanded) TextOverflow.Clip else TextOverflow.Ellipsis
                             )
                         }
                 }
@@ -352,8 +360,90 @@ internal fun RouteStopTimelineItem(
                     Text(stringResource(R.string.action_view_stop_details))
                 }
             }
+            }
         }
     }
+}
+
+@Composable
+private fun RouteIncomingTravelBlock(
+    leg: RouteLeg,
+    isCurrent: Boolean,
+    modifier: Modifier = Modifier
+) {
+    val accent = if (isCurrent) {
+        MaterialTheme.colorScheme.secondary
+    } else {
+        MaterialTheme.colorScheme.outline
+    }
+    val segments = leg.segments.orEmpty().ifEmpty {
+        listOf(
+            RouteSegment(
+                mode = leg.mode,
+                durationMinutes = leg.durationMinutes,
+                distanceMeters = leg.distanceMeters,
+                lineName = null,
+                waitMinutesBeforeDeparture = null,
+                inVehicleMinutes = null
+            )
+        )
+    }
+
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(PlannerUiTokens.CompactCardRadius),
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = if (isCurrent) 0.82f else 0.52f),
+        border = BorderStroke(1.dp, accent.copy(alpha = if (isCurrent) 0.55f else 0.25f))
+    ) {
+        Column(
+            modifier = Modifier.padding(10.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            segments
+                .filter { segment ->
+                    val duration = segment.durationMinutes ?: 0
+                    segment.mode == "transit" || duration > 0
+                }
+                .forEach { segment ->
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        RouteTravelSegmentChip(segment = segment)
+                        if (segment.mode == "transit") {
+                            val waitMinutes = segment.waitMinutesBeforeDeparture ?: 0
+                            if (waitMinutes > 0) {
+                                RouteTimelineChip(
+                                    label = stringResource(R.string.route_stop_wait_badge, waitMinutes),
+                                    color = MaterialTheme.colorScheme.outline
+                                )
+                            }
+                        }
+                    }
+                }
+        }
+    }
+}
+
+@Composable
+private fun RouteTravelSegmentChip(segment: RouteSegment) {
+    val durationMinutes = segment.durationMinutes ?: 0
+    val isTransit = segment.mode == "transit"
+    RouteTimelineChip(
+        label = if (isTransit) {
+            segment.lineName
+                ?.takeIf { it.isNotBlank() }
+                ?.let { stringResource(R.string.route_stop_bus_line_badge, it, durationMinutes) }
+                ?: stringResource(R.string.route_stop_bus_badge, durationMinutes)
+        } else {
+            stringResource(R.string.route_stop_walk_badge, durationMinutes)
+        },
+        color = if (isTransit) {
+            transitLineComposeColor(segment.lineName)
+        } else {
+            MaterialTheme.colorScheme.primary
+        }
+    )
 }
 
 @Composable

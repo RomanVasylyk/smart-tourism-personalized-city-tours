@@ -250,6 +250,9 @@
     <string name="route_stop_opening_hours">Otváracie hodiny: %1$s</string>
     <string name="route_stop_visited">Navštívené</string>
     <string name="route_stop_skipped">Preskočené</string>
+    <string name="route_stop_status_done">Hotovo</string>
+    <string name="route_stop_status_current">Aktuálne</string>
+    <string name="route_stop_status_upcoming">Čaká</string>
     <string name="route_stop_status_next">Ďalšia</string>
     <string name="route_stop_status_pending">Naplánované</string>
     <string name="route_stop_summary_compact">%1$d min presun • %2$d min návšteva</string>
@@ -257,6 +260,7 @@
     <string name="route_stop_walk_badge">Pešo %1$d min</string>
     <string name="route_stop_bus_badge">Bus %1$d min</string>
     <string name="route_stop_bus_line_badge">%1$s bus %2$d min</string>
+    <string name="route_stop_wait_badge">Čakanie %1$d min</string>
     <string name="route_stop_visit_badge">Návšteva %1$d min</string>
     <string name="route_stop_time_window_badge">%1$d-%2$d min</string>
     <string name="action_view_stop_details">Zobraziť detaily</string>
@@ -274,6 +278,9 @@
     <string name="map_visited_route_stop_title">Navštívené: %1$s</string>
     <string name="map_poi_selection_hint">Ťuknutím na značky miest ich pridáte do trasy. Vybrané: %1$d</string>
     <string name="map_poi_selected_snippet">%1$s &#8226; vybrané pre trasu</string>
+    <string name="map_poi_description_missing">Pre toto miesto zatiaľ nie je dostupný krátky opis.</string>
+    <string name="action_show_full_description">Zobraziť celý opis</string>
+    <string name="action_hide_full_description">Skryť celý opis</string>
     <string name="map_selected_poi_title">Vybrané miesto</string>
     <string name="map_route_legend_title">Trasa</string>
     <string name="map_route_legend_active">Aktívna chôdza</string>

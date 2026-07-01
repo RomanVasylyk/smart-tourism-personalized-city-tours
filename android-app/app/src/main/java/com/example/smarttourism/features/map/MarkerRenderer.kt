@@ -7,6 +7,7 @@ import android.graphics.Color
 import com.example.smarttourism.features.planner.domain.model.Poi
 import com.example.smarttourism.features.planner.domain.model.RoutePlan
 import com.example.smarttourism.features.planner.domain.model.RoutePoint
+import com.example.smarttourism.features.planner.domain.model.RouteStop
 import org.maplibre.android.annotations.Icon
 import org.maplibre.android.annotations.MarkerOptions
 import org.maplibre.android.annotations.PolylineOptions
@@ -28,13 +29,20 @@ internal fun renderMapContent(
     isRouteActive: Boolean,
     currentLocationIcon: Icon,
     visitedRouteStopIcon: Icon,
+    skippedRouteStopIcon: Icon,
+    normalPoiIcon: Icon,
+    compactPoiIcon: Icon,
+    focusedPoiIcon: Icon,
     selectedPoiIcon: Icon,
-    isSelectingRoutePois: Boolean,
     selectedRoutePoiIds: Set<Int>,
+    focusedPoiId: Int?,
+    highlightedPoiId: Int?,
     textResources: MapTextResources
 ): Map<Long, Poi> {
     map.clear()
     val selectablePoiMarkers = mutableMapOf<Long, Poi>()
+    val catalogPoisById = pois.associateBy { poi -> poi.id }
+    val shouldUseCompactPoiMarkers = routeResponse == null && pois.size > CompactPoiMarkerThreshold
 
     val startPoint = LatLng(startLat, startLon)
     map.addMarker(
@@ -102,10 +110,13 @@ internal fun renderMapContent(
                 }
             }
 
-            map.addMarkers(
+            val routeMarkerPois = routeItems.map { item -> item.toPoi(catalogPoisById[item.poiId]) }
+            val routeMarkers = map.addMarkers(
                 routeItems.map { item ->
                     val isVisited = item.poiId in visitedPoiIds
                     val isSkipped = item.poiId in skippedPoiIds
+                    val isMustSee = item.poiId in selectedRoutePoiIds
+                    val isFocused = item.poiId == focusedPoiId || item.poiId == highlightedPoiId
                     val routeStopTitle = String.format(
                         Locale.getDefault(),
                         textResources.routeStopTitleFormat,
@@ -125,8 +136,12 @@ internal fun renderMapContent(
                     MarkerOptions()
                         .position(LatLng(item.lat, item.lon))
                         .apply {
-                            if (isVisited || isSkipped) {
-                                icon(visitedRouteStopIcon)
+                            when {
+                                isFocused -> icon(focusedPoiIcon)
+                                isVisited -> icon(visitedRouteStopIcon)
+                                isSkipped -> icon(skippedRouteStopIcon)
+                                isMustSee -> icon(selectedPoiIcon)
+                                else -> icon(normalPoiIcon)
                             }
                         }
                         .title(markerTitle)
@@ -141,22 +156,29 @@ internal fun renderMapContent(
                         )
                 }
             )
+            routeMarkers.forEachIndexed { index, marker ->
+                selectablePoiMarkers[marker.id] = routeMarkerPois[index]
+            }
         }
 
         pois.isNotEmpty() -> {
             val poiMarkers = map.addMarkers(
                 pois.map { poi ->
-                    val isSelected = poi.id in selectedRoutePoiIds
+                    val isMustSee = poi.id in selectedRoutePoiIds
+                    val isFocused = poi.id == focusedPoiId || poi.id == highlightedPoiId
                     MarkerOptions()
                         .position(LatLng(poi.lat, poi.lon))
                         .apply {
-                            if (isSelected) {
-                                icon(selectedPoiIcon)
+                            when {
+                                isFocused -> icon(focusedPoiIcon)
+                                isMustSee -> icon(selectedPoiIcon)
+                                shouldUseCompactPoiMarkers -> icon(compactPoiIcon)
+                                else -> icon(normalPoiIcon)
                             }
                         }
                         .title(poi.name)
                         .snippet(
-                            if (isSelected) {
+                            if (isMustSee) {
                                 String.format(
                                     Locale.getDefault(),
                                     textResources.selectedPoiSnippetFormat,
@@ -168,10 +190,8 @@ internal fun renderMapContent(
                         )
                 }
             )
-            if (isSelectingRoutePois) {
-                poiMarkers.forEachIndexed { index, marker ->
-                    selectablePoiMarkers[marker.id] = pois[index]
-                }
+            poiMarkers.forEachIndexed { index, marker ->
+                selectablePoiMarkers[marker.id] = pois[index]
             }
         }
     }
@@ -188,6 +208,25 @@ internal fun renderMapContent(
 
     return selectablePoiMarkers
 }
+
+private const val CompactPoiMarkerThreshold = 90
+
+private fun RouteStop.toPoi(catalogPoi: Poi?): Poi =
+    Poi(
+        id = poiId,
+        name = name,
+        category = category,
+        lat = lat,
+        lon = lon,
+        visitDurationMin = visitDurationMin.takeIf { minutes -> minutes > 0 } ?: catalogPoi?.visitDurationMin,
+        baseScore = baseScore ?: catalogPoi?.baseScore,
+        shortDescription = shortDescription.ifNotBlank() ?: catalogPoi?.shortDescription.ifNotBlank(),
+        wikipediaUrl = wikipediaUrl.ifNotBlank() ?: catalogPoi?.wikipediaUrl.ifNotBlank(),
+        openingHoursRaw = openingHoursRaw.ifNotBlank() ?: catalogPoi?.openingHoursRaw.ifNotBlank()
+    )
+
+private fun String?.ifNotBlank(): String? =
+    this?.takeIf { value -> value.isNotBlank() }
 
 private fun String.toDisplayLabel(labels: Map<String, String>): String =
     labels[this] ?: split('_').joinToString(" ") { part ->

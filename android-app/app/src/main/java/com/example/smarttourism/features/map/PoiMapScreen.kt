@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
@@ -49,12 +50,17 @@ fun PoiMapScreen(
     isSelectingStart: Boolean,
     isSelectingRoutePois: Boolean = false,
     selectedRoutePoiIds: Set<Int> = emptySet(),
+    focusedPoi: Poi? = null,
+    focusedPoiPrimaryActionLabel: String? = null,
+    highlightedPoiId: Int? = null,
     preferCurrentLocationCamera: Boolean = false,
     locationButtonBottomPadding: Dp? = null,
     showLocationButton: Boolean = true,
     recenterLocationRequestKey: Int = 0,
     currentLocationCameraYOffset: Dp = 0.dp,
     onCurrentLocationRequested: (() -> Unit)? = null,
+    onFocusedPoiDismiss: (() -> Unit)? = null,
+    onFocusedPoiPrimaryAction: (() -> Unit)? = null,
     onStartPointSelected: (Double, Double) -> Unit,
     onRoutePoiSelected: (Poi) -> Unit = {},
     modifier: Modifier = Modifier
@@ -72,8 +78,22 @@ fun PoiMapScreen(
     }
     val currentLocationIcon = remember(context) { createCurrentLocationIcon(context) }
     val visitedRouteStopIcon = remember(context) { createVisitedRouteStopIcon(context) }
+    val skippedRouteStopIcon = remember(context) { createSkippedRouteStopIcon(context) }
+    val normalPoiIcon = remember(context) { createNormalPoiIcon(context) }
+    val compactPoiIcon = remember(context) { createCompactPoiIcon(context) }
+    val focusedPoiIcon = remember(context) { createFocusedPoiIcon(context) }
     val selectedPoiIcon = remember(context) { createSelectedPoiIcon(context) }
     var selectablePoiMarkers by remember(mapView) { mutableStateOf<Map<Long, Poi>>(emptyMap()) }
+    var localFocusedPoi by remember(mapView) { mutableStateOf<Poi?>(null) }
+    val visibleFocusedPoi = focusedPoi ?: localFocusedPoi
+    val focusedPoiId = visibleFocusedPoi?.id
+    val isPoiPanelVisible = visibleFocusedPoi != null && !isSelectingStart
+    val defaultLocationButtonBottomPadding = when {
+        isPoiPanelVisible && isFullScreen -> 336.dp
+        isPoiPanelVisible -> 188.dp
+        isFullScreen -> 104.dp
+        else -> 20.dp
+    }
 
     Box(modifier = modifier) {
         AndroidView(
@@ -106,10 +126,11 @@ fun PoiMapScreen(
                 }
 
                 val markerClickListener = MapLibreMap.OnMarkerClickListener { marker ->
-                    if (!isSelectingRoutePois) {
-                        return@OnMarkerClickListener false
-                    }
                     val poi = selectablePoiMarkers[marker.id] ?: return@OnMarkerClickListener false
+                    localFocusedPoi = poi
+                    if (!isSelectingRoutePois) {
+                        return@OnMarkerClickListener true
+                    }
                     onRoutePoiSelected(poi)
                     true
                 }
@@ -137,6 +158,8 @@ fun PoiMapScreen(
             isRouteActive,
             isSelectingRoutePois,
             selectedRoutePoiIds,
+            focusedPoiId,
+            highlightedPoiId,
             textResources
         ) {
             val mapInstance = map ?: return@LaunchedEffect
@@ -156,9 +179,14 @@ fun PoiMapScreen(
                 isRouteActive = isRouteActive,
                 currentLocationIcon = currentLocationIcon,
                 visitedRouteStopIcon = visitedRouteStopIcon,
+                skippedRouteStopIcon = skippedRouteStopIcon,
+                normalPoiIcon = normalPoiIcon,
+                compactPoiIcon = compactPoiIcon,
+                focusedPoiIcon = focusedPoiIcon,
                 selectedPoiIcon = selectedPoiIcon,
-                isSelectingRoutePois = isSelectingRoutePois,
                 selectedRoutePoiIds = selectedRoutePoiIds,
+                focusedPoiId = focusedPoiId,
+                highlightedPoiId = highlightedPoiId,
                 textResources = textResources
             )
         }
@@ -256,10 +284,50 @@ fun PoiMapScreen(
                     )
                     .padding(
                         start = if (isFullScreen) 24.dp else 16.dp,
-                        bottom = locationButtonBottomPadding ?: if (isFullScreen) 104.dp else 20.dp
+                        bottom = locationButtonBottomPadding ?: defaultLocationButtonBottomPadding
                     )
             )
         }
+
+        visibleFocusedPoi
+            ?.takeUnless { isSelectingStart }
+            ?.let { poi ->
+                val bottomInsetModifier = if (isFullScreen) {
+                    Modifier.navigationBarsPadding()
+                } else {
+                    Modifier.windowInsetsPadding(
+                        WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom)
+                    )
+                }
+
+                MapPoiInfoPanel(
+                    poi = poi,
+                    primaryActionLabel = focusedPoiPrimaryActionLabel,
+                    onPrimaryAction = onFocusedPoiPrimaryAction?.let { action ->
+                        {
+                            localFocusedPoi = null
+                            action()
+                        }
+                    },
+                    onDismiss = {
+                        localFocusedPoi = null
+                        onFocusedPoiDismiss?.invoke()
+                    },
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .windowInsetsPadding(
+                            WindowInsets.safeDrawing.only(
+                                WindowInsetsSides.Start + WindowInsetsSides.End
+                            )
+                        )
+                        .then(bottomInsetModifier)
+                        .padding(
+                            start = if (isFullScreen) 20.dp else 12.dp,
+                            end = if (isFullScreen) 20.dp else 12.dp,
+                            bottom = if (isFullScreen) 76.dp else 12.dp
+                        )
+                )
+            }
 
         if (showLocationButton) {
             MapLocationButton(
@@ -286,7 +354,7 @@ fun PoiMapScreen(
                     )
                     .padding(
                         end = if (isFullScreen) 24.dp else 20.dp,
-                        bottom = locationButtonBottomPadding ?: if (isFullScreen) 104.dp else 20.dp
+                        bottom = locationButtonBottomPadding ?: defaultLocationButtonBottomPadding
                     )
             )
         }

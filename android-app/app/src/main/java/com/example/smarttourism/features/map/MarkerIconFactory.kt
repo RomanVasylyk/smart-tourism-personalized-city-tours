@@ -169,6 +169,95 @@ internal fun createVisitedRouteStopIcon(context: Context): Icon {
     return IconFactory.getInstance(context).fromBitmap(bitmap)
 }
 
+internal fun createSkippedRouteStopIcon(context: Context): Icon {
+    val density = context.resources.displayMetrics.density
+    val width = (VisitedStopIconWidthDp * density).roundToInt()
+    val height = (VisitedStopIconHeightDp * density).roundToInt()
+    val centerX = width / 2f
+    val circleY = 15f * density
+
+    val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+    val canvas = Canvas(bitmap)
+    val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        style = Paint.Style.FILL
+    }
+
+    paint.color = Color.parseColor(VisitedStopOuterColor)
+    canvas.drawPath(
+        locationPinPath(
+            centerX = centerX,
+            circleY = circleY,
+            circleRadius = 16f * density,
+            tipY = height - 2f * density,
+            shoulderY = 28f * density,
+            shoulderHalfWidth = 8f * density
+        ),
+        paint
+    )
+
+    paint.color = Color.parseColor(SkippedStopFillColor)
+    canvas.drawPath(
+        locationPinPath(
+            centerX = centerX,
+            circleY = circleY,
+            circleRadius = 12f * density,
+            tipY = height - 7f * density,
+            shoulderY = 25f * density,
+            shoulderHalfWidth = 5.8f * density
+        ),
+        paint
+    )
+
+    paint.apply {
+        color = Color.parseColor(SkippedStopMarkColor)
+        style = Paint.Style.STROKE
+        strokeCap = Paint.Cap.ROUND
+        strokeJoin = Paint.Join.ROUND
+        strokeWidth = 3f * density
+    }
+    canvas.drawLine(centerX - 5f * density, circleY - 5f * density, centerX + 5f * density, circleY + 5f * density, paint)
+    canvas.drawLine(centerX + 5f * density, circleY - 5f * density, centerX - 5f * density, circleY + 5f * density, paint)
+
+    return IconFactory.getInstance(context).fromBitmap(bitmap)
+}
+
+internal fun createNormalPoiIcon(context: Context): Icon =
+    createPoiPinIcon(
+        context = context,
+        fillColor = NormalPoiFillColor,
+        widthDp = 30,
+        heightDp = 36,
+        circleRadiusDp = 12f,
+        innerRadiusDp = 4f
+    )
+
+internal fun createCompactPoiIcon(context: Context): Icon {
+    val density = context.resources.displayMetrics.density
+    val size = (18f * density).roundToInt()
+    val center = size / 2f
+
+    val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+    val canvas = Canvas(bitmap)
+    val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+    paint.style = Paint.Style.FILL
+    paint.color = Color.WHITE
+    canvas.drawCircle(center, center, 8f * density, paint)
+    paint.color = Color.parseColor(CompactPoiFillColor)
+    canvas.drawCircle(center, center, 5f * density, paint)
+
+    return IconFactory.getInstance(context).fromBitmap(bitmap)
+}
+
+internal fun createFocusedPoiIcon(context: Context): Icon =
+    createPoiPinIcon(
+        context = context,
+        fillColor = FocusedPoiFillColor,
+        widthDp = 40,
+        heightDp = 46,
+        circleRadiusDp = 16f,
+        innerRadiusDp = 5.5f
+    )
+
 internal fun createSelectedPoiIcon(context: Context): Icon {
     val density = context.resources.displayMetrics.density
     val width = (SelectedPoiIconWidthDp * density).roundToInt()
@@ -223,6 +312,58 @@ internal fun createSelectedPoiIcon(context: Context): Icon {
         },
         paint
     )
+
+    return IconFactory.getInstance(context).fromBitmap(bitmap)
+}
+
+private fun createPoiPinIcon(
+    context: Context,
+    fillColor: String,
+    widthDp: Int,
+    heightDp: Int,
+    circleRadiusDp: Float,
+    innerRadiusDp: Float
+): Icon {
+    val density = context.resources.displayMetrics.density
+    val width = (widthDp * density).roundToInt()
+    val height = (heightDp * density).roundToInt()
+    val centerX = width / 2f
+    val circleY = (circleRadiusDp + 2f) * density
+
+    val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+    val canvas = Canvas(bitmap)
+    val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        style = Paint.Style.FILL
+    }
+
+    paint.color = Color.WHITE
+    canvas.drawPath(
+        locationPinPath(
+            centerX = centerX,
+            circleY = circleY,
+            circleRadius = circleRadiusDp * density,
+            tipY = height - 2f * density,
+            shoulderY = (circleRadiusDp * 1.78f) * density,
+            shoulderHalfWidth = (circleRadiusDp * 0.48f) * density
+        ),
+        paint
+    )
+
+    paint.color = Color.parseColor(fillColor)
+    canvas.drawPath(
+        locationPinPath(
+            centerX = centerX,
+            circleY = circleY,
+            circleRadius = (circleRadiusDp - 3.5f) * density,
+            tipY = height - 6f * density,
+            shoulderY = (circleRadiusDp * 1.62f) * density,
+            shoulderHalfWidth = (circleRadiusDp * 0.36f) * density
+        ),
+        paint
+    )
+
+    paint.color = Color.WHITE
+    canvas.drawCircle(centerX, circleY, innerRadiusDp * density, paint)
 
     return IconFactory.getInstance(context).fromBitmap(bitmap)
 }

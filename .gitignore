@@ -8,6 +8,8 @@ __pycache__/
 
 # Android / IntelliJ
 .gradle/
+.kotlin/
+**/.kotlin/
 .idea/
 local.properties
 **/build/
