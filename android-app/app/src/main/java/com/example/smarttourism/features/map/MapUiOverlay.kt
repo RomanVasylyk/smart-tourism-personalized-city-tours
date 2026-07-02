@@ -186,8 +186,20 @@ internal fun MapPoiInfoPanel(
     primaryActionLabel: String?,
     onPrimaryAction: (() -> Unit)?,
     onDismiss: () -> Unit,
+    isFullScreen: Boolean = true,
     modifier: Modifier = Modifier
 ) {
+    if (!isFullScreen) {
+        CompactMapPoiInfoPanel(
+            poi = poi,
+            primaryActionLabel = primaryActionLabel,
+            onPrimaryAction = onPrimaryAction,
+            onDismiss = onDismiss,
+            modifier = modifier
+        )
+        return
+    }
+
     var isDescriptionExpanded by rememberSaveable(poi.id) { mutableStateOf(false) }
     val description = poi.shortDescription
         ?.takeIf { value -> value.isNotBlank() }
@@ -280,6 +292,71 @@ internal fun MapPoiInfoPanel(
                     }
                 } else {
                     Spacer(modifier = Modifier.weight(1f))
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun CompactMapPoiInfoPanel(
+    poi: Poi,
+    primaryActionLabel: String?,
+    onPrimaryAction: (() -> Unit)?,
+    onDismiss: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.97f),
+        tonalElevation = 5.dp,
+        shadowElevation = 8.dp
+    ) {
+        Column(
+            modifier = Modifier.padding(12.dp),
+            verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(4.dp)
+                ) {
+                    Text(
+                        text = poi.name,
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.SemiBold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Row(horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(6.dp)) {
+                        MapInfoChip(label = categoryLabel(poi.category))
+                        poi.visitDurationMin?.let { minutes ->
+                            MapInfoChip(label = stringResource(R.string.route_stop_visit_badge, minutes))
+                        }
+                    }
+                }
+                TextButton(
+                    onClick = onDismiss,
+                    modifier = Modifier.defaultMinSize(minWidth = 40.dp, minHeight = 36.dp)
+                ) {
+                    Text("✕")
+                }
+            }
+            if (primaryActionLabel != null && onPrimaryAction != null) {
+                Button(
+                    onClick = {
+                        onPrimaryAction()
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = 36.dp)
+                ) {
+                    Text(primaryActionLabel, style = MaterialTheme.typography.labelMedium)
                 }
             }
         }

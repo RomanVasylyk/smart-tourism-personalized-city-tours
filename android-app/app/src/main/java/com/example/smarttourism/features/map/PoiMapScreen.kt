@@ -90,7 +90,7 @@ fun PoiMapScreen(
     val isPoiPanelVisible = visibleFocusedPoi != null && !isSelectingStart
     val defaultLocationButtonBottomPadding = when {
         isPoiPanelVisible && isFullScreen -> 336.dp
-        isPoiPanelVisible -> 188.dp
+        isPoiPanelVisible -> 16.dp
         isFullScreen -> 104.dp
         else -> 20.dp
     }
@@ -101,6 +101,7 @@ fun PoiMapScreen(
                 mapView.apply {
                     getMapAsync { mapInstance ->
                         map = mapInstance
+                        mapInstance.uiSettings.isCompassEnabled = isFullScreen
                         mapInstance.setStyle(StreetStyleUrl) {
                             isStyleLoaded = true
                             moveCamera(mapInstance, startLat, startLon, defaultZoom)
@@ -111,18 +112,28 @@ fun PoiMapScreen(
             modifier = Modifier.fillMaxSize()
         )
 
-        DisposableEffect(map, isSelectingStart, isSelectingRoutePois, selectablePoiMarkers, onStartPointSelected, onRoutePoiSelected) {
+        LaunchedEffect(map, isFullScreen) {
+            map?.uiSettings?.isCompassEnabled = isFullScreen
+        }
+
+        DisposableEffect(map, isSelectingStart, isSelectingRoutePois, selectablePoiMarkers, onStartPointSelected, onRoutePoiSelected, localFocusedPoi, onFocusedPoiDismiss) {
             val mapInstance = map
             if (mapInstance == null) {
                 onDispose { }
             } else {
                 val clickListener = MapLibreMap.OnMapClickListener { point ->
-                    if (!isSelectingStart) {
-                        return@OnMapClickListener false
+                    if (isSelectingStart) {
+                        onStartPointSelected(point.latitude, point.longitude)
+                        return@OnMapClickListener true
                     }
 
-                    onStartPointSelected(point.latitude, point.longitude)
-                    true
+                    if (localFocusedPoi != null) {
+                        localFocusedPoi = null
+                        onFocusedPoiDismiss?.invoke()
+                        return@OnMapClickListener true
+                    }
+
+                    false
                 }
 
                 val markerClickListener = MapLibreMap.OnMarkerClickListener { marker ->
@@ -313,6 +324,7 @@ fun PoiMapScreen(
                         localFocusedPoi = null
                         onFocusedPoiDismiss?.invoke()
                     },
+                    isFullScreen = isFullScreen,
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
                         .windowInsetsPadding(
@@ -322,30 +334,41 @@ fun PoiMapScreen(
                         )
                         .then(bottomInsetModifier)
                         .padding(
-                            start = if (isFullScreen) 20.dp else 12.dp,
-                            end = if (isFullScreen) 20.dp else 12.dp,
-                            bottom = if (isFullScreen) 76.dp else 12.dp
+                            start = if (isFullScreen) 20.dp else 8.dp,
+                            end = if (isFullScreen) 20.dp else 8.dp,
+                            bottom = if (isFullScreen) 76.dp else 86.dp
                         )
                 )
             }
 
         if (showLocationButton) {
             MapLocationButton(
-                enabled = currentLocation != null || onCurrentLocationRequested != null,
+                enabled = currentLocation != null || onCurrentLocationRequested != null || visibleFocusedPoi != null,
                 onClick = {
-                    val location = currentLocation
-                    if (location == null) {
-                        onCurrentLocationRequested?.invoke()
-                        return@MapLocationButton
-                    }
+                    val focusedPoi = visibleFocusedPoi
                     val mapInstance = map ?: return@MapLocationButton
-                    moveCamera(
-                        map = mapInstance,
-                        lat = location.lat,
-                        lon = location.lon,
-                        zoom = defaultZoom,
-                        verticalOffsetPx = currentLocationCameraYOffsetPx
-                    )
+                    if (focusedPoi != null) {
+                        moveCamera(
+                            map = mapInstance,
+                            lat = focusedPoi.lat,
+                            lon = focusedPoi.lon,
+                            zoom = defaultZoom,
+                            verticalOffsetPx = currentLocationCameraYOffsetPx
+                        )
+                    } else {
+                        val location = currentLocation
+                        if (location == null) {
+                            onCurrentLocationRequested?.invoke()
+                            return@MapLocationButton
+                        }
+                        moveCamera(
+                            map = mapInstance,
+                            lat = location.lat,
+                            lon = location.lon,
+                            zoom = defaultZoom,
+                            verticalOffsetPx = currentLocationCameraYOffsetPx
+                        )
+                    }
                 },
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
