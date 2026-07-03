@@ -1,6 +1,8 @@
 package com.example.smarttourism.data.remote.api
 
 import com.example.smarttourism.data.remote.dto.CityDto
+import com.example.smarttourism.data.remote.dto.CuratedRouteDetailDto
+import com.example.smarttourism.data.remote.dto.CuratedRouteSummaryDto
 import com.example.smarttourism.data.remote.dto.PoiDto
 import com.example.smarttourism.data.remote.dto.RouteFeedbackDto
 import com.example.smarttourism.data.remote.dto.RouteFeedbackRequest
@@ -28,6 +30,17 @@ interface PoiApi {
     suspend fun getPois(
         @Query("city") city: String
     ): List<PoiDto>
+
+    @GET("cities/{slug}/curated-routes")
+    suspend fun getCuratedRoutes(
+        @Path("slug") slug: String
+    ): List<CuratedRouteSummaryDto>
+
+    @GET("curated-routes/{routeId}")
+    suspend fun getCuratedRoute(
+        @Path("routeId") routeId: Int,
+        @Query("start_datetime") startDatetime: String? = null
+    ): CuratedRouteDetailDto
 
     @POST("route/generate")
     suspend fun generateRoute(

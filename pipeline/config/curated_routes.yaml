@@ -1,0 +1,152 @@
+curated_routes:
+  nitra:
+    - slug: nitra-hrad-a-muzea
+      title: "Nitriansky hrad a múzeá"
+      summary: "Okruh po dominante mesta a hlavných múzeách historického jadra Nitry."
+      theme: history
+      pace: normal
+      transport_mode: walk
+      return_to_start: true
+      recommended_duration_min: 180
+      start:
+        lat: 48.3076
+        lon: 18.0845
+      stops:
+        - name: "Nitriansky hrad"
+          osm_type: node
+          osm_id: "1713245355"
+          note: "Hradný areál nad mestom."
+        - name: "Diecézne múzeum"
+          osm_type: way
+          osm_id: "105623148"
+        - name: "Ponitrianske múzeum"
+          osm_type: node
+          osm_id: "259949328"
+        - name: "Kostol sv. Jozefa"
+          osm_type: way
+          osm_id: "1303096918"
+  trnava:
+    - slug: trnava-pamiatky-jadra
+      title: "Pamiatky malého Ríma"
+      summary: "Prechádzka po veži, bazilike a múzeách historickej Trnavy."
+      theme: history
+      pace: normal
+      transport_mode: walk
+      return_to_start: true
+      recommended_duration_min: 150
+      start:
+        lat: 48.3767652
+        lon: 17.5858175
+      stops:
+        - name: "Mestská veža"
+          osm_type: way
+          osm_id: "164482472"
+        - name: "Bazilika sv. Mikuláša"
+          osm_type: way
+          osm_id: "164480810"
+        - name: "Múzeum knižnej kultúry"
+          osm_type: node
+          osm_id: "7546193197"
+        - name: "Synagóga - Centrum súčasného umenia"
+          osm_type: node
+          osm_id: "7812587125"
+  trencin:
+    - slug: trencin-hrad-a-stare-mesto
+      title: "Hrad a staré mesto"
+      summary: "Okruh po Trenčianskom hrade a pamiatkach historického centra."
+      theme: history
+      pace: normal
+      transport_mode: walk
+      return_to_start: true
+      recommended_duration_min: 180
+      start:
+        lat: 48.8922719
+        lon: 18.0387465
+      stops:
+        - name: "Trenčiansky hrad"
+          osm_type: node
+          osm_id: "5609667635"
+          note: "Dominanta nad mestom s rímskym nápisom."
+        - name: "Trenčianske múzeum"
+          osm_type: node
+          osm_id: "1243225881"
+        - name: "Katov dom"
+          osm_type: way
+          osm_id: "61370740"
+        - name: "Maršovského palác"
+          osm_type: way
+          osm_id: "61372840"
+  zilina:
+    - slug: zilina-muzea-a-palace
+      title: "Mestské múzeá a paláce"
+      summary: "Kultúrny okruh po múzeách a palácoch v centre Žiliny."
+      theme: culture
+      pace: normal
+      transport_mode: walk
+      return_to_start: true
+      recommended_duration_min: 150
+      start:
+        lat: 49.2234674
+        lon: 18.7393139
+      stops:
+        - name: "Považské múzeum"
+          osm_type: node
+          osm_id: "6039324780"
+        - name: "Rosenfeldov palác"
+          osm_type: way
+          osm_id: "155964394"
+        - name: "Dom \"Lombardini\""
+          osm_type: node
+          osm_id: "4367330890"
+        - name: "Múzeum židovskej kultúry"
+          osm_type: node
+          osm_id: "4367331093"
+        - name: "Burianova veža"
+          osm_type: node
+          osm_id: "5814312953"
+  nove-zamky:
+    - slug: nove-zamky-muzea-galerie
+      title: "Múzeá a galérie Nových Zámkov"
+      summary: "Kultúrny okruh po hlavných múzeách a galérii v centre Nových Zámkov."
+      theme: culture
+      pace: normal
+      transport_mode: walk
+      return_to_start: true
+      recommended_duration_min: 180
+      start:
+        lat: 47.9861843
+        lon: 18.1631415
+      stops:
+        - name: "Múzeum Jána Thaina"
+          osm_type: node
+          osm_id: "5617711349"
+          visit_duration_min: 60
+        - name: "Galéria umenia Ernesta Zmetáka v Nových Zámkoch"
+          osm_type: node
+          osm_id: "4895746441"
+          visit_duration_min: 60
+        - name: "Múzeum Jána Thaina - výstavná miestnosť"
+          osm_type: node
+          osm_id: "4884435721"
+    - slug: nove-zamky-pamiatky-namestia
+      title: "Pamiatky na námestí"
+      summary: "Krátka prechádzka po sochách a pamätníkoch v historickom jadre."
+      theme: history
+      pace: normal
+      transport_mode: walk
+      return_to_start: true
+      recommended_duration_min: 90
+      start:
+        lat: 47.9861843
+        lon: 18.1631415
+      stops:
+        - name: "Trojičný stĺp"
+          osm_type: node
+          osm_id: "3208944210"
+          note: "Barokový súsošie Najsvätejšej Trojice."
+        - name: "Anton Bernolák"
+          osm_type: node
+          osm_id: "5561696416"
+        - name: "sv. Ján Nepomucký"
+          osm_type: node
+          osm_id: "6363327193"

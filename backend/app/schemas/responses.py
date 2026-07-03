@@ -177,6 +177,36 @@ class RouteResponse(BaseModel):
     full_geometry: list[RouteCoordinateResponse] | None = None
 
 
+class CuratedRouteSummaryResponse(BaseModel):
+    id: int
+    slug: str | None = None
+    title: str
+    summary: str | None = None
+    theme: str | None = None
+    city: str | None = None
+    recommended_duration_min: int | None = None
+    pace: str | None = None
+    transport_mode: str | None = None
+    return_to_start: bool | None = None
+    poi_count: int
+    stop_names: list[str] = Field(default_factory=list)
+
+
+class CuratedRouteDetailResponse(BaseModel):
+    id: int
+    slug: str | None = None
+    title: str
+    summary: str | None = None
+    theme: str | None = None
+    city: str | None = None
+    recommended_duration_min: int | None = None
+    pace: str | None = None
+    transport_mode: str | None = None
+    return_to_start: bool | None = None
+    poi_count: int
+    route: RouteResponse
+
+
 class RouteSnapshotResponse(BaseModel):
     city: str | None = None
     start: RouteStartResponse | None = None

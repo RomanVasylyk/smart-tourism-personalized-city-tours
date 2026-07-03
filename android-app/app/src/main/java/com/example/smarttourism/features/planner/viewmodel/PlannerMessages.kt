@@ -15,7 +15,9 @@ internal data class PlannerMessages(
     val offlineMapDownloaded: String,
     val offlineMapDeleted: String,
     val pendingSyncQueued: String,
-    val routeHistoryLoadFailed: String
+    val routeHistoryLoadFailed: String,
+    val curatedRoutesFailed: String,
+    val curatedRouteOpenFailed: String
 ) {
     companion object {
         fun from(context: Context): PlannerMessages =
@@ -31,7 +33,9 @@ internal data class PlannerMessages(
                 offlineMapDownloaded = context.getString(R.string.offline_map_download_complete),
                 offlineMapDeleted = context.getString(R.string.offline_map_delete_complete),
                 pendingSyncQueued = context.getString(R.string.pending_sync_queued),
-                routeHistoryLoadFailed = context.getString(R.string.route_history_load_failed)
+                routeHistoryLoadFailed = context.getString(R.string.route_history_load_failed),
+                curatedRoutesFailed = context.getString(R.string.status_curated_routes_failed),
+                curatedRouteOpenFailed = context.getString(R.string.status_curated_route_open_failed)
             )
     }
 }

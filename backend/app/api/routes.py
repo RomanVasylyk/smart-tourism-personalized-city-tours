@@ -4,6 +4,8 @@ from app.repositories.cities import list_city_rows
 from app.repositories.pois import list_poi_rows
 from app.schemas.responses import (
     CityResponse,
+    CuratedRouteDetailResponse,
+    CuratedRouteSummaryResponse,
     HealthResponse,
     PoiResponse,
     RouteFeedbackResponse,
@@ -13,6 +15,7 @@ from app.schemas.responses import (
     RouteSessionResponse,
 )
 from app.schemas.route import RouteGenerateRequest, RouteLegRequest
+from app.services.curated_routes import get_curated_route, list_curated_routes
 from app.schemas.route_sessions import (
     RouteFeedbackRequest,
     RouteSessionCreateRequest,
@@ -46,6 +49,16 @@ def get_cities():
 @router.get("/pois", response_model=list[PoiResponse])
 def get_pois(city: str = "nitra"):
     return list_poi_rows(city)
+
+
+@router.get("/cities/{slug}/curated-routes", response_model=list[CuratedRouteSummaryResponse])
+def get_curated_routes_endpoint(slug: str):
+    return list_curated_routes(slug)
+
+
+@router.get("/curated-routes/{route_id}", response_model=CuratedRouteDetailResponse)
+def get_curated_route_endpoint(route_id: int, start_datetime: str | None = None):
+    return get_curated_route(route_id, start_datetime)
 
 
 @router.post("/route/generate", response_model=RouteResponse)

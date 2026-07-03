@@ -88,6 +88,7 @@ import com.example.smarttourism.features.planner.location.startRouteLocationTrac
 
 internal enum class PlannerDestination {
     PLANNER,
+    CURATED,
     SAVED_ROUTES,
     HISTORY,
     OFFLINE
@@ -204,6 +205,7 @@ internal fun PlannerTopBar(
                     )
                     HorizontalDivider()
                     listOf(
+                        PlannerDestination.CURATED,
                         PlannerDestination.SAVED_ROUTES,
                         PlannerDestination.HISTORY,
                         PlannerDestination.OFFLINE
@@ -227,6 +229,7 @@ internal fun PlannerTopBar(
 private fun destinationLabel(destination: PlannerDestination, routeBookmarkCount: Int): String =
     when (destination) {
         PlannerDestination.PLANNER -> stringResource(R.string.app_destination_planner)
+        PlannerDestination.CURATED -> stringResource(R.string.action_open_curated_routes)
         PlannerDestination.SAVED_ROUTES -> if (routeBookmarkCount > 0) {
             stringResource(R.string.action_open_route_bookmarks_with_count, routeBookmarkCount)
         } else {

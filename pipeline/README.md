@@ -61,6 +61,23 @@ The enrichment step fills `short_description`, `wikipedia_title`, and
 running it outside local development. Pass `--languages sk,en,cs,de,pl,hu` to
 override the preferred Wikipedia/Wikidata language order.
 
+## Curated routes
+
+Hand-curated, verified city tours ("hotové okruhy") are defined in
+`pipeline/config/curated_routes.yaml`, keyed by city slug. Each route lists its
+stops in visit order; stops are resolved against POIs already loaded in the
+database (by `osm_type`/`osm_id`, or by exact name as a fallback), so run the POI
+load first.
+
+```bash
+python3 pipeline/scripts/load_curated_routes.py nove-zamky
+python3 pipeline/scripts/load_curated_routes.py --all-cities
+```
+
+The backend exposes them through `GET /cities/{slug}/curated-routes` (catalog)
+and `GET /curated-routes/{id}` (full schedule and geometry, materialized through
+the same route timeline builder used by the planner).
+
 ## Transport ETL
 
 Transport data is configured under each city's `transport` section in

@@ -305,4 +305,14 @@
     <string name="state_yes">Так</string>
     <string name="state_no">Ні</string>
     <string name="common_unknown">Невідомо</string>
+    <string name="action_open_curated_routes">Готові маршрути</string>
+    <string name="curated_routes_title">Готові міські маршрути</string>
+    <string name="curated_routes_body">Перевірені маршрути, які можна одразу запустити.</string>
+    <string name="curated_routes_body_for_city">Перевірені готові маршрути для міста %1$s.</string>
+    <string name="curated_routes_empty">Для цього міста ще немає готових маршрутів.</string>
+    <string name="curated_route_stops_count">%1$d зупинок</string>
+    <string name="curated_route_duration_minutes">≈ %1$d хв</string>
+    <string name="action_open_curated_route">Відкрити маршрут</string>
+    <string name="status_curated_routes_failed">Не вдалося завантажити готові маршрути.</string>
+    <string name="status_curated_route_open_failed">Не вдалося відкрити готовий маршрут.</string>
 </resources>

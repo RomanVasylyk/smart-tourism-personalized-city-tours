@@ -305,4 +305,14 @@
     <string name="state_yes">Áno</string>
     <string name="state_no">Nie</string>
     <string name="common_unknown">Neznáme</string>
+    <string name="action_open_curated_routes">Hotové okruhy</string>
+    <string name="curated_routes_title">Hotové mestské okruhy</string>
+    <string name="curated_routes_body">Overené okruhy, ktoré môžete hneď spustiť.</string>
+    <string name="curated_routes_body_for_city">Overené hotové okruhy pre mesto %1$s.</string>
+    <string name="curated_routes_empty">Pre toto mesto zatiaľ nie sú hotové okruhy.</string>
+    <string name="curated_route_stops_count">%1$d zastávok</string>
+    <string name="curated_route_duration_minutes">≈ %1$d min</string>
+    <string name="action_open_curated_route">Otvoriť okruh</string>
+    <string name="status_curated_routes_failed">Nepodarilo sa načítať hotové okruhy.</string>
+    <string name="status_curated_route_open_failed">Nepodarilo sa otvoriť hotový okruh.</string>
 </resources>

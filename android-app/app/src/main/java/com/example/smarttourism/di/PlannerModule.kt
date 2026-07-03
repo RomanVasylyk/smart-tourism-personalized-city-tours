@@ -7,6 +7,8 @@ import com.example.smarttourism.features.planner.data.bookmark.DefaultRouteBookm
 import com.example.smarttourism.features.planner.data.bookmark.RouteBookmarkRepository
 import com.example.smarttourism.features.planner.data.city.CityRepository
 import com.example.smarttourism.features.planner.data.city.DefaultCityRepository
+import com.example.smarttourism.features.planner.data.curated.CuratedRouteRepository
+import com.example.smarttourism.features.planner.data.curated.DefaultCuratedRouteRepository
 import com.example.smarttourism.features.planner.data.local.DefaultPlannerLocalDataSource
 import com.example.smarttourism.features.planner.data.local.PlannerLocalDataSource
 import com.example.smarttourism.features.planner.data.poi.DefaultPoiRepository
@@ -52,6 +54,12 @@ internal abstract class PlannerBindingsModule {
     abstract fun bindPoiRepository(
         repository: DefaultPoiRepository
     ): PoiRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindCuratedRouteRepository(
+        repository: DefaultCuratedRouteRepository
+    ): CuratedRouteRepository
 
     @Binds
     @Singleton

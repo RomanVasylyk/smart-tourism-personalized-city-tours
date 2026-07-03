@@ -305,4 +305,14 @@
     <string name="state_yes">Igen</string>
     <string name="state_no">Nem</string>
     <string name="common_unknown">Ismeretlen</string>
+    <string name="action_open_curated_routes">Kész túrák</string>
+    <string name="curated_routes_title">Kész városi túrák</string>
+    <string name="curated_routes_body">Ellenőrzött útvonalak, amelyeket azonnal elindíthat.</string>
+    <string name="curated_routes_body_for_city">Ellenőrzött kész túrák ehhez: %1$s.</string>
+    <string name="curated_routes_empty">Ehhez a városhoz még nincsenek kész túrák.</string>
+    <string name="curated_route_stops_count">%1$d megálló</string>
+    <string name="curated_route_duration_minutes">≈ %1$d perc</string>
+    <string name="action_open_curated_route">Túra megnyitása</string>
+    <string name="status_curated_routes_failed">Nem sikerült betölteni a kész túrákat.</string>
+    <string name="status_curated_route_open_failed">Nem sikerült megnyitni a kész túrát.</string>
 </resources>

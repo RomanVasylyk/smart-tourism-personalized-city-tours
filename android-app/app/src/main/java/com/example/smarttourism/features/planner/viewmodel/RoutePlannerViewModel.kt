@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.smarttourism.features.planner.application.ActiveRouteController
 import com.example.smarttourism.features.planner.application.BookmarkController
+import com.example.smarttourism.features.planner.application.CuratedRoutesUseCase
 import com.example.smarttourism.features.planner.application.OfflineMapController
 import com.example.smarttourism.features.planner.application.PlannerBootstrapUseCase
 import com.example.smarttourism.features.planner.application.PlannerCatalogUseCase
@@ -31,6 +32,7 @@ internal class RoutePlannerViewModel @Inject constructor(
     offlineSyncRepository: OfflineSyncRepository,
     plannerBootstrapUseCase: PlannerBootstrapUseCase,
     plannerCatalogUseCase: PlannerCatalogUseCase,
+    curatedRoutesUseCase: CuratedRoutesUseCase,
     routeGenerationUseCase: RouteGenerationUseCase,
     activeRouteController: ActiveRouteController,
     routeHistoryController: RouteHistoryController,
@@ -70,6 +72,16 @@ internal class RoutePlannerViewModel @Inject constructor(
         messages = messages
     )
 
+    private val curatedRouteActions = PlannerCuratedRouteActions(
+        state = stateStore,
+        scope = viewModelScope,
+        curatedRoutesUseCase = curatedRoutesUseCase,
+        catalogActions = catalogActions,
+        routePlanningRepository = routePlanningRepository,
+        sessionCoordinator = sessionCoordinator,
+        messages = messages
+    )
+
     private val routePlanningActions = PlannerRoutePlanningActions(
         state = stateStore,
         scope = viewModelScope,
@@ -105,6 +117,7 @@ internal class RoutePlannerViewModel @Inject constructor(
         PlannerEventActionFacade(
             state = stateStore,
             catalogActions = catalogActions,
+            curatedRouteActions = curatedRouteActions,
             routePlanningActions = routePlanningActions,
             bookmarkActions = bookmarkActions,
             activeRouteActions = activeRouteActions,

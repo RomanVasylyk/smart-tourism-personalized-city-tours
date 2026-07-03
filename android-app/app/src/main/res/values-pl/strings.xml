@@ -305,4 +305,14 @@
     <string name="state_yes">Tak</string>
     <string name="state_no">Nie</string>
     <string name="common_unknown">Nieznane</string>
+    <string name="action_open_curated_routes">Gotowe trasy</string>
+    <string name="curated_routes_title">Gotowe trasy miejskie</string>
+    <string name="curated_routes_body">Sprawdzone trasy, które możesz od razu uruchomić.</string>
+    <string name="curated_routes_body_for_city">Sprawdzone gotowe trasy dla miasta %1$s.</string>
+    <string name="curated_routes_empty">Brak gotowych tras dla tego miasta.</string>
+    <string name="curated_route_stops_count">%1$d przystanków</string>
+    <string name="curated_route_duration_minutes">≈ %1$d min</string>
+    <string name="action_open_curated_route">Otwórz trasę</string>
+    <string name="status_curated_routes_failed">Nie udało się wczytać gotowych tras.</string>
+    <string name="status_curated_route_open_failed">Nie udało się otworzyć gotowej trasy.</string>
 </resources>

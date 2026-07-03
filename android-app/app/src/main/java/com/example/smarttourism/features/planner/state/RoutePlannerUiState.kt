@@ -5,6 +5,7 @@ import com.example.smarttourism.data.model.RouteFeedback
 import com.example.smarttourism.data.model.RouteHistoryEntry
 import com.example.smarttourism.features.map.offline.OfflineStoredRegion
 import com.example.smarttourism.features.planner.domain.model.City
+import com.example.smarttourism.features.planner.domain.model.CuratedRoute
 import com.example.smarttourism.features.planner.domain.model.PlannerPreferences
 import com.example.smarttourism.features.planner.domain.model.Poi
 import com.example.smarttourism.features.planner.domain.model.RoutePlan
@@ -56,7 +57,10 @@ internal data class RoutePlannerUiState(
     val selectedInterests: List<String> = emptyList(),
     val requiredPoiIds: List<Int> = emptyList(),
     val visitedPoiIds: List<Int> = emptyList(),
-    val skippedPoiIds: List<Int> = emptyList()
+    val skippedPoiIds: List<Int> = emptyList(),
+    val curatedRoutes: List<CuratedRoute> = emptyList(),
+    val isCuratedRoutesLoading: Boolean = false,
+    val curatedRoutesError: String? = null
 ) {
     val routeItems: List<RouteStop>
         get() = routeResponse?.route.orEmpty()

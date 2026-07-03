@@ -17,6 +17,8 @@ internal interface PlannerEventActions {
     fun initialize()
     fun loadRouteHistory(forceRefresh: Boolean)
     fun selectCity(city: City)
+    fun loadCuratedRoutes()
+    fun openCuratedRoute(routeId: Int)
     fun generateRoute()
     fun saveCurrentRouteBookmark()
     fun openRouteBookmark(bookmarkId: String)
@@ -50,6 +52,10 @@ internal class PlannerEventDispatcher(
         ),
         HistoryHandler(
             loadRouteHistory = actions::loadRouteHistory
+        ),
+        CuratedRoutesHandler(
+            loadCuratedRoutes = actions::loadCuratedRoutes,
+            openCuratedRoute = actions::openCuratedRoute
         ),
         RoutePlanningHandler(
             updateUiState = actions::updateUiState,
@@ -117,6 +123,26 @@ internal class HistoryHandler(
         when (event) {
             is PlannerEvent.LoadRouteHistory -> {
                 loadRouteHistory(event.forceRefresh)
+                true
+            }
+
+            else -> false
+        }
+}
+
+internal class CuratedRoutesHandler(
+    private val loadCuratedRoutes: () -> Unit,
+    private val openCuratedRoute: (Int) -> Unit
+) : PlannerEventHandler {
+    override fun handle(event: PlannerEvent): Boolean =
+        when (event) {
+            PlannerEvent.LoadCuratedRoutes -> {
+                loadCuratedRoutes()
+                true
+            }
+
+            is PlannerEvent.OpenCuratedRoute -> {
+                openCuratedRoute(event.routeId)
                 true
             }
 

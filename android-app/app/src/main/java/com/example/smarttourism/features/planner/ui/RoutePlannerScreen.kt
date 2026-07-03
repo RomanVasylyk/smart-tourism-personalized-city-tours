@@ -32,6 +32,7 @@ import com.example.smarttourism.core.i18n.AppLanguage
 import com.example.smarttourism.data.model.RouteHistoryEntry
 import com.example.smarttourism.features.planner.domain.model.Poi
 import com.example.smarttourism.features.planner.domain.model.RoutePoint
+import com.example.smarttourism.features.planner.components.CuratedRoutesSheetContent
 import com.example.smarttourism.features.planner.components.OfflineSupportCard
 import com.example.smarttourism.features.planner.components.RouteBookmarksSheetContent
 import com.example.smarttourism.features.planner.components.RouteHistorySheetContent
@@ -68,6 +69,9 @@ fun RoutePlannerScreen(
     val routeResponse = uiState.routeResponse
     val routeBookmarks = uiState.routeBookmarks
     val routeHistory = uiState.routeHistory
+    val curatedRoutes = uiState.curatedRoutes
+    val isCuratedRoutesLoading = uiState.isCuratedRoutesLoading
+    val curatedRoutesError = uiState.curatedRoutesError
     val isRouteLoading = uiState.isRouteLoading
     val isRouteHistoryLoading = uiState.isRouteHistoryLoading
     val routeError = uiState.routeError
@@ -158,6 +162,12 @@ fun RoutePlannerScreen(
             onPlannerEvent(PlannerEvent.LoadRouteHistory(forceRefresh = true))
         } else {
             selectedHistoryEntry = null
+        }
+    }
+
+    LaunchedEffect(currentDestination, selectedCity?.slug) {
+        if (currentDestination == PlannerDestination.CURATED && selectedCity != null) {
+            onPlannerEvent(PlannerEvent.LoadCuratedRoutes)
         }
     }
 
@@ -568,6 +578,25 @@ fun RoutePlannerScreen(
                     )
 
                     PlannerMode.ACTIVE -> Unit
+                }
+
+                PlannerDestination.CURATED -> LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    item {
+                        CuratedRoutesSheetContent(
+                            cityName = selectedCity?.name,
+                            curatedRoutes = curatedRoutes,
+                            isLoading = isCuratedRoutesLoading,
+                            errorMessage = curatedRoutesError,
+                            onOpenCuratedRoute = { routeId ->
+                                onPlannerEvent(PlannerEvent.OpenCuratedRoute(routeId))
+                                currentDestination = PlannerDestination.PLANNER
+                            }
+                        )
+                    }
                 }
 
                 PlannerDestination.SAVED_ROUTES -> LazyColumn(

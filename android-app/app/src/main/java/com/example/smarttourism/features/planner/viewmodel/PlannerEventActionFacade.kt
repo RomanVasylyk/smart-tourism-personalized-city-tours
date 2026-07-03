@@ -8,6 +8,7 @@ import com.example.smarttourism.features.planner.state.RoutePlannerUiState
 internal class PlannerEventActionFacade(
     private val state: PlannerStateStore,
     private val catalogActions: PlannerCatalogActions,
+    private val curatedRouteActions: PlannerCuratedRouteActions,
     private val routePlanningActions: PlannerRoutePlanningActions,
     private val bookmarkActions: PlannerBookmarkActions,
     private val activeRouteActions: PlannerActiveRouteActions,
@@ -28,6 +29,14 @@ internal class PlannerEventActionFacade(
 
     override fun selectCity(city: City) {
         catalogActions.selectCity(city)
+    }
+
+    override fun loadCuratedRoutes() {
+        curatedRouteActions.loadCuratedRoutes()
+    }
+
+    override fun openCuratedRoute(routeId: Int) {
+        curatedRouteActions.openCuratedRoute(routeId)
     }
 
     override fun generateRoute() {

@@ -30,9 +30,18 @@ class PlannerEventDispatcherTest {
         dispatcher.dispatch(PlannerEvent.SaveCurrentRouteBookmark)
         dispatcher.dispatch(PlannerEvent.ActivateRouteTracking)
         dispatcher.dispatch(PlannerEvent.DownloadOfflineMap)
+        dispatcher.dispatch(PlannerEvent.LoadCuratedRoutes)
+        dispatcher.dispatch(PlannerEvent.OpenCuratedRoute(7))
 
         assertEquals(
-            listOf("generateRoute", "saveCurrentRouteBookmark", "activateRouteTracking", "downloadOfflineMap"),
+            listOf(
+                "generateRoute",
+                "saveCurrentRouteBookmark",
+                "activateRouteTracking",
+                "downloadOfflineMap",
+                "loadCuratedRoutes",
+                "openCuratedRoute:7"
+            ),
             actions.calls
         )
     }
@@ -55,6 +64,14 @@ class PlannerEventDispatcherTest {
 
         override fun selectCity(city: City) {
             calls += "selectCity:${city.slug}"
+        }
+
+        override fun loadCuratedRoutes() {
+            calls += "loadCuratedRoutes"
+        }
+
+        override fun openCuratedRoute(routeId: Int) {
+            calls += "openCuratedRoute:$routeId"
         }
 
         override fun generateRoute() {

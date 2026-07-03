@@ -2,6 +2,8 @@ package com.example.smarttourism.features.planner.data.mapper
 
 import com.example.smarttourism.data.remote.dto.CityBboxDto
 import com.example.smarttourism.data.remote.dto.CityDto
+import com.example.smarttourism.data.remote.dto.CuratedRouteDetailDto
+import com.example.smarttourism.data.remote.dto.CuratedRouteSummaryDto
 import com.example.smarttourism.data.remote.dto.PoiDto
 import com.example.smarttourism.data.remote.dto.RouteCoordinateDto
 import com.example.smarttourism.data.remote.dto.RouteFeedbackDto
@@ -19,6 +21,8 @@ import com.example.smarttourism.data.remote.dto.RoutingLimitsDto
 import com.example.smarttourism.data.remote.dto.TransportProfileDto
 import com.example.smarttourism.features.planner.domain.model.City
 import com.example.smarttourism.features.planner.domain.model.CityBounds
+import com.example.smarttourism.features.planner.domain.model.CuratedRoute
+import com.example.smarttourism.features.planner.domain.model.CuratedRouteDetail
 import com.example.smarttourism.features.planner.domain.model.PlannerPreferences
 import com.example.smarttourism.features.planner.domain.model.Poi
 import com.example.smarttourism.features.planner.domain.model.RouteCoordinate
@@ -199,6 +203,38 @@ internal fun RoutePlan.toDto(): RouteResponse =
         route = route.map { item -> item.toDto() },
         legs = legs?.map { leg -> leg.toDto() },
         full_geometry = fullGeometry?.map { coordinate -> coordinate.toDto() }
+    )
+
+internal fun CuratedRouteSummaryDto.toDomain(): CuratedRoute =
+    CuratedRoute(
+        id = id,
+        slug = slug,
+        title = title,
+        summary = summary,
+        theme = theme,
+        city = city,
+        recommendedDurationMin = recommended_duration_min,
+        pace = pace,
+        transportMode = transport_mode,
+        returnToStart = return_to_start,
+        poiCount = poi_count,
+        stopNames = stop_names.orEmpty()
+    )
+
+internal fun CuratedRouteDetailDto.toDomain(): CuratedRouteDetail =
+    CuratedRouteDetail(
+        id = id,
+        slug = slug,
+        title = title,
+        summary = summary,
+        theme = theme,
+        city = city,
+        recommendedDurationMin = recommended_duration_min,
+        pace = pace,
+        transportMode = transport_mode,
+        returnToStart = return_to_start,
+        poiCount = poi_count,
+        route = route.toDomain()
     )
 
 internal fun RouteStartDto.toDomain(): RoutePoint =

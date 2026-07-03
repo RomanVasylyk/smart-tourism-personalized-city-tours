@@ -305,4 +305,14 @@
     <string name="state_yes">Yes</string>
     <string name="state_no">No</string>
     <string name="common_unknown">Unknown</string>
+    <string name="action_open_curated_routes">Curated tours</string>
+    <string name="curated_routes_title">Curated city tours</string>
+    <string name="curated_routes_body">Ready-made, verified routes you can start right away.</string>
+    <string name="curated_routes_body_for_city">Ready-made, verified tours for %1$s.</string>
+    <string name="curated_routes_empty">No curated tours are available for this city yet.</string>
+    <string name="curated_route_stops_count">%1$d stops</string>
+    <string name="curated_route_duration_minutes">≈ %1$d min</string>
+    <string name="action_open_curated_route">Open tour</string>
+    <string name="status_curated_routes_failed">Couldn\'t load curated tours.</string>
+    <string name="status_curated_route_open_failed">Couldn\'t open the curated tour.</string>
 </resources>

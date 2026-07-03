@@ -86,6 +86,36 @@ data class RoutePoint(
     val lon: Double = 0.0
 )
 
+data class CuratedRoute(
+    val id: Int = 0,
+    val slug: String? = null,
+    val title: String = "",
+    val summary: String? = null,
+    val theme: String? = null,
+    val city: String? = null,
+    val recommendedDurationMin: Int? = null,
+    val pace: String? = null,
+    val transportMode: String? = null,
+    val returnToStart: Boolean? = null,
+    val poiCount: Int = 0,
+    val stopNames: List<String> = emptyList()
+)
+
+data class CuratedRouteDetail(
+    val id: Int = 0,
+    val slug: String? = null,
+    val title: String = "",
+    val summary: String? = null,
+    val theme: String? = null,
+    val city: String? = null,
+    val recommendedDurationMin: Int? = null,
+    val pace: String? = null,
+    val transportMode: String? = null,
+    val returnToStart: Boolean? = null,
+    val poiCount: Int = 0,
+    val route: RoutePlan = RoutePlan()
+)
+
 data class RouteStop(
     val order: Int = 0,
     val poiId: Int = 0,
