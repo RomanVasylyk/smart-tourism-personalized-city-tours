@@ -59,6 +59,13 @@ internal class PlannerCatalogActions(
         state.activeBookmarkId = null
         state.currentRouteRequest = null
         state.requiredPoiIds = emptyList()
+        state.update { current ->
+            current.copy(
+                curatedRoutes = emptyList(),
+                isCuratedRoutesLoading = false,
+                curatedRoutesError = null
+            )
+        }
         sessionCoordinator.clearRouteMessages()
         sessionCoordinator.clearDisplayedRoute(cancelActiveSession = true)
         state.startPoint = city.toStartPoint()
@@ -76,7 +83,13 @@ internal class PlannerCatalogActions(
                 offlinePoisFallbackMessage = messages.offlinePoisFallback
             )
         ) { stage ->
-            state.update { stage.state }
+            state.update { current ->
+                stage.state.copy(
+                    curatedRoutes = current.curatedRoutes,
+                    isCuratedRoutesLoading = current.isCuratedRoutesLoading,
+                    curatedRoutesError = current.curatedRoutesError
+                )
+            }
         }
     }
 
