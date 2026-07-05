@@ -77,6 +77,7 @@ def run_route(
 
     monkeypatch.setattr("app.services.route_planner.plan_travel", fake_plan_travel)
     monkeypatch.setattr("app.services.route_planning.candidate_evaluator.plan_travel", fake_plan_travel)
+    monkeypatch.setattr("app.services.route_planning.engine.plan_travel", fake_plan_travel)
 
     request = RouteGenerateRequest(
         city="nitra",
@@ -273,6 +274,7 @@ def test_generate_route_limits_exact_candidate_evaluations(monkeypatch):
 
     monkeypatch.setattr("app.services.route_planner.plan_travel", fake_plan_travel)
     monkeypatch.setattr("app.services.route_planning.candidate_evaluator.plan_travel", fake_plan_travel)
+    monkeypatch.setattr("app.services.route_planning.engine.plan_travel", fake_plan_travel)
 
     request = RouteGenerateRequest(
         city="nitra",

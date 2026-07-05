@@ -5,12 +5,20 @@ from datetime import timedelta
 from app.schemas.route import RouteGenerateRequest
 from app.services.feedback_stats import PlannerFeedbackProfile
 from app.services.route_planning.candidate_evaluator import RouteCandidateEvaluator
-from app.services.route_planning.models import CandidatePoi
+from app.services.route_planning.local_search import improve_order
+from app.services.route_planning.models import CandidateEvaluation, CandidatePoi
+from app.services.route_planning.opening_hours import is_poi_open_for_visit
 from app.services.route_planning.result import RoutePlanningResult
+from app.services.route_planning.scoring import score_candidate
 from app.services.route_planning.timeline import RouteTimelineBuilder
 from app.services.routing_service import RoutePoint, RoutingService
-from app.services.transport_planner import plan_travel
+from app.services.transport_planner import TRANSPORT_MODE_WALK, plan_travel
 from fastapi import HTTPException
+
+DEFAULT_VISIT_DURATION_MIN = 20
+DEFAULT_LOCAL_SEARCH_MAX_PASSES = 6
+DEFAULT_LOCAL_SEARCH_MAX_EVALUATIONS = 600
+DEFAULT_LOCAL_SEARCH_MAX_EVALUATIONS_TRANSIT = 80
 
 
 class RoutePlannerEngine:
@@ -51,9 +59,30 @@ class RoutePlannerEngine:
             preferred_poi_ids=self.preferred_poi_ids,
         )
 
+        routing_limits = city_profile.get("routing_limits") or {}
+        self.local_search_enabled = bool(routing_limits.get("local_search_enabled", True))
+        self.local_search_max_passes = int(
+            routing_limits.get("local_search_max_passes", DEFAULT_LOCAL_SEARCH_MAX_PASSES)
+        )
+        default_max_evaluations = (
+            DEFAULT_LOCAL_SEARCH_MAX_EVALUATIONS
+            if effective_transport_mode == TRANSPORT_MODE_WALK
+            else DEFAULT_LOCAL_SEARCH_MAX_EVALUATIONS_TRANSIT
+        )
+        self.local_search_max_evaluations = int(
+            routing_limits.get("local_search_max_evaluations", default_max_evaluations)
+        )
+
     def plan(self) -> RoutePlanningResult:
         self.ensure_preferred_candidates_available()
+        selected_pois = self.construct_greedy_route()
+        optimized_pois = self.apply_local_search(selected_pois)
+        self.timeline = self.build_timeline_for_order(optimized_pois)
+        self.ensure_required_preferred_pois_were_planned()
+        return self.result()
 
+    def construct_greedy_route(self) -> list[CandidatePoi]:
+        selected_pois: list[CandidatePoi] = []
         used_ids: set[int] = set()
         category_counts: dict[str, int] = {}
 
@@ -88,12 +117,119 @@ class RoutePlannerEngine:
                 break
 
             self.timeline.add_stop(best_evaluation)
+            selected_pois.append(best_evaluation.poi)
             used_ids.add(best_evaluation.poi.id)
             category_counts[best_evaluation.poi.category] = category_counts.get(best_evaluation.poi.category, 0) + 1
 
-        self.add_return_to_start_if_needed()
-        self.ensure_required_preferred_pois_were_planned()
-        return self.result()
+        return selected_pois
+
+    def apply_local_search(self, order: list[CandidatePoi]) -> list[CandidatePoi]:
+        if not self.local_search_enabled or len(order) < 3:
+            return order
+        return improve_order(
+            order,
+            cost=self.evaluate_order_travel_minutes,
+            max_passes=self.local_search_max_passes,
+            max_evaluations=self.local_search_max_evaluations,
+        )
+
+    def _preserves_preferred_order(self, order: list[CandidatePoi]) -> bool:
+        """Keep the user's manual order of required POIs intact during local search."""
+        if not self.ordered_preferred_poi_ids:
+            return True
+        present_ids = {poi.id for poi in order}
+        expected_sequence = [poi_id for poi_id in self.ordered_preferred_poi_ids if poi_id in present_ids]
+        actual_sequence = [poi.id for poi in order if poi.id in self.preferred_poi_ids]
+        return actual_sequence == expected_sequence
+
+    def _travel_plan(self, start: RoutePoint, end: RoutePoint, departure_dt):
+        return plan_travel(
+            start=start,
+            end=end,
+            pace=self.request.pace,
+            routing_service=self.routing_service,
+            city_profile=self.city_profile,
+            transport_mode=self.effective_transport_mode,
+            departure_dt=departure_dt,
+        )
+
+    def evaluate_order_travel_minutes(self, order: list[CandidatePoi]) -> float | None:
+        """Total travel minutes for a candidate order, or None if it is infeasible.
+
+        Mirrors the timeline's accounting (per-leg rounded minutes, real-seconds
+        timing) so the local search optimises the same quantity it will report.
+        Preferred POIs are forced into the route and therefore exempt from the
+        opening-hours check, matching the greedy construction.
+        """
+        if not self._preserves_preferred_order(order):
+            return None
+
+        elapsed_seconds = 0.0
+        total_travel_minutes = 0
+        total_visit_minutes = 0
+        current_point = self.start_point
+
+        for poi in order:
+            departure_dt = self.start_dt + timedelta(seconds=elapsed_seconds)
+            travel_plan = self._travel_plan(current_point, poi.point, departure_dt)
+            visit_minutes = poi.visit_duration_min or DEFAULT_VISIT_DURATION_MIN
+            arrival_dt = departure_dt + timedelta(seconds=travel_plan.duration_seconds)
+
+            if (
+                self.request.respect_opening_hours
+                and poi.id not in self.preferred_poi_ids
+                and not is_poi_open_for_visit(poi.opening_hours_raw, arrival_dt, visit_minutes)
+            ):
+                return None
+
+            elapsed_seconds += travel_plan.duration_seconds + (visit_minutes * 60)
+            total_travel_minutes += travel_plan.duration_minutes
+            total_visit_minutes += visit_minutes
+            current_point = poi.point
+
+        if self.request.return_to_start and order:
+            return_departure_dt = self.start_dt + timedelta(seconds=elapsed_seconds)
+            return_plan = self._travel_plan(current_point, self.start_point, return_departure_dt)
+            total_travel_minutes += return_plan.duration_minutes
+
+        if total_travel_minutes + total_visit_minutes > self.request.available_minutes:
+            return None
+
+        return float(total_travel_minutes)
+
+    def build_timeline_for_order(self, order: list[CandidatePoi]) -> RouteTimelineBuilder:
+        timeline = RouteTimelineBuilder(start_point=self.start_point)
+        category_counts: dict[str, int] = {}
+
+        for poi in order:
+            departure_dt = self.start_dt + timedelta(seconds=timeline.elapsed_actual_seconds)
+            travel_plan = self._travel_plan(timeline.current_point, poi.point, departure_dt)
+            visit_minutes = poi.visit_duration_min or DEFAULT_VISIT_DURATION_MIN
+            utility, score_breakdown = score_candidate(
+                poi=poi.raw,
+                travel_plan=travel_plan,
+                category_counts=category_counts,
+                feedback_profile=self.feedback_profile,
+                effective_transport_mode=self.effective_transport_mode,
+                preferred_poi_ids=self.preferred_poi_ids,
+            )
+            timeline.add_stop(
+                CandidateEvaluation(
+                    poi=poi,
+                    travel_plan=travel_plan,
+                    visit_minutes=visit_minutes,
+                    utility=utility,
+                    score_breakdown=score_breakdown,
+                )
+            )
+            category_counts[poi.category] = category_counts.get(poi.category, 0) + 1
+
+        if self.request.return_to_start and timeline.route_items:
+            return_departure_dt = self.start_dt + timedelta(seconds=timeline.elapsed_actual_seconds)
+            return_plan = self._travel_plan(timeline.current_point, self.start_point, return_departure_dt)
+            timeline.add_return_to_start(return_plan)
+
+        return timeline
 
     def ensure_preferred_candidates_available(self) -> None:
         unavailable_preferred_ids = [
@@ -114,22 +250,6 @@ class RoutePlannerEngine:
             ),
             None,
         )
-
-    def add_return_to_start_if_needed(self) -> None:
-        if not self.request.return_to_start or not self.timeline.route_items:
-            return
-
-        return_departure_dt = self.start_dt + timedelta(seconds=self.timeline.elapsed_actual_seconds)
-        return_plan = plan_travel(
-            start=self.timeline.current_point,
-            end=self.start_point,
-            pace=self.request.pace,
-            routing_service=self.routing_service,
-            city_profile=self.city_profile,
-            transport_mode=self.effective_transport_mode,
-            departure_dt=return_departure_dt,
-        )
-        self.timeline.add_return_to_start(return_plan)
 
     def ensure_required_preferred_pois_were_planned(self) -> None:
         generated_poi_ids = {int(item["poi_id"]) for item in self.timeline.route_items}
