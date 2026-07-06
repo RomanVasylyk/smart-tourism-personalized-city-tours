@@ -12,8 +12,8 @@ from app.services.route_planning.scoring import (
     TRAVEL_MINUTE_PENALTY,
     score_candidate,
 )
-from app.services.routing_service import RoutePoint, RoutingService, haversine_km, walking_speed_kmh
-from app.services.transport_planner import TRANSPORT_MODE_WALK, plan_travel
+from app.services.routing_service import RoutePoint, RoutingLeg, RoutingService, haversine_km, walking_speed_kmh
+from app.services.transport_planner import TRANSPORT_MODE_WALK, plan_travel, travel_plan_from_walk_leg
 
 DEFAULT_MAX_EXACT_POI_EVALUATIONS_PER_STEP = 60
 DEFAULT_MAX_EXACT_POI_EVALUATIONS_PER_STEP_TRANSIT = 28
@@ -125,20 +125,15 @@ class RouteCandidateEvaluator:
         departure_dt: datetime,
         category_counts: dict[str, int],
     ) -> CandidateEvaluation | None:
+        forward_durations, return_durations = self._batch_walk_durations(evaluation_candidates, current_point)
+
         best_evaluation: CandidateEvaluation | None = None
         best_utility = -(10**9)
 
-        for poi in evaluation_candidates:
+        for index, poi in enumerate(evaluation_candidates):
             is_forced_preferred = forced_preferred_poi is not None and poi.id == forced_preferred_poi.id
-            travel_plan = plan_travel(
-                start=current_point,
-                end=poi.point,
-                pace=self.request.pace,
-                routing_service=self.routing_service,
-                city_profile=self.city_profile,
-                transport_mode=self.effective_transport_mode,
-                departure_dt=departure_dt,
-            )
+            forward_seconds = forward_durations[index] if forward_durations is not None else None
+            travel_plan = self._forward_travel_plan(current_point, poi, departure_dt, forward_seconds)
             travel_minutes = travel_plan.duration_minutes
             visit_minutes = poi.visit_duration_min or 20
             arrival_dt = departure_dt + timedelta(seconds=travel_plan.duration_seconds)
@@ -156,17 +151,8 @@ class RouteCandidateEvaluator:
 
             return_minutes = 0
             if self.request.return_to_start:
-                return_departure_dt = arrival_dt + timedelta(minutes=visit_minutes)
-                return_plan = plan_travel(
-                    start=poi.point,
-                    end=self.start_point,
-                    pace=self.request.pace,
-                    routing_service=self.routing_service,
-                    city_profile=self.city_profile,
-                    transport_mode=self.effective_transport_mode,
-                    departure_dt=return_departure_dt,
-                )
-                return_minutes = return_plan.duration_minutes
+                return_seconds = return_durations[index] if return_durations is not None else None
+                return_minutes = self._return_travel_minutes(poi, arrival_dt, visit_minutes, return_seconds)
 
             projected_total = elapsed_minutes + travel_minutes + visit_minutes + return_minutes
             if not is_forced_preferred and projected_total > self.request.available_minutes:
@@ -192,6 +178,87 @@ class RouteCandidateEvaluator:
                 )
 
         return best_evaluation
+
+    def _batch_walk_durations(
+        self,
+        evaluation_candidates: list[CandidatePoi],
+        current_point: RoutePoint,
+    ) -> tuple[list[float] | None, list[float] | None]:
+        """Fetch walk durations for all candidates in one OSRM /table call.
+
+        Only durations are needed to rank/feasibility-check candidates; the real
+        geometry of the chosen legs is computed later when the timeline is built.
+        Returns (None, None) for transit mode or when the routing backend cannot
+        provide a table, so the loop falls back to per-pair routing.
+        """
+        if self.effective_transport_mode != TRANSPORT_MODE_WALK:
+            return None, None
+        if not hasattr(self.routing_service, "duration_matrix"):
+            return None, None
+
+        points = [poi.point for poi in evaluation_candidates]
+        forward_matrix = self.routing_service.duration_matrix([current_point], points, self.request.pace)
+        if not forward_matrix:
+            return None, None
+
+        return_durations: list[float] | None = None
+        if self.request.return_to_start:
+            return_matrix = self.routing_service.duration_matrix(points, [self.start_point], self.request.pace)
+            if return_matrix:
+                return_durations = [row[0] for row in return_matrix]
+
+        return forward_matrix[0], return_durations
+
+    def _forward_travel_plan(self, current_point: RoutePoint, poi: CandidatePoi, departure_dt, forward_seconds):
+        if forward_seconds is None:
+            return plan_travel(
+                start=current_point,
+                end=poi.point,
+                pace=self.request.pace,
+                routing_service=self.routing_service,
+                city_profile=self.city_profile,
+                transport_mode=self.effective_transport_mode,
+                departure_dt=departure_dt,
+            )
+        return walk_estimate_plan(current_point, poi.point, forward_seconds)
+
+    def _return_travel_minutes(
+        self, poi: CandidatePoi, arrival_dt, visit_minutes: int, return_seconds: float | None
+    ) -> int:
+        if return_seconds is not None:
+            return max(1, round(return_seconds / 60)) if return_seconds > 0 else 0
+        return_departure_dt = arrival_dt + timedelta(minutes=visit_minutes)
+        return_plan = plan_travel(
+            start=poi.point,
+            end=self.start_point,
+            pace=self.request.pace,
+            routing_service=self.routing_service,
+            city_profile=self.city_profile,
+            transport_mode=self.effective_transport_mode,
+            departure_dt=return_departure_dt,
+        )
+        return return_plan.duration_minutes
+
+
+def walk_estimate_plan(start: RoutePoint, end: RoutePoint, duration_seconds: float):
+    """Lightweight walk TravelPlan from an OSRM /table duration (no fetched geometry).
+
+    Used only for candidate ranking/feasibility; the real geometry is produced
+    when the final timeline is rebuilt, so a straight-line placeholder is enough.
+    """
+    distance_meters = (
+        haversine_km(start.lat, start.lon, end.lat, end.lon) * 1000.0 * APPROXIMATE_DISTANCE_INFLATION_FACTOR
+    )
+    leg = RoutingLeg(
+        duration_seconds=duration_seconds,
+        distance_meters=distance_meters,
+        geometry=[
+            {"lat": start.lat, "lon": start.lon},
+            {"lat": end.lat, "lon": end.lon},
+        ],
+        source="osrm_table",
+    )
+    return travel_plan_from_walk_leg(leg)
 
 
 def estimated_minutes_for_distance(distance_meters: float, speed_kmh: float) -> int:

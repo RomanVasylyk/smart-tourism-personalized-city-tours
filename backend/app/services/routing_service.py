@@ -24,20 +24,103 @@ class RoutingLeg:
 
 
 class RoutingService:
+    _shared_duration_cache: "dict[tuple[float, float, float, float, str], float]" = {}
+    _SHARED_DURATION_CACHE_CAP = 50_000
+
     def __init__(
         self,
         base_url: str | None = None,
         profile: str | None = None,
         timeout_seconds: float | None = None,
         enabled: bool | None = None,
+        table_enabled: bool | None = None,
     ):
         settings = get_settings()
         self.base_url = (base_url or settings.routing_base_url).rstrip("/")
         self.profile = profile or settings.routing_profile
         self.timeout_seconds = timeout_seconds or settings.routing_timeout_seconds
         self.enabled = enabled if enabled is not None else settings.routing_enabled
+        self.table_enabled = table_enabled if table_enabled is not None else settings.routing_table_enabled
         self._cache: dict[tuple[float, float, float, float, str, str, bool], RoutingLeg] = {}
         self._external_routing_failed = False
+
+    def duration_matrix(
+        self,
+        sources: list[RoutePoint],
+        destinations: list[RoutePoint],
+        pace: str,
+        profile: str | None = None,
+    ) -> list[list[float]] | None:
+
+        if not self.enabled or not self.base_url or not self.table_enabled or self._external_routing_failed:
+            return None
+        if not sources or not destinations:
+            return [[0.0 for _ in destinations] for _ in sources]
+
+        resolved_profile = (profile or self.profile or "foot").lower()
+        pace_multiplier = pace_duration_multiplier(pace)
+
+        raw_matrix: list[list[float | None]] = [[None] * len(destinations) for _ in sources]
+        has_missing = False
+        for source_index, source in enumerate(sources):
+            for destination_index, destination in enumerate(destinations):
+                cached = self._shared_duration_cache.get(_duration_cell_key(source, destination, resolved_profile))
+                if cached is None:
+                    has_missing = True
+                else:
+                    raw_matrix[source_index][destination_index] = cached
+
+        if has_missing:
+            fetched = self._fetch_osrm_table(sources, destinations, resolved_profile)
+            if fetched is None:
+                return None
+            for source_index, source in enumerate(sources):
+                for destination_index, destination in enumerate(destinations):
+                    value = fetched[source_index][destination_index]
+                    if value is None:
+                        return None
+                    raw_matrix[source_index][destination_index] = value
+                    self._store_duration_cell(source, destinations[destination_index], resolved_profile, value)
+
+        return [[raw * pace_multiplier for raw in row] for row in raw_matrix]
+
+    def _fetch_osrm_table(
+        self,
+        sources: list[RoutePoint],
+        destinations: list[RoutePoint],
+        profile: str,
+    ) -> list[list[float | None]] | None:
+        points = [*sources, *destinations]
+        coordinates = ";".join(f"{point.lon},{point.lat}" for point in points)
+        source_indexes = ";".join(str(index) for index in range(len(sources)))
+        destination_indexes = ";".join(str(len(sources) + index) for index in range(len(destinations)))
+        url = f"{self.base_url}/table/v1/{profile}/{coordinates}"
+        params = {
+            "sources": source_indexes,
+            "destinations": destination_indexes,
+            "annotations": "duration",
+        }
+
+        try:
+            response = httpx.get(url, params=params, timeout=self.timeout_seconds)
+            response.raise_for_status()
+            payload = response.json()
+            durations = payload.get("durations") or []
+            if len(durations) != len(sources):
+                self._external_routing_failed = True
+                return None
+            return [[None if value is None else float(value) for value in row] for row in durations]
+        except (httpx.HTTPError, ValueError, TypeError, KeyError, IndexError):
+            self._external_routing_failed = True
+            return None
+
+    @classmethod
+    def _store_duration_cell(cls, source: RoutePoint, destination: RoutePoint, profile: str, value: float) -> None:
+        cache = cls._shared_duration_cache
+        key = _duration_cell_key(source, destination, profile)
+        if key not in cache and len(cache) >= cls._SHARED_DURATION_CACHE_CAP:
+            cache.pop(next(iter(cache)), None)
+        cache[key] = value
 
     def route_between(self, start: RoutePoint, end: RoutePoint, pace: str) -> RoutingLeg:
         return self.route_between_profile(
@@ -164,6 +247,18 @@ class RoutingService:
             ],
             source="haversine_fallback",
         )
+
+
+def _duration_cell_key(
+    source: RoutePoint, destination: RoutePoint, profile: str
+) -> tuple[float, float, float, float, str]:
+    return (
+        round(source.lat, 6),
+        round(source.lon, 6),
+        round(destination.lat, 6),
+        round(destination.lon, 6),
+        profile,
+    )
 
 
 def haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
