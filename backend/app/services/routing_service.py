@@ -1,3 +1,4 @@
+import time
 from dataclasses import dataclass
 from math import asin, cos, radians, sin, sqrt
 
@@ -23,9 +24,26 @@ class RoutingLeg:
         return max(1, round(self.duration_seconds / 60))
 
 
+class RoutingUnavailableError(Exception):
+    """The OSRM backend is unreachable or erroring (a transient/infra failure).
+
+    Distinct from a valid OSRM response that simply has no route for a specific
+    pair of points, which is a per-pair data issue and must not disable routing
+    for the rest of the request.
+    """
+
+
 class RoutingService:
     _shared_duration_cache: "dict[tuple[float, float, float, float, str], float]" = {}
     _SHARED_DURATION_CACHE_CAP = 50_000
+
+    _circuit_consecutive_failures = 0
+    _circuit_open_until = 0.0
+
+    OSRM_MAX_ATTEMPTS = 3
+    OSRM_RETRY_BACKOFF_SECONDS = 0.1
+    CIRCUIT_FAILURE_THRESHOLD = 3
+    CIRCUIT_RESET_SECONDS = 30.0
 
     def __init__(
         self,
@@ -42,7 +60,46 @@ class RoutingService:
         self.enabled = enabled if enabled is not None else settings.routing_enabled
         self.table_enabled = table_enabled if table_enabled is not None else settings.routing_table_enabled
         self._cache: dict[tuple[float, float, float, float, str, str, bool], RoutingLeg] = {}
-        self._external_routing_failed = False
+
+
+    @classmethod
+    def _circuit_closed(cls) -> bool:
+        return time.monotonic() >= cls._circuit_open_until
+
+    @classmethod
+    def _record_osrm_success(cls) -> None:
+        cls._circuit_consecutive_failures = 0
+        cls._circuit_open_until = 0.0
+
+    @classmethod
+    def _record_osrm_failure(cls) -> None:
+        cls._circuit_consecutive_failures += 1
+        if cls._circuit_consecutive_failures >= cls.CIRCUIT_FAILURE_THRESHOLD:
+            cls._circuit_open_until = time.monotonic() + cls.CIRCUIT_RESET_SECONDS
+
+    @classmethod
+    def reset_circuit(cls) -> None:
+        cls._circuit_consecutive_failures = 0
+        cls._circuit_open_until = 0.0
+
+    def _osrm_attemptable(self) -> bool:
+        return self.enabled and bool(self.base_url) and self._circuit_closed()
+
+    def _request_osrm_json(self, url: str, params: dict) -> dict:
+
+        last_error: Exception | None = None
+        for attempt in range(self.OSRM_MAX_ATTEMPTS):
+            try:
+                response = httpx.get(url, params=params, timeout=self.timeout_seconds)
+                response.raise_for_status()
+                return response.json()
+            except (httpx.HTTPError, ValueError) as exc:
+                last_error = exc
+                if attempt + 1 < self.OSRM_MAX_ATTEMPTS:
+                    time.sleep(self.OSRM_RETRY_BACKOFF_SECONDS * (2**attempt))
+        raise RoutingUnavailableError(str(last_error) if last_error else "OSRM request failed")
+
+    # --- /table matrix ---------------------------------------------------
 
     def duration_matrix(
         self,
@@ -50,9 +107,9 @@ class RoutingService:
         destinations: list[RoutePoint],
         pace: str,
         profile: str | None = None,
-    ) -> list[list[float]] | None:
+    ) -> list[list[float | None]] | None:
 
-        if not self.enabled or not self.base_url or not self.table_enabled or self._external_routing_failed:
+        if not self.enabled or not self.base_url or not self.table_enabled or not self._circuit_closed():
             return None
         if not sources or not destinations:
             return [[0.0 for _ in destinations] for _ in sources]
@@ -71,25 +128,31 @@ class RoutingService:
                     raw_matrix[source_index][destination_index] = cached
 
         if has_missing:
-            fetched = self._fetch_osrm_table(sources, destinations, resolved_profile)
-            if fetched is None:
+            try:
+                fetched = self._fetch_osrm_table(sources, destinations, resolved_profile)
+                self._record_osrm_success()
+            except RoutingUnavailableError:
+                self._record_osrm_failure()
                 return None
+
             for source_index, source in enumerate(sources):
                 for destination_index, destination in enumerate(destinations):
+                    if raw_matrix[source_index][destination_index] is not None:
+                        continue
                     value = fetched[source_index][destination_index]
                     if value is None:
-                        return None
+                        continue
                     raw_matrix[source_index][destination_index] = value
                     self._store_duration_cell(source, destinations[destination_index], resolved_profile, value)
 
-        return [[raw * pace_multiplier for raw in row] for row in raw_matrix]
+        return [[None if raw is None else raw * pace_multiplier for raw in row] for row in raw_matrix]
 
     def _fetch_osrm_table(
         self,
         sources: list[RoutePoint],
         destinations: list[RoutePoint],
         profile: str,
-    ) -> list[list[float | None]] | None:
+    ) -> list[list[float | None]]:
         points = [*sources, *destinations]
         coordinates = ";".join(f"{point.lon},{point.lat}" for point in points)
         source_indexes = ";".join(str(index) for index in range(len(sources)))
@@ -101,18 +164,14 @@ class RoutingService:
             "annotations": "duration",
         }
 
+        payload = self._request_osrm_json(url, params)
+        durations = payload.get("durations") or []
+        if len(durations) != len(sources):
+            raise RoutingUnavailableError("OSRM /table returned an unexpected shape")
         try:
-            response = httpx.get(url, params=params, timeout=self.timeout_seconds)
-            response.raise_for_status()
-            payload = response.json()
-            durations = payload.get("durations") or []
-            if len(durations) != len(sources):
-                self._external_routing_failed = True
-                return None
             return [[None if value is None else float(value) for value in row] for row in durations]
-        except (httpx.HTTPError, ValueError, TypeError, KeyError, IndexError):
-            self._external_routing_failed = True
-            return None
+        except (TypeError, ValueError) as exc:
+            raise RoutingUnavailableError(f"OSRM /table returned malformed durations: {exc}") from exc
 
     @classmethod
     def _store_duration_cell(cls, source: RoutePoint, destination: RoutePoint, profile: str, value: float) -> None:
@@ -152,15 +211,21 @@ class RoutingService:
         if cached_leg is not None:
             return cached_leg
 
-        leg = None
-        if not self._external_routing_failed:
-            leg = self._fetch_osrm_route(
-                start=start,
-                end=end,
-                pace=pace,
-                profile=profile,
-                apply_pace_multiplier=apply_pace_multiplier,
-            )
+        leg: RoutingLeg | None = None
+        if self._osrm_attemptable():
+            try:
+                leg = self._fetch_osrm_route(
+                    start=start,
+                    end=end,
+                    pace=pace,
+                    profile=profile,
+                    apply_pace_multiplier=apply_pace_multiplier,
+                )
+
+                self._record_osrm_success()
+            except RoutingUnavailableError:
+                self._record_osrm_failure()
+                leg = None
         if leg is None:
             leg = self._fallback_route(start, end, pace)
 
@@ -184,8 +249,6 @@ class RoutingService:
         profile: str,
         apply_pace_multiplier: bool,
     ) -> RoutingLeg | None:
-        if not self.enabled or not self.base_url:
-            return None
 
         coordinates = f"{start.lon},{start.lat};{end.lon},{end.lat}"
         url = f"{self.base_url}/route/v1/{profile}/{coordinates}"
@@ -195,13 +258,10 @@ class RoutingService:
             "steps": "false",
         }
 
+        payload = self._request_osrm_json(url, params)
         try:
-            response = httpx.get(url, params=params, timeout=self.timeout_seconds)
-            response.raise_for_status()
-            payload = response.json()
             route = (payload.get("routes") or [None])[0]
             if not route:
-                self._external_routing_failed = True
                 return None
 
             geometry = route.get("geometry") or {}
@@ -212,13 +272,11 @@ class RoutingService:
                 if lat is not None and lon is not None
             ]
             if len(route_coordinates) < 2:
-                self._external_routing_failed = True
                 return None
 
             duration_seconds = float(route.get("duration") or 0)
             distance_meters = float(route.get("distance") or 0)
             if duration_seconds <= 0 or distance_meters <= 0:
-                self._external_routing_failed = True
                 return None
 
             return RoutingLeg(
@@ -229,8 +287,7 @@ class RoutingService:
                 geometry=route_coordinates,
                 source="osrm",
             )
-        except (httpx.HTTPError, ValueError, TypeError, KeyError):
-            self._external_routing_failed = True
+        except (TypeError, KeyError, ValueError):
             return None
 
     def _fallback_route(self, start: RoutePoint, end: RoutePoint, pace: str) -> RoutingLeg:

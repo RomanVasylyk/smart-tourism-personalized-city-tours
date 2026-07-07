@@ -160,6 +160,6 @@ def test_duration_matrix_caches_cells_across_calls(monkeypatch):
     first = service.duration_matrix(sources, destinations, "normal")
     second = service.duration_matrix(sources, destinations, "normal")
 
-    assert fetch_calls["count"] == 1  
+    assert fetch_calls["count"] == 1
     assert first == second
     RoutingService._shared_duration_cache.clear()

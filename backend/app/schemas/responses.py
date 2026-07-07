@@ -172,6 +172,9 @@ class RouteResponse(BaseModel):
     total_walk_minutes: int
     return_to_start_minutes: int
     poi_count: int
+    routing_leg_count: int | None = None
+    routing_fallback_leg_count: int | None = None
+    routing_degraded: bool | None = None
     route: list[RouteItemResponse]
     legs: list[RouteLegResponse] | None = None
     full_geometry: list[RouteCoordinateResponse] | None = None

@@ -76,7 +76,23 @@ def append_geometry(full_geometry: list[dict], leg_geometry: list[dict]) -> None
     full_geometry.extend(leg_geometry[1:])
 
 
+FALLBACK_ROUTING_SOURCE = "haversine_fallback"
+
+
+def routing_fallback_stats(legs: list[dict]) -> tuple[int, int]:
+
+    fallback_count = 0
+    for leg in legs:
+        sources = {leg.get("routing_source")}
+        for segment in leg.get("segments") or []:
+            sources.add(segment.get("source"))
+        if FALLBACK_ROUTING_SOURCE in sources:
+            fallback_count += 1
+    return fallback_count, len(legs)
+
+
 def route_response_dict(result: RoutePlanningResult) -> dict:
+    fallback_leg_count, total_leg_count = routing_fallback_stats(result.legs)
     return {
         "city": result.city,
         "start": {"lat": result.start_lat, "lon": result.start_lon},
@@ -93,6 +109,9 @@ def route_response_dict(result: RoutePlanningResult) -> dict:
         "total_walk_minutes": result.total_walk_minutes,
         "return_to_start_minutes": result.return_to_start_minutes,
         "poi_count": len(result.route_items),
+        "routing_leg_count": total_leg_count,
+        "routing_fallback_leg_count": fallback_leg_count,
+        "routing_degraded": fallback_leg_count > 0,
         "route": result.route_items,
         "legs": result.legs,
         "full_geometry": result.full_geometry,
