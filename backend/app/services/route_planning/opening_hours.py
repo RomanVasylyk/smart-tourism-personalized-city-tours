@@ -129,7 +129,7 @@ def parse_opening_hours(raw_value: str | None) -> dict[int, list[tuple[int, int]
         if segment.casefold() in {"24/7", "24x7", "24h"}:
             return {day_index: [(0, 24 * 60)] for day_index in range(7)}
 
-        match = re.match(r"^([A-Za-z,\-\s]+?)\s*:?\s*(.+)$", segment)
+        match = re.match(r"^([A-Za-z,\-\s]+?)\s*:?\s*(\d.*)$", segment)
         if not match:
             continue
 
@@ -168,3 +168,42 @@ def is_poi_open_for_visit(raw_value: str | None, arrival_dt: datetime, visit_min
         interval_start <= visit_start_minute and visit_end_minute <= interval_end
         for interval_start, interval_end in intervals
     )
+
+
+DEFAULT_MAX_OPENING_WAIT_MIN = 20
+
+
+def wait_minutes_until_open(raw_value: str | None, arrival_dt: datetime, visit_minutes: int) -> int | None:
+    schedule = parse_opening_hours(raw_value)
+    if schedule is None:
+        return 0
+
+    visit_start_minute = (arrival_dt.hour * 60) + arrival_dt.minute
+    visit_end_minute = visit_start_minute + visit_minutes
+
+    best_wait: int | None = None
+    for interval_start, interval_end in schedule.get(arrival_dt.weekday(), []):
+        if interval_start <= visit_start_minute and visit_end_minute <= interval_end:
+            return 0
+        if interval_start >= visit_start_minute and interval_start + visit_minutes <= interval_end:
+            wait = interval_start - visit_start_minute
+            if best_wait is None or wait < best_wait:
+                best_wait = wait
+    return best_wait
+
+
+def resolve_visit_wait(
+    raw_value: str | None,
+    arrival_dt: datetime,
+    visit_minutes: int,
+    *,
+    respect_opening_hours: bool,
+    is_forced: bool,
+    max_wait_minutes: int,
+) -> int | None:
+    if not respect_opening_hours:
+        return 0
+    raw_wait = wait_minutes_until_open(raw_value, arrival_dt, visit_minutes)
+    if raw_wait is None or raw_wait > max_wait_minutes:
+        return 0 if is_forced else None
+    return raw_wait

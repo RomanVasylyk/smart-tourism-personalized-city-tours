@@ -61,7 +61,6 @@ class RoutingService:
         self.table_enabled = table_enabled if table_enabled is not None else settings.routing_table_enabled
         self._cache: dict[tuple[float, float, float, float, str, str, bool], RoutingLeg] = {}
 
-
     @classmethod
     def _circuit_closed(cls) -> bool:
         return time.monotonic() >= cls._circuit_open_until

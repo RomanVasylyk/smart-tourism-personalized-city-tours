@@ -93,7 +93,7 @@ def test_circuit_opens_after_repeated_failures_then_skips_osrm(monkeypatch):
     calls_before = calls["count"]
     leg = service.route_between(RoutePoint(49.0, 19.0), RoutePoint(48.5, 18.5), "normal")
     assert leg.source == "haversine_fallback"
-    assert calls["count"] == calls_before  
+    assert calls["count"] == calls_before
 
 
 def test_circuit_resets_after_a_success(monkeypatch):

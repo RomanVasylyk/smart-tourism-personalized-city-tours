@@ -64,9 +64,20 @@ def generate_route(request: RouteGenerateRequest) -> dict:
     return route_response_dict(plan_route(request))
 
 
+def cap_available_minutes(request: RouteGenerateRequest, city_profile: dict) -> RouteGenerateRequest:
+    max_minutes = (city_profile.get("routing_limits") or {}).get("max_available_minutes")
+    if max_minutes is None:
+        return request
+    capped = min(request.available_minutes, int(max_minutes))
+    if capped == request.available_minutes:
+        return request
+    return request.model_copy(update={"available_minutes": capped})
+
+
 def plan_route(request: RouteGenerateRequest) -> RoutePlanningResult:
     start_dt = parse_start_datetime(request.start_datetime)
     city_profile = city_profile_by_token(request.city) or {}
+    request = cap_available_minutes(request, city_profile)
     effective_transport_mode = normalized_transport_mode(request.transport_mode, city_profile)
     feedback_profile = load_planner_feedback_profile(request.city, effective_transport_mode)
     candidates = [CandidatePoi.from_row(row) for row in get_route_candidates(request)]

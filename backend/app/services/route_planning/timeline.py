@@ -21,8 +21,11 @@ class RouteTimelineBuilder:
 
     def add_stop(self, evaluation: CandidateEvaluation) -> PlannedStop:
         poi = evaluation.poi
-        self.elapsed_actual_seconds += evaluation.travel_plan.duration_seconds + (evaluation.visit_minutes * 60)
-        self.elapsed_minutes += evaluation.travel_plan.duration_minutes + evaluation.visit_minutes
+        wait_minutes = evaluation.wait_minutes
+        self.elapsed_actual_seconds += evaluation.travel_plan.duration_seconds + (
+            (wait_minutes + evaluation.visit_minutes) * 60
+        )
+        self.elapsed_minutes += evaluation.travel_plan.duration_minutes + wait_minutes + evaluation.visit_minutes
         next_endpoint = point_dict("poi", poi.lat, poi.lon, poi.raw)
         planned_stop = PlannedStop(
             order=len(self.route_items) + 1,
@@ -33,6 +36,7 @@ class RouteTimelineBuilder:
             departure_after_min=self.elapsed_minutes,
             utility=evaluation.utility,
             score_breakdown=evaluation.score_breakdown,
+            wait_minutes=wait_minutes,
         )
 
         self.route_items.append(planned_stop_to_route_item(planned_stop))
@@ -79,6 +83,7 @@ def planned_stop_to_route_item(planned_stop: PlannedStop) -> dict:
         "routing_source_from_previous": planned_stop.travel_plan.source,
         "travel_mode_from_previous": planned_stop.travel_plan.mode,
         "visit_duration_min": planned_stop.visit_minutes,
+        "wait_minutes": planned_stop.wait_minutes,
         "arrival_after_min": planned_stop.arrival_after_min,
         "departure_after_min": planned_stop.departure_after_min,
         "base_score": poi.base_score,

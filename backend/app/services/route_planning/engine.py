@@ -7,7 +7,11 @@ from app.services.feedback_stats import PlannerFeedbackProfile
 from app.services.route_planning.candidate_evaluator import RouteCandidateEvaluator
 from app.services.route_planning.local_search import improve_order
 from app.services.route_planning.models import CandidateEvaluation, CandidatePoi
-from app.services.route_planning.opening_hours import is_poi_open_for_visit
+from app.services.route_planning.opening_hours import (
+    DEFAULT_MAX_OPENING_WAIT_MIN,
+    is_poi_open_for_visit,
+    resolve_visit_wait,
+)
 from app.services.route_planning.result import RoutePlanningResult
 from app.services.route_planning.scoring import score_candidate
 from app.services.route_planning.timeline import RouteTimelineBuilder
@@ -71,6 +75,9 @@ class RoutePlannerEngine:
         )
         self.local_search_max_evaluations = int(
             routing_limits.get("local_search_max_evaluations", default_max_evaluations)
+        )
+        self.max_opening_wait_minutes = int(
+            routing_limits.get("max_opening_wait_minutes", DEFAULT_MAX_OPENING_WAIT_MIN)
         )
 
     def plan(self) -> RoutePlanningResult:
@@ -167,6 +174,7 @@ class RoutePlannerEngine:
         elapsed_seconds = 0.0
         total_travel_minutes = 0
         total_visit_minutes = 0
+        total_wait_minutes = 0
         current_point = self.start_point
 
         for poi in order:
@@ -175,16 +183,21 @@ class RoutePlannerEngine:
             visit_minutes = poi.visit_duration_min or DEFAULT_VISIT_DURATION_MIN
             arrival_dt = departure_dt + timedelta(seconds=travel_plan.duration_seconds)
 
-            if (
-                self.request.respect_opening_hours
-                and poi.id not in self.preferred_poi_ids
-                and not is_poi_open_for_visit(poi.opening_hours_raw, arrival_dt, visit_minutes)
-            ):
+            wait_minutes = resolve_visit_wait(
+                poi.opening_hours_raw,
+                arrival_dt,
+                visit_minutes,
+                respect_opening_hours=self.request.respect_opening_hours,
+                is_forced=poi.id in self.preferred_poi_ids,
+                max_wait_minutes=self.max_opening_wait_minutes,
+            )
+            if wait_minutes is None:
                 return None
 
-            elapsed_seconds += travel_plan.duration_seconds + (visit_minutes * 60)
+            elapsed_seconds += travel_plan.duration_seconds + ((wait_minutes + visit_minutes) * 60)
             total_travel_minutes += travel_plan.duration_minutes
             total_visit_minutes += visit_minutes
+            total_wait_minutes += wait_minutes
             current_point = poi.point
 
         if self.request.return_to_start and order:
@@ -192,7 +205,7 @@ class RoutePlannerEngine:
             return_plan = self._travel_plan(current_point, self.start_point, return_departure_dt)
             total_travel_minutes += return_plan.duration_minutes
 
-        if total_travel_minutes + total_visit_minutes > self.request.available_minutes:
+        if total_travel_minutes + total_visit_minutes + total_wait_minutes > self.request.available_minutes:
             return None
 
         return float(total_travel_minutes)
@@ -205,6 +218,15 @@ class RoutePlannerEngine:
             departure_dt = self.start_dt + timedelta(seconds=timeline.elapsed_actual_seconds)
             travel_plan = self._travel_plan(timeline.current_point, poi.point, departure_dt)
             visit_minutes = poi.visit_duration_min or DEFAULT_VISIT_DURATION_MIN
+            arrival_dt = departure_dt + timedelta(seconds=travel_plan.duration_seconds)
+            wait_minutes = resolve_visit_wait(
+                poi.opening_hours_raw,
+                arrival_dt,
+                visit_minutes,
+                respect_opening_hours=self.request.respect_opening_hours,
+                is_forced=True,
+                max_wait_minutes=self.max_opening_wait_minutes,
+            )
             utility, score_breakdown = score_candidate(
                 poi=poi.raw,
                 travel_plan=travel_plan,
@@ -220,6 +242,7 @@ class RoutePlannerEngine:
                     visit_minutes=visit_minutes,
                     utility=utility,
                     score_breakdown=score_breakdown,
+                    wait_minutes=wait_minutes or 0,
                 )
             )
             category_counts[poi.category] = category_counts.get(poi.category, 0) + 1
@@ -260,9 +283,24 @@ class RoutePlannerEngine:
                 detail=f"Required POIs were not included in generated route: {missing_preferred_ids}",
             )
 
+    def closed_required_poi_ids(self) -> list[int]:
+        if not self.request.respect_opening_hours or not self.preferred_poi_ids:
+            return []
+        closed: list[int] = []
+        for item in self.timeline.route_items:
+            poi_id = int(item["poi_id"])
+            if poi_id not in self.preferred_poi_ids:
+                continue
+            arrival_dt = self.start_dt + timedelta(minutes=item["arrival_after_min"])
+            if not is_poi_open_for_visit(item.get("opening_hours_raw"), arrival_dt, item["visit_duration_min"]):
+                closed.append(poi_id)
+        return closed
+
     def result(self) -> RoutePlanningResult:
         total_visit_minutes = sum(item["visit_duration_min"] for item in self.timeline.route_items)
-        total_walk_minutes = self.timeline.elapsed_minutes - total_visit_minutes
+        total_wait_minutes = sum(item.get("wait_minutes", 0) for item in self.timeline.route_items)
+        total_walk_minutes = self.timeline.elapsed_minutes - total_visit_minutes - total_wait_minutes
+        over_budget = bool(self.preferred_poi_ids) and self.timeline.elapsed_minutes > self.request.available_minutes
         return RoutePlanningResult(
             city=self.request.city,
             start_lat=self.request.start_lat,
@@ -277,8 +315,11 @@ class RoutePlannerEngine:
             used_minutes=self.timeline.elapsed_minutes,
             total_visit_minutes=total_visit_minutes,
             total_walk_minutes=total_walk_minutes,
+            total_wait_minutes=total_wait_minutes,
             return_to_start_minutes=self.timeline.return_to_start_minutes,
             route_items=self.timeline.route_items,
             legs=self.timeline.legs,
             full_geometry=self.timeline.full_geometry,
+            required_pois_over_budget=over_budget,
+            closed_required_poi_ids=self.closed_required_poi_ids(),
         )

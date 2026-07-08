@@ -44,6 +44,25 @@ services:
       retries: 5
       start_period: 15s
 
+  scheduler:
+    build:
+      context: .
+      dockerfile: ./backend/Dockerfile
+    container_name: smart-tourism-scheduler
+    restart: unless-stopped
+    command: ["python", "scripts/recompute_scheduler.py"]
+    environment:
+      DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL in .env}
+      FEEDBACK_RECOMPUTE_INTERVAL_SECONDS: ${FEEDBACK_RECOMPUTE_INTERVAL_SECONDS:-3600}
+      FEEDBACK_RECOMPUTE_CITY: ${FEEDBACK_RECOMPUTE_CITY:-}
+      FEEDBACK_RECOMPUTE_RUN_ON_START: ${FEEDBACK_RECOMPUTE_RUN_ON_START:-true}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+    depends_on:
+      db:
+        condition: service_healthy
+      backend:
+        condition: service_healthy
+
   routing:
     image: ${OSRM_IMAGE:?Set OSRM_IMAGE in .env}
     container_name: smart-tourism-routing

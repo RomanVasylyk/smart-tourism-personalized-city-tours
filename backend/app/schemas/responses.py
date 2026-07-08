@@ -141,6 +141,7 @@ class RouteItemResponse(BaseModel):
     routing_source_from_previous: str | None = None
     travel_mode_from_previous: str | None = None
     visit_duration_min: int
+    wait_minutes: int | None = None
     arrival_after_min: int
     departure_after_min: int
     base_score: float | None = None
@@ -170,8 +171,11 @@ class RouteResponse(BaseModel):
     remaining_minutes: int
     total_visit_minutes: int
     total_walk_minutes: int
+    total_wait_minutes: int | None = None
     return_to_start_minutes: int
     poi_count: int
+    required_pois_over_budget: bool | None = None
+    closed_required_poi_ids: list[int] = Field(default_factory=list)
     routing_leg_count: int | None = None
     routing_fallback_leg_count: int | None = None
     routing_degraded: bool | None = None

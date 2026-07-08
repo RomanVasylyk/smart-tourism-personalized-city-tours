@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 
 from app.services.feedback_stats import PlannerFeedbackProfile
 from app.services.route_planning.models import CandidateEvaluation, CandidatePoi
-from app.services.route_planning.opening_hours import is_poi_open_for_visit
+from app.services.route_planning.opening_hours import DEFAULT_MAX_OPENING_WAIT_MIN, resolve_visit_wait
 from app.services.route_planning.scoring import (
     BASE_SCORE_MULTIPLIER,
     PREFERRED_POI_BONUS,
@@ -59,6 +59,10 @@ class RouteCandidateEvaluator:
         self.start_point = start_point
         self.preferred_poi_ids = preferred_poi_ids
         self.exact_candidate_limit = max_exact_poi_evaluations_per_step(city_profile, effective_transport_mode)
+        routing_limits = city_profile.get("routing_limits") or {}
+        self.max_opening_wait_minutes = int(
+            routing_limits.get("max_opening_wait_minutes", DEFAULT_MAX_OPENING_WAIT_MIN)
+        )
 
     def shortlist(
         self,
@@ -138,23 +142,24 @@ class RouteCandidateEvaluator:
             visit_minutes = poi.visit_duration_min or 20
             arrival_dt = departure_dt + timedelta(seconds=travel_plan.duration_seconds)
 
-            if (
-                not is_forced_preferred
-                and self.request.respect_opening_hours
-                and not is_poi_open_for_visit(
-                    poi.opening_hours_raw,
-                    arrival_dt,
-                    visit_minutes,
-                )
-            ):
+            wait_minutes = resolve_visit_wait(
+                poi.opening_hours_raw,
+                arrival_dt,
+                visit_minutes,
+                respect_opening_hours=self.request.respect_opening_hours,
+                is_forced=is_forced_preferred,
+                max_wait_minutes=self.max_opening_wait_minutes,
+            )
+            if wait_minutes is None:
                 continue
+            visit_start_dt = arrival_dt + timedelta(minutes=wait_minutes)
 
             return_minutes = 0
             if self.request.return_to_start:
                 return_seconds = return_durations[index] if return_durations is not None else None
-                return_minutes = self._return_travel_minutes(poi, arrival_dt, visit_minutes, return_seconds)
+                return_minutes = self._return_travel_minutes(poi, visit_start_dt, visit_minutes, return_seconds)
 
-            projected_total = elapsed_minutes + travel_minutes + visit_minutes + return_minutes
+            projected_total = elapsed_minutes + travel_minutes + wait_minutes + visit_minutes + return_minutes
             if not is_forced_preferred and projected_total > self.request.available_minutes:
                 continue
 
@@ -175,6 +180,7 @@ class RouteCandidateEvaluator:
                     visit_minutes=visit_minutes,
                     utility=utility,
                     score_breakdown=score_breakdown,
+                    wait_minutes=wait_minutes,
                 )
 
         return best_evaluation

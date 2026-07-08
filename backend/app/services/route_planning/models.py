@@ -48,6 +48,7 @@ class CandidateEvaluation:
     visit_minutes: int
     utility: float
     score_breakdown: dict[str, float]
+    wait_minutes: int = 0
 
 
 @dataclass(frozen=True)
@@ -60,3 +61,4 @@ class PlannedStop:
     departure_after_min: int
     utility: float
     score_breakdown: dict[str, float]
+    wait_minutes: int = 0

@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 
 
@@ -21,3 +21,6 @@ class RoutePlanningResult:
     route_items: list[dict]
     legs: list[dict]
     full_geometry: list[dict]
+    total_wait_minutes: int = 0
+    required_pois_over_budget: bool = False
+    closed_required_poi_ids: list[int] = field(default_factory=list)
