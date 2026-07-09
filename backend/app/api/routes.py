@@ -22,6 +22,7 @@ from app.schemas.route_sessions import (
     RouteSessionPoiVisitRequest,
     RouteSessionUpdateRequest,
 )
+from app.core.rate_limit import ROUTE_GENERATE_RATE_LIMIT, ROUTE_LEG_RATE_LIMIT, limiter
 from app.services.route_planner import generate_route, generate_route_leg
 from app.services.route_sessions import (
     create_route_session,
@@ -31,7 +32,7 @@ from app.services.route_sessions import (
     save_route_feedback,
     update_route_session,
 )
-from fastapi import APIRouter, Header
+from fastapi import APIRouter, Header, Request
 
 router = APIRouter()
 
@@ -62,13 +63,15 @@ def get_curated_route_endpoint(route_id: int, start_datetime: str | None = None)
 
 
 @router.post("/route/generate", response_model=RouteResponse)
-def generate_route_endpoint(request: RouteGenerateRequest):
-    return generate_route(request)
+@limiter.limit(ROUTE_GENERATE_RATE_LIMIT)
+def generate_route_endpoint(request: Request, payload: RouteGenerateRequest):
+    return generate_route(payload)
 
 
 @router.post("/route/leg", response_model=RouteLegResponse)
-def generate_route_leg_endpoint(request: RouteLegRequest):
-    return generate_route_leg(request)
+@limiter.limit(ROUTE_LEG_RATE_LIMIT)
+def generate_route_leg_endpoint(request: Request, payload: RouteLegRequest):
+    return generate_route_leg(payload)
 
 
 @router.post("/route-sessions", response_model=RouteSessionResponse)

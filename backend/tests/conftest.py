@@ -9,8 +9,11 @@ BACKEND_ROOT = Path(__file__).resolve().parents[1]
 if str(BACKEND_ROOT) not in sys.path:
     sys.path.insert(0, str(BACKEND_ROOT))
 
+from app.core.rate_limit import limiter  # noqa: E402
 from app.main import app  # noqa: E402
 from app.services.routing_service import RoutingLeg  # noqa: E402
+
+limiter.enabled = False
 
 
 @pytest.fixture

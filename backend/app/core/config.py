@@ -14,6 +14,9 @@ class Settings(BaseSettings):
     routing_timeout_seconds: float = Field(default=0.75, validation_alias="ROUTING_TIMEOUT_SECONDS")
     routing_enabled: bool = Field(default=True, validation_alias="ROUTING_ENABLED")
     routing_table_enabled: bool = Field(default=True, validation_alias="ROUTING_TABLE_ENABLED")
+    rate_limit_enabled: bool = Field(default=True, validation_alias="RATE_LIMIT_ENABLED")
+    rate_limit_route_generate: str = Field(default="30/minute", validation_alias="RATE_LIMIT_ROUTE_GENERATE")
+    rate_limit_route_leg: str = Field(default="60/minute", validation_alias="RATE_LIMIT_ROUTE_LEG")
     log_level: str = Field(default="INFO", validation_alias="LOG_LEVEL")
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
