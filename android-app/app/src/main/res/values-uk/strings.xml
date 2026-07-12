@@ -315,4 +315,11 @@
     <string name="action_open_curated_route">Відкрити маршрут</string>
     <string name="status_curated_routes_failed">Не вдалося завантажити готові маршрути.</string>
     <string name="status_curated_route_open_failed">Не вдалося відкрити готовий маршрут.</string>
+    <string name="route_stop_wait_to_open_badge">відкриється за %1$d хв</string>
+    <string name="route_quality_approximate_title">Приблизний маршрут</string>
+    <string name="route_quality_approximate_body">Деякі ділянки оцінено по прямій, бо маршрутизація була тимчасово недоступна; час може бути менш точним.</string>
+    <string name="route_quality_over_budget_title">Перевищено бюджет часу</string>
+    <string name="route_quality_over_budget_body">Необхідні зупинки залишено в маршруті, хоча вони перевищують доступний час.</string>
+    <string name="route_quality_closed_required_title">Необхідні зупинки поза годинами роботи</string>
+    <string name="route_quality_closed_required_body">Ці необхідні зупинки поза своїми годинами роботи: %1$s.</string>
 </resources>

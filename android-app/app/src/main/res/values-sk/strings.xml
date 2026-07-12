@@ -315,4 +315,11 @@
     <string name="action_open_curated_route">Otvoriť okruh</string>
     <string name="status_curated_routes_failed">Nepodarilo sa načítať hotové okruhy.</string>
     <string name="status_curated_route_open_failed">Nepodarilo sa otvoriť hotový okruh.</string>
+    <string name="route_stop_wait_to_open_badge">otvára o %1$d min</string>
+    <string name="route_quality_approximate_title">Približná trasa</string>
+    <string name="route_quality_approximate_body">Niektoré úseky používajú odhad vzdušnou čiarou, pretože smerovanie bolo dočasne nedostupné; časy môžu byť menej presné.</string>
+    <string name="route_quality_over_budget_title">Prekročený časový rozpočet</string>
+    <string name="route_quality_over_budget_body">Povinné zastávky zostali v trase, hoci presahujú dostupný čas.</string>
+    <string name="route_quality_closed_required_title">Povinné zastávky mimo otváracích hodín</string>
+    <string name="route_quality_closed_required_body">Tieto povinné zastávky sú mimo svojich otváracích hodín: %1$s.</string>
 </resources>

@@ -76,6 +76,10 @@ data class RoutePlan(
     val totalWalkMinutes: Int = 0,
     val returnToStartMinutes: Int = 0,
     val poiCount: Int = 0,
+    val totalWaitMinutes: Int = 0,
+    val requiredPoisOverBudget: Boolean = false,
+    val closedRequiredPoiIds: List<Int> = emptyList(),
+    val routingDegraded: Boolean = false,
     val route: List<RouteStop> = emptyList(),
     val legs: List<RouteLeg>? = null,
     val fullGeometry: List<RouteCoordinate>? = null
@@ -125,6 +129,7 @@ data class RouteStop(
     val lon: Double = 0.0,
     val travelMinutesFromPrevious: Int = 0,
     val visitDurationMin: Int = 0,
+    val waitMinutes: Int = 0,
     val arrivalAfterMin: Int = 0,
     val departureAfterMin: Int = 0,
     val baseScore: Double? = null,

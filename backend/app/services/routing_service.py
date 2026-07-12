@@ -142,7 +142,7 @@ class RoutingService:
                     if value is None:
                         continue
                     raw_matrix[source_index][destination_index] = value
-                    self._store_duration_cell(source, destinations[destination_index], resolved_profile, value)
+                    self._store_duration_cell(source, destination, resolved_profile, value)
 
         return [[None if raw is None else raw * pace_multiplier for raw in row] for row in raw_matrix]
 

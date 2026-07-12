@@ -315,4 +315,11 @@
     <string name="action_open_curated_route">Otwórz trasę</string>
     <string name="status_curated_routes_failed">Nie udało się wczytać gotowych tras.</string>
     <string name="status_curated_route_open_failed">Nie udało się otworzyć gotowej trasy.</string>
+    <string name="route_stop_wait_to_open_badge">otwarcie za %1$d min</string>
+    <string name="route_quality_approximate_title">Trasa przybliżona</string>
+    <string name="route_quality_approximate_body">Niektóre odcinki używają szacunku w linii prostej, ponieważ wyznaczanie trasy było chwilowo niedostępne; czasy mogą być mniej dokładne.</string>
+    <string name="route_quality_over_budget_title">Przekroczono budżet czasu</string>
+    <string name="route_quality_over_budget_body">Wymagane przystanki pozostawiono w trasie, mimo że przekraczają dostępny czas.</string>
+    <string name="route_quality_closed_required_title">Wymagane przystanki poza godzinami otwarcia</string>
+    <string name="route_quality_closed_required_body">Te wymagane przystanki są poza swoimi godzinami otwarcia: %1$s.</string>
 </resources>

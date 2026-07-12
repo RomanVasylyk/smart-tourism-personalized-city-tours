@@ -315,4 +315,11 @@
     <string name="action_open_curated_route">Open tour</string>
     <string name="status_curated_routes_failed">Couldn\'t load curated tours.</string>
     <string name="status_curated_route_open_failed">Couldn\'t open the curated tour.</string>
+    <string name="route_stop_wait_to_open_badge">opens in %1$d min</string>
+    <string name="route_quality_approximate_title">Approximate route</string>
+    <string name="route_quality_approximate_body">Some legs use a straight-line estimate because routing was temporarily unavailable; times may be less precise.</string>
+    <string name="route_quality_over_budget_title">Over your time budget</string>
+    <string name="route_quality_over_budget_body">Required stops were kept even though they exceed the available time.</string>
+    <string name="route_quality_closed_required_title">Required stops outside opening hours</string>
+    <string name="route_quality_closed_required_body">These required stops fall outside their opening hours: %1$s.</string>
 </resources>

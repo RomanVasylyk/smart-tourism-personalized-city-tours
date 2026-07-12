@@ -1,5 +1,6 @@
 from uuid import UUID
 
+from app.core.rate_limit import ROUTE_GENERATE_RATE_LIMIT, ROUTE_LEG_RATE_LIMIT, limiter
 from app.repositories.cities import list_city_rows
 from app.repositories.pois import list_poi_rows
 from app.schemas.responses import (
@@ -15,14 +16,13 @@ from app.schemas.responses import (
     RouteSessionResponse,
 )
 from app.schemas.route import RouteGenerateRequest, RouteLegRequest
-from app.services.curated_routes import get_curated_route, list_curated_routes
 from app.schemas.route_sessions import (
     RouteFeedbackRequest,
     RouteSessionCreateRequest,
     RouteSessionPoiVisitRequest,
     RouteSessionUpdateRequest,
 )
-from app.core.rate_limit import ROUTE_GENERATE_RATE_LIMIT, ROUTE_LEG_RATE_LIMIT, limiter
+from app.services.curated_routes import get_curated_route, list_curated_routes
 from app.services.route_planner import generate_route, generate_route_leg
 from app.services.route_sessions import (
     create_route_session,

@@ -315,4 +315,11 @@
     <string name="action_open_curated_route">Túra megnyitása</string>
     <string name="status_curated_routes_failed">Nem sikerült betölteni a kész túrákat.</string>
     <string name="status_curated_route_open_failed">Nem sikerült megnyitni a kész túrát.</string>
+    <string name="route_stop_wait_to_open_badge">%1$d perc múlva nyit</string>
+    <string name="route_quality_approximate_title">Hozzávetőleges útvonal</string>
+    <string name="route_quality_approximate_body">Néhány szakasz légvonalbeli becslést használ, mert az útvonaltervezés átmenetileg nem volt elérhető; az idők kevésbé pontosak lehetnek.</string>
+    <string name="route_quality_over_budget_title">Túllépett időkeret</string>
+    <string name="route_quality_over_budget_body">A kötelező megállók a rendelkezésre álló időt meghaladva is bekerültek.</string>
+    <string name="route_quality_closed_required_title">Kötelező megállók nyitvatartáson kívül</string>
+    <string name="route_quality_closed_required_body">Ezek a kötelező megállók a nyitvatartási idejükön kívül esnek: %1$s.</string>
 </resources>

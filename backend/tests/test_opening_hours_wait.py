@@ -7,7 +7,7 @@ from app.services.route_planner import cap_available_minutes
 from app.services.route_planning.engine import RoutePlannerEngine
 from app.services.route_planning.models import CandidatePoi
 from app.services.route_planning.opening_hours import resolve_visit_wait, wait_minutes_until_open
-from app.services.routing_service import RoutePoint, RoutingLeg
+from app.services.routing_service import RoutingLeg
 
 ARRIVAL = datetime(2026, 6, 24, 10, 0)
 DAYS = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"]

@@ -549,6 +549,47 @@ internal fun LazyListScope.plannerAlertItems(
     }
 }
 
+internal fun LazyListScope.routeQualityItems(
+    routeResponse: RoutePlan?,
+    pois: List<Poi>
+) {
+    if (routeResponse == null) {
+        return
+    }
+    if (!routeResponse.routingDegraded &&
+        !routeResponse.requiredPoisOverBudget &&
+        routeResponse.closedRequiredPoiIds.isEmpty()
+    ) {
+        return
+    }
+    item {
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            if (routeResponse.routingDegraded) {
+                StatusCard(
+                    title = stringResource(R.string.route_quality_approximate_title),
+                    body = stringResource(R.string.route_quality_approximate_body)
+                )
+            }
+            if (routeResponse.requiredPoisOverBudget) {
+                StatusCard(
+                    title = stringResource(R.string.route_quality_over_budget_title),
+                    body = stringResource(R.string.route_quality_over_budget_body)
+                )
+            }
+            if (routeResponse.closedRequiredPoiIds.isNotEmpty()) {
+                val poisById = pois.associateBy { poi -> poi.id }
+                val names = routeResponse.closedRequiredPoiIds.joinToString(", ") { id ->
+                    poisById[id]?.name ?: "#$id"
+                }
+                StatusCard(
+                    title = stringResource(R.string.route_quality_closed_required_title),
+                    body = stringResource(R.string.route_quality_closed_required_body, names)
+                )
+            }
+        }
+    }
+}
+
 internal fun LazyListScope.routeStopItems(
     titleRes: Int,
     routeStops: List<RouteStop>,

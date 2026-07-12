@@ -506,6 +506,8 @@ internal fun PreviewScreenContent(
             }
         }
 
+        routeQualityItems(routeResponse, pois)
+
         item {
             PreviewActionRow(
                 canStart = !hasPendingRouteChanges && routeItems.isNotEmpty(),
@@ -602,6 +604,8 @@ internal fun CompletedRouteContent(
                 RoutePreviewSummaryPanel(routeResponse = response)
             }
         }
+
+        routeQualityItems(routeResponse, pois)
 
         item {
             Button(

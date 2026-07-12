@@ -464,6 +464,12 @@ private fun RouteStopChipRow(
                 label = stringResource(R.string.route_stop_visit_badge, item.visitDurationMin),
                 color = MaterialTheme.colorScheme.tertiary
             )
+            if (item.waitMinutes > 0) {
+                RouteTimelineChip(
+                    label = stringResource(R.string.route_stop_wait_to_open_badge, item.waitMinutes),
+                    color = MaterialTheme.colorScheme.secondary
+                )
+            }
         }
         if (transitSegment != null) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {

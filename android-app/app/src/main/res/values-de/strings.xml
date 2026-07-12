@@ -315,4 +315,11 @@
     <string name="action_open_curated_route">Tour öffnen</string>
     <string name="status_curated_routes_failed">Fertige Touren konnten nicht geladen werden.</string>
     <string name="status_curated_route_open_failed">Die fertige Tour konnte nicht geöffnet werden.</string>
+    <string name="route_stop_wait_to_open_badge">öffnet in %1$d Min.</string>
+    <string name="route_quality_approximate_title">Ungefähre Route</string>
+    <string name="route_quality_approximate_body">Einige Abschnitte verwenden eine Luftlinien-Schätzung, da das Routing vorübergehend nicht verfügbar war; Zeiten können ungenauer sein.</string>
+    <string name="route_quality_over_budget_title">Zeitbudget überschritten</string>
+    <string name="route_quality_over_budget_body">Pflicht-Stopps wurden beibehalten, obwohl sie die verfügbare Zeit überschreiten.</string>
+    <string name="route_quality_closed_required_title">Pflicht-Stopps außerhalb der Öffnungszeiten</string>
+    <string name="route_quality_closed_required_body">Diese Pflicht-Stopps liegen außerhalb ihrer Öffnungszeiten: %1$s.</string>
 </resources>
