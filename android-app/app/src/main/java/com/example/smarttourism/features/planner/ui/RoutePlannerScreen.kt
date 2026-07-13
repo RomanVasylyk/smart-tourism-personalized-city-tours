@@ -1,6 +1,9 @@
 package com.example.smarttourism.features.planner.ui
 
 import android.Manifest
+import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -22,9 +25,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.smarttourism.R
@@ -50,6 +57,7 @@ fun RoutePlannerScreen(
     onLanguageSelected: (AppLanguage) -> Unit
 ) {
     val context = LocalContext.current
+    val view = LocalView.current
     val plannerViewModel: RoutePlannerViewModel = viewModel()
     val uiState by plannerViewModel.uiState.collectAsStateWithLifecycle()
     val onPlannerEvent = plannerViewModel::onEvent
@@ -154,6 +162,23 @@ fun RoutePlannerScreen(
         }
         if (plannerMode != PlannerMode.COMPLETED) {
             isFeedbackDialogOpen = false
+        }
+    }
+
+    DisposableEffect(plannerMode, view) {
+        val controller = context.findActivity()?.window
+            ?.let { window -> WindowCompat.getInsetsController(window, view) }
+        controller?.let { insetsController ->
+            if (plannerMode == PlannerMode.ACTIVE) {
+                insetsController.systemBarsBehavior =
+                    WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+                insetsController.hide(WindowInsetsCompat.Type.navigationBars())
+            } else {
+                insetsController.show(WindowInsetsCompat.Type.navigationBars())
+            }
+        }
+        onDispose {
+            controller?.show(WindowInsetsCompat.Type.navigationBars())
         }
     }
 
@@ -794,6 +819,12 @@ fun RoutePlannerScreen(
         state = plannerScreenState,
         actions = plannerActions
     )
+}
+
+private tailrec fun Context.findActivity(): Activity? = when (this) {
+    is Activity -> this
+    is ContextWrapper -> baseContext.findActivity()
+    else -> null
 }
 
 private enum class LocationRequestTarget {
