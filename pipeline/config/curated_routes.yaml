@@ -25,6 +25,60 @@ curated_routes:
         - name: "Kostol sv. Jozefa"
           osm_type: way
           osm_id: "1303096918"
+    - slug: nitra-muzea-galerie
+      title: Múzeá a galérie
+      summary: Okruh po hlavných múzeách a galériách mesta Nitra.
+      theme: culture
+      pace: normal
+      transport_mode: walk
+      return_to_start: true
+      recommended_duration_min: 230
+      start:
+        lat: 48.3076
+        lon: 18.0845
+      stops:
+      - name: Ponitrianske múzeum
+        osm_type: node
+        osm_id: '259949328'
+      - name: Diecézne múzeum
+        osm_type: way
+        osm_id: '105623148'
+      - name: ART GALÉRIA MÁRIE ŠEFFEROVEJ
+        osm_type: node
+        osm_id: '12509319157'
+      - name: Slovenské poľnohospodárske múzeum
+        osm_type: node
+        osm_id: '1737160274'
+      - name: Dominika Lehocká
+        osm_type: node
+        osm_id: '13022553078'
+    - slug: nitra-sakralne-pamiatky
+      title: Sakrálne pamiatky
+      summary: Prechádzka po najvýznamnejších kostoloch a sakrálnych pamiatkach mesta Nitra.
+      theme: history
+      pace: normal
+      transport_mode: walk
+      return_to_start: true
+      recommended_duration_min: 230
+      start:
+        lat: 48.3076
+        lon: 18.0845
+      stops:
+      - name: Kalvária
+        osm_type: node
+        osm_id: '11178945796'
+      - name: Evanjelický a. v. kostol Svätého Ducha
+        osm_type: way
+        osm_id: '85583658'
+      - name: Bazilika sv. Emeráma
+        osm_type: way
+        osm_id: '84590208'
+      - name: Kaplnka Ducha Svätého
+        osm_type: node
+        osm_id: '2896219410'
+      - name: Dom Srdca Ježišovho
+        osm_type: node
+        osm_id: '10252691774'
   trnava:
     - slug: trnava-pamiatky-jadra
       title: "Pamiatky malého Ríma"
@@ -50,6 +104,60 @@ curated_routes:
         - name: "Synagóga - Centrum súčasného umenia"
           osm_type: node
           osm_id: "7812587125"
+    - slug: trnava-muzea-galerie
+      title: Múzeá a galérie
+      summary: Okruh po hlavných múzeách a galériách mesta Trnava.
+      theme: culture
+      pace: normal
+      transport_mode: walk
+      return_to_start: true
+      recommended_duration_min: 230
+      start:
+        lat: 48.3767652
+        lon: 17.5858175
+      stops:
+      - name: Výklad
+        osm_type: node
+        osm_id: '11275468424'
+      - name: slachta.gallery
+        osm_type: node
+        osm_id: '9949071980'
+      - name: Kopplova vila
+        osm_type: way
+        osm_id: '164481101'
+      - name: Synagóga - Centrum súčasného umenia
+        osm_type: node
+        osm_id: '7812587125'
+      - name: Múzeum knižnej kultúry
+        osm_type: node
+        osm_id: '7546193197'
+    - slug: trnava-sakralne-pamiatky
+      title: Sakrálne pamiatky
+      summary: Prechádzka po najvýznamnejších kostoloch a sakrálnych pamiatkach mesta Trnava.
+      theme: history
+      pace: normal
+      transport_mode: walk
+      return_to_start: true
+      recommended_duration_min: 230
+      start:
+        lat: 48.3767652
+        lon: 17.5858175
+      stops:
+      - name: Evanjelický kostol
+        osm_type: way
+        osm_id: '164481146'
+      - name: Bazilika sv. Mikuláša
+        osm_type: way
+        osm_id: '164480810'
+      - name: Golgota
+        osm_type: node
+        osm_id: '1787796026'
+      - name: Cholerová kaplnka
+        osm_type: way
+        osm_id: '159108896'
+      - name: I.
+        osm_type: node
+        osm_id: '13888877268'
   trencin:
     - slug: trencin-hrad-a-stare-mesto
       title: "Hrad a staré mesto"
@@ -76,6 +184,60 @@ curated_routes:
         - name: "Maršovského palác"
           osm_type: way
           osm_id: "61372840"
+    - slug: trencin-muzea-galerie
+      title: Múzeá a galérie
+      summary: Okruh po hlavných múzeách a galériách mesta Trenčín.
+      theme: culture
+      pace: normal
+      transport_mode: walk
+      return_to_start: true
+      recommended_duration_min: 230
+      start:
+        lat: 48.8922719
+        lon: 18.0387465
+      stops:
+      - name: Kostnica/Karner sv. Michala
+        osm_type: way
+        osm_id: '61370918'
+      - name: Katov dom
+        osm_type: way
+        osm_id: '61370740'
+      - name: Hangár X
+        osm_type: node
+        osm_id: '5530016479'
+      - name: Samuela Timona
+        osm_type: node
+        osm_id: '2306443710'
+      - name: Dedinský skanzen
+        osm_type: node
+        osm_id: '12459293004'
+    - slug: trencin-sakralne-pamiatky
+      title: Sakrálne pamiatky
+      summary: Prechádzka po najvýznamnejších kostoloch a sakrálnych pamiatkach mesta Trenčín.
+      theme: history
+      pace: normal
+      transport_mode: walk
+      return_to_start: true
+      recommended_duration_min: 230
+      start:
+        lat: 48.8922719
+        lon: 18.0387465
+      stops:
+      - name: Evanjelický a. v. kostol
+        osm_type: way
+        osm_id: '61372867'
+      - name: Chrám sv. Cyrila a Metoda
+        osm_type: way
+        osm_id: '591756028'
+      - name: Cirkev adventistov siedmeho dňa
+        osm_type: node
+        osm_id: '11210921399'
+      - name: Evanjelický a. v. kostol
+        osm_type: way
+        osm_id: '161413245'
+      - name: Evanjelický a. v. kostol
+        osm_type: way
+        osm_id: '336866635'
   zilina:
     - slug: zilina-muzea-a-palace
       title: "Mestské múzeá a paláce"
@@ -104,6 +266,60 @@ curated_routes:
         - name: "Burianova veža"
           osm_type: node
           osm_id: "5814312953"
+    - slug: zilina-sakralne-pamiatky
+      title: Sakrálne pamiatky
+      summary: Prechádzka po najvýznamnejších kostoloch a sakrálnych pamiatkach mesta Žilina.
+      theme: history
+      pace: normal
+      transport_mode: walk
+      return_to_start: true
+      recommended_duration_min: 230
+      start:
+        lat: 49.2234674
+        lon: 18.7393139
+      stops:
+      - name: Evanjelický a. v. kostol
+        osm_type: way
+        osm_id: '155963237'
+      - name: Chrám Narodenia Presvätej Bohorodičky
+        osm_type: way
+        osm_id: '156063172'
+      - name: Dobrého Pastiera
+        osm_type: way
+        osm_id: '155824816'
+      - name: Božského srdca
+        osm_type: way
+        osm_id: '152096781'
+      - name: Božského Srdca Ježišovho
+        osm_type: way
+        osm_id: '206900600'
+    - slug: zilina-sochy-a-pamatniky
+      title: Sochy a pamätníky
+      summary: Okruh po sochách, pamätníkoch a drobných pamiatkach historického jadra.
+      theme: history
+      pace: normal
+      transport_mode: walk
+      return_to_start: true
+      recommended_duration_min: 230
+      start:
+        lat: 49.2234674
+        lon: 18.7393139
+      stops:
+      - name: Alojz Janiš
+        osm_type: node
+        osm_id: '12628891038'
+      - name: Andrej Hlinka
+        osm_type: node
+        osm_id: '338810525'
+      - name: Anna Zimenová
+        osm_type: node
+        osm_id: '12625878458'
+      - name: Anton Bernolák
+        osm_type: node
+        osm_id: '12531388925'
+      - name: Andrej Hlinka
+        osm_type: node
+        osm_id: '7793867762'
   nove-zamky:
     - slug: nove-zamky-muzea-galerie
       title: "Múzeá a galérie Nových Zámkov"
@@ -150,3 +366,30 @@ curated_routes:
         - name: "sv. Ján Nepomucký"
           osm_type: node
           osm_id: "6363327193"
+    - slug: nove-zamky-sakralne-pamiatky
+      title: Sakrálne pamiatky
+      summary: Prechádzka po najvýznamnejších kostoloch a sakrálnych pamiatkach mesta Nové Zámky.
+      theme: history
+      pace: normal
+      transport_mode: walk
+      return_to_start: true
+      recommended_duration_min: 230
+      start:
+        lat: 47.9861843
+        lon: 18.1631415
+      stops:
+      - name: Kalvínsky kostol
+        osm_type: way
+        osm_id: '57891377'
+      - name: Evanjelický a. v. kostol
+        osm_type: way
+        osm_id: '57894881'
+      - name: Kaplnka Božieho milosrdenstva
+        osm_type: node
+        osm_id: '2479436486'
+      - name: Kaplnka Božieho hrobu
+        osm_type: way
+        osm_id: '180005979'
+      - name: Kaplnka Sedembolestnej Panny Márie
+        osm_type: way
+        osm_id: '180005966'
