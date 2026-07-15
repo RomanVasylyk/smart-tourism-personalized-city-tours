@@ -322,4 +322,9 @@
     <string name="route_quality_over_budget_body">Required stops were kept even though they exceed the available time.</string>
     <string name="route_quality_closed_required_title">Required stops outside opening hours</string>
     <string name="route_quality_closed_required_body">These required stops fall outside their opening hours: %1$s.</string>
+
+    <string name="offline_status_no_network">No internet connection — showing saved data.</string>
+    <string name="offline_map_saving">Saving the city map for offline use...</string>
+    <string name="offline_map_wifi_pending">The city map will be saved automatically over Wi-Fi.</string>
+    <string name="action_save_offline_map_now">Save now</string>
 </resources>

@@ -322,4 +322,9 @@
     <string name="route_quality_over_budget_body">Povinné zastávky zůstaly v trase, i když přesahují dostupný čas.</string>
     <string name="route_quality_closed_required_title">Povinné zastávky mimo otevírací dobu</string>
     <string name="route_quality_closed_required_body">Tyto povinné zastávky jsou mimo svou otevírací dobu: %1$s.</string>
+
+    <string name="offline_status_no_network">Bez připojení k internetu — zobrazujeme uložená data.</string>
+    <string name="offline_map_saving">Ukládání mapy města pro offline použití...</string>
+    <string name="offline_map_wifi_pending">Mapa města se uloží automaticky přes Wi-Fi.</string>
+    <string name="action_save_offline_map_now">Uložit nyní</string>
 </resources>

@@ -20,7 +20,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.RadioButton
@@ -42,7 +41,6 @@ import com.example.smarttourism.features.planner.domain.model.City
 import com.example.smarttourism.features.planner.domain.model.RoutePoint
 import com.example.smarttourism.features.planner.state.AvailableMinutesStepMinutes
 import com.example.smarttourism.features.planner.state.MinimumAvailableMinutes
-import com.example.smarttourism.features.planner.state.OfflineDownloadProgress
 import com.example.smarttourism.features.planner.state.PaceOptions
 import com.example.smarttourism.features.planner.state.RouteTimeFormatter
 import com.example.smarttourism.features.planner.ui.formatters.categoryLabel
@@ -52,128 +50,18 @@ import java.time.LocalDateTime
 import kotlin.math.roundToInt
 
 @Composable
-internal fun OfflineSupportCard(
-    selectedCity: City?,
-    offlineStatusMessage: String?,
-    pendingSyncOperationCount: Int,
-    offlineRegionAvailable: Boolean,
-    isOfflineMapBusy: Boolean,
-    offlineMapProgress: OfflineDownloadProgress?,
-    offlineMapMessage: String?,
-    onDownloadOfflineMap: () -> Unit,
-    onDeleteOfflineMap: () -> Unit
-) {
-    ElevatedCard(shape = RoundedCornerShape(PlannerUiTokens.CardRadius)) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(PlannerUiTokens.CardPadding),
-            verticalArrangement = Arrangement.spacedBy(PlannerUiTokens.ItemSpacing)
-        ) {
-            Text(
-                text = stringResource(R.string.offline_support_title),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold
-            )
-            Text(
-                text = stringResource(R.string.offline_support_body),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-
-            if (!offlineStatusMessage.isNullOrBlank()) {
-                Text(
-                    text = offlineStatusMessage,
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
-
-            if (pendingSyncOperationCount > 0) {
-                Text(
-                    text = stringResource(R.string.pending_sync_status, pendingSyncOperationCount),
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
-
-            val city = selectedCity
-            if (city == null) {
-                Text(
-                    text = stringResource(R.string.offline_map_city_unavailable),
-                    style = MaterialTheme.typography.bodyMedium
-                )
-                return@Column
-            }
-
-            Text(
-                text = if (offlineRegionAvailable) {
-                    stringResource(R.string.offline_map_available, city.name)
-                } else {
-                    stringResource(R.string.offline_map_not_downloaded, city.name)
-                },
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.Medium
-            )
-
-            if (city.bbox == null) {
-                Text(
-                    text = stringResource(R.string.offline_map_bbox_missing),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            } else {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    if (offlineRegionAvailable) {
-                        OutlinedButton(
-                            onClick = onDeleteOfflineMap,
-                            enabled = !isOfflineMapBusy,
-                            modifier = Modifier
-                                .weight(1f)
-                                .heightIn(min = PlannerUiTokens.ButtonHeight)
-                        ) {
-                            Text(stringResource(R.string.action_delete_offline_map))
-                        }
-                    } else {
-                        Button(
-                            onClick = onDownloadOfflineMap,
-                            enabled = !isOfflineMapBusy,
-                            modifier = Modifier
-                                .weight(1f)
-                                .heightIn(min = PlannerUiTokens.ButtonHeight)
-                        ) {
-                            Text(stringResource(R.string.action_download_offline_map))
-                        }
-                    }
-                }
-            }
-
-            if (offlineMapProgress != null) {
-                LinearProgressIndicator(
-                    progress = { (offlineMapProgress.percent / 100.0).toFloat().coerceIn(0f, 1f) },
-                    modifier = Modifier.fillMaxWidth()
-                )
-                Text(
-                    text = stringResource(
-                        R.string.offline_map_progress,
-                        offlineMapProgress.percent.toInt(),
-                        offlineMapProgress.completed,
-                        offlineMapProgress.required
-                    ),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-
-            if (!offlineMapMessage.isNullOrBlank()) {
-                Text(
-                    text = offlineMapMessage,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
+internal fun OfflineBanner(modifier: Modifier = Modifier) {
+    Surface(
+        color = MaterialTheme.colorScheme.tertiaryContainer,
+        contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
+        modifier = modifier.fillMaxWidth()
+    ) {
+        Text(
+            text = stringResource(R.string.offline_status_no_network),
+            style = MaterialTheme.typography.bodySmall,
+            fontWeight = FontWeight.Medium,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+        )
     }
 }
 

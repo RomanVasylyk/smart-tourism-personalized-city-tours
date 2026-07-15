@@ -322,4 +322,9 @@
     <string name="route_quality_over_budget_body">A kötelező megállók a rendelkezésre álló időt meghaladva is bekerültek.</string>
     <string name="route_quality_closed_required_title">Kötelező megállók nyitvatartáson kívül</string>
     <string name="route_quality_closed_required_body">Ezek a kötelező megállók a nyitvatartási idejükön kívül esnek: %1$s.</string>
+
+    <string name="offline_status_no_network">Nincs internetkapcsolat — a mentett adatok láthatók.</string>
+    <string name="offline_map_saving">A város térképének mentése offline használatra...</string>
+    <string name="offline_map_wifi_pending">A város térképe automatikusan mentésre kerül Wi-Fin keresztül.</string>
+    <string name="action_save_offline_map_now">Mentés most</string>
 </resources>

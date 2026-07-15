@@ -322,4 +322,9 @@
     <string name="route_quality_over_budget_body">Необхідні зупинки залишено в маршруті, хоча вони перевищують доступний час.</string>
     <string name="route_quality_closed_required_title">Необхідні зупинки поза годинами роботи</string>
     <string name="route_quality_closed_required_body">Ці необхідні зупинки поза своїми годинами роботи: %1$s.</string>
+
+    <string name="offline_status_no_network">Немає інтернету — показуємо збережені дані.</string>
+    <string name="offline_map_saving">Зберігаємо карту міста для офлайну...</string>
+    <string name="offline_map_wifi_pending">Карту міста буде збережено автоматично по Wi-Fi.</string>
+    <string name="action_save_offline_map_now">Зберегти зараз</string>
 </resources>

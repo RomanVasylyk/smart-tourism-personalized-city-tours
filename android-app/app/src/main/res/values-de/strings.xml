@@ -322,4 +322,9 @@
     <string name="route_quality_over_budget_body">Pflicht-Stopps wurden beibehalten, obwohl sie die verfügbare Zeit überschreiten.</string>
     <string name="route_quality_closed_required_title">Pflicht-Stopps außerhalb der Öffnungszeiten</string>
     <string name="route_quality_closed_required_body">Diese Pflicht-Stopps liegen außerhalb ihrer Öffnungszeiten: %1$s.</string>
+
+    <string name="offline_status_no_network">Keine Internetverbindung — gespeicherte Daten werden angezeigt.</string>
+    <string name="offline_map_saving">Stadtkarte wird für die Offline-Nutzung gespeichert...</string>
+    <string name="offline_map_wifi_pending">Die Stadtkarte wird automatisch über WLAN gespeichert.</string>
+    <string name="action_save_offline_map_now">Jetzt speichern</string>
 </resources>

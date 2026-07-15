@@ -36,11 +36,12 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.smarttourism.R
 import com.example.smarttourism.core.i18n.AppLanguage
+import com.example.smarttourism.core.platform.NetworkMonitor
 import com.example.smarttourism.data.model.RouteHistoryEntry
 import com.example.smarttourism.features.planner.domain.model.Poi
 import com.example.smarttourism.features.planner.domain.model.RoutePoint
 import com.example.smarttourism.features.planner.components.CuratedRoutesSheetContent
-import com.example.smarttourism.features.planner.components.OfflineSupportCard
+import com.example.smarttourism.features.planner.components.OfflineBanner
 import com.example.smarttourism.features.planner.components.RouteBookmarksSheetContent
 import com.example.smarttourism.features.planner.components.RouteHistorySheetContent
 import com.example.smarttourism.features.planner.state.PlannerMode
@@ -58,6 +59,10 @@ fun RoutePlannerScreen(
 ) {
     val context = LocalContext.current
     val view = LocalView.current
+    val networkSnapshot by remember(context) { NetworkMonitor.observe(context) }
+        .collectAsStateWithLifecycle(initialValue = remember(context) { NetworkMonitor.snapshot(context) })
+    val isOnline = networkSnapshot.isOnline
+    val isUnmetered = networkSnapshot.isUnmetered
     val plannerViewModel: RoutePlannerViewModel = viewModel()
     val uiState by plannerViewModel.uiState.collectAsStateWithLifecycle()
     val onPlannerEvent = plannerViewModel::onEvent
@@ -179,6 +184,19 @@ fun RoutePlannerScreen(
         }
         onDispose {
             controller?.show(WindowInsetsCompat.Type.navigationBars())
+        }
+    }
+
+    LaunchedEffect(selectedCity?.slug, offlineStoredRegion, isOnline, isUnmetered) {
+        val cityForOffline = selectedCity
+        if (
+            cityForOffline?.bbox != null &&
+            offlineStoredRegion == null &&
+            !isOfflineMapBusy &&
+            isOnline &&
+            isUnmetered
+        ) {
+            onPlannerEvent(PlannerEvent.DownloadOfflineMap)
         }
     }
 
@@ -482,6 +500,10 @@ fun RoutePlannerScreen(
                 onLanguageSelected = onLanguageSelected
             )
 
+            if (!isOnline) {
+                OfflineBanner()
+            }
+
             when (currentDestination) {
                 PlannerDestination.PLANNER -> when (plannerMode) {
                     PlannerMode.PLANNING -> PlanningScreenContent(
@@ -657,26 +679,6 @@ fun RoutePlannerScreen(
                         onRefresh = { onPlannerEvent(PlannerEvent.LoadRouteHistory(forceRefresh = true)) },
                         onOpenEntry = { entry -> selectedHistoryEntry = entry }
                     )
-                }
-
-                PlannerDestination.OFFLINE -> LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    item {
-                        OfflineSupportCard(
-                            selectedCity = selectedCity,
-                            offlineStatusMessage = offlineStatusMessage,
-                            pendingSyncOperationCount = pendingSyncOperationCount,
-                            offlineRegionAvailable = offlineStoredRegion != null,
-                            isOfflineMapBusy = isOfflineMapBusy,
-                            offlineMapProgress = offlineMapProgress,
-                            offlineMapMessage = offlineMapMessage,
-                            onDownloadOfflineMap = { onPlannerEvent(PlannerEvent.DownloadOfflineMap) },
-                            onDeleteOfflineMap = { onPlannerEvent(PlannerEvent.DeleteOfflineMap) }
-                        )
-                    }
                 }
             }
         }

@@ -322,4 +322,9 @@
     <string name="route_quality_over_budget_body">Wymagane przystanki pozostawiono w trasie, mimo że przekraczają dostępny czas.</string>
     <string name="route_quality_closed_required_title">Wymagane przystanki poza godzinami otwarcia</string>
     <string name="route_quality_closed_required_body">Te wymagane przystanki są poza swoimi godzinami otwarcia: %1$s.</string>
+
+    <string name="offline_status_no_network">Brak połączenia z internetem — pokazujemy zapisane dane.</string>
+    <string name="offline_map_saving">Zapisywanie mapy miasta do użytku offline...</string>
+    <string name="offline_map_wifi_pending">Mapa miasta zostanie zapisana automatycznie przez Wi-Fi.</string>
+    <string name="action_save_offline_map_now">Zapisz teraz</string>
 </resources>

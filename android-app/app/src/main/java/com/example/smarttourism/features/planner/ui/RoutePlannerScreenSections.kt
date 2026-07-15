@@ -64,7 +64,6 @@ import com.example.smarttourism.features.map.MapLocationButton
 import com.example.smarttourism.features.map.PoiMapScreen
 import com.example.smarttourism.features.planner.components.ActiveRouteBottomPanel
 import com.example.smarttourism.features.planner.components.CitySelectorCard
-import com.example.smarttourism.features.planner.components.OfflineSupportCard
 import com.example.smarttourism.features.planner.components.ReplaceRouteStopSheetContent
 import com.example.smarttourism.features.planner.components.RequiredPlacesCard
 import com.example.smarttourism.features.planner.components.RequiredPlacesPickerSheetContent
@@ -90,8 +89,7 @@ internal enum class PlannerDestination {
     PLANNER,
     CURATED,
     SAVED_ROUTES,
-    HISTORY,
-    OFFLINE
+    HISTORY
 }
 
 @Composable
@@ -207,8 +205,7 @@ internal fun PlannerTopBar(
                     listOf(
                         PlannerDestination.CURATED,
                         PlannerDestination.SAVED_ROUTES,
-                        PlannerDestination.HISTORY,
-                        PlannerDestination.OFFLINE
+                        PlannerDestination.HISTORY
                     ).forEach { destination ->
                         DropdownMenuItem(
                             text = { Text(destinationLabel(destination, routeBookmarkCount)) },
@@ -236,7 +233,6 @@ private fun destinationLabel(destination: PlannerDestination, routeBookmarkCount
             stringResource(R.string.action_open_route_bookmarks)
         }
         PlannerDestination.HISTORY -> stringResource(R.string.action_open_route_history)
-        PlannerDestination.OFFLINE -> stringResource(R.string.offline_support_title)
     }
 
 private fun languageShortLabel(language: AppLanguage): String =
