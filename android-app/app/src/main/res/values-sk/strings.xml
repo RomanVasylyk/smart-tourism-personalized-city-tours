@@ -327,4 +327,8 @@
     <string name="offline_map_saving">Ukladá sa mapa mesta na offline použitie...</string>
     <string name="offline_map_wifi_pending">Mapa mesta sa automaticky uloží cez Wi-Fi.</string>
     <string name="action_save_offline_map_now">Uložiť teraz</string>
+
+    <string name="poi_opening_hours_label">Otváracie hodiny</string>
+    <string name="poi_service_times_label">Časy bohoslužieb</string>
+    <string name="action_open_website">Webová stránka</string>
 </resources>

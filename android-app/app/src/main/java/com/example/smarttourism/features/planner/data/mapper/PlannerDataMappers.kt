@@ -108,10 +108,14 @@ internal fun PoiDto.toDomain(): Poi =
         category = category,
         lat = lat,
         lon = lon,
+        address = address,
         openingHoursRaw = opening_hours_raw,
+        openingHoursSource = opening_hours_source,
         visitDurationMin = visit_duration_min,
         baseScore = base_score,
         shortDescription = short_description,
+        website = website,
+        imageUrl = image_url,
         wikipediaUrl = wikipedia_url
     )
 
@@ -122,10 +126,14 @@ internal fun Poi.toDto(): PoiDto =
         category = category,
         lat = lat,
         lon = lon,
+        address = address,
         opening_hours_raw = openingHoursRaw,
+        opening_hours_source = openingHoursSource,
         visit_duration_min = visitDurationMin,
         base_score = baseScore,
         short_description = shortDescription,
+        website = website,
+        image_url = imageUrl,
         wikipedia_url = wikipediaUrl
     )
 

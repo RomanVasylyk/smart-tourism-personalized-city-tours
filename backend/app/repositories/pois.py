@@ -20,10 +20,14 @@ def list_poi_rows(city: str = "nitra") -> list[dict]:
                     p.category,
                     p.lat,
                     p.lon,
+                    p.address,
                     p.opening_hours_raw,
+                    p.opening_hours_source,
                     p.visit_duration_min,
                     p.base_score,
                     p.short_description,
+                    p.website,
+                    p.image_url,
                     p.wikipedia_url
                 FROM pois p
                 WHERE p.city_id = %s

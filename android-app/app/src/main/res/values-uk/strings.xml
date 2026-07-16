@@ -327,4 +327,8 @@
     <string name="offline_map_saving">Зберігаємо карту міста для офлайну...</string>
     <string name="offline_map_wifi_pending">Карту міста буде збережено автоматично по Wi-Fi.</string>
     <string name="action_save_offline_map_now">Зберегти зараз</string>
+
+    <string name="poi_opening_hours_label">Години роботи</string>
+    <string name="poi_service_times_label">Час богослужінь</string>
+    <string name="action_open_website">Сайт</string>
 </resources>

@@ -4,6 +4,7 @@ import json
 import os
 import re
 import time
+import unicodedata
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -16,6 +17,9 @@ DEFAULT_TIMEOUT_SECONDS = 12
 DEFAULT_MAX_DESCRIPTION_CHARS = 420
 DEFAULT_REQUEST_DELAY_SECONDS = 0.15
 DEFAULT_USER_AGENT = "smart-tourism-starter/0.1 " "(local diploma project; Wikimedia summary enrichment)"
+GEOSEARCH_LANG_LIMIT = 2
+GEOSEARCH_RADIUS_METERS = 500
+NAME_MATCH_THRESHOLD = 0.6
 
 
 @dataclass(frozen=True)
@@ -64,33 +68,52 @@ class WikiEnrichmentClient:
         force: bool = False,
         max_description_chars: int = DEFAULT_MAX_DESCRIPTION_CHARS,
     ) -> bool:
-        if not force and has_text(poi.get("short_description")):
+        needs_description = force or not has_text(poi.get("short_description"))
+        needs_page = needs_description or not has_text(poi.get("wikipedia_url"))
+        needs_image = not has_text(poi.get("image_url")) and has_text(poi.get("wikidata_id"))
+        if not (needs_description or needs_page or needs_image):
             return False
 
         page_ref = wikipedia_ref_from_poi(poi)
         if page_ref is None and has_text(poi.get("wikidata_id")):
             page_ref = self.resolve_wikipedia_page_from_wikidata(str(poi["wikidata_id"]))
-
-        summary = self.fetch_wikipedia_summary(page_ref) if page_ref is not None else None
-        description = clean_description(summary.extract if summary else None, max_description_chars)
-        if not description and has_text(poi.get("wikidata_id")):
-            description = clean_description(
-                self.fetch_wikidata_description(str(poi["wikidata_id"])),
-                max_description_chars,
-            )
+        if page_ref is None and needs_page:
+            lat, lon = poi.get("lat"), poi.get("lon")
+            if isinstance(lat, (int, float)) and isinstance(lon, (int, float)) and has_text(poi.get("name")):
+                page_ref = self.resolve_wikipedia_page_by_geosearch(float(lat), float(lon), str(poi["name"]))
 
         changed = False
-        if description and description != poi.get("short_description"):
-            poi["short_description"] = description
-            changed = True
+
+        if needs_description:
+            summary = self.fetch_wikipedia_summary(page_ref) if page_ref is not None else None
+            description = clean_description(summary.extract if summary else None, max_description_chars)
+            if not description and has_text(poi.get("wikidata_id")):
+                description = clean_description(
+                    self.fetch_wikidata_description(str(poi["wikidata_id"])),
+                    max_description_chars,
+                )
+            if not description and has_text(poi.get("wikidata_id")):
+                description = clean_description(
+                    self.synthesize_from_wikidata(str(poi["wikidata_id"])),
+                    max_description_chars,
+                )
+            if description and description != poi.get("short_description"):
+                poi["short_description"] = description
+                changed = True
 
         if page_ref is not None:
             if poi.get("wikipedia_title") != page_ref.title:
                 poi["wikipedia_title"] = page_ref.title
                 changed = True
-            page_url = summary.page_url if summary else wikipedia_url(page_ref)
+            page_url = wikipedia_url(page_ref)
             if page_url and poi.get("wikipedia_url") != page_url:
                 poi["wikipedia_url"] = page_url
+                changed = True
+
+        if needs_image and has_text(poi.get("wikidata_id")):
+            image_url = self.wikidata_image_url(str(poi["wikidata_id"]))
+            if image_url and image_url != poi.get("image_url"):
+                poi["image_url"] = image_url
                 changed = True
 
         return changed
@@ -154,6 +177,66 @@ class WikiEnrichmentClient:
             return None
         entity = (payload.get("entities") or {}).get(normalized_qid)
         return entity if isinstance(entity, dict) else None
+
+    def resolve_wikipedia_page_by_geosearch(self, lat: float, lon: float, name: str) -> WikiPageRef | None:
+        target = normalize_name(name)
+        if not target:
+            return None
+        best: tuple[float, WikiPageRef] | None = None
+        for lang in self.languages[:GEOSEARCH_LANG_LIMIT]:
+            for candidate in self.fetch_geosearch(lang, lat, lon):
+                title = candidate.get("title")
+                if not has_text(title):
+                    continue
+                score = name_match_score(target, normalize_name(str(title)))
+                if score >= NAME_MATCH_THRESHOLD and (best is None or score > best[0]):
+                    best = (score, WikiPageRef(lang=lang, title=str(title)))
+        return best[1] if best is not None else None
+
+    def fetch_geosearch(self, lang: str, lat: float, lon: float) -> list[dict[str, Any]]:
+        cache_key = f"wikipedia-geosearch:{lang}:{lat:.5f}:{lon:.5f}"
+        url = (
+            f"https://{lang}.wikipedia.org/w/api.php?action=query&list=geosearch"
+            f"&gscoord={lat:.6f}%7C{lon:.6f}&gsradius={GEOSEARCH_RADIUS_METERS}&gslimit=20&format=json"
+        )
+        payload = self.cached_json(cache_key, lambda: self.get_json(url))
+        if not isinstance(payload, dict):
+            return []
+        results = (payload.get("query") or {}).get("geosearch")
+        return [item for item in results if isinstance(item, dict)] if isinstance(results, list) else []
+
+    def synthesize_from_wikidata(self, qid: str) -> str | None:
+        entity = self.fetch_wikidata_entity(qid)
+        if not entity:
+            return None
+        type_qid = first_claim_entity_id(entity, "P31")
+        type_label = self.wikidata_label(type_qid) if type_qid else None
+        year = first_claim_year(entity, "P571")
+        if type_label and year:
+            return f"{type_label[:1].upper()}{type_label[1:]} (z roku {year})."
+        if type_label:
+            return f"{type_label[:1].upper()}{type_label[1:]}."
+        return None
+
+    def wikidata_label(self, qid: str | None) -> str | None:
+        if not qid:
+            return None
+        entity = self.fetch_wikidata_entity(qid)
+        if not entity:
+            return None
+        labels = entity.get("labels") or {}
+        for lang in self.languages:
+            label = labels.get(lang)
+            if isinstance(label, dict) and has_text(label.get("value")):
+                return str(label["value"])
+        return None
+
+    def wikidata_image_url(self, qid: str) -> str | None:
+        entity = self.fetch_wikidata_entity(qid)
+        if not entity:
+            return None
+        filename = first_claim_string(entity, "P18")
+        return commons_thumb_url(filename) if filename else None
 
     def cached_json(self, cache_key: str, fetch: Any) -> Any:
         if cache_key in self.cache:
@@ -248,6 +331,61 @@ def clean_description(value: str | None, max_chars: int = DEFAULT_MAX_DESCRIPTIO
 
 def has_text(value: Any) -> bool:
     return isinstance(value, str) and bool(value.strip())
+
+
+def normalize_name(value: str | None) -> str:
+    if not has_text(value):
+        return ""
+    decomposed = unicodedata.normalize("NFD", str(value))
+    ascii_value = "".join(ch for ch in decomposed if unicodedata.category(ch) != "Mn")
+    ascii_value = re.sub(r"\(.*?\)", " ", ascii_value)
+    ascii_value = re.sub(r"[^a-z0-9 ]+", " ", ascii_value.lower())
+    return re.sub(r"\s+", " ", ascii_value).strip()
+
+
+def name_match_score(a: str, b: str) -> float:
+    if not a or not b:
+        return 0.0
+    if a == b or a in b or b in a:
+        return 1.0
+    tokens_a = set(a.split())
+    tokens_b = set(b.split())
+    if not tokens_a or not tokens_b:
+        return 0.0
+    return len(tokens_a & tokens_b) / len(tokens_a | tokens_b)
+
+
+def commons_thumb_url(filename: str | None, width: int = 640) -> str | None:
+    if not has_text(filename):
+        return None
+    name = str(filename).removeprefix("File:").strip().replace(" ", "_")
+    return f"https://commons.wikimedia.org/wiki/Special:FilePath/{quote(name)}?width={width}"
+
+
+def first_claim_entity_id(entity: dict[str, Any], prop: str) -> str | None:
+    for claim in (entity.get("claims") or {}).get(prop) or []:
+        value = ((claim.get("mainsnak") or {}).get("datavalue") or {}).get("value")
+        if isinstance(value, dict) and has_text(value.get("id")):
+            return str(value["id"])
+    return None
+
+
+def first_claim_string(entity: dict[str, Any], prop: str) -> str | None:
+    for claim in (entity.get("claims") or {}).get(prop) or []:
+        value = ((claim.get("mainsnak") or {}).get("datavalue") or {}).get("value")
+        if isinstance(value, str) and has_text(value):
+            return value
+    return None
+
+
+def first_claim_year(entity: dict[str, Any], prop: str) -> str | None:
+    for claim in (entity.get("claims") or {}).get(prop) or []:
+        value = ((claim.get("mainsnak") or {}).get("datavalue") or {}).get("value")
+        if isinstance(value, dict) and has_text(value.get("time")):
+            match = re.match(r"^[+-](\d+)-", str(value["time"]))
+            if match:
+                return str(int(match.group(1)))
+    return None
 
 
 def load_cache(cache_path: Path) -> dict[str, Any]:

@@ -327,4 +327,8 @@
     <string name="offline_map_saving">Zapisywanie mapy miasta do użytku offline...</string>
     <string name="offline_map_wifi_pending">Mapa miasta zostanie zapisana automatycznie przez Wi-Fi.</string>
     <string name="action_save_offline_map_now">Zapisz teraz</string>
+
+    <string name="poi_opening_hours_label">Godziny otwarcia</string>
+    <string name="poi_service_times_label">Godziny nabożeństw</string>
+    <string name="action_open_website">Strona internetowa</string>
 </resources>

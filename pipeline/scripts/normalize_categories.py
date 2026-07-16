@@ -4,6 +4,9 @@ import json
 import re
 import sys
 from pathlib import Path
+from urllib.parse import quote
+
+DESCRIPTION_LANGS = ("sk", "en", "cs", "de", "pl", "hu")
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
@@ -76,6 +79,62 @@ def parse_wikipedia(value: str | None) -> tuple[str | None, str | None]:
     return title, f"https://{lang}.wikipedia.org/wiki/{title.replace(' ', '_')}"
 
 
+def build_address(tags: dict) -> str | None:
+    street = (tags.get("addr:street") or "").strip()
+    house = (tags.get("addr:housenumber") or "").strip()
+    place = (tags.get("addr:city") or tags.get("addr:suburb") or tags.get("addr:place") or "").strip()
+    postcode = (tags.get("addr:postcode") or "").strip()
+
+    street_line = " ".join(part for part in (street, house) if part).strip()
+    locality = " ".join(part for part in (postcode, place) if part).strip()
+    address = ", ".join(part for part in (street_line, locality) if part)
+    return address or None
+
+
+def pick_website(tags: dict) -> str | None:
+    for key in ("website", "contact:website", "url"):
+        value = (tags.get(key) or "").strip()
+        if value:
+            if not value.startswith(("http://", "https://")):
+                value = f"https://{value.lstrip('/')}"
+            return value
+    return None
+
+
+def commons_image_url(filename: str, width: int = 640) -> str:
+    name = filename.removeprefix("File:").strip().replace(" ", "_")
+    return f"https://commons.wikimedia.org/wiki/Special:FilePath/{quote(name)}?width={width}"
+
+
+def pick_image(tags: dict) -> str | None:
+    commons = (tags.get("wikimedia_commons") or "").strip()
+    if commons.startswith("File:"):
+        return commons_image_url(commons)
+    image = (tags.get("image") or "").strip()
+    if image.startswith(("http://", "https://")):
+        return image
+    return None
+
+
+def opening_hours_for(tags: dict, category: str) -> tuple[str | None, str | None]:
+    raw = (tags.get("opening_hours") or "").strip()
+    if raw:
+        return raw, "opening_hours"
+    if category == "religious_site":
+        service = (tags.get("service_times") or "").strip()
+        if service:
+            return service, "service_times"
+    return None, None
+
+
+def osm_description(tags: dict) -> str | None:
+    for key in ("description", *(f"description:{lang}" for lang in DESCRIPTION_LANGS)):
+        value = (tags.get(key) or "").strip()
+        if value:
+            return value
+    return None
+
+
 def normalize_element(element: dict, city: dict) -> dict | None:
     tags = element.get("tags", {})
     name = tags.get("name")
@@ -93,6 +152,7 @@ def normalize_element(element: dict, city: dict) -> dict | None:
         return None
 
     wikipedia_title, wikipedia_url = parse_wikipedia(tags.get("wikipedia"))
+    opening_hours_raw, opening_hours_source = opening_hours_for(tags, category)
 
     return {
         "osm_id": str(element["id"]),
@@ -102,14 +162,17 @@ def normalize_element(element: dict, city: dict) -> dict | None:
         "subcategory": None,
         "lat": lat,
         "lon": lon,
-        "address": None,
-        "opening_hours_raw": tags.get("opening_hours"),
+        "address": build_address(tags),
+        "opening_hours_raw": opening_hours_raw,
+        "opening_hours_source": opening_hours_source,
         "visit_duration_min": visit_duration_for(category),
         "base_score": base_score_for(category, city),
         "wikidata_id": tags.get("wikidata"),
         "wikipedia_title": wikipedia_title,
         "wikipedia_url": wikipedia_url,
-        "short_description": None,
+        "short_description": osm_description(tags),
+        "website": pick_website(tags),
+        "image_url": pick_image(tags),
         "source": "osm",
         "is_active": True,
     }

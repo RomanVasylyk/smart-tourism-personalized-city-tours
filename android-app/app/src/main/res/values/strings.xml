@@ -327,4 +327,8 @@
     <string name="offline_map_saving">Saving the city map for offline use...</string>
     <string name="offline_map_wifi_pending">The city map will be saved automatically over Wi-Fi.</string>
     <string name="action_save_offline_map_now">Save now</string>
+
+    <string name="poi_opening_hours_label">Opening hours</string>
+    <string name="poi_service_times_label">Service times</string>
+    <string name="action_open_website">Website</string>
 </resources>

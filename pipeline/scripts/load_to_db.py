@@ -108,6 +108,9 @@ def load_pois_for_city(city: dict) -> tuple[int, int]:
                         wikipedia_title = %s,
                         wikipedia_url = %s,
                         short_description = %s,
+                        website = %s,
+                        image_url = %s,
+                        opening_hours_source = %s,
                         source = %s,
                         is_active = %s
                     WHERE city_id = %s AND osm_id = %s AND osm_type = %s;
@@ -128,6 +131,9 @@ def load_pois_for_city(city: dict) -> tuple[int, int]:
                         poi.get("wikipedia_title"),
                         poi.get("wikipedia_url"),
                         poi.get("short_description"),
+                        poi.get("website"),
+                        poi.get("image_url"),
+                        poi.get("opening_hours_source"),
                         poi.get("source", "osm"),
                         poi.get("is_active", True),
                         city_id,
@@ -145,12 +151,12 @@ def load_pois_for_city(city: dict) -> tuple[int, int]:
                         city_id, osm_id, osm_type, name, category, subcategory,
                         lat, lon, geom, address, opening_hours_raw, visit_duration_min,
                         base_score, wikidata_id, wikipedia_title, wikipedia_url,
-                        short_description, source, is_active
+                        short_description, website, image_url, opening_hours_source, source, is_active
                     )
                     SELECT
                         %s, %s, %s, %s, %s, %s,
                         %s, %s, ST_SetSRID(ST_MakePoint(%s, %s), 4326), %s, %s, %s,
-                        %s, %s, %s, %s, %s, %s, %s
+                        %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
                         WHERE NOT EXISTS (
                         SELECT 1
                         FROM pois
@@ -176,6 +182,9 @@ def load_pois_for_city(city: dict) -> tuple[int, int]:
                         poi.get("wikipedia_title"),
                         poi.get("wikipedia_url"),
                         poi.get("short_description"),
+                        poi.get("website"),
+                        poi.get("image_url"),
+                        poi.get("opening_hours_source"),
                         poi.get("source", "osm"),
                         poi.get("is_active", True),
                         city_id,

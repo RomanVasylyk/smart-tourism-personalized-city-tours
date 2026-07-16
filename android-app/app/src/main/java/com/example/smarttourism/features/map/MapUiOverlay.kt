@@ -1,5 +1,8 @@
 package com.example.smarttourism.features.map
 
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -36,7 +39,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import coil.compose.AsyncImage
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
@@ -238,6 +244,17 @@ internal fun MapPoiInfoPanel(
                     MapInfoChip(label = stringResource(R.string.route_stop_visit_badge, minutes))
                 }
             }
+            poi.imageUrl?.takeIf { value -> value.isNotBlank() }?.let { imageUrl ->
+                AsyncImage(
+                    model = imageUrl,
+                    contentDescription = poi.name,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(150.dp)
+                        .clip(RoundedCornerShape(14.dp))
+                )
+            }
             Text(
                 text = description,
                 modifier = if (isDescriptionExpanded) {
@@ -268,6 +285,34 @@ internal fun MapPoiInfoPanel(
                     )
                 }
             }
+            poi.openingHoursRaw?.takeIf { value -> value.isNotBlank() }?.let { hours ->
+                val hoursLabel = if (poi.openingHoursSource == "service_times") {
+                    stringResource(R.string.poi_service_times_label)
+                } else {
+                    stringResource(R.string.poi_opening_hours_label)
+                }
+                Text(
+                    text = "$hoursLabel: $hours",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            poi.address?.takeIf { value -> value.isNotBlank() }?.let { address ->
+                Text(
+                    text = address,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            poi.website?.takeIf { value -> value.isNotBlank() }?.let { website ->
+                val context = LocalContext.current
+                TextButton(
+                    onClick = { openPoiUrl(context, website) },
+                    modifier = Modifier.align(Alignment.Start)
+                ) {
+                    Text(stringResource(R.string.action_open_website))
+                }
+            }
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(12.dp),
@@ -295,6 +340,17 @@ internal fun MapPoiInfoPanel(
                 }
             }
         }
+    }
+}
+
+private fun openPoiUrl(context: Context, url: String) {
+    val normalized = if (url.startsWith("http://") || url.startsWith("https://")) {
+        url
+    } else {
+        "https://$url"
+    }
+    runCatching {
+        context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(normalized)))
     }
 }
 

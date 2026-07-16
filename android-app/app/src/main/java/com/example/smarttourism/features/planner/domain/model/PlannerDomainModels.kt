@@ -38,10 +38,14 @@ data class Poi(
     val category: String = "",
     val lat: Double = 0.0,
     val lon: Double = 0.0,
+    val address: String? = null,
     val openingHoursRaw: String? = null,
+    val openingHoursSource: String? = null,
     val visitDurationMin: Int? = null,
     val baseScore: Double? = null,
     val shortDescription: String? = null,
+    val website: String? = null,
+    val imageUrl: String? = null,
     val wikipediaUrl: String? = null
 )
 

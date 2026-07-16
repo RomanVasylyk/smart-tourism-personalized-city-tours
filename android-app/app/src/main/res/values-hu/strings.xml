@@ -327,4 +327,8 @@
     <string name="offline_map_saving">A város térképének mentése offline használatra...</string>
     <string name="offline_map_wifi_pending">A város térképe automatikusan mentésre kerül Wi-Fin keresztül.</string>
     <string name="action_save_offline_map_now">Mentés most</string>
+
+    <string name="poi_opening_hours_label">Nyitvatartás</string>
+    <string name="poi_service_times_label">Istentiszteleti idők</string>
+    <string name="action_open_website">Weboldal</string>
 </resources>

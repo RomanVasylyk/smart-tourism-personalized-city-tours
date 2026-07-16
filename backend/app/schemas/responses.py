@@ -61,10 +61,14 @@ class PoiResponse(BaseModel):
     category: str
     lat: float
     lon: float
+    address: str | None = None
     opening_hours_raw: str | None = None
+    opening_hours_source: str | None = None
     visit_duration_min: int | None = None
     base_score: float | None = None
     short_description: str | None = None
+    website: str | None = None
+    image_url: str | None = None
     wikipedia_url: str | None = None
 
 

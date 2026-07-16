@@ -327,4 +327,8 @@
     <string name="offline_map_saving">Stadtkarte wird für die Offline-Nutzung gespeichert...</string>
     <string name="offline_map_wifi_pending">Die Stadtkarte wird automatisch über WLAN gespeichert.</string>
     <string name="action_save_offline_map_now">Jetzt speichern</string>
+
+    <string name="poi_opening_hours_label">Öffnungszeiten</string>
+    <string name="poi_service_times_label">Gottesdienstzeiten</string>
+    <string name="action_open_website">Webseite</string>
 </resources>
