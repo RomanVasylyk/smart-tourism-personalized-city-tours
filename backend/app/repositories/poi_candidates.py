@@ -14,7 +14,11 @@ CANDIDATE_COLUMNS = """
     p.visit_duration_min,
     p.base_score,
     p.short_description,
-    p.wikipedia_url
+    p.wikipedia_url,
+    p.address,
+    p.opening_hours_source,
+    p.website,
+    p.image_url
 """
 
 FEEDBACK_COLUMNS = """

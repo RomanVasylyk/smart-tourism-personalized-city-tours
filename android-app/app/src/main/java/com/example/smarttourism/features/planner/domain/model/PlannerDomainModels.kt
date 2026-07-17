@@ -139,7 +139,11 @@ data class RouteStop(
     val baseScore: Double? = null,
     val shortDescription: String? = null,
     val wikipediaUrl: String? = null,
-    val openingHoursRaw: String? = null
+    val openingHoursRaw: String? = null,
+    val openingHoursSource: String? = null,
+    val address: String? = null,
+    val website: String? = null,
+    val imageUrl: String? = null
 )
 
 data class RouteLeg(

@@ -92,4 +92,8 @@ def planned_stop_to_route_item(planned_stop: PlannedStop) -> dict:
         "short_description": poi.short_description,
         "wikipedia_url": poi.wikipedia_url,
         "opening_hours_raw": poi.opening_hours_raw,
+        "opening_hours_source": poi.opening_hours_source,
+        "address": poi.address,
+        "website": poi.website,
+        "image_url": poi.image_url,
     }

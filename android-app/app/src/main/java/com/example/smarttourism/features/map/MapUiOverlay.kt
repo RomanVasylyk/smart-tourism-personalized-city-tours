@@ -39,10 +39,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import coil.compose.AsyncImage
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
@@ -206,17 +204,10 @@ internal fun MapPoiInfoPanel(
         return
     }
 
-    var isDescriptionExpanded by rememberSaveable(poi.id) { mutableStateOf(false) }
     val description = poi.shortDescription
         ?.takeIf { value -> value.isNotBlank() }
         ?: stringResource(R.string.map_poi_description_missing)
-    val canExpandDescription = poi.shortDescription
-        ?.takeIf { value -> value.isNotBlank() }
-        ?.let { value ->
-            value.length > CollapsedDescriptionLengthThreshold || value.lineSequence().count() > 3
-        }
-        ?: false
-    val descriptionScrollState = rememberScrollState()
+    val contentScrollState = rememberScrollState()
 
     Surface(
         modifier = modifier
@@ -227,92 +218,59 @@ internal fun MapPoiInfoPanel(
         tonalElevation = 5.dp,
         shadowElevation = 8.dp
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(10.dp)
-        ) {
-            Text(
-                text = poi.name,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis
-            )
-            Row(horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)) {
-                MapInfoChip(label = categoryLabel(poi.category))
-                poi.visitDurationMin?.let { minutes ->
-                    MapInfoChip(label = stringResource(R.string.route_stop_visit_badge, minutes))
-                }
-            }
-            poi.imageUrl?.takeIf { value -> value.isNotBlank() }?.let { imageUrl ->
-                AsyncImage(
-                    model = imageUrl,
-                    contentDescription = poi.name,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(150.dp)
-                        .clip(RoundedCornerShape(14.dp))
+        Column(modifier = Modifier.padding(16.dp)) {
+            Column(
+                modifier = Modifier
+                    .weight(1f, fill = false)
+                    .verticalScroll(contentScrollState),
+                verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(10.dp)
+            ) {
+                Text(
+                    text = poi.name,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold
                 )
-            }
-            Text(
-                text = description,
-                modifier = if (isDescriptionExpanded) {
-                    Modifier
-                        .heightIn(max = 172.dp)
-                        .verticalScroll(descriptionScrollState)
-                } else {
-                    Modifier
-                },
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = if (isDescriptionExpanded) Int.MAX_VALUE else 3,
-                overflow = if (isDescriptionExpanded) TextOverflow.Clip else TextOverflow.Ellipsis
-            )
-            if (canExpandDescription) {
-                TextButton(
-                    onClick = { isDescriptionExpanded = !isDescriptionExpanded },
-                    modifier = Modifier.align(Alignment.Start)
-                ) {
+                Row(horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)) {
+                    MapInfoChip(label = categoryLabel(poi.category))
+                    poi.visitDurationMin?.let { minutes ->
+                        MapInfoChip(label = stringResource(R.string.route_stop_visit_badge, minutes))
+                    }
+                }
+                Text(
+                    text = description,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                poi.openingHoursRaw?.takeIf { value -> value.isNotBlank() }?.let { hours ->
+                    val hoursLabel = if (poi.openingHoursSource == "service_times") {
+                        stringResource(R.string.poi_service_times_label)
+                    } else {
+                        stringResource(R.string.poi_opening_hours_label)
+                    }
                     Text(
-                        stringResource(
-                            if (isDescriptionExpanded) {
-                                R.string.action_hide_full_description
-                            } else {
-                                R.string.action_show_full_description
-                            }
-                        )
+                        text = "$hoursLabel: $hours",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
-            }
-            poi.openingHoursRaw?.takeIf { value -> value.isNotBlank() }?.let { hours ->
-                val hoursLabel = if (poi.openingHoursSource == "service_times") {
-                    stringResource(R.string.poi_service_times_label)
-                } else {
-                    stringResource(R.string.poi_opening_hours_label)
+                poi.address?.takeIf { value -> value.isNotBlank() }?.let { address ->
+                    Text(
+                        text = address,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
-                Text(
-                    text = "$hoursLabel: $hours",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-            poi.address?.takeIf { value -> value.isNotBlank() }?.let { address ->
-                Text(
-                    text = address,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-            poi.website?.takeIf { value -> value.isNotBlank() }?.let { website ->
-                val context = LocalContext.current
-                TextButton(
-                    onClick = { openPoiUrl(context, website) },
-                    modifier = Modifier.align(Alignment.Start)
-                ) {
-                    Text(stringResource(R.string.action_open_website))
+                poi.website?.takeIf { value -> value.isNotBlank() }?.let { website ->
+                    val context = LocalContext.current
+                    TextButton(
+                        onClick = { openPoiUrl(context, website) },
+                        modifier = Modifier.align(Alignment.Start)
+                    ) {
+                        Text(stringResource(R.string.action_open_website))
+                    }
                 }
             }
+            Spacer(modifier = Modifier.height(12.dp))
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(12.dp),

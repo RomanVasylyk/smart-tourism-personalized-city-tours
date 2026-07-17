@@ -275,7 +275,11 @@ private fun RouteItemDto.toDomain(): RouteStop =
         baseScore = base_score,
         shortDescription = short_description,
         wikipediaUrl = wikipedia_url,
-        openingHoursRaw = opening_hours_raw
+        openingHoursRaw = opening_hours_raw,
+        openingHoursSource = opening_hours_source,
+        address = address,
+        website = website,
+        imageUrl = image_url
     )
 
 private fun RouteStop.toDto(): RouteItemDto =
@@ -294,7 +298,11 @@ private fun RouteStop.toDto(): RouteItemDto =
         base_score = baseScore,
         short_description = shortDescription,
         wikipedia_url = wikipediaUrl,
-        opening_hours_raw = openingHoursRaw
+        opening_hours_raw = openingHoursRaw,
+        address = address,
+        website = website,
+        image_url = imageUrl,
+        opening_hours_source = openingHoursSource
     )
 
 internal fun RouteLegDto.toDomain(): RouteLeg =

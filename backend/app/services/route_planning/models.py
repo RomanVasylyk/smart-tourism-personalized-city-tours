@@ -18,6 +18,10 @@ class CandidatePoi:
     base_score: float | None
     short_description: str | None
     wikipedia_url: str | None
+    address: str | None
+    opening_hours_source: str | None
+    website: str | None
+    image_url: str | None
     raw: dict
 
     @classmethod
@@ -33,6 +37,10 @@ class CandidatePoi:
             base_score=row.get("base_score"),
             short_description=row.get("short_description"),
             wikipedia_url=row.get("wikipedia_url"),
+            address=row.get("address"),
+            opening_hours_source=row.get("opening_hours_source"),
+            website=row.get("website"),
+            image_url=row.get("image_url"),
             raw=row,
         )
 

@@ -15,5 +15,9 @@ data class RouteItemDto(
     val base_score: Double?,
     val short_description: String?,
     val wikipedia_url: String?,
-    val opening_hours_raw: String?
+    val opening_hours_raw: String?,
+    val address: String? = null,
+    val website: String? = null,
+    val image_url: String? = null,
+    val opening_hours_source: String? = null
 )

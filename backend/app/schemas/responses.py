@@ -153,6 +153,10 @@ class RouteItemResponse(BaseModel):
     planner_score_breakdown: PlannerScoreBreakdownResponse | None = None
     short_description: str | None = None
     wikipedia_url: str | None = None
+    address: str | None = None
+    website: str | None = None
+    image_url: str | None = None
+    opening_hours_source: str | None = None
     opening_hours_raw: str | None = None
 
 

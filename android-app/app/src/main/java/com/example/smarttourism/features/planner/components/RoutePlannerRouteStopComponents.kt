@@ -1,5 +1,8 @@
 package com.example.smarttourism.features.planner.components
 
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
@@ -37,6 +40,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
@@ -112,6 +116,17 @@ internal fun RouteSummaryCard(routeResponse: RoutePlan) {
                 )
             )
         }
+    }
+}
+
+private fun openStopUrl(context: Context, url: String) {
+    val normalized = if (url.startsWith("http://") || url.startsWith("https://")) {
+        url
+    } else {
+        "https://$url"
+    }
+    runCatching {
+        context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(normalized)))
     }
 }
 
@@ -267,11 +282,22 @@ internal fun RouteStopTimelineItem(
                         )
                     }
                 if (!item.openingHoursRaw.isNullOrBlank()) {
+                    val hoursLabel = if (item.openingHoursSource == "service_times") {
+                        stringResource(R.string.poi_service_times_label)
+                    } else {
+                        stringResource(R.string.poi_opening_hours_label)
+                    }
                     Text(
-                        text = stringResource(R.string.route_stop_opening_hours, item.openingHoursRaw),
+                        text = "$hoursLabel: ${item.openingHoursRaw}",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
+                }
+                item.website?.takeIf { value -> value.isNotBlank() }?.let { website ->
+                    val websiteContext = LocalContext.current
+                    TextButton(onClick = { openStopUrl(websiteContext, website) }) {
+                        Text(stringResource(R.string.action_open_website))
+                    }
                 }
                 if (!isVisited && !isSkipped && (canMoveUp || canMoveDown)) {
                     Spacer(modifier = Modifier.height(10.dp))
