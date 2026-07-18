@@ -9,6 +9,10 @@ class Settings(BaseSettings):
         default="postgresql://smart_tourism:smart_tourism@localhost:5432/smart_tourism",
         validation_alias="DATABASE_URL",
     )
+    db_pool_min_size: int = Field(default=1, validation_alias="DB_POOL_MIN_SIZE")
+    db_pool_max_size: int = Field(default=10, validation_alias="DB_POOL_MAX_SIZE")
+    db_pool_timeout_seconds: float = Field(default=10.0, validation_alias="DB_POOL_TIMEOUT_SECONDS")
+    db_pool_max_idle_seconds: float = Field(default=300.0, validation_alias="DB_POOL_MAX_IDLE_SECONDS")
     routing_base_url: str = Field(default="https://router.project-osrm.org", validation_alias="ROUTING_BASE_URL")
     routing_profile: str = Field(default="foot", validation_alias="ROUTING_PROFILE")
     routing_timeout_seconds: float = Field(default=0.75, validation_alias="ROUTING_TIMEOUT_SECONDS")

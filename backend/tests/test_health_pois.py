@@ -50,10 +50,14 @@ def test_get_pois_returns_database_rows(client, monkeypatch):
             "category": "museum",
             "lat": 48.3132523,
             "lon": 18.0881342,
+            "address": "Štefánikova trieda 1, Nitra",
             "opening_hours_raw": None,
+            "opening_hours_source": None,
             "visit_duration_min": 60,
             "base_score": 0.9,
             "short_description": "Regional museum in Nitra.",
+            "website": "https://www.muzeumnitra.sk",
+            "image_url": None,
             "wikipedia_url": "https://sk.wikipedia.org/wiki/Ponitrianske_muzeum",
         }
     ]

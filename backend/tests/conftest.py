@@ -1,3 +1,4 @@
+import os
 import sys
 from pathlib import Path
 
@@ -9,9 +10,12 @@ BACKEND_ROOT = Path(__file__).resolve().parents[1]
 if str(BACKEND_ROOT) not in sys.path:
     sys.path.insert(0, str(BACKEND_ROOT))
 
-from app.core.rate_limit import limiter  # noqa: E402
-from app.main import app  # noqa: E402
-from app.services.routing_service import RoutingLeg  # noqa: E402
+os.environ.setdefault("DB_POOL_MIN_SIZE", "0")
+os.environ.setdefault("DB_POOL_TIMEOUT_SECONDS", "0.05")
+
+from app.core.rate_limit import limiter
+from app.main import app
+from app.services.routing_service import RoutingLeg
 
 limiter.enabled = False
 

@@ -46,4 +46,4 @@ class RouteFeedbackRequest(BaseModel):
     was_convenient: bool
     too_much_walking: bool
     pois_were_interesting: bool
-    comment: str | None = None
+    comment: str | None = Field(default=None, max_length=2000)
