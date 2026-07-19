@@ -228,20 +228,20 @@ internal fun markNearbyPoisVisited(
     visitedPoiIds: MutableList<Int>,
     skippedPoiIds: List<Int>
 ): List<Int> {
-    val newlyVisitedIds = routeItems
-        .filter { item -> item.poiId !in visitedPoiIds && item.poiId !in skippedPoiIds }
-        .filter { item ->
-            distanceMeters(
-                startLat = currentLocation.lat,
-                startLon = currentLocation.lon,
-                endLat = item.lat,
-                endLon = item.lon
-            ) <= PoiVisitedRadiusMeters
-        }
-        .map { item -> item.poiId }
+    val nextPoi = nextPendingPoi(routeItems, visitedPoiIds, skippedPoiIds) ?: return emptyList()
 
-    visitedPoiIds.addAll(newlyVisitedIds)
-    return newlyVisitedIds
+    val withinRadius = distanceMeters(
+        startLat = currentLocation.lat,
+        startLon = currentLocation.lon,
+        endLat = nextPoi.lat,
+        endLon = nextPoi.lon
+    ) <= PoiVisitedRadiusMeters
+    if (!withinRadius) {
+        return emptyList()
+    }
+
+    visitedPoiIds.add(nextPoi.poiId)
+    return listOf(nextPoi.poiId)
 }
 
 internal fun distanceMeters(

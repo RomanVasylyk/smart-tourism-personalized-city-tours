@@ -177,6 +177,7 @@
     <string name="action_move_up">Hore</string>
     <string name="action_move_down">Dole</string>
     <string name="action_start_route">Spustiť trasu</string>
+    <string name="action_add_public_transport">Pridať MHD</string>
     <string name="action_pause_route">Pozastaviť</string>
     <string name="action_resume_route">Pokračovať</string>
     <string name="action_finish_route">Dokončiť trasu</string>

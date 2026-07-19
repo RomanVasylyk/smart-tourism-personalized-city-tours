@@ -177,6 +177,7 @@
     <string name="action_move_up">W górę</string>
     <string name="action_move_down">W dół</string>
     <string name="action_start_route">Rozpocznij trasę</string>
+    <string name="action_add_public_transport">Dodaj MHD</string>
     <string name="action_pause_route">Pauza</string>
     <string name="action_resume_route">Wznów</string>
     <string name="action_finish_route">Zakończ trasę</string>

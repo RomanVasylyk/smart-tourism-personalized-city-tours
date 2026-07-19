@@ -98,6 +98,41 @@ internal class PlannerRoutePlanningActions(
         }
     }
 
+    fun addPublicTransportToRoute() {
+        val request = state.currentRouteRequest ?: return
+        val orderedPoiIds = state.routeItems.sortedBy { item -> item.order }.map { item -> item.poiId }
+        if (orderedPoiIds.isEmpty()) {
+            return
+        }
+        scope.launch {
+            state.isRerouting = true
+            sessionCoordinator.clearRouteMessages()
+            val result = routeGenerationUseCase.addPublicTransport(
+                currentRequest = request,
+                orderedPoiIds = orderedPoiIds,
+                pois = state.pois,
+                offlineRouteGenerationMessage = messages.offlineRouteGeneration,
+                routeGenerationFailedMessage = messages.routeGenerationFailed
+            )
+            when (result) {
+                is RouteGenerationResult.Success -> {
+                    state.currentRouteRequest = result.request
+                    state.routeResponse = result.response
+                    state.allowPublicTransport = true
+                    state.hasPendingRouteChanges = false
+                    state.hasNoGeneratedStops = false
+                }
+
+                is RouteGenerationResult.Error -> {
+                    state.routeError = result.message
+                }
+
+                else -> Unit
+            }
+            state.isRerouting = false
+        }
+    }
+
     fun previewReplacementCandidates(poiId: Int): List<Poi> =
         buildPreviewReplacementCandidates(
             targetPoiId = poiId,

@@ -177,6 +177,7 @@
     <string name="action_move_up">Nahoru</string>
     <string name="action_move_down">Dolů</string>
     <string name="action_start_route">Spustit trasu</string>
+    <string name="action_add_public_transport">Přidat MHD</string>
     <string name="action_pause_route">Pozastavit</string>
     <string name="action_resume_route">Pokračovat</string>
     <string name="action_finish_route">Dokončit trasu</string>

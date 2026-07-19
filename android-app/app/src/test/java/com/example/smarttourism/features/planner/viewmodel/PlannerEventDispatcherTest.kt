@@ -27,6 +27,7 @@ class PlannerEventDispatcherTest {
         val dispatcher = PlannerEventDispatcher(actions)
 
         dispatcher.dispatch(PlannerEvent.GenerateRoute)
+        dispatcher.dispatch(PlannerEvent.AddPublicTransportToRoute)
         dispatcher.dispatch(PlannerEvent.SaveCurrentRouteBookmark)
         dispatcher.dispatch(PlannerEvent.ActivateRouteTracking)
         dispatcher.dispatch(PlannerEvent.DownloadOfflineMap)
@@ -36,6 +37,7 @@ class PlannerEventDispatcherTest {
         assertEquals(
             listOf(
                 "generateRoute",
+                "addPublicTransportToRoute",
                 "saveCurrentRouteBookmark",
                 "activateRouteTracking",
                 "downloadOfflineMap",
@@ -76,6 +78,10 @@ class PlannerEventDispatcherTest {
 
         override fun generateRoute() {
             calls += "generateRoute"
+        }
+
+        override fun addPublicTransportToRoute() {
+            calls += "addPublicTransportToRoute"
         }
 
         override fun saveCurrentRouteBookmark() {

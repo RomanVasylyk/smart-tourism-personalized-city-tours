@@ -9,16 +9,19 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedCard
@@ -419,7 +422,10 @@ private fun MapStatusOverlay(
 @Composable
 internal fun PreviewActionRow(
     canStart: Boolean,
+    canAddPublicTransport: Boolean,
+    isAddingPublicTransport: Boolean,
     onStartRoute: () -> Unit,
+    onAddPublicTransport: () -> Unit,
     onEditParameters: () -> Unit,
     onPlanAnotherRoute: () -> Unit
 ) {
@@ -430,6 +436,22 @@ internal fun PreviewActionRow(
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(stringResource(R.string.action_start_route))
+        }
+        if (canAddPublicTransport) {
+            OutlinedButton(
+                onClick = onAddPublicTransport,
+                enabled = !isAddingPublicTransport,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                if (isAddingPublicTransport) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(18.dp),
+                        strokeWidth = 2.dp
+                    )
+                    Spacer(modifier = Modifier.size(12.dp))
+                }
+                Text(stringResource(R.string.action_add_public_transport))
+            }
         }
         OutlinedButton(
             onClick = onEditParameters,

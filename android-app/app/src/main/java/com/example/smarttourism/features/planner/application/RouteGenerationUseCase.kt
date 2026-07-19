@@ -121,6 +121,48 @@ internal class RouteGenerationUseCase @Inject constructor(
         }
     }
 
+    suspend fun addPublicTransport(
+        currentRequest: PlannerPreferences,
+        orderedPoiIds: List<Int>,
+        pois: List<Poi>,
+        offlineRouteGenerationMessage: String,
+        routeGenerationFailedMessage: String
+    ): RouteGenerationResult {
+        if (orderedPoiIds.isEmpty()) {
+            return RouteGenerationResult.Error(routeGenerationFailedMessage)
+        }
+        if (!offlineSyncRepository.isNetworkAvailable()) {
+            return RouteGenerationResult.Error(offlineRouteGenerationMessage)
+        }
+
+        val request = currentRequest.copy(
+            transportMode = "walk_or_mhd",
+            preferredPoiIds = orderedPoiIds
+        )
+
+        return runCatching {
+            val generatedRoute = routePlanningRepository
+                .generateRoute(request)
+                .withCatalogPoiDetails(pois)
+            if (generatedRoute.route.isEmpty()) {
+                RouteGenerationResult.Error(routeGenerationFailedMessage)
+            } else {
+                routePlanningRepository.saveSnapshot(
+                    SavedRouteSnapshot(
+                        request = request,
+                        response = generatedRoute
+                    )
+                )
+                RouteGenerationResult.Success(
+                    request = request,
+                    response = generatedRoute
+                )
+            }
+        }.getOrElse { error ->
+            RouteGenerationResult.Error(error.toUserMessage(routeGenerationFailedMessage))
+        }
+    }
+
     private fun missingRequiredPoiLabels(
         request: PlannerPreferences,
         response: RoutePlan,

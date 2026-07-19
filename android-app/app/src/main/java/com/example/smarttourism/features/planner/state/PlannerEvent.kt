@@ -25,6 +25,7 @@ internal sealed interface PlannerEvent {
     data object LoadCuratedRoutes : PlannerEvent
     data class OpenCuratedRoute(val routeId: Int) : PlannerEvent
     data object GenerateRoute : PlannerEvent
+    data object AddPublicTransportToRoute : PlannerEvent
     data object SaveCurrentRouteBookmark : PlannerEvent
     data class OpenRouteBookmark(val bookmarkId: String) : PlannerEvent
     data class DeleteRouteBookmark(val bookmarkId: String) : PlannerEvent

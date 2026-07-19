@@ -43,6 +43,10 @@ internal class PlannerEventActionFacade(
         routePlanningActions.generateRoute()
     }
 
+    override fun addPublicTransportToRoute() {
+        routePlanningActions.addPublicTransportToRoute()
+    }
+
     override fun saveCurrentRouteBookmark() {
         bookmarkActions.saveCurrentRouteBookmark()
     }

@@ -20,6 +20,7 @@ internal interface PlannerEventActions {
     fun loadCuratedRoutes()
     fun openCuratedRoute(routeId: Int)
     fun generateRoute()
+    fun addPublicTransportToRoute()
     fun saveCurrentRouteBookmark()
     fun openRouteBookmark(bookmarkId: String)
     fun deleteRouteBookmark(bookmarkId: String)
@@ -60,6 +61,7 @@ internal class PlannerEventDispatcher(
         RoutePlanningHandler(
             updateUiState = actions::updateUiState,
             generateRoute = actions::generateRoute,
+            addPublicTransportToRoute = actions::addPublicTransportToRoute,
             removePreviewStop = actions::removePreviewStop,
             movePreviewStop = actions::movePreviewStop,
             replacePreviewStop = actions::replacePreviewStop,
@@ -153,6 +155,7 @@ internal class CuratedRoutesHandler(
 internal class RoutePlanningHandler(
     private val updateUiState: ((RoutePlannerUiState) -> RoutePlannerUiState) -> Unit,
     private val generateRoute: () -> Unit,
+    private val addPublicTransportToRoute: () -> Unit,
     private val removePreviewStop: (Int) -> Unit,
     private val movePreviewStop: (poiId: Int, direction: Int) -> Unit,
     private val replacePreviewStop: (poiId: Int, preferredPoiId: Int?) -> Unit,
@@ -237,6 +240,11 @@ internal class RoutePlanningHandler(
 
             PlannerEvent.GenerateRoute -> {
                 generateRoute()
+                true
+            }
+
+            PlannerEvent.AddPublicTransportToRoute -> {
+                addPublicTransportToRoute()
                 true
             }
 

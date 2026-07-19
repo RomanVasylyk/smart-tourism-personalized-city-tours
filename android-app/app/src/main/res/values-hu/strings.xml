@@ -177,6 +177,7 @@
     <string name="action_move_up">Fel</string>
     <string name="action_move_down">Le</string>
     <string name="action_start_route">Útvonal indítása</string>
+    <string name="action_add_public_transport">Tömegközlekedés hozzáadása</string>
     <string name="action_pause_route">Szünet</string>
     <string name="action_resume_route">Folytatás</string>
     <string name="action_finish_route">Útvonal befejezése</string>

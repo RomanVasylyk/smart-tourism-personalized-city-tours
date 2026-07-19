@@ -584,12 +584,16 @@ fun RoutePlannerScreen(
                         highlightedPoiId = progressMetrics.nextTarget?.poiId,
                         isCurrentRouteBookmarked = isCurrentRouteBookmarked,
                         mapRecenterRequestKey = mapRecenterRequest,
+                        canAddPublicTransport = isPublicTransportAvailable &&
+                            uiState.currentRouteRequest?.transportMode != "walk_or_mhd" &&
+                            routeItems.isNotEmpty(),
                         onStartPointSelected = ::updateStartPoint,
                         onCurrentLocationRequested = {
                             requestLocationWithPermission(LocationRequestTarget.MAP_CAMERA)
                         },
                         onOpenFullScreenMap = ::openFullScreenMap,
                         onStartRoute = ::startRoute,
+                        onAddPublicTransport = { onPlannerEvent(PlannerEvent.AddPublicTransportToRoute) },
                         onEditParameters = { isParameterSheetOpen = true },
                         onPlanAnotherRoute = ::resetToPlanning,
                         onSaveBookmark = { onPlannerEvent(PlannerEvent.SaveCurrentRouteBookmark) },

@@ -13,6 +13,8 @@ import com.example.smarttourism.data.local.RouteHistoryEntryEntity
 import com.example.smarttourism.data.model.CacheEnvelopeType
 import com.example.smarttourism.data.remote.api.PoiApi
 import com.example.smarttourism.data.remote.dto.CityDto
+import com.example.smarttourism.data.remote.dto.CuratedRouteDetailDto
+import com.example.smarttourism.data.remote.dto.CuratedRouteSummaryDto
 import com.example.smarttourism.data.remote.dto.PoiDto
 import com.example.smarttourism.data.remote.dto.RouteFeedbackDto
 import com.example.smarttourism.data.remote.dto.RouteFeedbackRequest
@@ -283,6 +285,12 @@ class OfflineCacheRepositoryEnvelopeTest {
             error("Unused in offline sync tests")
 
         override suspend fun getPois(city: String): List<PoiDto> =
+            error("Unused in offline sync tests")
+
+        override suspend fun getCuratedRoutes(slug: String): List<CuratedRouteSummaryDto> =
+            error("Unused in offline sync tests")
+
+        override suspend fun getCuratedRoute(routeId: Int, startDatetime: String?): CuratedRouteDetailDto =
             error("Unused in offline sync tests")
 
         override suspend fun generateRoute(request: RouteRequest): RouteResponse =

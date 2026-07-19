@@ -456,7 +456,9 @@ internal fun PreviewScreenContent(
     onStartPointSelected: (Double, Double) -> Unit,
     onCurrentLocationRequested: () -> Unit,
     onOpenFullScreenMap: () -> Unit,
+    canAddPublicTransport: Boolean,
     onStartRoute: () -> Unit,
+    onAddPublicTransport: () -> Unit,
     onEditParameters: () -> Unit,
     onPlanAnotherRoute: () -> Unit,
     onSaveBookmark: () -> Unit,
@@ -511,7 +513,10 @@ internal fun PreviewScreenContent(
         item {
             PreviewActionRow(
                 canStart = !hasPendingRouteChanges && routeItems.isNotEmpty(),
+                canAddPublicTransport = canAddPublicTransport,
+                isAddingPublicTransport = isRerouting,
                 onStartRoute = onStartRoute,
+                onAddPublicTransport = onAddPublicTransport,
                 onEditParameters = onEditParameters,
                 onPlanAnotherRoute = onPlanAnotherRoute
             )
