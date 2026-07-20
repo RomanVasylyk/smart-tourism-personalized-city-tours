@@ -178,6 +178,10 @@
     <string name="action_move_down">Dole</string>
     <string name="action_start_route">Spustiť trasu</string>
     <string name="action_add_public_transport">Pridať MHD</string>
+    <string name="nav_planner">Plán</string>
+    <string name="nav_curated">Okruhy</string>
+    <string name="nav_saved">Uložené</string>
+    <string name="nav_history">História</string>
     <string name="action_pause_route">Pozastaviť</string>
     <string name="action_resume_route">Pokračovať</string>
     <string name="action_finish_route">Dokončiť trasu</string>

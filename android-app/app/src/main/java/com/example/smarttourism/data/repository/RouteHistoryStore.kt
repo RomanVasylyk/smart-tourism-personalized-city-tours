@@ -15,6 +15,8 @@ import com.example.smarttourism.data.model.SavedRouteSnapshot
 import com.example.smarttourism.data.model.SavedRouteSnapshotCache
 import com.example.smarttourism.features.planner.data.mapper.toDomain
 import com.example.smarttourism.features.planner.data.mapper.toDto
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 private const val LastRouteCacheKey = "last_route"
 
@@ -76,7 +78,7 @@ internal class RouteHistoryStore(
     }
 
     suspend fun saveRouteHistoryEntries(entries: List<RouteHistoryEntry>) {
-        dao.upsertRouteHistoryEntries(
+        val rows = withContext(Dispatchers.Default) {
             entries.map { entry ->
                 RouteHistoryEntryEntity(
                     routeId = entry.routeId,
@@ -84,16 +86,19 @@ internal class RouteHistoryStore(
                     updatedAtEpochMs = entry.updatedAtEpochMs
                 )
             }
-        )
+        }
+        dao.upsertRouteHistoryEntries(rows)
     }
 
-    suspend fun getRouteHistoryEntries(): List<RouteHistoryEntry> =
-        dao
-            .getRouteHistoryEntries()
-            .mapNotNull { entity ->
+    suspend fun getRouteHistoryEntries(): List<RouteHistoryEntry> {
+        val entities = dao.getRouteHistoryEntries()
+        return withContext(Dispatchers.Default) {
+            entities.mapNotNull { entity ->
                 routeHistoryEntryFromJsonOrNull(entity.historyJson)
                     ?.copy(updatedAtEpochMs = entity.updatedAtEpochMs)
             }
+        }
+    }
 
     suspend fun saveActiveRouteSession(session: ActiveRouteSession) {
         dao.saveActiveRouteSession(

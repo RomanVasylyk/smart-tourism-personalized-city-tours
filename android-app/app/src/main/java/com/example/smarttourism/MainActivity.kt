@@ -7,6 +7,9 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.ui.text.font.createFontFamilyResolver
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.lifecycleScope
 import com.example.smarttourism.core.i18n.AppLanguageStore
 import com.example.smarttourism.sync.OfflineSyncScheduler
@@ -30,6 +33,13 @@ class MainActivity : ComponentActivity() {
         val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        hideSystemNavigationBar()
+        ViewCompat.setOnApplyWindowInsetsListener(window.decorView) { _, insets ->
+            if (insets.isVisible(WindowInsetsCompat.Type.navigationBars())) {
+                hideSystemNavigationBar()
+            }
+            insets
+        }
 
         var fontsReady = false
         splashScreen.setKeepOnScreenCondition { !fontsReady }
@@ -55,5 +65,19 @@ class MainActivity : ComponentActivity() {
                 )
             }
         }
+    }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        if (hasFocus) {
+            hideSystemNavigationBar()
+        }
+    }
+
+    private fun hideSystemNavigationBar() {
+        val controller = WindowInsetsControllerCompat(window, window.decorView)
+        controller.hide(WindowInsetsCompat.Type.navigationBars())
+        controller.systemBarsBehavior =
+            WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
     }
 }

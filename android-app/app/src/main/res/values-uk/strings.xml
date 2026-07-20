@@ -178,6 +178,10 @@
     <string name="action_move_down">Вниз</string>
     <string name="action_start_route">Почати маршрут</string>
     <string name="action_add_public_transport">Додати МГД</string>
+    <string name="nav_planner">План</string>
+    <string name="nav_curated">Тури</string>
+    <string name="nav_saved">Збережені</string>
+    <string name="nav_history">Історія</string>
     <string name="action_pause_route">Пауза</string>
     <string name="action_resume_route">Продовжити</string>
     <string name="action_finish_route">Завершити маршрут</string>

@@ -118,27 +118,11 @@ internal fun RequiredPlacesCard(
                                             )
                                         }
                                 }
-                                Column(
-                                    horizontalAlignment = Alignment.CenterHorizontally
+                                TextButton(
+                                    onClick = { onRemovePoi(poi.id) },
+                                    enabled = isEditingEnabled
                                 ) {
-                                    TextButton(
-                                        onClick = { onMovePoi(poi.id, -1) },
-                                        enabled = isEditingEnabled && index > 0
-                                    ) {
-                                        Text(stringResource(R.string.action_move_up))
-                                    }
-                                    TextButton(
-                                        onClick = { onMovePoi(poi.id, 1) },
-                                        enabled = isEditingEnabled && index < selectedPois.lastIndex
-                                    ) {
-                                        Text(stringResource(R.string.action_move_down))
-                                    }
-                                    TextButton(
-                                        onClick = { onRemovePoi(poi.id) },
-                                        enabled = isEditingEnabled
-                                    ) {
-                                        Text(stringResource(R.string.action_remove_stop))
-                                    }
+                                    Text(stringResource(R.string.action_remove_stop))
                                 }
                             }
                         }

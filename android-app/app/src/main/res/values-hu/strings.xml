@@ -178,6 +178,10 @@
     <string name="action_move_down">Le</string>
     <string name="action_start_route">Útvonal indítása</string>
     <string name="action_add_public_transport">Tömegközlekedés hozzáadása</string>
+    <string name="nav_planner">Terv</string>
+    <string name="nav_curated">Túrák</string>
+    <string name="nav_saved">Mentett</string>
+    <string name="nav_history">Előzmények</string>
     <string name="action_pause_route">Szünet</string>
     <string name="action_resume_route">Folytatás</string>
     <string name="action_finish_route">Útvonal befejezése</string>

@@ -20,15 +20,22 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Place
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -49,6 +56,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -103,11 +111,9 @@ internal fun PlannerTopBar(
     selectedCity: City?,
     routeBookmarkCount: Int,
     isCitySelectionEnabled: Boolean,
-    onDestinationSelected: (PlannerDestination) -> Unit,
     onCitySelected: (City) -> Unit,
     onLanguageSelected: (AppLanguage) -> Unit
 ) {
-    var isAppMenuOpen by remember { mutableStateOf(false) }
     var isCityMenuOpen by remember { mutableStateOf(false) }
     var isLanguageMenuOpen by remember { mutableStateOf(false) }
 
@@ -187,43 +193,56 @@ internal fun PlannerTopBar(
                     }
                 }
             }
-
-            Box {
-                TextButton(onClick = { isAppMenuOpen = true }) {
-                    Text(stringResource(R.string.app_menu_label))
-                }
-                DropdownMenu(
-                    expanded = isAppMenuOpen,
-                    onDismissRequest = { isAppMenuOpen = false }
-                ) {
-                    DropdownMenuItem(
-                        text = { Text(destinationLabel(PlannerDestination.PLANNER, routeBookmarkCount)) },
-                        enabled = currentDestination != PlannerDestination.PLANNER,
-                        onClick = {
-                            isAppMenuOpen = false
-                            onDestinationSelected(PlannerDestination.PLANNER)
-                        }
-                    )
-                    HorizontalDivider()
-                    listOf(
-                        PlannerDestination.CURATED,
-                        PlannerDestination.SAVED_ROUTES,
-                        PlannerDestination.HISTORY
-                    ).forEach { destination ->
-                        DropdownMenuItem(
-                            text = { Text(destinationLabel(destination, routeBookmarkCount)) },
-                            enabled = currentDestination != destination,
-                            onClick = {
-                                isAppMenuOpen = false
-                                onDestinationSelected(destination)
-                            }
-                        )
-                    }
-                }
-            }
         }
     }
 }
+
+@Composable
+internal fun PlannerBottomNavigation(
+    currentDestination: PlannerDestination,
+    routeBookmarkCount: Int,
+    onDestinationSelected: (PlannerDestination) -> Unit
+) {
+    NavigationBar {
+        PlannerDestination.entries.forEach { destination ->
+            NavigationBarItem(
+                selected = currentDestination == destination,
+                onClick = {
+                    if (currentDestination != destination) {
+                        onDestinationSelected(destination)
+                    }
+                },
+                icon = {
+                    Icon(
+                        imageVector = when (destination) {
+                            PlannerDestination.PLANNER -> Icons.Filled.Place
+                            PlannerDestination.CURATED -> Icons.Filled.Star
+                            PlannerDestination.SAVED_ROUTES -> Icons.Filled.Favorite
+                            PlannerDestination.HISTORY -> Icons.Filled.DateRange
+                        },
+                        contentDescription = destinationLabel(destination, routeBookmarkCount)
+                    )
+                },
+                label = {
+                    Text(
+                        text = navDestinationLabel(destination),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+            )
+        }
+    }
+}
+
+@Composable
+private fun navDestinationLabel(destination: PlannerDestination): String =
+    when (destination) {
+        PlannerDestination.PLANNER -> stringResource(R.string.nav_planner)
+        PlannerDestination.CURATED -> stringResource(R.string.nav_curated)
+        PlannerDestination.SAVED_ROUTES -> stringResource(R.string.nav_saved)
+        PlannerDestination.HISTORY -> stringResource(R.string.nav_history)
+    }
 
 @Composable
 private fun destinationLabel(destination: PlannerDestination, routeBookmarkCount: Int): String =

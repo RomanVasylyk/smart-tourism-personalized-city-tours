@@ -178,6 +178,10 @@
     <string name="action_move_down">Runter</string>
     <string name="action_start_route">Route starten</string>
     <string name="action_add_public_transport">ÖPNV hinzufügen</string>
+    <string name="nav_planner">Plan</string>
+    <string name="nav_curated">Touren</string>
+    <string name="nav_saved">Gespeichert</string>
+    <string name="nav_history">Verlauf</string>
     <string name="action_pause_route">Pause</string>
     <string name="action_resume_route">Fortsetzen</string>
     <string name="action_finish_route">Route beenden</string>

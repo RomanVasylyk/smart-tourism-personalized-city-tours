@@ -23,11 +23,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -58,7 +63,6 @@ import com.example.smarttourism.features.map.TransitLineColors
 import com.example.smarttourism.features.planner.ui.formatters.categoryLabel
 import com.example.smarttourism.features.planner.ui.formatters.formatCoordinate
 import com.example.smarttourism.features.planner.ui.formatters.paceLabel
-import com.example.smarttourism.features.planner.ui.formatters.routeSegmentLabel
 import com.example.smarttourism.features.planner.ui.formatters.toRouteDateTimeLabel
 import com.example.smarttourism.features.planner.ui.formatters.toRouteTimeOfDayLabel
 
@@ -254,10 +258,7 @@ internal fun RouteStopTimelineItem(
             }
 
             Spacer(modifier = Modifier.height(8.dp))
-            RouteStopChipRow(
-                item = item,
-                incomingLeg = incomingLeg
-            )
+            RouteStopChipRow(item = item)
 
             if (expanded) {
                 Spacer(modifier = Modifier.height(10.dp))
@@ -271,15 +272,9 @@ internal fun RouteStopTimelineItem(
                 )
                 incomingLeg?.segments
                     .orEmpty()
-                    .filter { segment ->
-                        val mode = segment.mode.orEmpty()
-                        mode == "transit" || (segment.durationMinutes ?: 0) > 0
-                    }
+                    .filter { segment -> segment.mode == "transit" }
                     .forEach { segment ->
-                        RouteSegmentDetail(
-                            segment = segment,
-                            fallbackLabel = routeSegmentLabel(segment)
-                        )
+                        RouteSegmentDetail(segment = segment)
                     }
                 if (!item.openingHoursRaw.isNullOrBlank()) {
                     val hoursLabel = if (item.openingHoursSource == "service_times") {
@@ -305,23 +300,23 @@ internal fun RouteStopTimelineItem(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        OutlinedButton(
+                        OutlinedIconButton(
                             onClick = onMoveUp,
-                            enabled = canMoveUp && !isActionInProgress,
-                            modifier = Modifier
-                                .weight(1f)
-                                .heightIn(min = PlannerUiTokens.ButtonHeight)
+                            enabled = canMoveUp && !isActionInProgress
                         ) {
-                            Text(stringResource(R.string.action_move_up))
+                            Icon(
+                                imageVector = Icons.Filled.KeyboardArrowUp,
+                                contentDescription = stringResource(R.string.action_move_up)
+                            )
                         }
-                        OutlinedButton(
+                        OutlinedIconButton(
                             onClick = onMoveDown,
-                            enabled = canMoveDown && !isActionInProgress,
-                            modifier = Modifier
-                                .weight(1f)
-                                .heightIn(min = PlannerUiTokens.ButtonHeight)
+                            enabled = canMoveDown && !isActionInProgress
                         ) {
-                            Text(stringResource(R.string.action_move_down))
+                            Icon(
+                                imageVector = Icons.Filled.KeyboardArrowDown,
+                                contentDescription = stringResource(R.string.action_move_down)
+                            )
                         }
                     }
                 }
@@ -474,69 +469,34 @@ private fun RouteTravelSegmentChip(segment: RouteSegment) {
 
 @Composable
 private fun RouteStopChipRow(
-    item: RouteStop,
-    incomingLeg: RouteLeg?
+    item: RouteStop
 ) {
-    val transitSegment = incomingLeg?.segments.orEmpty().firstOrNull { segment -> segment.mode == "transit" }
-    val travelMinutes = incomingLeg?.durationMinutes ?: item.travelMinutesFromPrevious
-
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        RouteTimelineChip(
+            label = stringResource(R.string.route_stop_visit_badge, item.visitDurationMin),
+            color = MaterialTheme.colorScheme.tertiary
+        )
+        if (item.waitMinutes > 0) {
             RouteTimelineChip(
-                label = stringResource(R.string.route_stop_walk_badge, travelMinutes),
-                color = MaterialTheme.colorScheme.primary
+                label = stringResource(R.string.route_stop_wait_to_open_badge, item.waitMinutes),
+                color = MaterialTheme.colorScheme.secondary
             )
-            RouteTimelineChip(
-                label = stringResource(R.string.route_stop_visit_badge, item.visitDurationMin),
-                color = MaterialTheme.colorScheme.tertiary
-            )
-            if (item.waitMinutes > 0) {
-                RouteTimelineChip(
-                    label = stringResource(R.string.route_stop_wait_to_open_badge, item.waitMinutes),
-                    color = MaterialTheme.colorScheme.secondary
-                )
-            }
-        }
-        if (transitSegment != null) {
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                RouteTimelineChip(
-                    label = transitSegment.lineName
-                        ?.takeIf { it.isNotBlank() }
-                        ?.let { stringResource(R.string.route_stop_bus_line_badge, it, transitSegment.durationMinutes ?: 0) }
-                        ?: stringResource(R.string.route_stop_bus_badge, transitSegment.durationMinutes ?: 0),
-                    color = transitLineComposeColor(transitSegment.lineName)
-                )
-            }
         }
     }
 }
 
 @Composable
 private fun RouteSegmentDetail(
-    segment: RouteSegment,
-    fallbackLabel: String
+    segment: RouteSegment
 ) {
-    val accent = if (segment.mode == "transit") {
-        transitLineComposeColor(segment.lineName)
-    } else {
-        MaterialTheme.colorScheme.primary
+    if (segment.mode != "transit") {
+        return
     }
 
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        RouteTimelineChip(
-            label = if (segment.mode == "transit") {
-                segment.lineName
-                    ?.takeIf { it.isNotBlank() }
-                    ?.let { stringResource(R.string.route_stop_bus_line_badge, it, segment.durationMinutes ?: 0) }
-                    ?: stringResource(R.string.route_stop_bus_badge, segment.durationMinutes ?: 0)
-            } else {
-                fallbackLabel
-            },
-            color = accent
-        )
         val fromStopName = segment.fromStopName
         val toStopName = segment.toStopName
-        if (segment.mode == "transit" && !fromStopName.isNullOrBlank() && !toStopName.isNullOrBlank()) {
+        if (!fromStopName.isNullOrBlank() && !toStopName.isNullOrBlank()) {
             Text(
                 text = stringResource(R.string.route_stop_segment_stops, fromStopName, toStopName),
                 style = MaterialTheme.typography.bodySmall,
@@ -545,7 +505,7 @@ private fun RouteSegmentDetail(
         }
         val departureLabel = segment.departureTime.toRouteTimeOfDayLabel()
         val arrivalLabel = segment.arrivalTime.toRouteTimeOfDayLabel()
-        if (segment.mode == "transit" && departureLabel != null && arrivalLabel != null) {
+        if (departureLabel != null && arrivalLabel != null) {
             Text(
                 text = stringResource(R.string.route_stop_segment_schedule, departureLabel, arrivalLabel),
                 style = MaterialTheme.typography.bodySmall,
@@ -554,7 +514,7 @@ private fun RouteSegmentDetail(
         }
         val waitMinutes = segment.waitMinutesBeforeDeparture ?: 0
         val inVehicleMinutes = segment.inVehicleMinutes ?: 0
-        if (segment.mode == "transit" && (waitMinutes > 0 || inVehicleMinutes > 0)) {
+        if (waitMinutes > 0 || inVehicleMinutes > 0) {
             Text(
                 text = stringResource(R.string.route_stop_segment_wait_ride, waitMinutes, inVehicleMinutes),
                 style = MaterialTheme.typography.bodySmall,
@@ -655,108 +615,6 @@ internal fun routeTransportLabel(routeResponse: RoutePlan): String {
         stringResource(R.string.route_transport_walk_mhd)
     } else {
         stringResource(R.string.route_transport_walk)
-    }
-}
-
-@Composable
-internal fun RouteStopCard(
-    item: RouteStop,
-    incomingLeg: RouteLeg?,
-    isVisited: Boolean,
-    isSkipped: Boolean,
-    isRouteActive: Boolean,
-    canSkip: Boolean,
-    isActionInProgress: Boolean,
-    onMarkVisited: () -> Unit,
-    onSkip: () -> Unit
-) {
-    Card(shape = RoundedCornerShape(PlannerUiTokens.CardRadius)) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(6.dp)
-        ) {
-            Text(
-                text = stringResource(R.string.route_stop_title, item.order, item.name),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold
-            )
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = categoryLabel(item.category),
-                    modifier = Modifier.weight(1f),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                if (isVisited) {
-                    Text(
-                        text = stringResource(R.string.route_stop_visited),
-                        style = MaterialTheme.typography.labelLarge,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                } else if (isSkipped) {
-                    Text(
-                        text = stringResource(R.string.route_stop_skipped),
-                        style = MaterialTheme.typography.labelLarge,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.tertiary
-                    )
-                } else if (canSkip || isRouteActive) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        if (canSkip) {
-                            OutlinedButton(
-                                onClick = onSkip,
-                                enabled = !isActionInProgress,
-                                modifier = Modifier.heightIn(min = PlannerUiTokens.ButtonHeight)
-                            ) {
-                                Text(stringResource(R.string.action_skip_stop))
-                            }
-                        }
-                        if (isRouteActive) {
-                            OutlinedButton(
-                                onClick = onMarkVisited,
-                                enabled = !isActionInProgress,
-                                modifier = Modifier.heightIn(min = PlannerUiTokens.ButtonHeight)
-                            ) {
-                                Text(stringResource(R.string.action_mark_visited))
-                            }
-                        }
-                    }
-                }
-            }
-            RouteStopChipRow(
-                item = item,
-                incomingLeg = incomingLeg
-            )
-            incomingLeg?.segments
-                .orEmpty()
-                .filter { segment ->
-                    val mode = segment.mode.orEmpty()
-                    mode == "transit" || (segment.durationMinutes ?: 0) > 0
-                }
-                .forEach { segment ->
-                    RouteSegmentDetail(
-                        segment = segment,
-                        fallbackLabel = routeSegmentLabel(segment)
-                    )
-                }
-            RouteTimelineChip(
-                label = stringResource(R.string.route_stop_time_window_badge, item.arrivalAfterMin, item.departureAfterMin),
-                color = MaterialTheme.colorScheme.secondary
-            )
-            if (!item.openingHoursRaw.isNullOrBlank()) {
-                Text(
-                    text = stringResource(R.string.route_stop_opening_hours, item.openingHoursRaw),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
     }
 }
 
