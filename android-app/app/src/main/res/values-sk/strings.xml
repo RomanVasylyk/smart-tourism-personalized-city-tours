@@ -11,7 +11,6 @@
     <string name="planner_mode_active_body">Majte mapu na očiach a spravujte postup od najbližšej zastávky.</string>
     <string name="planner_mode_completed_title">Trasa dokončená</string>
     <string name="planner_mode_completed_body">Skontrolujte dokončenú trasu a nechajte spätnú väzbu.</string>
-    <string name="app_menu_label">Menu</string>
     <string name="app_destination_planner">Plánovač</string>
     <string name="app_city_select">Vybrať mesto</string>
     <string name="language_selector_label">Jazyk</string>

@@ -11,7 +11,6 @@
     <string name="planner_mode_active_body">Behalte die Karte im Blick und verwalte den Fortschritt ab dem nächsten Stopp.</string>
     <string name="planner_mode_completed_title">Route abgeschlossen</string>
     <string name="planner_mode_completed_body">Prüfe die abgeschlossene Route und gib Feedback.</string>
-    <string name="app_menu_label">Menü</string>
     <string name="app_destination_planner">Planer</string>
     <string name="app_city_select">Stadt wählen</string>
     <string name="language_selector_label">Sprache</string>

@@ -22,5 +22,6 @@ ignore = ["E501", "B905"]
 
 [tool.ruff.lint.per-file-ignores]
 "backend/scripts/*.py" = ["E402"]
+"backend/tests/*.py" = ["E402"]
 "pipeline/scripts/*.py" = ["E402"]
 "pipeline/tests/*.py" = ["E402"]

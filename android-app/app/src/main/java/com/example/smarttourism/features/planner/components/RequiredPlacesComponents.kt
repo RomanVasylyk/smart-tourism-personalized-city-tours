@@ -38,7 +38,6 @@ internal fun RequiredPlacesCard(
     isEditingEnabled: Boolean,
     onChooseOnMap: () -> Unit,
     onChooseFromList: () -> Unit,
-    onMovePoi: (Int, Int) -> Unit,
     onRemovePoi: (Int) -> Unit,
     onClearAll: () -> Unit
 ) {

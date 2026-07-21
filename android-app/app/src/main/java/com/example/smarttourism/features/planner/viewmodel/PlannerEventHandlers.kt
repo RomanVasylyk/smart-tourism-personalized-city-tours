@@ -226,13 +226,6 @@ internal class RoutePlanningHandler(
                 true
             }
 
-            is PlannerEvent.MoveRequiredPoi -> {
-                updateUiState { state ->
-                    PlannerStateReducer.moveRequiredPoi(state, event.poiId, event.direction)
-                }
-                true
-            }
-
             PlannerEvent.ClearRequiredPois -> {
                 updateUiState { state -> PlannerStateReducer.clearRequiredPois(state) }
                 true

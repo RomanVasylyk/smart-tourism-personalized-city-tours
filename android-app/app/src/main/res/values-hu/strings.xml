@@ -11,7 +11,6 @@
     <string name="planner_mode_active_body">Tartsd szem előtt a térképet, és kezeld a haladást a következő megállótól.</string>
     <string name="planner_mode_completed_title">Útvonal befejezve</string>
     <string name="planner_mode_completed_body">Nézd át a befejezett útvonalat, és adj visszajelzést.</string>
-    <string name="app_menu_label">Menü</string>
     <string name="app_destination_planner">Tervező</string>
     <string name="app_city_select">Város kiválasztása</string>
     <string name="language_selector_label">Nyelv</string>

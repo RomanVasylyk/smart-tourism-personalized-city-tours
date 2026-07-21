@@ -1,2 +1,0 @@
--- Legacy Docker entrypoint placeholder.
--- The database schema is managed by Alembic migrations from the backend container.

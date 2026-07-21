@@ -152,7 +152,6 @@ private fun ParameterSheetContent(
                 isEditingEnabled = !state.isPlannerEditingLocked,
                 onChooseOnMap = actions.onChooseRequiredOnMap,
                 onChooseFromList = actions.onChooseRequiredFromList,
-                onMovePoi = actions.onMoveRequiredPoi,
                 onRemovePoi = actions.onRemoveRequiredPoi,
                 onClearAll = actions.onClearRequiredPois
             )

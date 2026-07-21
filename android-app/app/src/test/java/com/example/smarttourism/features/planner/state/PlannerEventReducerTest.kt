@@ -48,25 +48,6 @@ class PlannerEventReducerTest {
     }
 
     @Test
-    fun moveRequiredPoiUpdatesRequestOrderWithoutChangingRouteStops() {
-        val request = samplePlannerPreferences().copy(preferredPoiIds = listOf(1, 2, 3))
-        val route = sampleRoutePlan()
-        val state = RoutePlannerUiState(
-            routeSessionStatus = RouteSessionStatus.NOT_STARTED,
-            routeResponse = route,
-            currentRouteRequest = request,
-            requiredPoiIds = listOf(1, 2, 3)
-        )
-
-        val updated = PlannerStateReducer.moveRequiredPoi(state, poiId = 3, direction = -1)
-
-        assertEquals(listOf(1, 3, 2), updated.requiredPoiIds)
-        assertEquals(listOf(1, 3, 2), updated.currentRouteRequest?.preferredPoiIds)
-        assertEquals(listOf(1, 2, 3), updated.routeResponse?.route?.map { stop -> stop.poiId })
-        assertTrue(updated.hasPendingRouteChanges)
-    }
-
-    @Test
     fun restoreSnapshotNormalizesRequestAndSelectedState() {
         val snapshot = sampleSnapshot(
             request = samplePlannerPreferences().copy(

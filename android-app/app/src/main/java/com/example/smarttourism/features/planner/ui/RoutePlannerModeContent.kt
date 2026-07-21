@@ -207,7 +207,6 @@ internal fun PlanningScreenContent(
     onUseCurrentLocation: () -> Unit,
     onChooseRequiredOnMap: () -> Unit,
     onChooseRequiredFromList: () -> Unit,
-    onMoveRequiredPoi: (Int, Int) -> Unit,
     onRemoveRequiredPoi: (Int) -> Unit,
     onClearRequiredPois: () -> Unit,
     onAvailableMinutesChange: (Int) -> Unit,
@@ -301,7 +300,6 @@ internal fun PlanningScreenContent(
                         isEditingEnabled = !isPlannerEditingLocked,
                         onChooseOnMap = onChooseRequiredOnMap,
                         onChooseFromList = onChooseRequiredFromList,
-                        onMovePoi = onMoveRequiredPoi,
                         onRemovePoi = onRemoveRequiredPoi,
                         onClearAll = onClearRequiredPois
                     )

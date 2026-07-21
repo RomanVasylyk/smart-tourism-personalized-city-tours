@@ -135,38 +135,6 @@ internal object PlannerStateReducer {
         ).invalidateRoutePreviewIfAllowed()
     }
 
-    fun moveRequiredPoi(
-        state: RoutePlannerUiState,
-        poiId: Int,
-        direction: Int
-    ): RoutePlannerUiState {
-        if (state.routeSessionStatus == RouteSessionStatus.IN_PROGRESS ||
-            state.routeSessionStatus == RouteSessionStatus.PAUSED
-        ) {
-            return state
-        }
-
-        val currentIndex = state.requiredPoiIds.indexOf(poiId)
-        if (currentIndex == -1) {
-            return state
-        }
-
-        val targetIndex = (currentIndex + direction).coerceIn(0, state.requiredPoiIds.lastIndex)
-        if (targetIndex == currentIndex) {
-            return state
-        }
-
-        val reorderedIds = state.requiredPoiIds.toMutableList()
-        val movedPoiId = reorderedIds.removeAt(currentIndex)
-        reorderedIds.add(targetIndex, movedPoiId)
-
-        return state.copy(
-            requiredPoiIds = reorderedIds,
-            currentRouteRequest = state.currentRouteRequest?.copy(preferredPoiIds = reorderedIds),
-            hasNoGeneratedStops = false
-        ).invalidateRoutePreviewIfAllowed()
-    }
-
     fun clearRequiredPois(state: RoutePlannerUiState): RoutePlannerUiState {
         if (state.requiredPoiIds.isEmpty()) {
             return state

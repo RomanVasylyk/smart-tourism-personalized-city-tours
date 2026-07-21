@@ -71,7 +71,6 @@ internal data class PlannerActions(
     val onUseCurrentLocation: () -> Unit,
     val onChooseRequiredOnMap: () -> Unit,
     val onChooseRequiredFromList: () -> Unit,
-    val onMoveRequiredPoi: (Int, Int) -> Unit,
     val onRemoveRequiredPoi: (Int) -> Unit,
     val onClearRequiredPois: () -> Unit,
     val onAvailableMinutesChange: (Int) -> Unit,

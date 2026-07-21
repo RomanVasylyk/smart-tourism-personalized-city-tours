@@ -11,7 +11,6 @@
     <string name="planner_mode_active_body">Тримайте карту перед очима і керуйте прогресом від наступної точки.</string>
     <string name="planner_mode_completed_title">Маршрут завершено</string>
     <string name="planner_mode_completed_body">Перегляньте завершений маршрут і залиште відгук.</string>
-    <string name="app_menu_label">Меню</string>
     <string name="app_destination_planner">Планувальник</string>
     <string name="app_city_select">Вибрати місто</string>
     <string name="language_selector_label">Мова</string>

@@ -11,7 +11,6 @@
     <string name="planner_mode_active_body">Śledź mapę i zarządzaj postępem od następnego przystanku.</string>
     <string name="planner_mode_completed_title">Trasa zakończona</string>
     <string name="planner_mode_completed_body">Sprawdź ukończoną trasę i zostaw opinię.</string>
-    <string name="app_menu_label">Menu</string>
     <string name="app_destination_planner">Planer</string>
     <string name="app_city_select">Wybierz miasto</string>
     <string name="language_selector_label">Język</string>

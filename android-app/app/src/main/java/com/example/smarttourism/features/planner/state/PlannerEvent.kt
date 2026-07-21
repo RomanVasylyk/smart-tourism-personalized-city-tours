@@ -20,7 +20,6 @@ internal sealed interface PlannerEvent {
     data class UpdateStartDateTime(val value: LocalDateTime) : PlannerEvent
     data class ToggleRequiredPoi(val poiId: Int) : PlannerEvent
     data class RemoveRequiredPoi(val poiId: Int) : PlannerEvent
-    data class MoveRequiredPoi(val poiId: Int, val direction: Int) : PlannerEvent
     data object ClearRequiredPois : PlannerEvent
     data object LoadCuratedRoutes : PlannerEvent
     data class OpenCuratedRoute(val routeId: Int) : PlannerEvent
