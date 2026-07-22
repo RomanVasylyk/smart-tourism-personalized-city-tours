@@ -199,7 +199,7 @@ def mark_route_session_poi_visited(
             cur.execute(
                 """
                 UPDATE route_session_pois rsp
-                SET visited = TRUE,
+                SET visited = NOT %(skipped)s,
                     visited_at = %(visited_at)s,
                     skipped = %(skipped)s
                 WHERE rsp.session_id = %(session_id)s

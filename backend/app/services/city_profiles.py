@@ -18,12 +18,20 @@ def resolve_config_file() -> Path:
 
 CONFIG_FILE = resolve_config_file()
 
+_PROFILES_CACHE: tuple[float, list[dict]] | None = None
+
 
 def load_city_profiles() -> list[dict]:
+    global _PROFILES_CACHE
+    mtime = CONFIG_FILE.stat().st_mtime
+    if _PROFILES_CACHE is not None and _PROFILES_CACHE[0] == mtime:
+        return _PROFILES_CACHE[1]
+
     config = yaml.safe_load(CONFIG_FILE.read_text(encoding="utf-8")) or {}
     cities = config.get("cities") or []
     if not cities:
         raise ValueError(f"No cities configured in {CONFIG_FILE}")
+    _PROFILES_CACHE = (mtime, cities)
     return cities
 
 

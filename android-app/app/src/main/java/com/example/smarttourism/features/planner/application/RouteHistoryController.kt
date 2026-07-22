@@ -24,13 +24,13 @@ internal class RouteHistoryController @Inject constructor(
         currentEntry: RouteHistoryEntry?,
         routeHistoryLoadFailedMessage: String
     ): RouteHistoryRefreshResult {
-        val cachedHistory = sortRouteHistoryEntries(routeSessionRepository.loadHistoryEntries())
         if (!forceRefresh && currentHistory.isNotEmpty()) {
             return RouteHistoryRefreshResult(
                 history = currentHistory,
                 error = null
             )
         }
+        val cachedHistory = sortRouteHistoryEntries(routeSessionRepository.loadHistoryEntries())
 
         if (!offlineSyncRepository.isNetworkAvailable()) {
             return RouteHistoryRefreshResult(
