@@ -1,6 +1,8 @@
+from types import SimpleNamespace
+
 import pytest
 from app.core.config import get_settings
-from app.core.rate_limit import limiter
+from app.core.rate_limit import limiter, rate_limit_client_key
 from app.services.feedback_stats import PlannerFeedbackProfile
 from conftest import FakeConnection, FakeRoutingService
 
@@ -49,6 +51,24 @@ def rate_limited(monkeypatch):
 
 def test_limiter_is_attached_to_app(client):
     assert client.app.state.limiter is limiter
+
+
+def test_rate_limit_key_uses_forwarded_header_only_when_trusted(monkeypatch):
+    request = SimpleNamespace(
+        headers={"X-Forwarded-For": "203.0.113.7, 10.0.0.2"},
+        client=SimpleNamespace(host="10.0.0.9"),
+    )
+
+    assert rate_limit_client_key(request) == "10.0.0.9"
+
+    monkeypatch.setattr(
+        "app.core.rate_limit.get_settings",
+        lambda: SimpleNamespace(rate_limit_trust_proxy_headers=True),
+    )
+    assert rate_limit_client_key(request) == "203.0.113.7"
+
+    request_without_header = SimpleNamespace(headers={}, client=SimpleNamespace(host="10.0.0.9"))
+    assert rate_limit_client_key(request_without_header) == "10.0.0.9"
 
 
 def test_route_generate_is_rate_limited(client, rate_limited):

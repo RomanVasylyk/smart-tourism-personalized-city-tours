@@ -85,6 +85,7 @@ def best_transit_plan_for_leg(
     average_wait_minutes = float(transport_profile.get("average_wait_minutes") or 4.0)
     max_total_duration_multiplier = float(transport_profile.get("max_total_duration_multiplier") or 1.15)
     min_walking_distance_savings = float(transport_profile.get("min_walking_distance_savings_meters") or 500)
+    min_transfer_seconds = float(transport_profile.get("min_transfer_minutes") or 2.0) * 60
 
     start_candidates = candidate_stops_for_point(start, graph, pace, max_first_mile)
     end_candidates = candidate_stops_for_point(end, graph, pace, max_last_mile)
@@ -103,6 +104,7 @@ def best_transit_plan_for_leg(
         walk_leg=walk_leg,
         max_total_duration_multiplier=max_total_duration_multiplier,
         min_walking_distance_savings=min_walking_distance_savings,
+        min_transfer_seconds=min_transfer_seconds,
     )
     if exact_plan is not None:
         return exact_plan

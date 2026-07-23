@@ -166,6 +166,72 @@ def test_find_exact_transit_solution_picks_direct_ride():
     assert ride.alight_time == datetime(2024, 1, 1, 10, 18)
 
 
+def test_find_exact_transit_solution_applies_min_transfer_buffer():
+    stops = {1: _stop(1, 48.31, 18.08), 2: _stop(2, 48.32, 18.09), 3: _stop(3, 48.33, 18.10)}
+    first_leg = GraphTrip(
+        trip_id=501,
+        line_id=9,
+        line_name="Bus 9",
+        source="test_mhd",
+        service_bucket="all_days",
+        valid_from=None,
+        valid_to=None,
+        stop_times=[
+            GraphTripStopTime(1, "S1", 1, 10 * 60 + 5),
+            GraphTripStopTime(2, "S2", 2, 10 * 60 + 10),
+        ],
+    )
+    tight_connection = GraphTrip(
+        trip_id=601,
+        line_id=12,
+        line_name="Bus 12",
+        source="test_mhd",
+        service_bucket="all_days",
+        valid_from=None,
+        valid_to=None,
+        stop_times=[
+            GraphTripStopTime(2, "S2", 1, 10 * 60 + 11),
+            GraphTripStopTime(3, "S3", 2, 10 * 60 + 20),
+        ],
+    )
+    later_connection = GraphTrip(
+        trip_id=602,
+        line_id=12,
+        line_name="Bus 12",
+        source="test_mhd",
+        service_bucket="all_days",
+        valid_from=None,
+        valid_to=None,
+        stop_times=[
+            GraphTripStopTime(2, "S2", 1, 10 * 60 + 14),
+            GraphTripStopTime(3, "S3", 2, 10 * 60 + 23),
+        ],
+    )
+    graph = TransportGraph(
+        provider="test_mhd",
+        stops_by_id=stops,
+        outgoing_edges={},
+        trips_by_id={501: first_leg, 601: tight_connection, 602: later_connection},
+        board_options_by_stop={
+            1: [TripBoardOption(501, 0)],
+            2: [TripBoardOption(601, 0), TripBoardOption(602, 0)],
+        },
+    )
+
+    solution = find_exact_transit_solution(
+        graph=graph,
+        start_candidates=[(stops[1], _walk(60))],
+        end_candidates=[(stops[3], _walk(60))],
+        departure_dt=datetime(2024, 1, 1, 10, 0),
+        min_transfer_seconds=120.0,
+    )
+
+    assert solution is not None
+    assert len(solution.rides) == 2
+    assert solution.rides[1].trip_id == 602
+    assert solution.rides[1].board_time == datetime(2024, 1, 1, 10, 14)
+
+
 def test_find_estimated_transit_solution_charges_wait_on_first_boarding():
     stops = {1: _stop(1, 48.31, 18.08), 2: _stop(2, 48.32, 18.09), 3: _stop(3, 48.33, 18.10)}
     graph = TransportGraph(

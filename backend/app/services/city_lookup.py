@@ -4,9 +4,6 @@ from app.services.city_profiles import city_profile_by_token, city_profile_token
 
 
 def find_city_row(cur, city: str | None, country: str | None = None) -> dict | None:
-    if not hasattr(cur, "fetchone"):
-        return {"id": 0, "name": city or "", "country": country or ""}
-
     profile = city_profile_by_token(city) or {}
     candidate_names = []
     for value in (profile.get("name"), city):

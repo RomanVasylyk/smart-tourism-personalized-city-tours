@@ -39,6 +39,9 @@ class FakeCursor:
         self.query = query
         self.params = params
 
+    def fetchone(self):
+        return {"id": 1, "name": "Nitra", "country": "Slovakia"}
+
     def fetchall(self):
         return self.rows
 

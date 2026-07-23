@@ -21,6 +21,7 @@ class Settings(BaseSettings):
     rate_limit_enabled: bool = Field(default=True, validation_alias="RATE_LIMIT_ENABLED")
     rate_limit_route_generate: str = Field(default="30/minute", validation_alias="RATE_LIMIT_ROUTE_GENERATE")
     rate_limit_route_leg: str = Field(default="60/minute", validation_alias="RATE_LIMIT_ROUTE_LEG")
+    rate_limit_trust_proxy_headers: bool = Field(default=False, validation_alias="RATE_LIMIT_TRUST_PROXY_HEADERS")
     log_level: str = Field(default="INFO", validation_alias="LOG_LEVEL")
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")

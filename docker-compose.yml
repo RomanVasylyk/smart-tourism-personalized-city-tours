@@ -25,6 +25,7 @@ services:
     container_name: smart-tourism-backend
     restart: unless-stopped
     environment:
+      TZ: ${TZ:-Europe/Bratislava}
       DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL in .env}
       DB_POOL_MIN_SIZE: ${DB_POOL_MIN_SIZE:-1}
       DB_POOL_MAX_SIZE: ${DB_POOL_MAX_SIZE:-10}
@@ -38,6 +39,7 @@ services:
       RATE_LIMIT_ENABLED: ${RATE_LIMIT_ENABLED:-true}
       RATE_LIMIT_ROUTE_GENERATE: ${RATE_LIMIT_ROUTE_GENERATE:-30/minute}
       RATE_LIMIT_ROUTE_LEG: ${RATE_LIMIT_ROUTE_LEG:-60/minute}
+      RATE_LIMIT_TRUST_PROXY_HEADERS: ${RATE_LIMIT_TRUST_PROXY_HEADERS:-false}
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
     ports:
       - "${BACKEND_PORT:?Set BACKEND_PORT in .env}:8000"
@@ -61,6 +63,7 @@ services:
     restart: unless-stopped
     command: ["python", "scripts/recompute_scheduler.py"]
     environment:
+      TZ: ${TZ:-Europe/Bratislava}
       DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL in .env}
       DB_POOL_MIN_SIZE: ${DB_POOL_MIN_SIZE:-1}
       DB_POOL_MAX_SIZE: ${DB_POOL_MAX_SIZE:-10}

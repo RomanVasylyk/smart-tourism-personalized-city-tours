@@ -28,6 +28,7 @@ def build_exact_transit_plan(
     walk_leg: RoutingLeg,
     max_total_duration_multiplier: float,
     min_walking_distance_savings: float,
+    min_transfer_seconds: float = 120.0,
 ) -> TravelPlan | None:
     if departure_dt is None or not graph.trips_by_id:
         return None
@@ -37,6 +38,7 @@ def build_exact_transit_plan(
         start_candidates=start_candidates,
         end_candidates=end_candidates,
         departure_dt=departure_dt,
+        min_transfer_seconds=min_transfer_seconds,
     )
     if exact_solution is None:
         return None
@@ -128,6 +130,7 @@ def find_exact_transit_solution(
     start_candidates: list[tuple[GraphStop, TravelSegment]],
     end_candidates: list[tuple[GraphStop, TravelSegment]],
     departure_dt: datetime,
+    min_transfer_seconds: float = 120.0,
 ) -> ExactTransitSolution | None:
     arrival_by_stop: dict[int, datetime] = {}
     parent_by_stop: dict[int, tuple[int, ScheduledRide] | None] = {}
@@ -160,6 +163,11 @@ def find_exact_transit_solution(
                 best_final_arrival = final_arrival_dt
                 best_end_stop_id = stop_id
 
+        arrived_by_ride = parent_by_stop.get(stop_id) is not None
+        earliest_board_dt = (
+            current_arrival_dt + timedelta(seconds=min_transfer_seconds) if arrived_by_ride else current_arrival_dt
+        )
+
         for board_option in graph.board_options_by_stop.get(stop_id, []):
             trip = graph.trips_by_id.get(board_option.trip_id)
             if trip is None or board_option.stop_index >= len(trip.stop_times):
@@ -169,7 +177,7 @@ def find_exact_transit_solution(
 
             board_stop_time = trip.stop_times[board_option.stop_index]
             board_dt = service_datetime(current_arrival_dt.date(), board_stop_time.time_minutes)
-            if board_dt < current_arrival_dt:
+            if board_dt < earliest_board_dt:
                 continue
 
             for alight_index in range(board_option.stop_index + 1, len(trip.stop_times)):
