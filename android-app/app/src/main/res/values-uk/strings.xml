@@ -168,7 +168,7 @@
     <string name="route_replace_stop_body">Виберіть, чим замінити %1$s, або дозвольте планувальнику запропонувати найкращий варіант.</string>
     <string name="route_replace_candidates_empty">Для поточних фільтрів немає доступних ручних варіантів.</string>
     <string name="route_required_places_title">Місця, які точно хочеться відвідати</string>
-    <string name="route_required_places_body">Виберіть POI, які обов’язково мають бути в маршруті. Кнопками Вгору і Вниз задайте їхній порядок; якщо треба, маршрут може перевищити ліміт часу.</string>
+    <string name="route_required_places_body">Виберіть POI, які обов’язково мають бути в маршруті; якщо треба, маршрут може перевищити ліміт часу.</string>
     <string name="route_required_places_empty">Обов’язкові місця не вибрані.</string>
     <string name="route_required_places_picker_title">Вибрати місця</string>
     <string name="route_required_places_picker_body">Виберіть одне або кілька місць, які обов’язково мають бути в наступному згенерованому маршруті.</string>

@@ -168,7 +168,7 @@
     <string name="route_replace_stop_body">Vyberte, co má nahradit %1$s, nebo nechte plánovač navrhnout nejlepší možnost.</string>
     <string name="route_replace_candidates_empty">Pro aktuální filtry nejsou dostupné žádné ruční návrhy.</string>
     <string name="route_required_places_title">Místa, která musíte vidět</string>
-    <string name="route_required_places_body">Vyberte POI, která musí být v trase. Tlačítky Nahoru a Dolů nastavte jejich pořadí; trasa může v případě potřeby překročit časový limit.</string>
+    <string name="route_required_places_body">Vyberte POI, která musí být v trase; trasa může v případě potřeby překročit časový limit.</string>
     <string name="route_required_places_empty">Nejsou vybraná žádná povinná místa.</string>
     <string name="route_required_places_picker_title">Vybrat místa</string>
     <string name="route_required_places_picker_body">Vyberte jedno nebo více míst, která musí být v další vygenerované trase.</string>

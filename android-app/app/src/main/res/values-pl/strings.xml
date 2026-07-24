@@ -168,7 +168,7 @@
     <string name="route_replace_stop_body">Wybierz, co ma zastąpić %1$s, albo pozwól planerowi wybrać najlepszą propozycję.</string>
     <string name="route_replace_candidates_empty">Brak ręcznych propozycji dla obecnych filtrów.</string>
     <string name="route_required_places_title">Miejsca, które koniecznie chcesz zobaczyć</string>
-    <string name="route_required_places_body">Wybierz POI, które muszą znaleźć się w trasie. Ustaw ich kolejność przyciskami w górę i w dół; trasa może w razie potrzeby przekroczyć limit czasu.</string>
+    <string name="route_required_places_body">Wybierz POI, które muszą znaleźć się w trasie; trasa może w razie potrzeby przekroczyć limit czasu.</string>
     <string name="route_required_places_empty">Nie wybrano obowiązkowych miejsc.</string>
     <string name="route_required_places_picker_title">Wybierz miejsca</string>
     <string name="route_required_places_picker_body">Wybierz jedno lub więcej miejsc, które muszą znaleźć się w następnej wygenerowanej trasie.</string>

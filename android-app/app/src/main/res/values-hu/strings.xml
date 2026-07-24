@@ -168,7 +168,7 @@
     <string name="route_replace_stop_body">Válaszd ki, mi helyettesítse ezt: %1$s, vagy hagyd, hogy a tervező a legjobb javaslatot válassza.</string>
     <string name="route_replace_candidates_empty">Az aktuális szűrőkhöz nincs kézi javaslat.</string>
     <string name="route_required_places_title">Helyek, amelyeket mindenképp látni szeretnél</string>
-    <string name="route_required_places_body">Válaszd ki azokat a POI-kat, amelyeknek szerepelniük kell az útvonalban. Állítsd be a sorrendjüket a Fel és Le gombokkal; az útvonal szükség esetén túllépheti az időkeretet.</string>
+    <string name="route_required_places_body">Válaszd ki azokat a POI-kat, amelyeknek szerepelniük kell az útvonalban; az útvonal szükség esetén túllépheti az időkeretet.</string>
     <string name="route_required_places_empty">Nincs kiválasztott kötelező hely.</string>
     <string name="route_required_places_picker_title">Helyek kiválasztása</string>
     <string name="route_required_places_picker_body">Válassz ki egy vagy több helyet, amelynek szerepelnie kell a következő generált útvonalban.</string>

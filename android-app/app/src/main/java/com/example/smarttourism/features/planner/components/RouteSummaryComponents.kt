@@ -263,19 +263,20 @@ internal fun ActiveRouteBottomPanel(
                 )
             }
 
+            Button(
+                onClick = onMarkVisited,
+                enabled = nextTarget != null && !isActionInProgress && status == RouteSessionStatus.IN_PROGRESS,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = PlannerUiTokens.ButtonHeight)
+            ) {
+                Text(stringResource(R.string.action_mark_visited))
+            }
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Button(
-                    onClick = onMarkVisited,
-                    enabled = nextTarget != null && !isActionInProgress && status == RouteSessionStatus.IN_PROGRESS,
-                    modifier = Modifier
-                        .weight(1f)
-                        .heightIn(min = PlannerUiTokens.ButtonHeight)
-                ) {
-                    Text(stringResource(R.string.action_mark_visited))
-                }
                 OutlinedButton(
                     onClick = onSkip,
                     enabled = nextTarget != null && canSkip && !isActionInProgress,
@@ -283,7 +284,7 @@ internal fun ActiveRouteBottomPanel(
                         .weight(1f)
                         .heightIn(min = PlannerUiTokens.ButtonHeight)
                 ) {
-                    Text(stringResource(R.string.action_skip_stop))
+                    Text(stringResource(R.string.action_skip_stop), maxLines = 1)
                 }
                 when {
                     canPause -> OutlinedButton(
@@ -292,7 +293,7 @@ internal fun ActiveRouteBottomPanel(
                             .weight(1f)
                             .heightIn(min = PlannerUiTokens.ButtonHeight)
                     ) {
-                        Text(stringResource(R.string.action_pause_route))
+                        Text(stringResource(R.string.action_pause_route), maxLines = 1)
                     }
 
                     canResume -> OutlinedButton(
@@ -301,7 +302,7 @@ internal fun ActiveRouteBottomPanel(
                             .weight(1f)
                             .heightIn(min = PlannerUiTokens.ButtonHeight)
                     ) {
-                        Text(stringResource(R.string.action_resume_route))
+                        Text(stringResource(R.string.action_resume_route), maxLines = 1)
                     }
 
                     else -> OutlinedButton(
@@ -310,31 +311,36 @@ internal fun ActiveRouteBottomPanel(
                             .weight(1f)
                             .heightIn(min = PlannerUiTokens.ButtonHeight)
                     ) {
-                        Text(stringResource(R.string.action_view_all_stops))
+                        Text(stringResource(R.string.action_view_all_stops), maxLines = 1)
                     }
                 }
             }
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                TextButton(onClick = onShowAllStops) {
-                    Text(stringResource(R.string.action_view_all_stops))
+                OutlinedButton(
+                    onClick = onFinishRoute,
+                    enabled = metrics.canComplete,
+                    modifier = Modifier
+                        .weight(1f)
+                        .heightIn(min = PlannerUiTokens.ButtonHeight)
+                ) {
+                    Text(stringResource(R.string.action_finish_route), maxLines = 1)
                 }
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    OutlinedButton(
-                        onClick = onFinishRoute,
-                        enabled = metrics.canComplete,
-                        modifier = Modifier.heightIn(min = PlannerUiTokens.ButtonHeight)
-                    ) {
-                        Text(stringResource(R.string.action_finish_route))
-                    }
-                    TextButton(onClick = onCancelRoute) {
-                        Text(stringResource(R.string.action_cancel_route))
-                    }
+                OutlinedButton(
+                    onClick = onCancelRoute,
+                    modifier = Modifier
+                        .weight(1f)
+                        .heightIn(min = PlannerUiTokens.ButtonHeight)
+                ) {
+                    Text(stringResource(R.string.action_cancel_route), maxLines = 1)
                 }
+            }
+
+            TextButton(onClick = onShowAllStops) {
+                Text(stringResource(R.string.action_view_all_stops))
             }
         }
     }

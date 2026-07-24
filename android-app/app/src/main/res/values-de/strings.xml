@@ -168,7 +168,7 @@
     <string name="route_replace_stop_body">Wähle, was %1$s ersetzen soll, oder lass den Planer den besten Vorschlag machen.</string>
     <string name="route_replace_candidates_empty">Für die aktuellen Filter sind keine manuellen Vorschläge verfügbar.</string>
     <string name="route_required_places_title">Orte, die du unbedingt sehen willst</string>
-    <string name="route_required_places_body">Wähle POIs, die in der Route enthalten sein müssen. Lege ihre Reihenfolge mit Hoch und Runter fest; die Route kann bei Bedarf das Zeitbudget überschreiten.</string>
+    <string name="route_required_places_body">Wähle POIs, die in der Route enthalten sein müssen; die Route kann bei Bedarf das Zeitbudget überschreiten.</string>
     <string name="route_required_places_empty">Keine Pflichtorte ausgewählt.</string>
     <string name="route_required_places_picker_title">Orte auswählen</string>
     <string name="route_required_places_picker_body">Wähle einen oder mehrere Orte, die in der nächsten generierten Route enthalten sein müssen.</string>
