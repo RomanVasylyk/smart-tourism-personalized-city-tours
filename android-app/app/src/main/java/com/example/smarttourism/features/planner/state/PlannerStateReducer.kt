@@ -150,6 +150,7 @@ internal object PlannerStateReducer {
     fun clearRouteMessages(state: RoutePlannerUiState): RoutePlannerUiState =
         state.copy(
             routeError = null,
+            routeNotice = null,
             hasNoGeneratedStops = false
         )
 

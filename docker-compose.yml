@@ -40,6 +40,8 @@ services:
       RATE_LIMIT_ROUTE_GENERATE: ${RATE_LIMIT_ROUTE_GENERATE:-30/minute}
       RATE_LIMIT_ROUTE_LEG: ${RATE_LIMIT_ROUTE_LEG:-60/minute}
       RATE_LIMIT_TRUST_PROXY_HEADERS: ${RATE_LIMIT_TRUST_PROXY_HEADERS:-false}
+      RATE_LIMIT_TRUSTED_PROXY_HOPS: ${RATE_LIMIT_TRUSTED_PROXY_HOPS:-1}
+      RATE_LIMIT_CATALOG: ${RATE_LIMIT_CATALOG:-120/minute}
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
     ports:
       - "${BACKEND_PORT:?Set BACKEND_PORT in .env}:8000"
@@ -49,7 +51,7 @@ services:
       routing:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=2)\""]
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/ready', timeout=3)\""]
       interval: 15s
       timeout: 5s
       retries: 5

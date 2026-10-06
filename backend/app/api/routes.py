@@ -1,6 +1,12 @@
 from uuid import UUID
 
-from app.core.rate_limit import ROUTE_GENERATE_RATE_LIMIT, ROUTE_LEG_RATE_LIMIT, limiter
+from app.core.rate_limit import (
+    CATALOG_RATE_LIMIT,
+    ROUTE_GENERATE_RATE_LIMIT,
+    ROUTE_LEG_RATE_LIMIT,
+    limiter,
+)
+from app.db.database import get_connection
 from app.repositories.cities import list_city_rows
 from app.repositories.pois import list_poi_rows
 from app.schemas.responses import (
@@ -32,9 +38,11 @@ from app.services.route_sessions import (
     save_route_feedback,
     update_route_session,
 )
-from fastapi import APIRouter, Header, Request
+from fastapi import APIRouter, Header, HTTPException, Request
 
 router = APIRouter()
+
+MAX_POI_PAGE_SIZE = 5000
 
 
 @router.get("/health", response_model=HealthResponse)
@@ -42,18 +50,33 @@ def health():
     return {"status": "ok"}
 
 
+@router.get("/health/ready", response_model=HealthResponse)
+def health_ready():
+    try:
+        with get_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT 1")
+                cur.fetchone()
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail="Database is not reachable.") from exc
+    return {"status": "ready"}
+
+
 @router.get("/cities", response_model=list[CityResponse])
-def get_cities():
+@limiter.limit(CATALOG_RATE_LIMIT)
+def get_cities(request: Request):
     return list_city_rows()
 
 
 @router.get("/pois", response_model=list[PoiResponse])
-def get_pois(city: str = "nitra"):
-    return list_poi_rows(city)
+@limiter.limit(CATALOG_RATE_LIMIT)
+def get_pois(request: Request, city: str = "nitra", limit: int = MAX_POI_PAGE_SIZE):
+    return list_poi_rows(city, max(1, min(limit, MAX_POI_PAGE_SIZE)))
 
 
 @router.get("/cities/{slug}/curated-routes", response_model=list[CuratedRouteSummaryResponse])
-def get_curated_routes_endpoint(slug: str):
+@limiter.limit(CATALOG_RATE_LIMIT)
+def get_curated_routes_endpoint(request: Request, slug: str):
     return list_curated_routes(slug)
 
 
@@ -126,7 +149,9 @@ def get_route_session_endpoint(
 @router.get("/route-sessions", response_model=list[RouteSessionResponse])
 def get_route_sessions_endpoint(
     device_id: str,
+    limit: int = 100,
+    offset: int = 0,
     x_device_id: str = Header(..., alias="X-Device-Id"),
     x_device_token: str = Header(..., alias="X-Device-Token"),
 ):
-    return get_route_sessions_for_device(device_id, x_device_id, x_device_token)
+    return get_route_sessions_for_device(device_id, x_device_id, x_device_token, limit, offset)

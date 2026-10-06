@@ -397,6 +397,7 @@ fun RoutePlannerScreen(
         locationError = locationError,
         poiError = poiError,
         routeError = routeError,
+        routeNotice = uiState.routeNotice,
         trackingError = trackingError,
         hasNoGeneratedStops = hasNoGeneratedStops,
         hasPendingRouteChanges = hasPendingRouteChanges && routeResponse != null
@@ -428,13 +429,6 @@ fun RoutePlannerScreen(
             key = "location:$currentLocationError",
             title = stringResource(R.string.status_location_unavailable),
             body = currentLocationError,
-            canRetryRoute = false,
-            canFallbackToWalking = false
-        )
-        trackingError != null -> PlannerErrorDialogState(
-            key = "tracking:$trackingError",
-            title = stringResource(R.string.status_gps_tracking_unavailable),
-            body = trackingError,
             canRetryRoute = false,
             canFallbackToWalking = false
         )

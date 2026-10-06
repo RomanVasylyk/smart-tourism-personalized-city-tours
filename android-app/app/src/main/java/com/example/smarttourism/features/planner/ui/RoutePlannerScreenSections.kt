@@ -26,6 +26,7 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -386,6 +387,9 @@ internal fun PlannerMapPanel(
         )
         OutlinedButton(
             onClick = onOpenFullScreenMap,
+            colors = ButtonDefaults.outlinedButtonColors(
+                containerColor = MaterialTheme.colorScheme.surface
+            ),
             modifier = Modifier
                 .align(Alignment.TopEnd)
                 .padding(12.dp)
@@ -496,6 +500,7 @@ internal data class PlannerAlerts(
     val locationError: String?,
     val poiError: String?,
     val routeError: String?,
+    val routeNotice: String?,
     val trackingError: String?,
     val hasNoGeneratedStops: Boolean,
     val hasPendingRouteChanges: Boolean
@@ -505,6 +510,7 @@ internal fun PlannerAlerts.hasVisibleAlerts(): Boolean =
     locationError != null ||
         poiError != null ||
         routeError != null ||
+        routeNotice != null ||
         trackingError != null ||
         hasNoGeneratedStops ||
         hasPendingRouteChanges
@@ -555,6 +561,13 @@ internal fun PlannerAlertColumn(
         StatusCard(
             title = stringResource(R.string.route_preview_outdated_title),
             body = stringResource(R.string.route_preview_outdated_body)
+        )
+    }
+
+    alerts.routeNotice?.let { message ->
+        StatusCard(
+            title = stringResource(R.string.status_public_transport_not_used),
+            body = message
         )
     }
 

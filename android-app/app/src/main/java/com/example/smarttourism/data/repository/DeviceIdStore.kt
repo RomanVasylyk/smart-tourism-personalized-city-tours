@@ -12,6 +12,7 @@ class DeviceIdStore @Inject constructor(
 ) {
     private val appContext = context.applicationContext
 
+    @Synchronized
     fun getOrCreateDeviceId(): String {
         val preferences = appContext.getSharedPreferences(PreferencesName, Context.MODE_PRIVATE)
         val existingDeviceId = preferences.getString(DeviceIdKey, null)
@@ -23,11 +24,12 @@ class DeviceIdStore @Inject constructor(
         preferences
             .edit()
             .putString(DeviceIdKey, deviceId)
-            .apply()
+            .commit()
 
         return deviceId
     }
 
+    @Synchronized
     fun getOrCreateDeviceToken(): String {
         val preferences = appContext.getSharedPreferences(PreferencesName, Context.MODE_PRIVATE)
         val existingDeviceToken = preferences.getString(DeviceTokenKey, null)
@@ -39,7 +41,7 @@ class DeviceIdStore @Inject constructor(
         preferences
             .edit()
             .putString(DeviceTokenKey, deviceToken)
-            .apply()
+            .commit()
 
         return deviceToken
     }

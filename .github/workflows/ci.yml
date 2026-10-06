@@ -18,7 +18,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: "3.13"
           cache: pip
 
       - name: Install dependencies
@@ -54,3 +54,19 @@ jobs:
       - name: Unit tests
         working-directory: android-app
         run: ./gradlew testDebugUnitTest -PsmartTourismDebugApiTarget=phone
+
+      - name: Release build (R8 + resource shrinking)
+        working-directory: android-app
+        run: ./gradlew assembleRelease
+
+      - name: Verify Gson DTO field names survive R8
+        working-directory: android-app
+        run: |
+          APK=app/build/outputs/apk/release/app-release-unsigned.apk
+          for field in recommended_duration_min transport_mode poi_count arrival_after_min; do
+            if ! unzip -p "$APK" 'classes*.dex' | strings | grep -qx "$field"; then
+              echo "R8 stripped or renamed DTO field: $field"
+              exit 1
+            fi
+          done
+          echo "All checked DTO field names are present in the release DEX." 

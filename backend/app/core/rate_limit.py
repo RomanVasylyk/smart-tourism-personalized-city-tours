@@ -6,11 +6,13 @@ _settings = get_settings()
 
 
 def rate_limit_client_key(request) -> str:
-    if get_settings().rate_limit_trust_proxy_headers:
+    settings = get_settings()
+    if settings.rate_limit_trust_proxy_headers:
         forwarded_for = request.headers.get("X-Forwarded-For", "")
-        first_hop = forwarded_for.split(",")[0].strip()
-        if first_hop:
-            return first_hop
+        hops = [hop.strip() for hop in forwarded_for.split(",") if hop.strip()]
+        trusted_hops = max(1, int(getattr(settings, "rate_limit_trusted_proxy_hops", 1)))
+        if len(hops) >= trusted_hops:
+            return hops[-trusted_hops]
     return get_remote_address(request)
 
 
@@ -18,3 +20,4 @@ limiter = Limiter(key_func=rate_limit_client_key, enabled=_settings.rate_limit_e
 
 ROUTE_GENERATE_RATE_LIMIT = _settings.rate_limit_route_generate
 ROUTE_LEG_RATE_LIMIT = _settings.rate_limit_route_leg
+CATALOG_RATE_LIMIT = _settings.rate_limit_catalog

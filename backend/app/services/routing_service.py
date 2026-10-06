@@ -1,9 +1,21 @@
+import atexit
 import time
 from dataclasses import dataclass
+from functools import lru_cache
 from math import asin, cos, radians, sin, sqrt
 
 import httpx
 from app.core.config import get_settings
+
+
+@lru_cache(maxsize=1)
+def _http_client() -> httpx.Client:
+    client = httpx.Client(
+        limits=httpx.Limits(max_keepalive_connections=16, max_connections=32),
+        headers={"Connection": "keep-alive"},
+    )
+    atexit.register(client.close)
+    return client
 
 
 @dataclass(frozen=True)
@@ -89,7 +101,7 @@ class RoutingService:
         last_error: Exception | None = None
         for attempt in range(self.OSRM_MAX_ATTEMPTS):
             try:
-                response = httpx.get(url, params=params, timeout=self.timeout_seconds)
+                response = _http_client().get(url, params=params, timeout=self.timeout_seconds)
                 response.raise_for_status()
                 return response.json()
             except (httpx.HTTPError, ValueError) as exc:
@@ -167,6 +179,8 @@ class RoutingService:
         durations = payload.get("durations") or []
         if len(durations) != len(sources):
             raise RoutingUnavailableError("OSRM /table returned an unexpected shape")
+        if any(not isinstance(row, list) or len(row) != len(destinations) for row in durations):
+            raise RoutingUnavailableError("OSRM /table returned rows of unexpected width")
         try:
             return [[None if value is None else float(value) for value in row] for row in durations]
         except (TypeError, ValueError) as exc:

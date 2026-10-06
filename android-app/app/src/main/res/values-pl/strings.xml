@@ -335,4 +335,6 @@
     <string name="poi_opening_hours_label">Godziny otwarcia</string>
     <string name="poi_service_times_label">Godziny nabożeństw</string>
     <string name="action_open_website">Strona internetowa</string>
+    <string name="status_public_transport_not_used">Nie użyto komunikacji miejskiej</string>
+    <string name="status_public_transport_not_used_body">Komunikacja miejska nie jest korzystna na tej trasie — pieszo każdy odcinek jest szybszy.</string>
 </resources>

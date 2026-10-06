@@ -242,24 +242,6 @@ def replace_route_feedback(
         with conn.cursor() as cur:
             cur.execute(
                 """
-                DELETE FROM route_feedback rf
-                WHERE rf.session_id = %(session_id)s
-                  AND EXISTS (
-                      SELECT 1
-                      FROM route_sessions rs
-                      WHERE rs.id = rf.session_id
-                        AND rs.device_id = %(device_id)s
-                        AND rs.device_token_hash = %(device_token_hash)s
-                  )
-                """,
-                {
-                    "session_id": session_id,
-                    "device_id": device_id,
-                    "device_token_hash": device_token_hash,
-                },
-            )
-            cur.execute(
-                """
                 INSERT INTO route_feedback (
                     session_id,
                     rating,
@@ -282,6 +264,13 @@ def replace_route_feedback(
                       AND rs.device_id = %(device_id)s
                       AND rs.device_token_hash = %(device_token_hash)s
                 )
+                ON CONFLICT (session_id) DO UPDATE SET
+                    rating = EXCLUDED.rating,
+                    was_convenient = EXCLUDED.was_convenient,
+                    too_much_walking = EXCLUDED.too_much_walking,
+                    pois_were_interesting = EXCLUDED.pois_were_interesting,
+                    comment = EXCLUDED.comment,
+                    created_at = NOW()
                 RETURNING *
                 """,
                 {
@@ -333,6 +322,8 @@ def get_route_sessions_for_device(
     *,
     device_id: str,
     device_token_hash: str,
+    limit: int,
+    offset: int,
 ) -> list[dict]:
     with get_connection() as conn:
         with conn.cursor() as cur:
@@ -347,10 +338,50 @@ def get_route_sessions_for_device(
                 WHERE rs.device_id = %s
                   AND rs.device_token_hash = %s
                 ORDER BY rs.started_at DESC, rs.created_at DESC
+                LIMIT %s OFFSET %s
                 """,
-                (device_id, device_token_hash),
+                (device_id, device_token_hash, limit, offset),
             )
-            return [session_with_children(cur, session) for session in cur.fetchall()]
+            sessions = cur.fetchall()
+            if not sessions:
+                return []
+
+            session_ids = [session["id"] for session in sessions]
+
+            cur.execute(
+                """
+                SELECT *
+                FROM route_session_pois
+                WHERE session_id = ANY(%s)
+                ORDER BY session_id, visit_order
+                """,
+                (session_ids,),
+            )
+            pois_by_session: dict[Any, list[dict]] = {}
+            for row in cur.fetchall():
+                pois_by_session.setdefault(row["session_id"], []).append(row)
+
+            cur.execute(
+                """
+                SELECT *
+                FROM route_feedback
+                WHERE session_id = ANY(%s)
+                ORDER BY session_id, created_at DESC
+                """,
+                (session_ids,),
+            )
+            feedback_by_session: dict[Any, list[dict]] = {}
+            for row in cur.fetchall():
+                feedback_by_session.setdefault(row["session_id"], []).append(row)
+
+            return [
+                {
+                    **session,
+                    "pois": pois_by_session.get(session["id"], []),
+                    "feedback": feedback_by_session.get(session["id"], []),
+                }
+                for session in sessions
+            ]
 
 
 def session_with_children(cur, session: dict) -> dict:
@@ -384,7 +415,19 @@ def session_with_children(cur, session: dict) -> dict:
 
 
 def upsert_session_pois(cur, session_id: UUID, route_snapshot_json: dict[str, Any]) -> None:
-    route_items = route_snapshot_json.get("route") or []
+    route_items = route_snapshot_json.get("route")
+    if not isinstance(route_items, list):
+        return
+    current_poi_ids = [item["poi_id"] for item in route_items if item.get("poi_id") is not None]
+
+    cur.execute(
+        """
+        DELETE FROM route_session_pois
+        WHERE session_id = %(session_id)s
+          AND NOT (poi_id = ANY(%(poi_ids)s))
+        """,
+        {"session_id": session_id, "poi_ids": current_poi_ids},
+    )
 
     for item in route_items:
         poi_id = item.get("poi_id")

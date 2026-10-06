@@ -335,4 +335,6 @@
     <string name="poi_opening_hours_label">Години роботи</string>
     <string name="poi_service_times_label">Час богослужінь</string>
     <string name="action_open_website">Сайт</string>
+    <string name="status_public_transport_not_used">Громадський транспорт не використано</string>
+    <string name="status_public_transport_not_used_body">Громадський транспорт для цього маршруту невигідний — пішки кожен відрізок швидший.</string>
 </resources>

@@ -11,4 +11,7 @@ COPY backend/scripts ./scripts
 COPY alembic.ini ./alembic.ini
 COPY pipeline/config ./pipeline/config
 
+RUN useradd --create-home --uid 10001 appuser && chown -R appuser:appuser /app
+USER appuser
+
 CMD ["sh", "-c", "python -m alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000"]

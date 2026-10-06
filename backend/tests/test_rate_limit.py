@@ -63,9 +63,15 @@ def test_rate_limit_key_uses_forwarded_header_only_when_trusted(monkeypatch):
 
     monkeypatch.setattr(
         "app.core.rate_limit.get_settings",
-        lambda: SimpleNamespace(rate_limit_trust_proxy_headers=True),
+        lambda: SimpleNamespace(rate_limit_trust_proxy_headers=True, rate_limit_trusted_proxy_hops=1),
     )
-    assert rate_limit_client_key(request) == "203.0.113.7"
+    assert rate_limit_client_key(request) == "10.0.0.2"
+
+    spoofed = SimpleNamespace(
+        headers={"X-Forwarded-For": "1.2.3.4, 203.0.113.7, 10.0.0.2"},
+        client=SimpleNamespace(host="10.0.0.9"),
+    )
+    assert rate_limit_client_key(spoofed) == "10.0.0.2"
 
     request_without_header = SimpleNamespace(headers={}, client=SimpleNamespace(host="10.0.0.9"))
     assert rate_limit_client_key(request_without_header) == "10.0.0.9"

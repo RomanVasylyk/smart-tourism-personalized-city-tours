@@ -34,7 +34,7 @@ internal fun routeProgressMetrics(
         null
     }
     val totalCount = progressTotalCount(routeItems, skippedIds)
-    val visitedCount = visitedIds.size.coerceAtMost(totalCount)
+    val visitedCount = routeItems.count { item -> item.poiId in visitedIds && item.poiId !in skippedIds }
     val isOffRoute = isTracking &&
         currentLocation != null &&
         nextTarget != null &&

@@ -14,6 +14,8 @@ from app.schemas.route_sessions import (
 from fastapi import HTTPException
 
 SESSION_STATUSES = {"not_started", "in_progress", "paused", "completed", "cancelled"}
+DEFAULT_SESSION_PAGE_SIZE = 100
+MAX_SESSION_PAGE_SIZE = 200
 
 
 def create_route_session(
@@ -152,12 +154,16 @@ def get_route_sessions_for_device(
     device_id: str,
     authenticated_device_id: str,
     authenticated_device_token: str,
+    limit: int = DEFAULT_SESSION_PAGE_SIZE,
+    offset: int = 0,
 ) -> list[dict]:
     device_id = require_matching_device_id(device_id, authenticated_device_id)
     device_token_hash = hash_authenticated_device_token(authenticated_device_token)
     return route_session_repository.get_route_sessions_for_device(
         device_id=device_id,
         device_token_hash=device_token_hash,
+        limit=max(1, min(limit, MAX_SESSION_PAGE_SIZE)),
+        offset=max(0, offset),
     )
 
 

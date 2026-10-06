@@ -155,3 +155,55 @@ def test_cap_available_minutes_enforces_city_limit():
     assert untouched.available_minutes == 600
     no_limit = cap_available_minutes(request, {})
     assert no_limit.available_minutes == 600
+
+
+def test_timeline_rebuild_drops_closed_optional_poi():
+    closed = _candidate(1, 0.5, opening="Mo-Su 11:00-18:00", visit=20)
+    engine = _engine([closed])
+    timeline = engine.build_timeline_for_order([closed])
+    assert timeline.route_items == []
+
+
+def test_timeline_rebuild_keeps_closed_required_poi():
+    closed = _candidate(1, 0.5, opening="Mo-Su 11:00-18:00", visit=20)
+    engine = _engine([closed], preferred=[1])
+    timeline = engine.build_timeline_for_order([closed])
+    assert [item["poi_id"] for item in timeline.route_items] == [1]
+
+
+def test_build_within_budget_trims_optional_stops():
+    candidates = [_candidate(1, 0.5, visit=20), _candidate(2, 1.5, visit=20), _candidate(3, 3.0, visit=20)]
+    engine = _engine(candidates, available=60, respect=False)
+    timeline = engine.build_within_budget(candidates)
+    assert timeline.elapsed_minutes <= 60
+    assert [item["poi_id"] for item in timeline.route_items] == [1, 2]
+
+
+def test_build_within_budget_keeps_required_over_budget():
+    candidates = [_candidate(1, 1.0, visit=20), _candidate(2, 2.0, visit=20)]
+    engine = _engine(candidates, preferred=[1, 2], available=30, respect=False)
+    timeline = engine.build_within_budget(candidates)
+    assert [item["poi_id"] for item in timeline.route_items] == [1, 2]
+
+
+def test_plan_never_exceeds_budget_without_required_pois():
+    candidates = [_candidate(poi_id, poi_id * 0.5, visit=20) for poi_id in range(1, 6)]
+    engine = _engine(candidates, available=60, respect=False)
+    result = engine.plan()
+    assert result.used_minutes <= result.available_minutes
+    assert result.required_pois_over_budget is False
+
+
+class OptimisticTableRoutingService(DistanceRoutingService):
+    def duration_matrix(self, sources, destinations, pace, profile=None):
+        return [[60.0 for _ in destinations] for _ in sources]
+
+
+def test_plan_respects_budget_when_table_underestimates_travel():
+    candidates = [_candidate(poi_id, poi_id * 0.5, visit=20) for poi_id in range(1, 6)]
+    engine = _engine(candidates, available=90, respect=False)
+    engine.evaluator.routing_service = OptimisticTableRoutingService()
+    engine.routing_service = OptimisticTableRoutingService()
+    result = engine.plan()
+    assert result.used_minutes <= result.available_minutes
+    assert result.required_pois_over_budget is False

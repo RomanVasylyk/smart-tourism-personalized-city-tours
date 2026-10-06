@@ -84,115 +84,80 @@ def load_pois_for_city(city: dict) -> tuple[int, int]:
     pois = json.loads(in_file.read_text(encoding="utf-8"))
 
     inserted_count = 0
+    updated_count = 0
     with get_connection() as conn:
         city_id = ensure_city(conn, city)
 
         with conn.cursor() as cur:
-            updated_count = 0
             for poi in pois:
-                cur.execute(
-                    """
-                    UPDATE pois
-                    SET
-                        name = %s,
-                        category = %s,
-                        subcategory = %s,
-                        lat = %s,
-                        lon = %s,
-                        geom = ST_SetSRID(ST_MakePoint(%s, %s), 4326),
-                        address = %s,
-                        opening_hours_raw = %s,
-                        visit_duration_min = %s,
-                        base_score = %s,
-                        wikidata_id = %s,
-                        wikipedia_title = %s,
-                        wikipedia_url = %s,
-                        short_description = %s,
-                        website = %s,
-                        image_url = %s,
-                        opening_hours_source = %s,
-                        source = %s,
-                        is_active = %s
-                    WHERE city_id = %s AND osm_id = %s AND osm_type = %s;
-                    """,
-                    (
-                        poi["name"],
-                        poi["category"],
-                        poi.get("subcategory"),
-                        poi["lat"],
-                        poi["lon"],
-                        poi["lon"],
-                        poi["lat"],
-                        poi.get("address"),
-                        poi.get("opening_hours_raw"),
-                        poi.get("visit_duration_min"),
-                        poi.get("base_score"),
-                        poi.get("wikidata_id"),
-                        poi.get("wikipedia_title"),
-                        poi.get("wikipedia_url"),
-                        poi.get("short_description"),
-                        poi.get("website"),
-                        poi.get("image_url"),
-                        poi.get("opening_hours_source"),
-                        poi.get("source", "osm"),
-                        poi.get("is_active", True),
-                        city_id,
-                        poi["osm_id"],
-                        poi["osm_type"],
-                    ),
-                )
-                if cur.rowcount:
-                    updated_count += cur.rowcount
-                    continue
-
                 cur.execute(
                     """
                     INSERT INTO pois (
                         city_id, osm_id, osm_type, name, category, subcategory,
                         lat, lon, geom, address, opening_hours_raw, visit_duration_min,
                         base_score, wikidata_id, wikipedia_title, wikipedia_url,
-                        short_description, website, image_url, opening_hours_source, source, is_active
+                        short_description, website, image_url, opening_hours_source,
+                        source, is_active
                     )
-                    SELECT
-                        %s, %s, %s, %s, %s, %s,
-                        %s, %s, ST_SetSRID(ST_MakePoint(%s, %s), 4326), %s, %s, %s,
-                        %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
-                        WHERE NOT EXISTS (
-                        SELECT 1
-                        FROM pois
-                        WHERE city_id = %s AND osm_id = %s AND osm_type = %s
-                        );
+                    VALUES (
+                        %(city_id)s, %(osm_id)s, %(osm_type)s, %(name)s, %(category)s, %(subcategory)s,
+                        %(lat)s, %(lon)s, ST_SetSRID(ST_MakePoint(%(lon)s, %(lat)s), 4326),
+                        %(address)s, %(opening_hours_raw)s, %(visit_duration_min)s,
+                        %(base_score)s, %(wikidata_id)s, %(wikipedia_title)s, %(wikipedia_url)s,
+                        %(short_description)s, %(website)s, %(image_url)s, %(opening_hours_source)s,
+                        %(source)s, %(is_active)s
+                    )
+                    ON CONFLICT (city_id, osm_id, osm_type) DO UPDATE SET
+                        name = EXCLUDED.name,
+                        category = EXCLUDED.category,
+                        subcategory = EXCLUDED.subcategory,
+                        lat = EXCLUDED.lat,
+                        lon = EXCLUDED.lon,
+                        geom = EXCLUDED.geom,
+                        address = EXCLUDED.address,
+                        opening_hours_raw = EXCLUDED.opening_hours_raw,
+                        visit_duration_min = EXCLUDED.visit_duration_min,
+                        base_score = EXCLUDED.base_score,
+                        wikidata_id = EXCLUDED.wikidata_id,
+                        wikipedia_title = EXCLUDED.wikipedia_title,
+                        wikipedia_url = EXCLUDED.wikipedia_url,
+                        short_description = EXCLUDED.short_description,
+                        website = EXCLUDED.website,
+                        image_url = EXCLUDED.image_url,
+                        opening_hours_source = EXCLUDED.opening_hours_source,
+                        source = EXCLUDED.source,
+                        is_active = EXCLUDED.is_active
+                    RETURNING (xmax = 0) AS was_inserted
                     """,
-                    (
-                        city_id,
-                        poi["osm_id"],
-                        poi["osm_type"],
-                        poi["name"],
-                        poi["category"],
-                        poi.get("subcategory"),
-                        poi["lat"],
-                        poi["lon"],
-                        poi["lon"],
-                        poi["lat"],
-                        poi.get("address"),
-                        poi.get("opening_hours_raw"),
-                        poi.get("visit_duration_min"),
-                        poi.get("base_score"),
-                        poi.get("wikidata_id"),
-                        poi.get("wikipedia_title"),
-                        poi.get("wikipedia_url"),
-                        poi.get("short_description"),
-                        poi.get("website"),
-                        poi.get("image_url"),
-                        poi.get("opening_hours_source"),
-                        poi.get("source", "osm"),
-                        poi.get("is_active", True),
-                        city_id,
-                        poi["osm_id"],
-                        poi["osm_type"],
-                    ),
+                    {
+                        "city_id": city_id,
+                        "osm_id": poi["osm_id"],
+                        "osm_type": poi["osm_type"],
+                        "name": poi["name"],
+                        "category": poi["category"],
+                        "subcategory": poi.get("subcategory"),
+                        "lat": poi["lat"],
+                        "lon": poi["lon"],
+                        "address": poi.get("address"),
+                        "opening_hours_raw": poi.get("opening_hours_raw"),
+                        "visit_duration_min": poi.get("visit_duration_min"),
+                        "base_score": poi.get("base_score"),
+                        "wikidata_id": poi.get("wikidata_id"),
+                        "wikipedia_title": poi.get("wikipedia_title"),
+                        "wikipedia_url": poi.get("wikipedia_url"),
+                        "short_description": poi.get("short_description"),
+                        "website": poi.get("website"),
+                        "image_url": poi.get("image_url"),
+                        "opening_hours_source": poi.get("opening_hours_source"),
+                        "source": poi.get("source", "osm"),
+                        "is_active": poi.get("is_active", True),
+                    },
                 )
-                inserted_count += cur.rowcount
+                row = cur.fetchone()
+                if row is not None and row[0]:
+                    inserted_count += 1
+                else:
+                    updated_count += 1
 
         conn.commit()
 

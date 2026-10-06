@@ -97,6 +97,10 @@ internal class PlannerStateStore {
     var routeError: String?
         get() = uiState.value.routeError
         set(value) = update { state -> state.copy(routeError = value) }
+
+    var routeNotice: String?
+        get() = uiState.value.routeNotice
+        set(value) = update { state -> state.copy(routeNotice = value) }
     var routeHistoryError: String?
         get() = uiState.value.routeHistoryError
         set(value) = update { state -> state.copy(routeHistoryError = value) }

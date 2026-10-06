@@ -35,6 +35,7 @@ internal data class RoutePlannerUiState(
     val isRouteLoading: Boolean = false,
     val isRouteHistoryLoading: Boolean = false,
     val routeError: String? = null,
+    val routeNotice: String? = null,
     val routeHistoryError: String? = null,
     val hasNoGeneratedStops: Boolean = false,
     val isRerouting: Boolean = false,

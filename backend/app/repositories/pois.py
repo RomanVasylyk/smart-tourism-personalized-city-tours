@@ -3,7 +3,7 @@ from app.services.city_lookup import find_city_row
 from app.services.city_profiles import city_profile_by_token
 
 
-def list_poi_rows(city: str = "nitra") -> list[dict]:
+def list_poi_rows(city: str = "nitra", limit: int = 5000) -> list[dict]:
     city_profile = city_profile_by_token(city) or {}
 
     with get_connection() as conn:
@@ -32,7 +32,8 @@ def list_poi_rows(city: str = "nitra") -> list[dict]:
                 FROM pois p
                 WHERE p.city_id = %s
                 ORDER BY p.base_score DESC NULLS LAST, p.name
+                LIMIT %s
                 """,
-                (city_row["id"],),
+                (city_row["id"], limit),
             )
             return cur.fetchall()

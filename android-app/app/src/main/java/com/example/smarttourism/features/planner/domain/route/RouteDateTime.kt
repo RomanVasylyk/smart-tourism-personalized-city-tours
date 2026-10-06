@@ -8,6 +8,9 @@ import java.time.temporal.ChronoUnit
 internal fun defaultRouteStartDateTime(): LocalDateTime =
     LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES)
 
+internal fun currentRouteStartedAt(): String =
+    OffsetDateTime.now().truncatedTo(ChronoUnit.SECONDS).toString()
+
 internal fun parseRouteStartDateTime(rawValue: String?): LocalDateTime =
     rawValue?.toDisplayDateTime()?.truncatedTo(ChronoUnit.MINUTES) ?: defaultRouteStartDateTime()
 

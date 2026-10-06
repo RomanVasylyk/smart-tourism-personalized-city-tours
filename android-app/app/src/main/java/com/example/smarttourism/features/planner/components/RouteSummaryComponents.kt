@@ -110,6 +110,9 @@ internal fun SummaryMetric(
             Text(
                 text = value,
                 style = MaterialTheme.typography.titleMedium,
+                maxLines = 1,
+                softWrap = false,
+                overflow = TextOverflow.Ellipsis,
                 fontWeight = FontWeight.SemiBold
             )
         }
@@ -232,8 +235,7 @@ internal fun ActiveRouteBottomPanel(
                 )
                 SummaryMetric(
                     label = stringResource(R.string.route_active_distance),
-                    value = metrics.distanceToNextTargetMeters?.let(::formatDistanceMeters)
-                        ?: stringResource(R.string.common_unknown),
+                    value = metrics.distanceToNextTargetMeters?.let(::formatDistanceMeters) ?: "—",
                     modifier = Modifier.weight(1f)
                 )
                 SummaryMetric(

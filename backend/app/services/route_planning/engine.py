@@ -84,9 +84,20 @@ class RoutePlannerEngine:
         self.ensure_preferred_candidates_available()
         selected_pois = self.construct_greedy_route()
         optimized_pois = self.apply_local_search(selected_pois)
-        self.timeline = self.build_timeline_for_order(optimized_pois)
+        self.timeline = self.build_within_budget(optimized_pois)
         self.ensure_required_preferred_pois_were_planned()
         return self.result()
+
+    def build_within_budget(self, order: list[CandidatePoi]) -> RouteTimelineBuilder:
+        trimmed = list(order)
+        while True:
+            timeline = self.build_timeline_for_order(trimmed)
+            if timeline.elapsed_minutes <= self.request.available_minutes:
+                return timeline
+            droppable = [index for index, poi in enumerate(trimmed) if poi.id not in self.preferred_poi_ids]
+            if not droppable:
+                return timeline
+            del trimmed[droppable[-1]]
 
     def construct_greedy_route(self) -> list[CandidatePoi]:
         selected_pois: list[CandidatePoi] = []
@@ -224,9 +235,11 @@ class RoutePlannerEngine:
                 arrival_dt,
                 visit_minutes,
                 respect_opening_hours=self.request.respect_opening_hours,
-                is_forced=True,
+                is_forced=poi.id in self.preferred_poi_ids,
                 max_wait_minutes=self.max_opening_wait_minutes,
             )
+            if wait_minutes is None:
+                continue
             utility, score_breakdown = score_candidate(
                 poi=poi.raw,
                 travel_plan=travel_plan,
@@ -242,7 +255,7 @@ class RoutePlannerEngine:
                     visit_minutes=visit_minutes,
                     utility=utility,
                     score_breakdown=score_breakdown,
-                    wait_minutes=wait_minutes or 0,
+                    wait_minutes=wait_minutes,
                 )
             )
             category_counts[poi.category] = category_counts.get(poi.category, 0) + 1

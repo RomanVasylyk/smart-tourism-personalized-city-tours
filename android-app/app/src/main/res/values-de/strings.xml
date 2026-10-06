@@ -335,4 +335,6 @@
     <string name="poi_opening_hours_label">Öffnungszeiten</string>
     <string name="poi_service_times_label">Gottesdienstzeiten</string>
     <string name="action_open_website">Webseite</string>
+    <string name="status_public_transport_not_used">Keine öffentlichen Verkehrsmittel</string>
+    <string name="status_public_transport_not_used_body">Öffentliche Verkehrsmittel lohnen sich für diese Route nicht – jede Etappe ist zu Fuß schneller.</string>
 </resources>

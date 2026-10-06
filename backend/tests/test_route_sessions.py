@@ -1,5 +1,7 @@
 from hashlib import sha256
 
+from app.repositories import route_sessions as route_sessions_repository
+
 
 def route_session_payload(device_id="device-1"):
     return {
@@ -117,3 +119,37 @@ def test_get_route_session_requires_matching_device_token(client, monkeypatch):
     assert rejected_response.status_code == 404
     assert accepted_response.status_code == 200
     assert accepted_response.json()["device_id"] == "device-1"
+
+
+def test_upsert_session_pois_removes_stops_absent_from_snapshot():
+    statements = []
+
+    class RecordingCursor:
+        def execute(self, sql, params=None):
+            statements.append((" ".join(sql.split()), params))
+
+    route_sessions_repository.upsert_session_pois(
+        RecordingCursor(),
+        "11111111-1111-1111-1111-111111111111",
+        {"route": [{"poi_id": 7, "order": 1}]},
+    )
+
+    delete_statement = statements[0]
+    assert "DELETE FROM route_session_pois" in delete_statement[0]
+    assert delete_statement[1]["poi_ids"] == [7]
+
+
+def test_upsert_session_pois_ignores_snapshot_without_route():
+    statements = []
+
+    class RecordingCursor:
+        def execute(self, sql, params=None):
+            statements.append(sql)
+
+    route_sessions_repository.upsert_session_pois(
+        RecordingCursor(),
+        "11111111-1111-1111-1111-111111111111",
+        {"summary": {}},
+    )
+
+    assert statements == []

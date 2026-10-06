@@ -121,6 +121,12 @@ internal class PlannerRoutePlanningActions(
                     state.allowPublicTransport = true
                     state.hasPendingRouteChanges = false
                     state.hasNoGeneratedStops = false
+                    val usesTransit = result.response.legs.orEmpty().any { leg ->
+                        leg.segments.orEmpty().any { segment -> segment.mode == "transit" }
+                    }
+                    if (!usesTransit) {
+                        state.routeNotice = messages.publicTransportNotUsed
+                    }
                 }
 
                 is RouteGenerationResult.Error -> {

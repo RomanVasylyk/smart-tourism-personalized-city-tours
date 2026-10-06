@@ -43,6 +43,12 @@ internal fun fetchCurrentLocation(
             if (hasFinePermission && locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
                 add(LocationManager.GPS_PROVIDER)
             }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
+                runCatching { locationManager.isProviderEnabled(LocationManager.FUSED_PROVIDER) }
+                    .getOrDefault(false)
+            ) {
+                add(LocationManager.FUSED_PROVIDER)
+            }
             if (locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
                 add(LocationManager.NETWORK_PROVIDER)
             }
@@ -52,6 +58,9 @@ internal fun fetchCurrentLocation(
             addAll(enabledProviders)
             if (hasFinePermission) {
                 add(LocationManager.GPS_PROVIDER)
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                add(LocationManager.FUSED_PROVIDER)
             }
             add(LocationManager.NETWORK_PROVIDER)
         }.distinct()
@@ -139,6 +148,12 @@ internal fun startRouteLocationTracking(
         val providers = buildList {
             if (hasFinePermission && locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
                 add(LocationManager.GPS_PROVIDER)
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
+                runCatching { locationManager.isProviderEnabled(LocationManager.FUSED_PROVIDER) }
+                    .getOrDefault(false)
+            ) {
+                add(LocationManager.FUSED_PROVIDER)
             }
             if (locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
                 add(LocationManager.NETWORK_PROVIDER)

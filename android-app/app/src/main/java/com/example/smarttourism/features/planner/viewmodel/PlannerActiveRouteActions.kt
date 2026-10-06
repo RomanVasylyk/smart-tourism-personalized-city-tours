@@ -4,7 +4,7 @@ import com.example.smarttourism.data.model.RouteFeedback
 import com.example.smarttourism.features.planner.application.ActiveRouteController
 import com.example.smarttourism.features.planner.data.sync.OfflineSyncRepository
 import com.example.smarttourism.features.planner.domain.model.RoutePoint
-import com.example.smarttourism.features.planner.domain.route.defaultRouteStartDateTime
+import com.example.smarttourism.features.planner.domain.route.currentRouteStartedAt
 import java.util.UUID
 
 internal class PlannerActiveRouteActions(
@@ -17,7 +17,7 @@ internal class PlannerActiveRouteActions(
         val result = activeRouteController.activateRouteTracking(
             state = state.uiState.value,
             newRouteId = UUID.randomUUID().toString(),
-            startedAtNow = defaultRouteStartDateTime().toString()
+            startedAtNow = currentRouteStartedAt()
         ) ?: return
         state.update { result.state }
         sessionCoordinator.persistRouteSession(
@@ -43,7 +43,7 @@ internal class PlannerActiveRouteActions(
         val result = activeRouteController.resumeRoute(
             state = state.uiState.value,
             newRouteId = UUID.randomUUID().toString(),
-            startedAtNow = defaultRouteStartDateTime().toString()
+            startedAtNow = currentRouteStartedAt()
         )
         state.update { result.state }
         sessionCoordinator.persistRouteSession(

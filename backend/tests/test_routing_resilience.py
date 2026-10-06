@@ -56,7 +56,7 @@ def _service(monkeypatch, responses):
             raise item
         return item
 
-    monkeypatch.setattr(rs.httpx, "get", fake_get)
+    monkeypatch.setattr(rs._http_client(), "get", fake_get)
     service = RoutingService(base_url="http://osrm", enabled=True, table_enabled=False)
     service.OSRM_RETRY_BACKOFF_SECONDS = 0.0
     return service, calls

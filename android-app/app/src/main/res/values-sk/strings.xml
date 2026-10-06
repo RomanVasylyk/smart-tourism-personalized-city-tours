@@ -335,4 +335,6 @@
     <string name="poi_opening_hours_label">Otváracie hodiny</string>
     <string name="poi_service_times_label">Časy bohoslužieb</string>
     <string name="action_open_website">Webová stránka</string>
+    <string name="status_public_transport_not_used">MHD nebola použitá</string>
+    <string name="status_public_transport_not_used_body">MHD pre túto trasu nie je výhodná — každý úsek je rýchlejší pešo.</string>
 </resources>
