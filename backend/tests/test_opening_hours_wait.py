@@ -130,6 +130,19 @@ def test_route_skips_poi_that_opens_too_late():
     assert result.route_items == []
 
 
+def test_route_includes_seasonal_poi_in_season():
+    opening = "May-Jun Mo-Fr 09:00-18:45; May-Jun Sa,Su 09:00-19:00; Jul-Aug Mo-Su 09:00-19:00"
+    engine = _engine([_candidate(1, 0.5, opening=opening, visit=20)])
+    result = engine.plan()
+    assert [item["poi_id"] for item in result.route_items] == [1]
+
+
+def test_route_skips_seasonal_poi_out_of_season():
+    engine = _engine([_candidate(1, 0.5, opening="Jul-Aug Mo-Su 09:00-19:00", visit=20)])
+    result = engine.plan()
+    assert result.route_items == []
+
+
 def test_required_poi_that_opens_late_is_included_and_flagged():
     engine = _engine([_candidate(1, 0.5, opening="Mo-Su 11:00-18:00", visit=20)], preferred=[1])
     result = engine.plan()

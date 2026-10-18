@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import re
-from datetime import datetime
+from dataclasses import dataclass
+from datetime import date, datetime
+from functools import lru_cache
 
 DAY_SEQUENCE = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"]
 DAY_INDEX = {day: index for index, day in enumerate(DAY_SEQUENCE)}
@@ -46,20 +48,65 @@ DAY_ALIASES = {
     "nedeľa": "Su",
     "nedele": "Su",
 }
+MONTH_SEQUENCE = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+MONTH_INDEX = {month: index + 1 for index, month in enumerate(MONTH_SEQUENCE)}
+DAY_NAMES = "|".join(DAY_SEQUENCE)
+MONTH_NAMES = "|".join(MONTH_SEQUENCE)
+ALWAYS_OPEN_VALUES = {"24/7", "24x7", "24h"}
 DAY_TOKEN_PATTERN = re.compile(
     r"\b(" + "|".join(sorted((re.escape(token) for token in DAY_ALIASES), key=len, reverse=True)) + r")\b",
     re.IGNORECASE,
 )
+MONTH_TOKEN_PATTERN = re.compile(rf"\b({MONTH_NAMES})\b", re.IGNORECASE)
+COMMENT_PATTERN = re.compile(r'"[^"]*"')
+MISSING_SEPARATOR_PATTERN = re.compile(rf"(\S+ )?(\S*\d)\s+(?=(?:{DAY_NAMES})\b)")
+ADDITIONAL_RULE_PATTERN = re.compile(rf"(?<=\d:\d\d)\s*,\s*(?=(?:{DAY_NAMES}|{MONTH_NAMES})\b)")
 TIME_RANGE_PATTERN = re.compile(r"(\d{1,2})(?::(\d{2}))?\s*-\s*(\d{1,2})(?::(\d{2}))?")
+MONTH_DAY = rf"(?:{MONTH_NAMES})(?: [0-3]?\d(?![\d:]))?"
+DATE_RANGE = rf"{MONTH_DAY}(?: ?- ?(?:{MONTH_DAY}|[0-3]?\d(?![\d:])))?"
+DATE_SELECTOR_PATTERN = re.compile(rf"^({DATE_RANGE}(?: ?, ?{DATE_RANGE})*)(?: ?:)?(?: |$)")
+DATE_RANGE_PATTERN = re.compile(
+    rf"^({MONTH_NAMES})(?: ([0-3]?\d))?(?: ?- ?(?:({MONTH_NAMES})(?: ([0-3]?\d))?|([0-3]?\d)))?$"
+)
+RULE_BODY_PATTERN = re.compile(r"^([A-Za-z,\-\s]*?)\s*:?\s*(\d.*)$")
+CLOSED_RULE_PATTERN = re.compile(r"^([A-Za-z,\-\s]*?)\s*:?\s*\b(?:off|closed)$", re.IGNORECASE)
+
+DateRange = tuple[tuple[int, int], tuple[int, int]]
+
+
+@dataclass(frozen=True)
+class OpeningRule:
+    date_ranges: tuple[DateRange, ...]
+    days: tuple[int, ...]
+    intervals: tuple[tuple[int, int], ...]
+    additional: bool
+
+    def applies_on(self, on_date: date | None) -> bool:
+        if not self.date_ranges:
+            return True
+        if on_date is None:
+            return False
+        key = (on_date.month, on_date.day)
+        return any(
+            start <= key <= end if start <= end else (key >= start or key <= end) for start, end in self.date_ranges
+        )
+
+
+def insert_missing_rule_separator(match: re.Match[str]) -> str:
+    previous_token = match.group(1) or ""
+    if previous_token.strip()[-3:] in MONTH_INDEX:
+        return match.group(0)
+    return f"{previous_token}{match.group(2)}; "
 
 
 def normalize_opening_hours(raw_value: str) -> str:
-    normalized = raw_value.strip()
+    normalized = COMMENT_PATTERN.sub(" ", raw_value).strip()
     normalized = normalized.replace("–", "-").replace("—", "-")
     normalized = DAY_TOKEN_PATTERN.sub(lambda match: DAY_ALIASES[match.group(0).casefold()], normalized)
+    normalized = MONTH_TOKEN_PATTERN.sub(lambda match: match.group(0).capitalize(), normalized)
     normalized = re.sub(r"\s+", " ", normalized)
-    normalized = re.sub(r"(?<=\d)\s+(?=(Mo|Tu|We|Th|Fr|Sa|Su)\b)", "; ", normalized)
-    return normalized
+    normalized = MISSING_SEPARATOR_PATTERN.sub(insert_missing_rule_separator, normalized)
+    return normalized.strip()
 
 
 def parse_day_spec(day_spec: str) -> list[int]:
@@ -111,50 +158,106 @@ def parse_time_range(raw_value: str) -> tuple[int, int] | None:
     return start_total, end_total
 
 
-def parse_opening_hours(raw_value: str | None) -> dict[int, list[tuple[int, int]]] | None:
+def parse_date_range(raw_value: str) -> DateRange | None:
+    match = DATE_RANGE_PATTERN.match(raw_value.strip())
+    if not match:
+        return None
+
+    start_month, start_day, end_month, end_day, same_month_end_day = match.groups()
+    start = (MONTH_INDEX[start_month], int(start_day or 1))
+    if end_month:
+        end = (MONTH_INDEX[end_month], int(end_day or 31))
+    elif same_month_end_day:
+        end = (start[0], int(same_month_end_day))
+    else:
+        end = (start[0], int(start_day or 31))
+
+    if not all(1 <= day <= 31 for _, day in (start, end)):
+        return None
+    return start, end
+
+
+def parse_date_selector(rule_text: str) -> tuple[tuple[DateRange, ...], str] | None:
+    match = DATE_SELECTOR_PATTERN.match(rule_text)
+    if not match:
+        return (), rule_text
+
+    date_ranges = [parse_date_range(part) for part in re.split(r" ?, ?", match.group(1))]
+    if any(date_range is None for date_range in date_ranges):
+        return None
+    return tuple(date_ranges), rule_text[match.end() :].strip()
+
+
+def parse_rule(rule_text: str, *, additional: bool) -> OpeningRule | None:
+    if rule_text.casefold() in ALWAYS_OPEN_VALUES:
+        return OpeningRule((), tuple(range(7)), ((0, 24 * 60),), additional)
+
+    selector = parse_date_selector(rule_text)
+    if selector is None:
+        return None
+    date_ranges, remainder = selector
+
+    closed_match = CLOSED_RULE_PATTERN.match(remainder)
+    body_match = closed_match or RULE_BODY_PATTERN.match(remainder)
+    if not body_match:
+        return None
+
+    day_spec = body_match.group(1).strip()
+    if MONTH_TOKEN_PATTERN.search(day_spec):
+        return None
+    days = parse_day_spec(day_spec) if day_spec else list(range(7))
+    if not days:
+        return None
+
+    if closed_match:
+        return OpeningRule(date_ranges, tuple(days), (), additional)
+
+    intervals = tuple(
+        parsed_range
+        for parsed_range in (parse_time_range(part) for part in body_match.group(2).split(","))
+        if parsed_range is not None
+    )
+    if not intervals:
+        return None
+    return OpeningRule(date_ranges, tuple(days), intervals, additional)
+
+
+@lru_cache(maxsize=4096)
+def parse_opening_rules(raw_value: str) -> tuple[OpeningRule, ...]:
+    rules: list[OpeningRule] = []
+    for segment in normalize_opening_hours(raw_value).split(";"):
+        for position, rule_text in enumerate(ADDITIONAL_RULE_PATTERN.split(segment.strip())):
+            if not rule_text.strip():
+                continue
+            rule = parse_rule(rule_text.strip(), additional=position > 0)
+            if rule is not None:
+                rules.append(rule)
+    return tuple(rules)
+
+
+def parse_opening_hours(raw_value: str | None, on_date: date | None = None) -> dict[int, list[tuple[int, int]]] | None:
     if not raw_value:
         return None
 
-    normalized = normalize_opening_hours(raw_value)
-    if normalized.casefold() in {"24/7", "24x7", "24h"}:
-        return {day_index: [(0, 24 * 60)] for day_index in range(7)}
+    rules = parse_opening_rules(raw_value)
+    if not rules:
+        return None
 
     schedule: dict[int, list[tuple[int, int]]] = {}
-    parsed_any = False
-
-    for segment in (part.strip() for part in normalized.split(";")):
-        if not segment:
+    for rule in rules:
+        if not rule.applies_on(on_date):
             continue
+        for day_index in rule.days:
+            if rule.additional:
+                schedule.setdefault(day_index, []).extend(rule.intervals)
+            else:
+                schedule[day_index] = list(rule.intervals)
 
-        if segment.casefold() in {"24/7", "24x7", "24h"}:
-            return {day_index: [(0, 24 * 60)] for day_index in range(7)}
-
-        match = re.match(r"^([A-Za-z,\-\s]+?)\s*:?\s*(\d.*)$", segment)
-        if not match:
-            continue
-
-        day_indexes = parse_day_spec(match.group(1))
-        if not day_indexes:
-            continue
-
-        intervals = [
-            parsed_range
-            for parsed_range in (parse_time_range(part) for part in match.group(2).split(","))
-            if parsed_range is not None
-        ]
-        if not intervals:
-            continue
-
-        for day_index in day_indexes:
-            schedule.setdefault(day_index, []).extend(intervals)
-
-        parsed_any = True
-
-    return schedule if parsed_any else None
+    return schedule
 
 
 def is_poi_open_for_visit(raw_value: str | None, arrival_dt: datetime, visit_minutes: int) -> bool:
-    schedule = parse_opening_hours(raw_value)
+    schedule = parse_opening_hours(raw_value, arrival_dt.date())
     if schedule is None:
         return True
 
@@ -174,7 +277,7 @@ DEFAULT_MAX_OPENING_WAIT_MIN = 20
 
 
 def wait_minutes_until_open(raw_value: str | None, arrival_dt: datetime, visit_minutes: int) -> int | None:
-    schedule = parse_opening_hours(raw_value)
+    schedule = parse_opening_hours(raw_value, arrival_dt.date())
     if schedule is None:
         return 0
 
