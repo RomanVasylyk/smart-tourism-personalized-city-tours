@@ -15,41 +15,45 @@ data class NetworkSnapshot(
 )
 
 object NetworkMonitor {
+    private val OfflineSnapshot = NetworkSnapshot(isOnline = false, isUnmetered = false)
+
     fun isNetworkAvailable(context: Context): Boolean = snapshot(context).isOnline
 
     fun snapshot(context: Context): NetworkSnapshot {
         val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
-            ?: return NetworkSnapshot(isOnline = false, isUnmetered = false)
+            ?: return OfflineSnapshot
         val capabilities = connectivityManager.activeNetwork
             ?.let { network -> connectivityManager.getNetworkCapabilities(network) }
-            ?: return NetworkSnapshot(isOnline = false, isUnmetered = false)
-        val online = capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
-        val unmetered = capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_METERED)
-        return NetworkSnapshot(isOnline = online, isUnmetered = online && unmetered)
+        return snapshotOf(capabilities)
     }
 
     fun observe(context: Context): Flow<NetworkSnapshot> = callbackFlow {
         val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
         if (connectivityManager == null) {
-            trySend(NetworkSnapshot(isOnline = false, isUnmetered = false))
+            trySend(OfflineSnapshot)
             awaitClose { }
             return@callbackFlow
         }
         val callback = object : ConnectivityManager.NetworkCallback() {
-            override fun onAvailable(network: Network) {
-                trySend(snapshot(context))
+            override fun onCapabilitiesChanged(network: Network, networkCapabilities: NetworkCapabilities) {
+                trySend(snapshotOf(networkCapabilities))
             }
 
             override fun onLost(network: Network) {
-                trySend(snapshot(context))
-            }
-
-            override fun onCapabilitiesChanged(network: Network, networkCapabilities: NetworkCapabilities) {
-                trySend(snapshot(context))
+                trySend(OfflineSnapshot)
             }
         }
         trySend(snapshot(context))
         connectivityManager.registerDefaultNetworkCallback(callback)
         awaitClose { connectivityManager.unregisterNetworkCallback(callback) }
     }.distinctUntilChanged()
+
+    private fun snapshotOf(capabilities: NetworkCapabilities?): NetworkSnapshot {
+        if (capabilities == null) {
+            return OfflineSnapshot
+        }
+        val online = capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+        val unmetered = capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_METERED)
+        return NetworkSnapshot(isOnline = online, isUnmetered = online && unmetered)
+    }
 }
