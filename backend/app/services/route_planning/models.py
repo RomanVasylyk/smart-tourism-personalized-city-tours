@@ -5,6 +5,8 @@ from dataclasses import dataclass
 from app.services.routing_service import RoutePoint
 from app.services.transport_planner import TravelPlan
 
+SERVICE_TIMES_SOURCE = "service_times"
+
 
 @dataclass(frozen=True)
 class CandidatePoi:
@@ -47,6 +49,12 @@ class CandidatePoi:
     @property
     def point(self) -> RoutePoint:
         return RoutePoint(lat=self.lat, lon=self.lon)
+
+    @property
+    def planning_opening_hours(self) -> str | None:
+        if self.opening_hours_source == SERVICE_TIMES_SOURCE:
+            return None
+        return self.opening_hours_raw
 
 
 @dataclass(frozen=True)

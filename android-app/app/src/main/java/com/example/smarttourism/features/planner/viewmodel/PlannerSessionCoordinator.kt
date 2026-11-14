@@ -20,6 +20,7 @@ import com.example.smarttourism.features.planner.domain.model.RouteLegQuery
 import com.example.smarttourism.features.planner.domain.model.RoutePlan
 import com.example.smarttourism.features.planner.domain.model.RoutePoint
 import com.example.smarttourism.features.planner.domain.model.RouteStop
+import com.example.smarttourism.features.planner.domain.route.currentRouteStartedAt
 import com.example.smarttourism.features.planner.domain.route.defaultRouteStartDateTime
 import com.example.smarttourism.features.planner.domain.route.estimateRemainingMinutes
 import com.example.smarttourism.features.planner.domain.route.finalizedHandledRoutePlan
@@ -106,7 +107,7 @@ internal class PlannerSessionCoordinator(
     ) {
         val snapshot = snapshotOverride ?: currentRouteSnapshot() ?: return
         val savedRouteId = routeIdValue ?: return
-        val savedStartedAt = startedAtValue ?: defaultRouteStartDateTime().toString()
+        val savedStartedAt = startedAtValue ?: currentRouteStartedAt()
         state.currentTargetPoiId = nextPendingPoi(snapshot.response.route, visitedIds, skippedIds)?.poiId
         scope.launch {
             val result = activeRouteController.persistRouteSession(
@@ -146,13 +147,13 @@ internal class PlannerSessionCoordinator(
     fun buildCurrentRouteHistoryEntry(): RouteHistoryEntry? {
         val currentSnapshot = currentRouteSnapshot() ?: return null
         val currentRouteId = state.routeId ?: return null
-        val startedAtValue = state.routeStartedAt ?: defaultRouteStartDateTime().toString()
+        val startedAtValue = state.routeStartedAt ?: currentRouteStartedAt()
         val existingHistoryEntry = state.routeHistory.firstOrNull { entry -> entry.routeId == currentRouteId }
         val finishedAtValue = if (
             state.routeSessionStatus == RouteSessionStatus.COMPLETED ||
                 state.routeSessionStatus == RouteSessionStatus.CANCELLED
         ) {
-            existingHistoryEntry?.finishedAt ?: defaultRouteStartDateTime().toString()
+            existingHistoryEntry?.finishedAt ?: currentRouteStartedAt()
         } else {
             null
         }
@@ -228,8 +229,8 @@ internal class PlannerSessionCoordinator(
         val snapshot = currentRouteSnapshot()
         val activeRouteId = state.routeId
         val activeStatus = state.routeSessionStatus
-        val activeStartedAt = state.routeStartedAt ?: defaultRouteStartDateTime().toString()
-        val cancelledFinishedAt = defaultRouteStartDateTime().toString()
+        val activeStartedAt = state.routeStartedAt ?: currentRouteStartedAt()
+        val cancelledFinishedAt = currentRouteStartedAt()
         val existingHistoryEntry = activeRouteId?.let { activeId ->
             state.routeHistory.firstOrNull { entry -> entry.routeId == activeId }
         }

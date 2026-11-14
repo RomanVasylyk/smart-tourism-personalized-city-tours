@@ -10,6 +10,7 @@ import com.example.smarttourism.data.remote.api.PoiApi
 import com.example.smarttourism.data.remote.dto.RouteFeedbackRequest
 import com.example.smarttourism.data.remote.dto.RouteSessionCreateRequest
 import com.example.smarttourism.data.remote.dto.RouteSessionPoiVisitRequest
+import retrofit2.HttpException
 
 data class OfflineSyncSummary(
     val syncedRouteSessions: Int,
@@ -95,8 +96,11 @@ internal class PendingSyncQueue(
 
     suspend fun syncPendingOperations(api: PoiApi): OfflineSyncSummary {
         val routeSessionResult = syncPendingRouteSessions(api)
-        val poiVisitResult = syncPendingPoiVisits(api)
-        val feedbackResult = syncPendingFeedback(api)
+        val unsyncedSessionIds = dao.getPendingRouteSessionSyncs()
+            .map { pendingRouteSession -> pendingRouteSession.sessionId }
+            .toSet()
+        val poiVisitResult = syncPendingPoiVisits(api, unsyncedSessionIds)
+        val feedbackResult = syncPendingFeedback(api, unsyncedSessionIds)
         return OfflineSyncSummary(
             syncedRouteSessions = routeSessionResult.syncedCount,
             failedRouteSessions = routeSessionResult.failedCount,
@@ -128,7 +132,11 @@ internal class PendingSyncQueue(
             }.onSuccess {
                 dao.deletePendingRouteSessionSync(pendingRouteSession.sessionId)
                 syncedCount += 1
-            }.onFailure {
+            }.onFailure { error ->
+                if (error.isPermanentClientError()) {
+                    dao.deletePendingRouteSessionSync(pendingRouteSession.sessionId)
+                    return@onFailure
+                }
                 dao.upsertPendingRouteSessionSync(
                     pendingRouteSession.copy(
                         syncStatus = LocalSyncStatus.FAILED,
@@ -144,7 +152,10 @@ internal class PendingSyncQueue(
         return SyncBatchResult(syncedCount = syncedCount, failedCount = failedCount)
     }
 
-    private suspend fun syncPendingPoiVisits(api: PoiApi): SyncBatchResult {
+    private suspend fun syncPendingPoiVisits(
+        api: PoiApi,
+        unsyncedSessionIds: Set<String>
+    ): SyncBatchResult {
         var syncedCount = 0
         var failedCount = 0
 
@@ -169,7 +180,11 @@ internal class PendingSyncQueue(
             }.onSuccess {
                 dao.deletePendingPoiVisitSync(pendingPoiVisit.requestKey)
                 syncedCount += 1
-            }.onFailure {
+            }.onFailure { error ->
+                if (pendingPoiVisit.sessionId !in unsyncedSessionIds && error.isPermanentClientError()) {
+                    dao.deletePendingPoiVisitSync(pendingPoiVisit.requestKey)
+                    return@onFailure
+                }
                 dao.upsertPendingPoiVisitSync(
                     pendingPoiVisit.copy(
                         syncStatus = LocalSyncStatus.FAILED,
@@ -185,7 +200,10 @@ internal class PendingSyncQueue(
         return SyncBatchResult(syncedCount = syncedCount, failedCount = failedCount)
     }
 
-    private suspend fun syncPendingFeedback(api: PoiApi): SyncBatchResult {
+    private suspend fun syncPendingFeedback(
+        api: PoiApi,
+        unsyncedSessionIds: Set<String>
+    ): SyncBatchResult {
         var syncedCount = 0
         var failedCount = 0
 
@@ -209,7 +227,11 @@ internal class PendingSyncQueue(
             }.onSuccess {
                 dao.deletePendingFeedback(pendingFeedback.sessionId)
                 syncedCount += 1
-            }.onFailure {
+            }.onFailure { error ->
+                if (pendingFeedback.sessionId !in unsyncedSessionIds && error.isPermanentClientError()) {
+                    dao.deletePendingFeedback(pendingFeedback.sessionId)
+                    return@onFailure
+                }
                 dao.upsertPendingFeedback(
                     pendingFeedback.copy(
                         syncStatus = LocalSyncStatus.FAILED,
@@ -224,6 +246,9 @@ internal class PendingSyncQueue(
 
         return SyncBatchResult(syncedCount = syncedCount, failedCount = failedCount)
     }
+
+    private fun Throwable.isPermanentClientError(): Boolean =
+        this is HttpException && code() in 400..499 && code() != 408 && code() != 429
 
     private data class SyncBatchResult(
         val syncedCount: Int,

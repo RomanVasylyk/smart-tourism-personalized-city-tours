@@ -195,7 +195,7 @@ class RoutePlannerEngine:
             arrival_dt = departure_dt + timedelta(seconds=travel_plan.duration_seconds)
 
             wait_minutes = resolve_visit_wait(
-                poi.opening_hours_raw,
+                poi.planning_opening_hours,
                 arrival_dt,
                 visit_minutes,
                 respect_opening_hours=self.request.respect_opening_hours,
@@ -231,7 +231,7 @@ class RoutePlannerEngine:
             visit_minutes = poi.visit_duration_min or DEFAULT_VISIT_DURATION_MIN
             arrival_dt = departure_dt + timedelta(seconds=travel_plan.duration_seconds)
             wait_minutes = resolve_visit_wait(
-                poi.opening_hours_raw,
+                poi.planning_opening_hours,
                 arrival_dt,
                 visit_minutes,
                 respect_opening_hours=self.request.respect_opening_hours,
@@ -305,7 +305,8 @@ class RoutePlannerEngine:
             if poi_id not in self.preferred_poi_ids:
                 continue
             arrival_dt = self.start_dt + timedelta(minutes=item["arrival_after_min"])
-            if not is_poi_open_for_visit(item.get("opening_hours_raw"), arrival_dt, item["visit_duration_min"]):
+            opening_hours = self.candidates_by_id[poi_id].planning_opening_hours
+            if not is_poi_open_for_visit(opening_hours, arrival_dt, item["visit_duration_min"]):
                 closed.append(poi_id)
         return closed
 

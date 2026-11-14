@@ -240,7 +240,11 @@ class PlannerFeedbackStats:
 
     @property
     def sample_size(self) -> int:
-        return max(self.planned_count, self.session_count, self.feedback_count)
+        return self.feedback_count
+
+    @property
+    def session_sample_size(self) -> int:
+        return self.session_count
 
 
 @dataclass(frozen=True)

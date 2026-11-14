@@ -56,6 +56,7 @@ class RoutingService:
     OSRM_RETRY_BACKOFF_SECONDS = 0.1
     CIRCUIT_FAILURE_THRESHOLD = 3
     CIRCUIT_RESET_SECONDS = 30.0
+    ADJACENT_POINTS_MAX_DISTANCE_METERS = 30.0
 
     def __init__(
         self,
@@ -102,6 +103,8 @@ class RoutingService:
         for attempt in range(self.OSRM_MAX_ATTEMPTS):
             try:
                 response = _http_client().get(url, params=params, timeout=self.timeout_seconds)
+                if response.status_code == 400:
+                    return response.json()
                 response.raise_for_status()
                 return response.json()
             except (httpx.HTTPError, ValueError) as exc:
@@ -284,11 +287,13 @@ class RoutingService:
                 for lon, lat in raw_coordinates
                 if lat is not None and lon is not None
             ]
-            if len(route_coordinates) < 2:
-                return None
-
             duration_seconds = float(route.get("duration") or 0)
             distance_meters = float(route.get("distance") or 0)
+            if duration_seconds <= 0 and distance_meters <= 0:
+                return self._adjacent_points_leg(start, end, pace)
+
+            if len(route_coordinates) < 2:
+                return None
             if duration_seconds <= 0 or distance_meters <= 0:
                 return None
 
@@ -302,6 +307,21 @@ class RoutingService:
             )
         except (TypeError, KeyError, ValueError):
             return None
+
+    def _adjacent_points_leg(self, start: RoutePoint, end: RoutePoint, pace: str) -> RoutingLeg | None:
+        distance_meters = haversine_km(start.lat, start.lon, end.lat, end.lon) * 1000
+        if distance_meters > self.ADJACENT_POINTS_MAX_DISTANCE_METERS:
+            return None
+
+        return RoutingLeg(
+            duration_seconds=(distance_meters / 1000) / walking_speed_kmh(pace) * 60 * 60,
+            distance_meters=distance_meters,
+            geometry=[
+                {"lat": start.lat, "lon": start.lon},
+                {"lat": end.lat, "lon": end.lon},
+            ],
+            source="osrm",
+        )
 
     def _fallback_route(self, start: RoutePoint, end: RoutePoint, pace: str) -> RoutingLeg:
         distance_km = haversine_km(start.lat, start.lon, end.lat, end.lon)

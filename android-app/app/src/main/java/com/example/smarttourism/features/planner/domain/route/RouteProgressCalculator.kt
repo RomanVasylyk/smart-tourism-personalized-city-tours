@@ -74,6 +74,25 @@ internal fun nextPendingPoi(
 ): RouteStop? =
     routeItems.firstOrNull { item -> item.poiId !in visitedPoiIds && item.poiId !in skippedPoiIds }
 
+internal fun hasReachedRouteEnd(
+    routeResponse: RoutePlan?,
+    currentLocation: RoutePoint?
+): Boolean {
+    if (routeResponse?.returnToStart != true) {
+        return true
+    }
+    if (currentLocation == null) {
+        return false
+    }
+
+    return distanceMeters(
+        startLat = currentLocation.lat,
+        startLon = currentLocation.lon,
+        endLat = routeResponse.start.lat,
+        endLon = routeResponse.start.lon
+    ) <= PoiVisitedRadiusMeters
+}
+
 internal fun estimateRemainingMinutes(
     routeResponse: RoutePlan?,
     routeItems: List<RouteStop>,

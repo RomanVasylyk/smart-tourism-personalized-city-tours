@@ -143,7 +143,7 @@ class RouteCandidateEvaluator:
             arrival_dt = departure_dt + timedelta(seconds=travel_plan.duration_seconds)
 
             wait_minutes = resolve_visit_wait(
-                poi.opening_hours_raw,
+                poi.planning_opening_hours,
                 arrival_dt,
                 visit_minutes,
                 respect_opening_hours=self.request.respect_opening_hours,

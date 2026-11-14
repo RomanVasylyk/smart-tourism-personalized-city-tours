@@ -25,6 +25,7 @@ internal val RouteTimeFormatter = DateTimeFormatter.ofPattern("EEE, MMM d HH:mm"
 internal val RouteClockFormatter = DateTimeFormatter.ofPattern("HH:mm", Locale.getDefault())
 internal const val RouteTrackingMinTimeMs = 5_000L
 internal const val RouteTrackingMinDistanceMeters = 5f
+internal const val RouteTrackingMaxAccuracyMeters = 60f
 internal const val PoiVisitedRadiusMeters = 60f
 internal const val OffRouteDistanceMeters = 120f
 internal const val OffRouteSustainDurationMs = 10_000L

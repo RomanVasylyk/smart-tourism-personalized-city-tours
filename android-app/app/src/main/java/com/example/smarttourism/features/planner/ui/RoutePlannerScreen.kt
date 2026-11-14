@@ -5,6 +5,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
 import android.content.pm.PackageManager
+import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -48,9 +49,11 @@ import com.example.smarttourism.features.planner.components.RouteHistorySheetCon
 import com.example.smarttourism.features.planner.state.PlannerMode
 import com.example.smarttourism.features.planner.state.PlannerEvent
 import com.example.smarttourism.features.planner.state.RouteSessionStatus
+import com.example.smarttourism.features.planner.state.RouteTrackingMaxAccuracyMeters
 import com.example.smarttourism.features.planner.state.TrackingPermissionAction
 import com.example.smarttourism.features.planner.viewmodel.RoutePlannerViewModel
 import com.example.smarttourism.features.planner.location.fetchCurrentLocation
+import com.example.smarttourism.features.planner.location.RouteTrackingService
 import com.example.smarttourism.features.planner.location.startRouteLocationTracking
 
 @Composable
@@ -331,6 +334,17 @@ fun RoutePlannerScreen(
         }
     }
 
+    DisposableEffect(context, routeSessionStatus) {
+        if (routeSessionStatus != RouteSessionStatus.IN_PROGRESS) {
+            onDispose { }
+        } else {
+            RouteTrackingService.start(context)
+            onDispose {
+                RouteTrackingService.stop(context)
+            }
+        }
+    }
+
     DisposableEffect(context, routeItems, routeSessionStatus) {
         if (routeSessionStatus != RouteSessionStatus.IN_PROGRESS) {
             onDispose { }
@@ -338,14 +352,16 @@ fun RoutePlannerScreen(
             val stopTracking = startRouteLocationTracking(
                 context = context,
                 onLocation = { location ->
-                    onPlannerEvent(
-                        PlannerEvent.TrackedLocation(
-                            RoutePoint(
-                                lat = location.latitude,
-                                lon = location.longitude
+                    if (!location.hasAccuracy() || location.accuracy <= RouteTrackingMaxAccuracyMeters) {
+                        onPlannerEvent(
+                            PlannerEvent.TrackedLocation(
+                                RoutePoint(
+                                    lat = location.latitude,
+                                    lon = location.longitude
+                                )
                             )
                         )
-                    )
+                    }
                 },
                 onError = { message ->
                     onPlannerEvent(PlannerEvent.TrackingError(message))
@@ -358,11 +374,28 @@ fun RoutePlannerScreen(
         }
     }
 
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { }
+
+    fun requestNotificationPermissionIfNeeded() {
+        if (
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
+
     fun startRoute() {
         isSelectingStart = false
 
         if (hasFineLocationPermission()) {
             onPlannerEvent(PlannerEvent.ActivateRouteTracking)
+            requestNotificationPermissionIfNeeded()
         } else {
             trackingPermissionAction = TrackingPermissionAction.START
             trackingPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
@@ -374,6 +407,7 @@ fun RoutePlannerScreen(
 
         if (hasFineLocationPermission()) {
             onPlannerEvent(PlannerEvent.ResumeRoute)
+            requestNotificationPermissionIfNeeded()
         } else {
             trackingPermissionAction = TrackingPermissionAction.RESUME
             trackingPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)

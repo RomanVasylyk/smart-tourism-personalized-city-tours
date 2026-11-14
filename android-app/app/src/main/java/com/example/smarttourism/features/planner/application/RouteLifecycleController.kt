@@ -3,7 +3,7 @@ package com.example.smarttourism.features.planner.application
 import com.example.smarttourism.data.model.ActiveRouteSession
 import com.example.smarttourism.data.model.RouteFeedback
 import com.example.smarttourism.features.planner.domain.history.isRestorable
-import com.example.smarttourism.features.planner.domain.route.defaultRouteStartDateTime
+import com.example.smarttourism.features.planner.domain.route.currentRouteStartedAt
 import com.example.smarttourism.features.planner.domain.route.nextPendingPoi
 import com.example.smarttourism.features.planner.state.RoutePlannerUiState
 import com.example.smarttourism.features.planner.state.RouteProgressMetrics
@@ -67,7 +67,7 @@ internal class RouteLifecycleController @Inject constructor() {
             return null
         }
         val activeRouteId = state.routeId ?: return null
-        val activeStartedAt = state.routeStartedAt ?: defaultRouteStartDateTime().toString()
+        val activeStartedAt = state.routeStartedAt ?: currentRouteStartedAt()
         return ActiveRouteLifecycleResult(
             state = state.copy(routeSessionStatus = RouteSessionStatus.PAUSED),
             routeId = activeRouteId,
@@ -106,7 +106,7 @@ internal class RouteLifecycleController @Inject constructor() {
             return null
         }
         val activeRouteId = state.routeId ?: return null
-        val activeStartedAt = state.routeStartedAt ?: defaultRouteStartDateTime().toString()
+        val activeStartedAt = state.routeStartedAt ?: currentRouteStartedAt()
         return ActiveRouteLifecycleResult(
             state = state.copy(routeSessionStatus = RouteSessionStatus.COMPLETED),
             routeId = activeRouteId,
@@ -117,7 +117,7 @@ internal class RouteLifecycleController @Inject constructor() {
 
     fun cancelRoute(state: RoutePlannerUiState): ActiveRouteLifecycleResult? {
         val activeRouteId = state.routeId ?: return null
-        val activeStartedAt = state.routeStartedAt ?: defaultRouteStartDateTime().toString()
+        val activeStartedAt = state.routeStartedAt ?: currentRouteStartedAt()
         return ActiveRouteLifecycleResult(
             state = state.copy(routeSessionStatus = RouteSessionStatus.CANCELLED),
             routeId = activeRouteId,
@@ -131,7 +131,7 @@ internal class RouteLifecycleController @Inject constructor() {
         feedback: RouteFeedback
     ): ActiveRouteLifecycleResult? {
         val activeRouteId = state.routeId ?: return null
-        val activeStartedAt = state.routeStartedAt ?: defaultRouteStartDateTime().toString()
+        val activeStartedAt = state.routeStartedAt ?: currentRouteStartedAt()
         return ActiveRouteLifecycleResult(
             state = state.copy(
                 routeFeedback = feedback,
@@ -149,7 +149,7 @@ internal class RouteLifecycleController @Inject constructor() {
         message: String
     ): ActiveRouteLifecycleResult? {
         val activeRouteId = state.routeId ?: return null
-        val activeStartedAt = state.routeStartedAt ?: defaultRouteStartDateTime().toString()
+        val activeStartedAt = state.routeStartedAt ?: currentRouteStartedAt()
         return ActiveRouteLifecycleResult(
             state = state.copy(
                 routeSessionStatus = RouteSessionStatus.PAUSED,
@@ -197,7 +197,11 @@ internal class RouteLifecycleController @Inject constructor() {
             visitedPoiIds = visitedPoiIds,
             skippedPoiIds = skippedPoiIds,
             currentTargetPoiId = nextPendingPoiId ?: session.current_target_poi_id,
-            routeSessionStatus = if (restoredStatus.isRestorable() && nextPendingPoiId == null) {
+            routeSessionStatus = if (
+                restoredStatus.isRestorable() &&
+                nextPendingPoiId == null &&
+                !session.snapshot.response.returnToStart
+            ) {
                 RouteSessionStatus.COMPLETED
             } else {
                 restoredStatus

@@ -12,6 +12,7 @@ import com.example.smarttourism.features.planner.domain.route.mergeLegGeometries
 import com.example.smarttourism.features.planner.domain.route.rebuildPreviewRouteAfterRemovingPoi
 import com.example.smarttourism.features.planner.domain.route.rebuildPreviewRouteAfterReplacingPoi
 import com.example.smarttourism.features.planner.domain.route.removePreviewRoutePoi
+import java.time.LocalDateTime
 import javax.inject.Inject
 
 internal data class RoutePreviewMutationContext(
@@ -48,7 +49,8 @@ internal class RoutePreviewMutationUseCase @Inject constructor(
                 previousResponse = previousResponse,
                 fromEndpoint = previousItem?.toLegEndpoint() ?: startEndpoint,
                 toEndpoint = nextStop.toLegEndpoint(),
-                context = context
+                context = context,
+                departureOffsetMinutes = previousItem?.departureAfterMin ?: 0
             )
         }
         val replacementReturnLeg = if (nextItem == null && previousResponse.returnToStart) {
@@ -57,7 +59,8 @@ internal class RoutePreviewMutationUseCase @Inject constructor(
                     previousResponse = previousResponse,
                     fromEndpoint = lastStop.toLegEndpoint(),
                     toEndpoint = startEndpoint,
-                    context = context
+                    context = context,
+                    departureOffsetMinutes = lastStop.departureAfterMin
                 )
             }
         } else {
@@ -88,18 +91,24 @@ internal class RoutePreviewMutationUseCase @Inject constructor(
         val previousItem = originalItems.getOrNull(targetIndex - 1)
         val nextItem = originalItems.getOrNull(targetIndex + 1)
         val replacementEndpoint = replacementPoi.toLegEndpoint()
+        val arrivalDepartureOffsetMinutes = previousItem?.departureAfterMin ?: 0
         val replacementLegToReplacement = generatePreviewRouteLeg(
             previousResponse = previousResponse,
             fromEndpoint = previousItem?.toLegEndpoint() ?: startEndpoint,
             toEndpoint = replacementEndpoint,
-            context = context
+            context = context,
+            departureOffsetMinutes = arrivalDepartureOffsetMinutes
         )
+        val replacementDepartureOffsetMinutes = arrivalDepartureOffsetMinutes +
+            replacementLegToReplacement.durationMinutes +
+            (replacementPoi.visitDurationMin ?: originalItems[targetIndex].visitDurationMin)
         val replacementLegToNext = nextItem?.let { nextStop ->
             generatePreviewRouteLeg(
                 previousResponse = previousResponse,
                 fromEndpoint = replacementEndpoint,
                 toEndpoint = nextStop.toLegEndpoint(),
-                context = context
+                context = context,
+                departureOffsetMinutes = replacementDepartureOffsetMinutes
             )
         }
         val replacementReturnLeg = if (nextItem == null && previousResponse.returnToStart) {
@@ -107,7 +116,8 @@ internal class RoutePreviewMutationUseCase @Inject constructor(
                 previousResponse = previousResponse,
                 fromEndpoint = replacementEndpoint,
                 toEndpoint = startEndpoint,
-                context = context
+                context = context,
+                departureOffsetMinutes = replacementDepartureOffsetMinutes
             )
         } else {
             null
@@ -147,16 +157,18 @@ internal class RoutePreviewMutationUseCase @Inject constructor(
         val startEndpoint = previousResponse.start.toLegEndpoint()
         val poiLegs = mutableListOf<RouteLeg>()
         var fromEndpoint = startEndpoint
+        var departureOffsetMinutes = 0
         reorderedItems.forEach { item ->
             val toEndpoint = item.toLegEndpoint()
-            poiLegs.add(
-                generatePreviewRouteLeg(
-                    previousResponse = previousResponse,
-                    fromEndpoint = fromEndpoint,
-                    toEndpoint = toEndpoint,
-                    context = context
-                )
+            val leg = generatePreviewRouteLeg(
+                previousResponse = previousResponse,
+                fromEndpoint = fromEndpoint,
+                toEndpoint = toEndpoint,
+                context = context,
+                departureOffsetMinutes = departureOffsetMinutes
             )
+            poiLegs.add(leg)
+            departureOffsetMinutes += leg.durationMinutes + item.visitDurationMin
             fromEndpoint = toEndpoint
         }
         val returnLeg = if (previousResponse.returnToStart && reorderedItems.isNotEmpty()) {
@@ -164,7 +176,8 @@ internal class RoutePreviewMutationUseCase @Inject constructor(
                 previousResponse = previousResponse,
                 fromEndpoint = reorderedItems.last().toLegEndpoint(),
                 toEndpoint = startEndpoint,
-                context = context
+                context = context,
+                departureOffsetMinutes = departureOffsetMinutes
             )
         } else {
             null
@@ -207,8 +220,10 @@ internal class RoutePreviewMutationUseCase @Inject constructor(
         previousResponse: RoutePlan,
         fromEndpoint: RouteLegEndpoint,
         toEndpoint: RouteLegEndpoint,
-        context: RoutePreviewMutationContext
+        context: RoutePreviewMutationContext,
+        departureOffsetMinutes: Int
     ): RouteLeg {
+        val routeStartDateTime = context.startDateTime ?: previousResponse.startDateTime
         val routeLegRequest = RouteLegQuery(
             city = context.city ?: previousResponse.city,
             startLat = fromEndpoint.lat,
@@ -218,7 +233,11 @@ internal class RoutePreviewMutationUseCase @Inject constructor(
             endPoiId = toEndpoint.poiId ?: -1,
             endName = toEndpoint.name,
             pace = context.pace ?: previousResponse.pace,
-            startDateTime = context.startDateTime ?: previousResponse.startDateTime,
+            startDateTime = routeStartDateTime?.let { rawValue ->
+                runCatching {
+                    LocalDateTime.parse(rawValue).plusMinutes(departureOffsetMinutes.toLong()).toString()
+                }.getOrDefault(rawValue)
+            },
             transportMode = context.transportMode ?: previousResponse.transportMode ?: "walk"
         )
 

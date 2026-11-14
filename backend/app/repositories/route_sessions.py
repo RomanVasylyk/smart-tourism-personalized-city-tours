@@ -418,7 +418,8 @@ def upsert_session_pois(cur, session_id: UUID, route_snapshot_json: dict[str, An
     route_items = route_snapshot_json.get("route")
     if not isinstance(route_items, list):
         return
-    current_poi_ids = [item["poi_id"] for item in route_items if item.get("poi_id") is not None]
+    route_items = [item for item in route_items if isinstance(item, dict) and isinstance(item.get("poi_id"), int)]
+    current_poi_ids = [item["poi_id"] for item in route_items]
 
     cur.execute(
         """
@@ -430,10 +431,7 @@ def upsert_session_pois(cur, session_id: UUID, route_snapshot_json: dict[str, An
     )
 
     for item in route_items:
-        poi_id = item.get("poi_id")
-        if poi_id is None:
-            continue
-
+        poi_id = item["poi_id"]
         cur.execute(
             """
             INSERT INTO route_session_pois (
@@ -445,7 +443,7 @@ def upsert_session_pois(cur, session_id: UUID, route_snapshot_json: dict[str, An
                 visited,
                 skipped
             )
-            VALUES (
+            SELECT
                 %(session_id)s,
                 %(poi_id)s,
                 %(visit_order)s,
@@ -453,6 +451,12 @@ def upsert_session_pois(cur, session_id: UUID, route_snapshot_json: dict[str, An
                 %(planned_departure_min)s,
                 FALSE,
                 FALSE
+            WHERE EXISTS (
+                SELECT 1
+                FROM pois p
+                JOIN route_sessions rs ON rs.city_id = p.city_id
+                WHERE p.id = %(poi_id)s
+                  AND rs.id = %(session_id)s
             )
             ON CONFLICT (session_id, poi_id) DO UPDATE SET
                 visit_order = EXCLUDED.visit_order,

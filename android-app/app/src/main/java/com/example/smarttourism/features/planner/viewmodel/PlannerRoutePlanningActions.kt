@@ -7,7 +7,7 @@ import com.example.smarttourism.features.planner.application.RoutePreviewControl
 import com.example.smarttourism.features.planner.domain.history.isRestorable
 import com.example.smarttourism.features.planner.domain.model.Poi
 import com.example.smarttourism.features.planner.domain.route.buildPreviewReplacementCandidates
-import com.example.smarttourism.features.planner.domain.route.defaultRouteStartDateTime
+import com.example.smarttourism.features.planner.domain.route.currentRouteStartedAt
 import com.example.smarttourism.features.planner.state.RouteSessionStatus
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -27,7 +27,7 @@ internal class PlannerRoutePlanningActions(
             val existingSnapshot = sessionCoordinator.currentRouteSnapshot()
             val existingRouteId = state.routeId
             val existingStatus = state.routeSessionStatus
-            val existingStartedAt = state.routeStartedAt ?: defaultRouteStartDateTime().toString()
+            val existingStartedAt = state.routeStartedAt ?: currentRouteStartedAt()
             val result = routeGenerationUseCase.generateRoute(
                 RouteGenerationInput(
                     selectedCity = state.selectedCity,
@@ -82,7 +82,7 @@ internal class PlannerRoutePlanningActions(
                             status = RouteSessionStatus.CANCELLED,
                             startedAtValue = existingStartedAt,
                             snapshot = existingSnapshot,
-                            finishedAt = defaultRouteStartDateTime().toString()
+                            finishedAt = currentRouteStartedAt()
                         )
                     }
                     sessionCoordinator.resetRouteSession()

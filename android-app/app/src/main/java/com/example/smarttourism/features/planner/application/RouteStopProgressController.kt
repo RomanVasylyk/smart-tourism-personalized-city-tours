@@ -1,5 +1,6 @@
 package com.example.smarttourism.features.planner.application
 
+import com.example.smarttourism.features.planner.domain.route.hasReachedRouteEnd
 import com.example.smarttourism.features.planner.domain.route.nextPendingPoi
 import com.example.smarttourism.features.planner.domain.route.rerouteStartPoint
 import com.example.smarttourism.features.planner.state.RoutePlannerUiState
@@ -27,13 +28,18 @@ internal class RouteStopProgressController @Inject constructor() {
         )
 
         if (nextPendingPoi == null) {
-            val completedState = baseState.copy(routeSessionStatus = RouteSessionStatus.COMPLETED)
+            val finishedState = if (hasReachedRouteEnd(responseBeforeVisit, locationAtVisit)) {
+                baseState.copy(routeSessionStatus = RouteSessionStatus.COMPLETED)
+            } else {
+                baseState
+            }
             return RouteStopProgressResult(
-                state = completedState,
-                statusToPersist = RouteSessionStatus.COMPLETED,
+                state = finishedState,
+                statusToPersist = finishedState.routeSessionStatus,
                 visitedPoiIds = updatedVisited,
                 skippedPoiIds = state.skippedPoiIds,
-                syncVisitedPoiIds = listOf(poiId)
+                syncVisitedPoiIds = listOf(poiId),
+                snapshotToSave = finishedState.currentSnapshot()
             )
         }
 
@@ -96,14 +102,18 @@ internal class RouteStopProgressController @Inject constructor() {
         )
 
         if (nextPendingPoi == null) {
-            val completedState = baseState.copy(routeSessionStatus = RouteSessionStatus.COMPLETED)
+            val finishedState = if (hasReachedRouteEnd(responseBeforeSkip, locationAtSkip)) {
+                baseState.copy(routeSessionStatus = RouteSessionStatus.COMPLETED)
+            } else {
+                baseState
+            }
             return RouteStopProgressResult(
-                state = completedState,
-                statusToPersist = RouteSessionStatus.COMPLETED,
+                state = finishedState,
+                statusToPersist = finishedState.routeSessionStatus,
                 visitedPoiIds = state.visitedPoiIds,
                 skippedPoiIds = updatedSkipped,
                 syncSkippedPoiIds = listOf(poiId),
-                snapshotToSave = completedState.currentSnapshot()
+                snapshotToSave = finishedState.currentSnapshot()
             )
         }
 

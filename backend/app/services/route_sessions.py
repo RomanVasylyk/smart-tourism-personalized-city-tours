@@ -31,7 +31,7 @@ def create_route_session(
         raise HTTPException(status_code=404, detail="City not found.")
 
     session_id = request.id or uuid4()
-    started_at = request.started_at or now_utc()
+    started_at = aware_datetime(request.started_at) or now_utc()
     was_saved = route_session_repository.upsert_route_session(
         session_id=session_id,
         device_id=device_id,
@@ -45,7 +45,7 @@ def create_route_session(
         return_to_start=request.return_to_start,
         opening_hours_enabled=request.opening_hours_enabled,
         started_at=started_at,
-        finished_at=request.finished_at,
+        finished_at=aware_datetime(request.finished_at),
         used_minutes=request.used_minutes,
         total_walk_minutes=request.total_walk_minutes,
         total_visit_minutes=request.total_visit_minutes,
@@ -71,6 +71,8 @@ def update_route_session(
 
     if "status" in update_values:
         validate_status(update_values["status"])
+    if "finished_at" in update_values:
+        update_values["finished_at"] = aware_datetime(update_values["finished_at"])
 
     was_updated = route_session_repository.update_route_session(
         session_id=session_id,
@@ -93,7 +95,7 @@ def mark_route_session_poi_visited(
 ) -> dict:
     device_id = require_authenticated_device_id(authenticated_device_id)
     device_token_hash = hash_authenticated_device_token(authenticated_device_token)
-    visited_at = request.visited_at or now_utc()
+    visited_at = aware_datetime(request.visited_at) or now_utc()
     poi_row = route_session_repository.mark_route_session_poi_visited(
         session_id=session_id,
         poi_id=poi_id,
@@ -213,3 +215,9 @@ def raise_not_found() -> None:
 
 def now_utc() -> datetime:
     return datetime.now(UTC)
+
+
+def aware_datetime(value: datetime | None) -> datetime | None:
+    if value is None or value.tzinfo is not None:
+        return value
+    return value.astimezone()

@@ -31,6 +31,12 @@ def stats_confidence(stats: PlannerFeedbackStats, full_weight_after: int) -> flo
     return clamp(stats.sample_size / full_weight_after, 0.0, 1.0)
 
 
+def session_confidence(stats: PlannerFeedbackStats, full_weight_after: int) -> float:
+    if full_weight_after <= 0:
+        return 1.0
+    return clamp(stats.session_sample_size / full_weight_after, 0.0, 1.0)
+
+
 def walking_discomfort_signal(
     feedback_profile: PlannerFeedbackProfile,
     effective_transport_mode: str,
@@ -63,8 +69,11 @@ def score_candidate(
 
     poi_confidence = stats_confidence(poi_stats, 4)
     category_confidence = stats_confidence(category_stats, 10)
-    city_confidence = stats_confidence(city_stats, 6)
     transport_confidence = stats_confidence(transport_stats, 4)
+    poi_session_confidence = session_confidence(poi_stats, 4)
+    category_session_confidence = session_confidence(category_stats, 10)
+    city_session_confidence = session_confidence(city_stats, 6)
+    transport_session_confidence = session_confidence(transport_stats, 4)
 
     base_component = float(poi["base_score"] or 0.0) * BASE_SCORE_MULTIPLIER
     travel_penalty = travel_plan.duration_minutes * TRAVEL_MINUTE_PENALTY
@@ -77,14 +86,14 @@ def score_candidate(
         (rating_signal(category_stats.average_rating) * 0.9) + (rate_signal(category_stats.interesting_pois_rate) * 0.8)
     )
     completion_bonus = (
-        (poi_confidence * rate_signal(poi_stats.completion_rate) * 2.0)
-        + (category_confidence * rate_signal(category_stats.completion_rate) * 1.0)
-        + (city_confidence * rate_signal(city_stats.completion_rate) * 0.7)
+        (poi_session_confidence * rate_signal(poi_stats.completion_rate) * 2.0)
+        + (category_session_confidence * rate_signal(category_stats.completion_rate) * 1.0)
+        + (city_session_confidence * rate_signal(city_stats.completion_rate) * 0.7)
     )
     skip_penalty = (
-        (poi_confidence * max(0.0, (poi_stats.skip_rate or 0.0) - 0.15) * 4.0)
-        + (category_confidence * max(0.0, (category_stats.skip_rate or 0.0) - 0.18) * 2.2)
-        + (city_confidence * max(0.0, (city_stats.skip_rate or 0.0) - 0.20) * 1.2)
+        (poi_session_confidence * max(0.0, (poi_stats.skip_rate or 0.0) - 0.15) * 4.0)
+        + (category_session_confidence * max(0.0, (category_stats.skip_rate or 0.0) - 0.18) * 2.2)
+        + (city_session_confidence * max(0.0, (city_stats.skip_rate or 0.0) - 0.20) * 1.2)
     )
 
     walking_penalty = 0.0
@@ -99,11 +108,14 @@ def score_candidate(
 
     transport_bonus = 0.0
     if effective_transport_mode != TRANSPORT_MODE_WALK and travel_plan.mode == "transit":
-        transport_bonus = transport_confidence * (
-            (rating_signal(transport_stats.average_rating) * 1.2)
-            + (rate_signal(transport_stats.convenient_rate) * 1.7)
-            + (rate_signal(transport_stats.completion_rate) * 0.7)
-            + (rate_signal(transport_stats.interesting_pois_rate) * 0.6)
+        transport_bonus = (
+            transport_confidence
+            * (
+                (rating_signal(transport_stats.average_rating) * 1.2)
+                + (rate_signal(transport_stats.convenient_rate) * 1.7)
+                + (rate_signal(transport_stats.interesting_pois_rate) * 0.6)
+            )
+            + transport_session_confidence * rate_signal(transport_stats.completion_rate) * 0.7
         )
 
     preferred_bonus = PREFERRED_POI_BONUS if int(poi["id"]) in (preferred_poi_ids or set()) else 0.0

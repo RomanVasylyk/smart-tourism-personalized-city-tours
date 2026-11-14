@@ -4,6 +4,7 @@ from app.core.rate_limit import (
     CATALOG_RATE_LIMIT,
     ROUTE_GENERATE_RATE_LIMIT,
     ROUTE_LEG_RATE_LIMIT,
+    SESSION_RATE_LIMIT,
     limiter,
 )
 from app.db.database import get_connection
@@ -81,7 +82,8 @@ def get_curated_routes_endpoint(request: Request, slug: str):
 
 
 @router.get("/curated-routes/{route_id}", response_model=CuratedRouteDetailResponse)
-def get_curated_route_endpoint(route_id: int, start_datetime: str | None = None):
+@limiter.limit(CATALOG_RATE_LIMIT)
+def get_curated_route_endpoint(request: Request, route_id: int, start_datetime: str | None = None):
     return get_curated_route(route_id, start_datetime)
 
 
@@ -98,47 +100,57 @@ def generate_route_leg_endpoint(request: Request, payload: RouteLegRequest):
 
 
 @router.post("/route-sessions", response_model=RouteSessionResponse)
+@limiter.limit(SESSION_RATE_LIMIT)
 def create_route_session_endpoint(
-    request: RouteSessionCreateRequest,
+    request: Request,
+    payload: RouteSessionCreateRequest,
     x_device_id: str = Header(..., alias="X-Device-Id"),
     x_device_token: str = Header(..., alias="X-Device-Token"),
 ):
-    return create_route_session(request, x_device_id, x_device_token)
+    return create_route_session(payload, x_device_id, x_device_token)
 
 
 @router.patch("/route-sessions/{session_id}", response_model=RouteSessionResponse)
+@limiter.limit(SESSION_RATE_LIMIT)
 def update_route_session_endpoint(
+    request: Request,
     session_id: UUID,
-    request: RouteSessionUpdateRequest,
+    payload: RouteSessionUpdateRequest,
     x_device_id: str = Header(..., alias="X-Device-Id"),
     x_device_token: str = Header(..., alias="X-Device-Token"),
 ):
-    return update_route_session(session_id, request, x_device_id, x_device_token)
+    return update_route_session(session_id, payload, x_device_id, x_device_token)
 
 
 @router.post("/route-sessions/{session_id}/pois/{poi_id}/visit", response_model=RouteSessionPoiResponse)
+@limiter.limit(SESSION_RATE_LIMIT)
 def mark_route_session_poi_visited_endpoint(
+    request: Request,
     session_id: UUID,
     poi_id: int,
-    request: RouteSessionPoiVisitRequest,
+    payload: RouteSessionPoiVisitRequest,
     x_device_id: str = Header(..., alias="X-Device-Id"),
     x_device_token: str = Header(..., alias="X-Device-Token"),
 ):
-    return mark_route_session_poi_visited(session_id, poi_id, request, x_device_id, x_device_token)
+    return mark_route_session_poi_visited(session_id, poi_id, payload, x_device_id, x_device_token)
 
 
 @router.post("/route-sessions/{session_id}/feedback", response_model=RouteFeedbackResponse)
+@limiter.limit(SESSION_RATE_LIMIT)
 def save_route_feedback_endpoint(
+    request: Request,
     session_id: UUID,
-    request: RouteFeedbackRequest,
+    payload: RouteFeedbackRequest,
     x_device_id: str = Header(..., alias="X-Device-Id"),
     x_device_token: str = Header(..., alias="X-Device-Token"),
 ):
-    return save_route_feedback(session_id, request, x_device_id, x_device_token)
+    return save_route_feedback(session_id, payload, x_device_id, x_device_token)
 
 
 @router.get("/route-sessions/{session_id}", response_model=RouteSessionResponse)
+@limiter.limit(SESSION_RATE_LIMIT)
 def get_route_session_endpoint(
+    request: Request,
     session_id: UUID,
     x_device_id: str = Header(..., alias="X-Device-Id"),
     x_device_token: str = Header(..., alias="X-Device-Token"),
@@ -147,7 +159,9 @@ def get_route_session_endpoint(
 
 
 @router.get("/route-sessions", response_model=list[RouteSessionResponse])
+@limiter.limit(SESSION_RATE_LIMIT)
 def get_route_sessions_endpoint(
+    request: Request,
     device_id: str,
     limit: int = 100,
     offset: int = 0,

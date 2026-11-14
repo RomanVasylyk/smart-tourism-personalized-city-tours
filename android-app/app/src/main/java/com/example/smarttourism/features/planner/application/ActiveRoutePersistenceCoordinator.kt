@@ -8,7 +8,7 @@ import com.example.smarttourism.features.planner.data.sync.OfflineSyncRepository
 import com.example.smarttourism.features.planner.domain.history.buildRouteHistoryEntry
 import com.example.smarttourism.features.planner.domain.history.routeHistoryTimestamp
 import com.example.smarttourism.features.planner.domain.history.upsertRouteHistoryEntry
-import com.example.smarttourism.features.planner.domain.route.defaultRouteStartDateTime
+import com.example.smarttourism.features.planner.domain.route.currentRouteStartedAt
 import com.example.smarttourism.features.planner.domain.route.nextPendingPoi
 import com.example.smarttourism.features.planner.domain.route.progressTotalCount
 import com.example.smarttourism.features.planner.state.RouteSessionStatus
@@ -48,7 +48,7 @@ internal class ActiveRoutePersistenceCoordinator @Inject constructor(
         val totalCount = progressTotalCount(input.snapshot.response.route, input.skippedPoiIds)
         val existingHistoryEntry = input.currentHistory.firstOrNull { entry -> entry.routeId == input.routeId }
         val finishedAt = if (input.status == RouteSessionStatus.COMPLETED || input.status == RouteSessionStatus.CANCELLED) {
-            existingHistoryEntry?.finishedAt ?: defaultRouteStartDateTime().toString()
+            existingHistoryEntry?.finishedAt ?: currentRouteStartedAt()
         } else {
             null
         }
@@ -136,7 +136,7 @@ internal class ActiveRoutePersistenceCoordinator @Inject constructor(
             offlineSyncRepository.enqueuePendingPoiVisit(
                 sessionId = sessionId,
                 poiId = poiId,
-                visitedAt = defaultRouteStartDateTime().toString(),
+                visitedAt = currentRouteStartedAt(),
                 skipped = skipped
             )
         }

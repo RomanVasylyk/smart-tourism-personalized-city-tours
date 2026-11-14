@@ -18,12 +18,16 @@ def parse_start_datetime(raw_value: str | None) -> datetime:
         return datetime.now().replace(second=0, microsecond=0)
 
     try:
-        return datetime.fromisoformat(raw_value).replace(second=0, microsecond=0)
+        parsed = datetime.fromisoformat(raw_value)
     except ValueError as exc:
         raise HTTPException(
             status_code=400,
             detail="Invalid start_datetime. Use ISO local datetime, for example 2026-04-19T14:30.",
         ) from exc
+
+    if parsed.tzinfo is not None:
+        parsed = parsed.astimezone().replace(tzinfo=None)
+    return parsed.replace(second=0, microsecond=0)
 
 
 def generate_route_leg(request: RouteLegRequest) -> dict:

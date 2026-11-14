@@ -3,6 +3,7 @@ package com.example.smarttourism.features.planner.application
 import com.example.smarttourism.data.model.SavedRouteSnapshot
 import com.example.smarttourism.features.planner.domain.model.RoutePoint
 import com.example.smarttourism.features.planner.domain.route.distanceToNextRouteSegmentMeters
+import com.example.smarttourism.features.planner.domain.route.hasReachedRouteEnd
 import com.example.smarttourism.features.planner.domain.route.markNearbyPoisVisited
 import com.example.smarttourism.features.planner.domain.route.nextPendingPoi
 import com.example.smarttourism.features.planner.state.AutoRerouteCooldownMs
@@ -62,7 +63,11 @@ internal class OffRouteDetector @Inject constructor() {
         var approachRefresh: ActiveApproachRefresh? = null
         var approachRefreshAutoTriggered = false
 
-        if (nextTarget == null && updatedState.routeSessionStatus != RouteSessionStatus.COMPLETED) {
+        if (
+            nextTarget == null &&
+            updatedState.routeSessionStatus != RouteSessionStatus.COMPLETED &&
+            hasReachedRouteEnd(updatedState.routeResponse, routeLocation)
+        ) {
             updatedState = updatedState.copy(routeSessionStatus = RouteSessionStatus.COMPLETED)
             statusToPersist = RouteSessionStatus.COMPLETED
         } else if (newlyVisitedPoiIds.isNotEmpty()) {
