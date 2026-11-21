@@ -15,23 +15,18 @@ Pilot cities: `nitra`, `trnava`, `nove-zamky`, `trencin`, `zilina`.
 
 ## Run
 
-Requires Docker + Docker Compose and Python 3.12+ (for the ETL).
+Requires Docker + Docker Compose. The terminal is needed only to start the project and to create
+the first administrator; everything else is done in the admin panel.
 
 ```bash
 cp .env.example .env
 docker compose up -d --build
+docker compose exec backend python scripts/create_admin.py admin@example.com --name "Admin"
 ```
 
-Then load city data into the DB:
-
-```bash
-python3 -m pip install -r pipeline/requirements.txt
-python3 pipeline/scripts/load_to_db.py --all-cities
-for city in nitra trnava nove-zamky trencin zilina; do
-  python3 pipeline/scripts/load_transport_to_db.py "$city"
-done
-python3 pipeline/scripts/load_curated_routes.py --all-cities
-```
+Then open http://localhost:8000/admin, go to *Dátová pipeline → Kontrola a schválenie* and for every city
+download or process the data, check it, approve it and load it into the database (see *Administration* below).
+The same steps can still be scripted from the command line, see [pipeline/README.md](pipeline/README.md).
 
 Check it works:
 
@@ -75,6 +70,18 @@ of Education calendar (spring holidays per region) and can be edited under *Kale
 |---|---|---|
 | `RATE_LIMIT_AUTH` | `10/minute` | Limit for registration, sign-in and admin sign-in per client |
 | `ADMIN_COOKIE_SECURE` | `false` | Set to `true` when the panel is served over HTTPS |
+
+The whole data pipeline is operated from the panel. *Dátová pipeline → Kontrola a schválenie* starts background
+jobs with a live log (download POIs from OpenStreetMap, download timetables from imhd.sk, process them again,
+load curated routes; one job runs at a time) and opens the data viewers:
+
+- the POI viewer filters errors, warnings, excluded and edited POIs; each POI can be included, excluded or kept
+  despite an error (for example a park just outside the city boundary), and its fields can be corrected. The
+  decisions are stored in `<city>_pois_decisions.json` and are applied again after every new download;
+- the line viewer lists the processed timetable variants with their day type and source;
+- processed, reviewed and report files can be downloaded as JSON, and a corrected POI file can be uploaded;
+- *Nastavenia mesta* edits the city boundary, centre, categories and planning limits, and the raw
+  `cities.yaml` can be edited for new cities (a backup is kept as `cities.backup.yaml`).
 
 Processed pipeline data reaches the database only after an administrator approves it. In the panel,
 *Dátová pipeline → Kontrola a schválenie* shows for every city the validation report of the transport graph

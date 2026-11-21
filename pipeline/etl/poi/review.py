@@ -8,6 +8,23 @@ BBOX_TOLERANCE_DEGREES = 0.002
 DUPLICATE_DISTANCE_METERS = 150.0
 MOVED_DISTANCE_METERS = 50.0
 MAX_VISIT_MINUTES = 600
+EDITABLE_FIELDS = (
+    "name",
+    "category",
+    "subcategory",
+    "lat",
+    "lon",
+    "address",
+    "visit_duration_min",
+    "base_score",
+    "short_description",
+    "website",
+    "image_url",
+    "wikidata_id",
+    "wikipedia_title",
+    "wikipedia_url",
+)
+DECISION_ACTIONS = ("include", "exclude", "accept")
 
 
 def poi_key(poi: dict) -> str:
@@ -83,7 +100,28 @@ def compare_with_snapshot(pois: list[dict], snapshot: dict) -> dict:
     }
 
 
-def review_pois(pois: list[dict], city: dict, approved_snapshot: dict | None = None) -> dict:
+def apply_decisions(pois: list[dict], decisions: dict | None) -> list[dict]:
+    if not decisions:
+        return [dict(poi) for poi in pois]
+    reviewed = []
+    for poi in pois:
+        decision = decisions.get(poi_key(poi)) or {}
+        item = dict(poi)
+        for field, value in (decision.get("edits") or {}).items():
+            if field in EDITABLE_FIELDS:
+                item[field] = value
+        if decision.get("action") == "exclude":
+            item["is_active"] = False
+        reviewed.append(item)
+    return reviewed
+
+
+def review_pois(
+    pois: list[dict],
+    city: dict,
+    approved_snapshot: dict | None = None,
+    decisions: dict | None = None,
+) -> dict:
     bbox = city.get("bbox") or {}
     categories = set(city.get("available_categories") or [])
     errors: list[dict] = []
@@ -134,6 +172,10 @@ def review_pois(pois: list[dict], city: dict, approved_snapshot: dict | None = N
                         )
                     )
 
+    decisions = decisions or {}
+    accepted = [item for item in errors if (decisions.get(item["key"]) or {}).get("action") == "accept"]
+    errors = [item for item in errors if (decisions.get(item["key"]) or {}).get("action") != "accept"]
+
     summary = {
         "total": len(pois),
         "active": len(active),
@@ -143,6 +185,16 @@ def review_pois(pois: list[dict], city: dict, approved_snapshot: dict | None = N
         "with_wikidata": sum(1 for poi in active if poi.get("wikidata_id")),
         "error_count": len(errors),
         "warning_count": len(warnings),
+        "accepted_count": len(accepted),
+        "excluded_count": sum(1 for decision in decisions.values() if decision.get("action") == "exclude"),
+        "edited_count": sum(1 for decision in decisions.values() if decision.get("edits")),
     }
     changes = compare_with_snapshot(pois, approved_snapshot) if approved_snapshot else None
-    return {"city": city.get("slug"), "summary": summary, "errors": errors, "warnings": warnings, "changes": changes}
+    return {
+        "city": city.get("slug"),
+        "summary": summary,
+        "errors": errors,
+        "accepted": accepted,
+        "warnings": warnings,
+        "changes": changes,
+    }

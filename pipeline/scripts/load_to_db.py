@@ -85,8 +85,14 @@ def processed_file(city: dict) -> Path:
     return ROOT / "data" / "processed" / f"{city['slug']}_pois_normalized.json"
 
 
+def reviewed_file(city: dict) -> Path:
+    return processed_file(city).with_name(f"{city['slug']}_pois_reviewed.json")
+
+
 def load_pois_for_city(city: dict, loaded_by: str | None = None) -> tuple[int, int, int]:
-    in_file = processed_file(city)
+    in_file = reviewed_file(city)
+    if not in_file.exists():
+        raise FileNotFoundError(f"Reviewed POI file not found: {in_file}. Run review_pois.py first.")
     require_approval(in_file)
     pois = json.loads(in_file.read_text(encoding="utf-8"))
 

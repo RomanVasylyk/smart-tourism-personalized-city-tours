@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import re
 import unicodedata
 from pathlib import Path
@@ -8,6 +9,9 @@ import yaml
 
 
 def resolve_config_file() -> Path:
+    pipeline_root = os.getenv("PIPELINE_ROOT")
+    if pipeline_root and (Path(pipeline_root) / "config" / "cities.yaml").exists():
+        return Path(pipeline_root) / "config" / "cities.yaml"
     for parent in Path(__file__).resolve().parents:
         candidate = parent / "pipeline" / "config" / "cities.yaml"
         if candidate.exists():

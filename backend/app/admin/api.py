@@ -5,7 +5,7 @@ from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 from typing import Annotated, Any, Literal
 
-from app.admin import crud
+from app.admin import crud, jobs
 from app.admin import pipeline as data_pipeline
 from app.admin.resources import Resource, metadata
 from app.core.config import get_settings
@@ -19,7 +19,7 @@ from app.services.route_planning.opening_hours import ALWAYS_OPEN_VALUES, parse_
 from app.services.service_calendar import invalidate_service_calendar
 from app.services.transport_graph import clear_transport_graph_cache
 from fastapi import APIRouter, Body, Depends, HTTPException, Request, Response
-from fastapi.responses import HTMLResponse
+from fastapi.responses import FileResponse, HTMLResponse
 from pydantic import BaseModel, Field
 
 STATIC_DIR = Path(__file__).resolve().parent / "static"
@@ -352,9 +352,130 @@ def admin_reload_transport(admin: AdminUser):
     return {"ok": True}
 
 
+def known_city(slug: str) -> None:
+    try:
+        known = data_pipeline.city_slugs()
+    except data_pipeline.PipelineUnavailableError as exc:
+        raise crud.AdminError(503, str(exc)) from exc
+    if slug not in known:
+        raise crud.AdminError(404, "Mesto nie je v konfigurácii pipeline.")
+
+
+def pipeline_call(handler):
+    try:
+        return handler()
+    except data_pipeline.PipelineUnavailableError as exc:
+        raise crud.AdminError(503, str(exc)) from exc
+    except data_pipeline.InputError as exc:
+        raise crud.AdminError(422, str(exc)) from exc
+    except jobs.JobBusyError as exc:
+        raise crud.AdminError(409, str(exc)) from exc
+    except FileNotFoundError as exc:
+        raise crud.AdminError(404, "Súbor zatiaľ neexistuje. Najprv dáta stiahnite alebo spracujte.") from exc
+    except KeyError as exc:
+        raise crud.AdminError(404, "Záznam sa v dátach nenašiel.") from exc
+    except ValueError as exc:
+        if data_pipeline.error_kind(exc) == "review":
+            raise crud.AdminError(
+                422,
+                "Kontrola našla chyby. Rozhodnite o bodoch s chybou v prehliadači dát alebo schváľte aj napriek chybám.",
+            ) from exc
+        raise
+    except RuntimeError as exc:
+        if data_pipeline.error_kind(exc) == "approval":
+            raise crud.AdminError(409, "Dáta nie sú schválené alebo sa po schválení zmenili.") from exc
+        raise
+
+
+class DecisionRequest(BaseModel):
+    action: Literal["include", "exclude", "accept"] = "include"
+    edits: dict[str, Any] = Field(default_factory=dict)
+    note: str | None = Field(default=None, max_length=500)
+
+
+class ConfigRequest(BaseModel):
+    yaml: str = Field(min_length=1, max_length=500_000)
+
+
 @router.get("/api/pipeline")
 def admin_pipeline_status(admin: AdminUser):
     return data_pipeline.status()
+
+
+@router.get("/api/pipeline/jobs")
+def admin_pipeline_jobs(admin: AdminUser):
+    return {"jobs": pipeline_call(jobs.list_jobs), "kinds": jobs.kind_labels()}
+
+
+@router.get("/api/pipeline/jobs/{job_id}")
+def admin_pipeline_job(job_id: int, admin: AdminUser):
+    job = jobs.job_detail(job_id)
+    if job is None:
+        raise crud.AdminError(404, "Úloha neexistuje.")
+    return job
+
+
+@router.get("/api/pipeline/config")
+def admin_pipeline_config(admin: AdminUser):
+    return pipeline_call(data_pipeline.config_state)
+
+
+@router.put("/api/pipeline/config")
+def admin_pipeline_write_config(payload: ConfigRequest, admin: AdminUser):
+    pipeline_call(lambda: data_pipeline.write_config(payload.yaml))
+    return pipeline_call(data_pipeline.config_state)
+
+
+@router.put("/api/pipeline/config/cities/{slug}")
+def admin_pipeline_city_settings(slug: str, data: Annotated[dict[str, Any], Body()], admin: AdminUser):
+    known_city(slug)
+    return pipeline_call(lambda: data_pipeline.update_city_settings(slug, data))
+
+
+@router.post("/api/pipeline/{slug}/jobs/{kind}")
+def admin_pipeline_start_job(slug: str, kind: str, admin: AdminUser):
+    known_city(slug)
+    job_id = pipeline_call(lambda: jobs.start_job(kind, slug, data_pipeline.reviewer_name(admin)))
+    return {"job_id": job_id}
+
+
+@router.get("/api/pipeline/{slug}/pois/items")
+def admin_pipeline_poi_items(slug: str, admin: AdminUser):
+    known_city(slug)
+    return pipeline_call(lambda: data_pipeline.poi_items(slug))
+
+
+@router.put("/api/pipeline/{slug}/pois/decisions/{key:path}")
+def admin_pipeline_decide(slug: str, key: str, payload: DecisionRequest, admin: AdminUser):
+    known_city(slug)
+    return pipeline_call(
+        lambda: data_pipeline.save_decision(slug, key, payload.action, payload.edits, payload.note, admin)
+    )
+
+
+@router.delete("/api/pipeline/{slug}/pois/decisions/{key:path}")
+def admin_pipeline_reset_decision(slug: str, key: str, admin: AdminUser):
+    known_city(slug)
+    return pipeline_call(lambda: data_pipeline.save_decision(slug, key, "include", {}, None, admin))
+
+
+@router.post("/api/pipeline/{slug}/pois/upload")
+def admin_pipeline_upload(slug: str, payload: Annotated[list[dict[str, Any]], Body()], admin: AdminUser):
+    known_city(slug)
+    return pipeline_call(lambda: data_pipeline.upload_pois(slug, payload, admin))
+
+
+@router.get("/api/pipeline/{slug}/transport/lines")
+def admin_pipeline_lines(slug: str, admin: AdminUser):
+    known_city(slug)
+    return pipeline_call(lambda: data_pipeline.transport_lines(slug))
+
+
+@router.get("/api/pipeline/{slug}/files/{kind}")
+def admin_pipeline_file(slug: str, kind: str, admin: AdminUser):
+    known_city(slug)
+    path, name = pipeline_call(lambda: data_pipeline.data_file(slug, kind))
+    return FileResponse(path, media_type="application/json", filename=name)
 
 
 @router.post("/api/pipeline/{slug}/{dataset}/{action}")
@@ -366,12 +487,7 @@ def admin_pipeline_action(
     payload: Annotated[PipelineActionRequest | None, Body()] = None,
 ):
     allow_errors = bool(payload and payload.allow_errors)
-    try:
-        known = data_pipeline.city_slugs()
-    except data_pipeline.PipelineUnavailableError as exc:
-        raise crud.AdminError(503, str(exc)) from exc
-    if slug not in known:
-        raise crud.AdminError(404, "Mesto nie je v konfigurácii pipeline.")
+    known_city(slug)
     handlers = {
         ("transport", "check"): lambda: data_pipeline.check_transport(slug),
         ("transport", "approve"): lambda: data_pipeline.approve_transport(slug, admin),
@@ -380,22 +496,7 @@ def admin_pipeline_action(
         ("pois", "approve"): lambda: data_pipeline.approve_pois(slug, admin, allow_errors),
         ("pois", "load"): lambda: data_pipeline.load_pois(slug, admin),
     }
-    try:
-        return {"result": handlers[(dataset, action)]()}
-    except data_pipeline.PipelineUnavailableError as exc:
-        raise crud.AdminError(503, str(exc)) from exc
-    except FileNotFoundError as exc:
-        raise crud.AdminError(404, "Spracovaný súbor neexistuje. Najprv spustite dátovú pipeline.") from exc
-    except ValueError as exc:
-        if data_pipeline.error_kind(exc) == "review":
-            raise crud.AdminError(
-                422, "Kontrola našla chyby. Opravte ich v pipeline alebo potvrďte schválenie aj napriek chybám."
-            ) from exc
-        raise
-    except RuntimeError as exc:
-        if data_pipeline.error_kind(exc) == "approval":
-            raise crud.AdminError(409, "Dáta nie sú schválené alebo sa po schválení zmenili.") from exc
-        raise
+    return {"result": pipeline_call(handlers[(dataset, action)])}
 
 
 @router.get("/api/dashboard")

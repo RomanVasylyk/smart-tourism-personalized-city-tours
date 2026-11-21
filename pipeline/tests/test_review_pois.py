@@ -114,3 +114,104 @@ def test_approval_is_blocked_by_errors_unless_explicitly_allowed(tmp_path):
         approve_reviewed(data_file, pois, report, "Správca")
     approval_file = approve_reviewed(data_file, pois, report, "Správca", allow_errors=True)
     assert json.loads(approval_file.read_text())["reviewer"] == "Správca"
+
+
+def test_decisions_exclude_edit_and_accept_errors():
+    from etl.poi.review import apply_decisions
+
+    city = {"slug": "test", "bbox": {"south": 48.0, "west": 18.0, "north": 48.1, "east": 18.1}}
+    pois = [
+        {
+            "osm_type": "node",
+            "osm_id": 1,
+            "name": "Hrad",
+            "category": "attraction",
+            "lat": 48.05,
+            "lon": 18.05,
+            "base_score": 0.6,
+            "visit_duration_min": 30,
+            "short_description": "x",
+        },
+        {
+            "osm_type": "node",
+            "osm_id": 2,
+            "name": "Park",
+            "category": "park",
+            "lat": 49.0,
+            "lon": 18.05,
+            "base_score": 0.6,
+            "visit_duration_min": 30,
+            "short_description": "x",
+        },
+        {
+            "osm_type": "node",
+            "osm_id": 3,
+            "name": "Kostol",
+            "category": "religious_site",
+            "lat": 49.0,
+            "lon": 18.05,
+            "base_score": 0.6,
+            "visit_duration_min": 30,
+            "short_description": "x",
+        },
+        {
+            "osm_type": "node",
+            "osm_id": 4,
+            "name": "Socha",
+            "category": "monument",
+            "lat": 49.0,
+            "lon": 18.05,
+            "base_score": 0.6,
+            "visit_duration_min": 30,
+            "short_description": "x",
+        },
+    ]
+    decisions = {
+        "node/2": {"action": "exclude"},
+        "node/3": {"action": "include", "edits": {"lat": 48.06, "unknown_field": "x"}},
+        "node/4": {"action": "accept", "note": "Leží tesne za hranicou mesta."},
+    }
+
+    reviewed = apply_decisions(pois, decisions)
+    report = review_pois(reviewed, city, None, decisions)
+
+    assert reviewed[1]["is_active"] is False
+    assert reviewed[2]["lat"] == 48.06 and "unknown_field" not in reviewed[2]
+    assert pois[2]["lat"] == 49.0
+    assert report["errors"] == []
+    assert [item["key"] for item in report["accepted"]] == ["node/4"]
+    assert report["summary"]["excluded_count"] == 1
+    assert report["summary"]["edited_count"] == 1
+
+
+def test_review_writes_reviewed_file_and_keeps_identical_approval(tmp_path, monkeypatch):
+    from scripts import review_pois as review_script
+
+    processed = tmp_path / "test_pois_normalized.json"
+    pois = [
+        {
+            "osm_type": "node",
+            "osm_id": 1,
+            "name": "Hrad",
+            "category": "attraction",
+            "lat": 48.05,
+            "lon": 18.05,
+            "base_score": 0.6,
+            "visit_duration_min": 30,
+            "short_description": "x",
+        }
+    ]
+    processed.write_text(json.dumps(pois, ensure_ascii=False, indent=2), encoding="utf-8")
+    write_approval(processed, "Správca", {"active": 1})
+    monkeypatch.setattr(review_script, "processed_file", lambda city: processed)
+    city = {"slug": "test", "bbox": {}}
+
+    reviewed, _, report = review_script.review_city_data(city)
+    assert reviewed.read_bytes() == processed.read_bytes()
+    assert require_approval(reviewed)["carried_over_from"] == processed.name
+
+    review_script.save_decisions(city, {"node/1": {"action": "exclude"}})
+    reviewed, items, _ = review_script.review_city_data(city)
+    assert items[0]["is_active"] is False
+    with pytest.raises(ApprovalError):
+        require_approval(reviewed)

@@ -114,9 +114,14 @@ python3 pipeline/scripts/load_transport_to_db.py nitra
 The transport graph is approved the same way: `load_transport_to_db.py` refuses a graph
 that was not approved after validation or that changed after approval.
 
-The usual way to approve and load data is the admin panel (*Dátová pipeline → Kontrola a schválenie*),
-which runs the same validation, review, approval and load functions and records the administrator's name.
-The commands above remain for scripted runs.
+The usual way to run, review, approve and load data is the admin panel (*Dátová pipeline → Kontrola a
+schválenie*). It starts these scripts as background jobs, runs the same validation, review, approval and load
+functions and records the administrator's name. The commands above remain for scripted runs.
+
+`review_pois.py` applies the administrator's decisions from `data/processed/<city>_pois_decisions.json`
+(include, exclude, keep despite an error, corrected fields) to the normalized file and writes
+`<city>_pois_reviewed.json`. The reviewed file is the one that is approved and loaded, so decisions survive
+a new download from OpenStreetMap.
 
 Run it for every configured city:
 

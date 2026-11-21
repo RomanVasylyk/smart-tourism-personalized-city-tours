@@ -5,12 +5,14 @@ import os
 import sys
 from collections import Counter
 from collections.abc import Callable
+from datetime import UTC, datetime
 from importlib import import_module
 from pathlib import Path
 from threading import Lock
 from types import SimpleNamespace
 from typing import Any
 
+import yaml
 from app.db.database import get_connection
 from app.services.service_calendar import invalidate_service_calendar
 from app.services.transport_graph import clear_transport_graph_cache
@@ -190,9 +192,12 @@ def transport_state(module: SimpleNamespace, city: dict, database: dict, last_lo
 
 
 def poi_state(module: SimpleNamespace, city: dict, database: dict, last_load: dict | None) -> dict | None:
-    data_file = module.poi_loader.processed_file(city)
-    if not data_file.exists():
+    source_file = module.poi_loader.processed_file(city)
+    if not source_file.exists():
         return None
+    reviewed = module.poi_review.reviewed_file(city)
+    decisions_path = module.poi_review.decisions_file(city)
+    data_file = reviewed if reviewed.exists() else source_file
     summary = cached(data_file, "pois", poi_summary)
     review_path = module.poi_review.review_file(city)
     review = read_json(review_path) if review_path.exists() else None
@@ -201,6 +206,7 @@ def poi_state(module: SimpleNamespace, city: dict, database: dict, last_load: di
         changes = review.get("changes") or {}
         review_state = {
             "errors": len(review.get("errors") or []),
+            "accepted": len(review.get("accepted") or []),
             "warnings": len(review.get("warnings") or []),
             "warning_codes": dict(Counter(item.get("code") for item in review.get("warnings") or [])),
             "error_items": (review.get("errors") or [])[:MAX_ISSUES],
@@ -210,12 +216,19 @@ def poi_state(module: SimpleNamespace, city: dict, database: dict, last_load: di
             "changes": (
                 {key: len(changes.get(key) or []) for key in ("added", "removed", "changed")} if changes else None
             ),
+            "excluded": (review.get("summary") or {}).get("excluded_count", 0),
+            "edited": (review.get("summary") or {}).get("edited_count", 0),
         }
+    inputs = [source_file, module.cities.CONFIG_FILE, *([decisions_path] if decisions_path.exists() else [])]
+    newest_input = max(path.stat().st_mtime for path in inputs)
+    review_current = reviewed.exists() and review_path.exists() and review_path.stat().st_mtime >= newest_input
+    missing = {"status": "missing", "reviewer": None, "approved_at": None}
     return {
         **summary,
+        "source_total": cached(source_file, "pois", poi_summary)["total"],
         "review": review_state,
-        "review_current": is_newer_or_same(review_path, data_file),
-        "approval": approval_state(module, data_file),
+        "review_current": review_current,
+        "approval": approval_state(module, reviewed) if reviewed.exists() else missing,
         "load": load_state(module, data_file, last_load),
         "database": {"active": database["pois_active"], "locked": database["pois_locked"]},
     }
@@ -305,3 +318,341 @@ def error_kind(exc: Exception) -> str | None:
     if name == "ReviewBlockedError":
         return "review"
     return None
+
+
+class InputError(ValueError):
+    pass
+
+
+ITEM_FIELDS = (
+    "name",
+    "category",
+    "subcategory",
+    "lat",
+    "lon",
+    "address",
+    "visit_duration_min",
+    "base_score",
+    "short_description",
+    "website",
+    "image_url",
+    "wikidata_id",
+    "wikipedia_title",
+    "wikipedia_url",
+    "opening_hours_raw",
+)
+ISSUE_SECTIONS = (("errors", "error"), ("accepted", "accepted"), ("warnings", "warning"))
+REQUIRED_POI_FIELDS = ("osm_type", "osm_id", "name", "category", "lat", "lon")
+SLUG_CHARACTERS = set("abcdefghijklmnopqrstuvwxyz0123456789-")
+
+
+def clear_caches() -> None:
+    with _lock:
+        _file_cache.clear()
+
+
+def review_module() -> Any:
+    modules()
+    return import_module("etl.poi.review")
+
+
+def ensure_reviewed(module: SimpleNamespace, city: dict) -> None:
+    if not module.poi_review.reviewed_file(city).exists() or not module.poi_review.review_file(city).exists():
+        module.poi_review.review_city_data(city)
+
+
+def poi_items(slug: str) -> dict:
+    module = modules()
+    city = city_profile(module, slug)
+    source_file = module.poi_loader.processed_file(city)
+    if not source_file.exists():
+        raise FileNotFoundError(source_file)
+    ensure_reviewed(module, city)
+    review = read_json(module.poi_review.review_file(city))
+    decisions = module.poi_review.load_decisions(city)
+    issues: dict[str, list[dict]] = {}
+    for section, level in ISSUE_SECTIONS:
+        for item in review.get(section) or []:
+            issues.setdefault(item["key"], []).append(
+                {"code": item.get("code"), "level": level, "message": item.get("message")}
+            )
+    reviewer = review_module()
+    items = []
+    for poi in read_json(source_file):
+        key = reviewer.poi_key(poi)
+        items.append(
+            {
+                "key": key,
+                "values": {field: poi.get(field) for field in ITEM_FIELDS},
+                "is_active": poi.get("is_active", True),
+                "decision": decisions.get(key),
+                "issues": issues.get(key, []),
+            }
+        )
+    return {
+        "city": {"slug": city["slug"], "name": city["name"], "bbox": city.get("bbox")},
+        "categories": city.get("available_categories") or [],
+        "editable_fields": list(reviewer.EDITABLE_FIELDS),
+        "summary": review.get("summary") or {},
+        "items": items,
+    }
+
+
+def coerce_edit(field: str, value: Any, categories: list[str]) -> Any:
+    if isinstance(value, str):
+        value = value.strip()
+    if value in ("", None):
+        if field in ("name", "category", "lat", "lon"):
+            raise InputError("Názov, kategória a súradnice nemôžu byť prázdne.")
+        return None
+    try:
+        if field == "lat":
+            number = float(str(value).replace(",", "."))
+            if not -90 <= number <= 90:
+                raise InputError("Zemepisná šírka musí byť od -90 do 90.")
+            return number
+        if field == "lon":
+            number = float(str(value).replace(",", "."))
+            if not -180 <= number <= 180:
+                raise InputError("Zemepisná dĺžka musí byť od -180 do 180.")
+            return number
+        if field == "visit_duration_min":
+            number = int(value)
+            if not 1 <= number <= 600:
+                raise InputError("Dĺžka návštevy musí byť od 1 do 600 minút.")
+            return number
+        if field == "base_score":
+            number = float(str(value).replace(",", "."))
+            if not 0 <= number <= 1:
+                raise InputError("Základné skóre musí byť od 0 do 1.")
+            return number
+    except (TypeError, ValueError) as exc:
+        if isinstance(exc, InputError):
+            raise
+        raise InputError("Číselné pole má nesprávny formát.") from exc
+    if field == "category" and categories and value not in categories:
+        raise InputError("Kategória nie je pre mesto povolená.")
+    return str(value)
+
+
+def save_decision(slug: str, key: str, action: str, edits: dict | None, note: str | None, admin: dict) -> dict:
+    module = modules()
+    city = city_profile(module, slug)
+    reviewer = review_module()
+    if action not in reviewer.DECISION_ACTIONS:
+        raise InputError("Neznáme rozhodnutie.")
+    pois = read_json(module.poi_loader.processed_file(city))
+    if key not in {reviewer.poi_key(poi) for poi in pois}:
+        raise KeyError(key)
+    categories = city.get("available_categories") or []
+    clean_edits = {}
+    for field, value in (edits or {}).items():
+        if field not in reviewer.EDITABLE_FIELDS:
+            raise InputError("Toto pole nemožno upraviť.")
+        clean_edits[field] = coerce_edit(field, value, categories)
+    decisions = module.poi_review.load_decisions(city)
+    note = (note or "").strip() or None
+    if action == "include" and not clean_edits and not note:
+        decisions.pop(key, None)
+    else:
+        decisions[key] = {
+            "action": action,
+            "edits": clean_edits,
+            "note": note,
+            "by": reviewer_name(admin),
+            "at": datetime.now(UTC).isoformat(timespec="seconds"),
+        }
+    module.poi_review.save_decisions(city, decisions)
+    module.poi_review.review_city_data(city)
+    return poi_items(slug)
+
+
+def upload_pois(slug: str, payload: list, admin: dict) -> dict:
+    module = modules()
+    city = city_profile(module, slug)
+    if not isinstance(payload, list) or not payload:
+        raise InputError("Súbor musí obsahovať neprázdny zoznam bodov záujmu.")
+    reviewer = review_module()
+    seen = set()
+    for index, poi in enumerate(payload, start=1):
+        if not isinstance(poi, dict) or any(poi.get(field) in (None, "") for field in REQUIRED_POI_FIELDS):
+            raise InputError(f"Záznam č. {index} nemá všetky povinné polia: {', '.join(REQUIRED_POI_FIELDS)}.")
+        if not isinstance(poi["lat"], int | float) or not isinstance(poi["lon"], int | float):
+            raise InputError(f"Záznam č. {index} má súradnice v nesprávnom formáte.")
+        key = reviewer.poi_key(poi)
+        if key in seen:
+            raise InputError(f"Objekt {key} je v súbore viackrát.")
+        seen.add(key)
+    source_file = module.poi_loader.processed_file(city)
+    if source_file.exists():
+        source_file.with_name(f"{city['slug']}_pois_normalized.backup.json").write_bytes(source_file.read_bytes())
+    source_file.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+    module.poi_review.review_city_data(city)
+    return {"count": len(payload), "uploaded_by": reviewer_name(admin)}
+
+
+def lines_summary(path: Path) -> list[dict]:
+    graph = read_json(path)
+    trips = Counter(trip.get("line_id") for trip in graph.get("trips") or [])
+    return [
+        {
+            "line_id": line.get("line_id"),
+            "name": line.get("name"),
+            "direction": line.get("direction_name"),
+            "service_bucket": line.get("service_bucket"),
+            "stops": len(line.get("stops") or []),
+            "trips": trips.get(line.get("line_id"), 0),
+            "valid_from": line.get("valid_from"),
+            "source_url": line.get("source_url"),
+        }
+        for line in graph.get("lines") or []
+    ]
+
+
+def transport_lines(slug: str) -> dict:
+    module = modules()
+    city = city_profile(module, slug)
+    graph_file = module.transport_loader.transport_graph_path(city)
+    if not graph_file.exists():
+        raise FileNotFoundError(graph_file)
+    return {"city": {"slug": city["slug"], "name": city["name"]}, "lines": cached(graph_file, "lines", lines_summary)}
+
+
+def data_file(slug: str, kind: str) -> tuple[Path, str]:
+    module = modules()
+    city = city_profile(module, slug)
+    graph_file = module.transport_loader.transport_graph_path(city)
+    paths = {
+        "pois_normalized": module.poi_loader.processed_file(city),
+        "pois_reviewed": module.poi_review.reviewed_file(city),
+        "pois_review": module.poi_review.review_file(city),
+        "pois_decisions": module.poi_review.decisions_file(city),
+        "transport_graph": graph_file,
+        "transport_report": module.validator.report_paths(graph_file)[0],
+    }
+    path = paths.get(kind)
+    if path is None:
+        raise KeyError(kind)
+    if not path.exists():
+        raise FileNotFoundError(path)
+    name = path.name if path.name.startswith(city["slug"]) else f"{city['slug']}_{path.name}"
+    return path, name
+
+
+def city_settings(city: dict) -> dict:
+    transport = city.get("transport") or {}
+    limits = city.get("routing_limits") or {}
+    return {
+        "slug": city.get("slug"),
+        "name": city.get("name"),
+        "country": city.get("country"),
+        "center": city.get("center") or {},
+        "bbox": city.get("bbox") or {},
+        "available_categories": city.get("available_categories") or [],
+        "default_zoom": city.get("default_zoom"),
+        "routing_limits": {
+            "max_available_minutes": limits.get("max_available_minutes"),
+            "max_poi_candidates": limits.get("max_poi_candidates"),
+        },
+        "transport": {
+            "mhd_enabled": bool(transport.get("mhd_enabled")),
+            "provider": transport.get("provider"),
+            "source_index_url": transport.get("source_index_url"),
+        },
+    }
+
+
+def number(value: Any, label: str, low: float, high: float) -> float:
+    try:
+        result = float(str(value).replace(",", "."))
+    except (TypeError, ValueError) as exc:
+        raise InputError(f"{label} musí byť číslo.") from exc
+    if not low <= result <= high:
+        raise InputError(f"{label} musí byť od {low:g} do {high:g}.")
+    return result
+
+
+def validate_city(city: Any, position: int) -> None:
+    if not isinstance(city, dict):
+        raise InputError(f"Mesto č. {position} nie je správne zapísané.")
+    slug = str(city.get("slug") or "")
+    if not slug or not set(slug) <= SLUG_CHARACTERS:
+        raise InputError(f"Mesto č. {position} potrebuje skratku z malých písmen, číslic a pomlčiek.")
+    if not city.get("name") or not city.get("country"):
+        raise InputError(f"Mesto {slug} potrebuje názov a krajinu.")
+    center = city.get("center") or {}
+    bbox = city.get("bbox") or {}
+    number(center.get("lat"), f"Stred mesta {slug} – šírka", -90, 90)
+    number(center.get("lon"), f"Stred mesta {slug} – dĺžka", -180, 180)
+    south = number(bbox.get("south"), f"Hranica mesta {slug} – juh", -90, 90)
+    north = number(bbox.get("north"), f"Hranica mesta {slug} – sever", -90, 90)
+    west = number(bbox.get("west"), f"Hranica mesta {slug} – západ", -180, 180)
+    east = number(bbox.get("east"), f"Hranica mesta {slug} – východ", -180, 180)
+    if south >= north or west >= east:
+        raise InputError(f"Hranice mesta {slug} sú prehodené: juh musí byť menší ako sever a západ menší ako východ.")
+
+
+def validate_config(config: Any) -> None:
+    cities = config.get("cities") if isinstance(config, dict) else None
+    if not isinstance(cities, list) or not cities:
+        raise InputError("Konfigurácia musí obsahovať zoznam miest pod kľúčom cities.")
+    for position, city in enumerate(cities, start=1):
+        validate_city(city, position)
+    slugs = [city["slug"] for city in cities]
+    if len(slugs) != len(set(slugs)):
+        raise InputError("Skratky miest sa nesmú opakovať.")
+
+
+def config_state() -> dict:
+    module = modules()
+    return {
+        "yaml": module.cities.CONFIG_FILE.read_text(encoding="utf-8"),
+        "cities": [city_settings(city) for city in module.cities.load_city_profiles()],
+    }
+
+
+def write_config(text: str) -> None:
+    module = modules()
+    try:
+        parsed = yaml.safe_load(text)
+    except yaml.YAMLError as exc:
+        raise InputError(f"Súbor nie je platný YAML: {exc}") from exc
+    validate_config(parsed)
+    path = module.cities.CONFIG_FILE
+    path.with_name("cities.backup.yaml").write_bytes(path.read_bytes())
+    path.write_text(text, encoding="utf-8")
+    clear_caches()
+
+
+def update_city_settings(slug: str, data: dict) -> dict:
+    module = modules()
+    config = yaml.safe_load(module.cities.CONFIG_FILE.read_text(encoding="utf-8"))
+    city = next((item for item in config.get("cities") or [] if item.get("slug") == slug), None)
+    if city is None:
+        raise KeyError(slug)
+    center = data.get("center") or {}
+    bbox = data.get("bbox") or {}
+    city["center"] = {"lat": center.get("lat"), "lon": center.get("lon")}
+    city["bbox"] = {key: bbox.get(key) for key in ("south", "west", "north", "east")}
+    for section in (city["center"], city["bbox"]):
+        for key, value in section.items():
+            section[key] = number(value, "Súradnica", -180, 180)
+    categories = [item for item in data.get("available_categories") or [] if isinstance(item, str)]
+    if not categories:
+        raise InputError("Vyberte aspoň jednu kategóriu.")
+    city["available_categories"] = categories
+    if data.get("default_zoom") not in (None, ""):
+        city["default_zoom"] = number(data["default_zoom"], "Priblíženie mapy", 3, 20)
+    limits = data.get("routing_limits") or {}
+    routing = city.setdefault("routing_limits", {})
+    if limits.get("max_available_minutes") not in (None, ""):
+        routing["max_available_minutes"] = int(number(limits["max_available_minutes"], "Najdlhšia trasa", 30, 1440))
+    if limits.get("max_poi_candidates") not in (None, ""):
+        routing["max_poi_candidates"] = int(number(limits["max_poi_candidates"], "Počet kandidátov", 10, 2000))
+    if isinstance(data.get("transport"), dict) and "mhd_enabled" in data["transport"]:
+        city.setdefault("transport", {})["mhd_enabled"] = bool(data["transport"]["mhd_enabled"])
+    write_config(yaml.safe_dump(config, sort_keys=False, allow_unicode=True, default_flow_style=False))
+    profile = city_profile(module, slug)
+    if module.poi_loader.processed_file(profile).exists():
+        module.poi_review.review_city_data(profile)
+    return city_settings(profile)

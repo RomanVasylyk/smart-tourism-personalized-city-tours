@@ -1,6 +1,6 @@
 "use strict";
 
-const state = { meta: null, user: null, resources: {} };
+const state = { meta: null, user: null, resources: {}, pollTimer: null };
 const app = document.getElementById("app");
 const PAGE_SIZE = 50;
 const SVG_NS = "http://www.w3.org/2000/svg";
@@ -48,6 +48,11 @@ const ICONS = {
   alert: '<path d="M12 4 2.5 20h19z"/><path d="M12 10v4.5M12 17.2v.3"/>',
   ok: '<circle cx="12" cy="12" r="8.5"/><path d="m8.5 12.3 2.4 2.4 4.8-4.9"/>',
   inbox: '<path d="M3 13h5l1.5 3h5L16 13h5"/><path d="M5 5h14l2 8v6H3v-6z"/>',
+  upload: '<path d="M12 20V9M7 13.5l5-5 5 5"/><path d="M5 4h14"/>',
+  play: '<path d="M7 4.5v15l12-7.5z"/>',
+  settings: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>',
+  list: '<path d="M8 6h13M8 12h13M8 18h13"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/>',
+  external: '<path d="M14 4h6v6M20 4l-9 9"/><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>',
   database: '<ellipse cx="12" cy="5.5" rx="7" ry="2.8"/><path d="M5 5.5v6.5c0 1.6 3.1 2.8 7 2.8s7-1.2 7-2.8V5.5"/><path d="M5 12v6.3c0 1.6 3.1 2.8 7 2.8s7-1.2 7-2.8V12"/>',
   shield: '<path d="M12 3 5 6v5.5c0 4.4 2.9 7.8 7 9.5 4.1-1.7 7-5.1 7-9.5V6z"/><path d="m9 12 2.2 2.2L15.5 10"/>',
   download: '<path d="M12 4v11M7 10.5l5 5 5-5"/><path d="M5 20h14"/>',
@@ -301,6 +306,8 @@ function userChip() {
 }
 
 function shell({ title, kicker, line, subtitle, content, active, actions }) {
+  clearTimeout(state.pollTimer);
+  state.pollTimer = null;
   const colors = line || HOME_LINE;
   const page = el("div", { class: "page" }, content);
   const main = el("main", { class: "main", style: lineStyle(colors) }, [
@@ -931,13 +938,60 @@ function datasetActions(city, dataset, data, refresh) {
   return el("div", { class: "dataset-actions" }, [check, approve, load]);
 }
 
+const JOB_NOTES = {
+  pois_import: "Stiahne aktuálne body z OpenStreetMap a doplní opisy z Wikipédie, zvyčajne 1 – 5 MB. Do databázy sa nič nedostane, kým dáta neschválite.",
+  pois_process: "Znova spracuje už stiahnuté body (kategórie, opisy, kontrola). Nové opisy z Wikipédie môžu stiahnuť niekoľko kB.",
+  transport_import: "Stiahne cestovné poriadky z imhd.sk a zastávky z OpenStreetMap, podľa mesta približne 3 – 15 MB. Do databázy sa nič nedostane, kým dáta neschválite.",
+  transport_process: "Znova vytvorí graf MHD z už stiahnutých cestovných poriadkov a skontroluje ho. Nič sa nesťahuje.",
+  curated_routes: "Načíta kurátorské okruhy mesta z konfigurácie priamo do databázy.",
+};
+
+function downloadLink(slug, kind, label) {
+  return el("a", { class: "btn small ghost", href: `/admin/api/pipeline/${slug}/files/${kind}`, download: "" }, [icon("download", 16), label]);
+}
+
+async function startJob(city, kind, label) {
+  const accepted = await confirmDialog(`${label} – ${city.name}?`, JOB_NOTES[kind], "Spustiť", { tone: "primary", iconName: "play" });
+  if (!accepted) return;
+  try {
+    await api("POST", `/admin/api/pipeline/${city.slug}/jobs/${kind}`, {});
+    toast("Úloha sa spustila, priebeh vidíte hore na stránke.");
+    window.scrollTo(0, 0);
+    renderData();
+  } catch (exc) {
+    toast(exc.message, true);
+  }
+}
+
+function jobButton(city, kind, label, iconName) {
+  return el("button", { class: "btn small ghost", type: "button", onclick: () => startJob(city, kind, label) }, [icon(iconName, 16), label]);
+}
+
+function datasetTools(city, dataset, data) {
+  if (dataset === "pois") {
+    const errors = data && data.review ? data.review.errors : 0;
+    return el("div", { class: "dataset-tools" }, [
+      el("a", { class: `btn small${errors ? " primary" : ""}`, href: `#/data/${city.slug}/pois` }, [icon("list", 16), errors ? `Vyriešiť chyby (${errors})` : "Prehliadať a rozhodnúť"]),
+      data ? downloadLink(city.slug, "pois_reviewed", "JSON") : null,
+      jobButton(city, "pois_import", "Stiahnuť z OSM", "refresh"),
+      data ? jobButton(city, "pois_process", "Spracovať znova", "play") : null,
+    ]);
+  }
+  return el("div", { class: "dataset-tools" }, [
+    data ? el("a", { class: "btn small", href: `#/data/${city.slug}/transport` }, [icon("list", 16), "Prehliadať linky"]) : null,
+    data ? downloadLink(city.slug, "transport_graph", "JSON") : null,
+    jobButton(city, "transport_import", "Stiahnuť z imhd.sk", "refresh"),
+    data ? jobButton(city, "transport_process", "Spracovať znova", "play") : null,
+  ]);
+}
+
 function datasetHead(iconName, title, tags) {
   return el("header", { class: "dataset-head" }, [el("h4", {}, [icon(iconName, 18), title]), el("div", { class: "tags" }, tags)]);
 }
 
 function transportBlock(city, data, refresh) {
   if (!data) {
-    return el("article", { class: "dataset" }, [datasetHead("bus", "Cestovné poriadky MHD", []), el("p", { class: "muted", text: "Graf MHD pre toto mesto ešte nebol spracovaný." })]);
+    return el("article", { class: "dataset" }, [datasetHead("bus", "Cestovné poriadky MHD", []), el("p", { class: "muted", text: "Graf MHD pre toto mesto ešte nebol spracovaný." }), datasetTools(city, "transport", null)]);
   }
   const labels = choiceLabelsOf("transport_trips", "service_bucket");
   const order = Object.keys(labels);
@@ -972,6 +1026,7 @@ function transportBlock(city, data, refresh) {
     data.issues.length ? issueList("Zistenia kontroly", data.issues.map((item) => `${item.code}: ${item.message}`)) : null,
     ...trail(data),
     datasetActions(city, "transport", data, refresh),
+    datasetTools(city, "transport", data),
   ]);
 }
 
@@ -981,7 +1036,7 @@ function issueText(item) {
 
 function poiBlock(city, data, refresh) {
   if (!data) {
-    return el("article", { class: "dataset" }, [datasetHead("pin", "Body záujmu", []), el("p", { class: "muted", text: "Body záujmu pre toto mesto ešte neboli spracované." })]);
+    return el("article", { class: "dataset" }, [datasetHead("pin", "Body záujmu", []), el("p", { class: "muted", text: "Body záujmu pre toto mesto ešte neboli spracované." }), datasetTools(city, "pois", null)]);
   }
   const categories = choiceLabelsOf("pois", "category");
   const review = data.review;
@@ -995,11 +1050,13 @@ function poiBlock(city, data, refresh) {
       ...Object.entries(review.warning_codes).map(([code, value]) => qualityChip(value, ISSUE_LABELS[code] || code, false)),
     ]) : el("p", { class: "muted", text: "Kontrola ešte nebola spustená." }),
     data.review_current ? null : staleNote("Kontrola je staršia ako dáta. Pred schválením ju spustite znova."),
+    review && (review.excluded || review.edited || review.accepted) ? el("p", { class: "dataset-meta", text: `Rozhodnutia správcu: ${review.excluded} vyradených, ${review.edited} upravených, ${review.accepted} ponechaných napriek chybe.` }) : null,
     review && review.changes ? el("p", { class: "dataset-meta", text: `Od posledného schválenia: ${review.changes.added} nových, ${review.changes.removed} odstránených a ${review.changes.changed} zmenených bodov.` }) : null,
     review && review.error_items.length ? issueList("Chyby", review.error_items.map(issueText)) : null,
     review && review.warning_items.length ? issueList("Upozornenia", review.warning_items.map(issueText)) : null,
     ...trail(data),
     datasetActions(city, "pois", data, refresh),
+    datasetTools(city, "pois", data),
   ]);
 }
 
@@ -1019,11 +1076,431 @@ async function renderData() {
     return;
   }
   const refresh = () => { renderData().catch((exc) => toast(exc.message, true)); };
-  page.replaceChildren(el("div", { class: "data-cities" }, data.cities.map((city) => el("section", { class: "panel city-data" }, [
-    el("div", { class: "panel-head" }, [el("h3", {}, [el("span", { class: "ico" }, icon("city", 18)), city.name]), el("span", { class: "slug", text: city.slug })]),
-    el("div", { class: "dataset-grid" }, [transportBlock(city, city.transport, refresh), poiBlock(city, city.pois, refresh)]),
-  ]))));
+  const jobs = el("div");
+  page.replaceChildren(el("div", { class: "data-cities" }, [
+    jobs,
+    ...data.cities.map((city) => el("section", { class: "panel city-data" }, [
+      el("div", { class: "panel-head" }, [
+        el("h3", {}, [el("span", { class: "ico" }, icon("city", 18)), city.name, el("span", { class: "slug", text: city.slug })]),
+        el("div", { class: "city-tools" }, [
+          jobButton(city, "curated_routes", "Kurátorské okruhy", "route"),
+          el("a", { class: "btn small", href: `#/data/${city.slug}/settings` }, [icon("settings", 16), "Nastavenia mesta"]),
+        ]),
+      ]),
+      el("div", { class: "dataset-grid" }, [transportBlock(city, city.transport, refresh), poiBlock(city, city.pois, refresh)]),
+    ])),
+    el("p", { class: "muted config-link" }, [el("a", { href: "#/data/config", text: "Upraviť celý konfiguračný súbor miest (cities.yaml)" })]),
+  ]));
   window.scrollTo(0, scroll);
+  renderJobs(jobs, refresh);
+}
+
+const JOB_STATUS = { running: ["Beží", "tone-blue"], succeeded: ["Hotovo", "tone-green"], failed: ["Chyba", "tone-red"] };
+
+function durationText(job) {
+  if (!job.finished_at) return "";
+  const seconds = Math.max(0, Math.round((new Date(job.finished_at) - new Date(job.started_at)) / 1000));
+  return seconds < 60 ? `${seconds} s` : `${Math.floor(seconds / 60)} min ${seconds % 60} s`;
+}
+
+function logBlock(text) {
+  const pre = el("pre", { class: "log", text: text || "Zatiaľ bez výstupu." });
+  requestAnimationFrame(() => { pre.scrollTop = pre.scrollHeight; });
+  return pre;
+}
+
+async function renderJobs(container, refresh) {
+  let data;
+  try {
+    data = await api("GET", "/admin/api/pipeline/jobs");
+  } catch (exc) {
+    container.replaceChildren(el("p", { class: "muted", text: exc.message }));
+    return;
+  }
+  const running = data.jobs.find((job) => job.status === "running");
+  const rows = data.jobs.filter((job) => job !== running).slice(0, 8).map((job) => {
+    const [label, tone] = JOB_STATUS[job.status] || [job.status, "tone-muted"];
+    const holder = el("div", { class: "job-log", hidden: true });
+    const toggle = el("button", { class: "btn small ghost", type: "button", text: "Záznam" });
+    toggle.addEventListener("click", async () => {
+      if (!holder.hidden) { holder.hidden = true; return; }
+      const detail = await api("GET", `/admin/api/pipeline/jobs/${job.id}`);
+      holder.replaceChildren(logBlock(detail.log));
+      holder.hidden = false;
+    });
+    return el("div", { class: "job-item" }, [
+      el("div", { class: "job-row" }, [
+        el("span", { class: `tag ${tone}`, text: label }),
+        el("strong", { text: job.label }),
+        el("span", { class: "muted", text: `${job.city_slug} · ${job.started_by || ""} · ${formatDateTime(job.started_at)}${durationText(job) ? ` · ${durationText(job)}` : ""}` }),
+        toggle,
+      ]),
+      holder,
+    ]);
+  });
+  const panel = el("section", { class: "panel jobs-panel" }, [
+    panelHead("play", "Úlohy pipeline", null),
+    running ? el("div", { class: "job-running" }, [
+      el("div", { class: "job-row" }, [
+        el("span", { class: "tag tone-blue", text: "Beží" }),
+        el("strong", { text: running.label }),
+        el("span", { class: "muted", text: `${running.city_slug} · spustil ${running.started_by || ""} · ${formatDateTime(running.started_at)}` }),
+      ]),
+      el("div", { class: "running-log" }, logBlock("")),
+    ]) : null,
+    rows.length ? el("div", { class: "job-list" }, rows) : (running ? null : el("p", { class: "muted", text: "Zatiaľ sa nespustila žiadna úloha. Sťahovanie a spracovanie dát spustíte tlačidlami pri meste." })),
+  ]);
+  container.replaceChildren(panel);
+  if (!running) return;
+  const poll = async () => {
+    try {
+      const detail = await api("GET", `/admin/api/pipeline/jobs/${running.id}`);
+      const holder = panel.querySelector(".running-log");
+      if (holder) holder.replaceChildren(logBlock(detail.log));
+      if (detail.status !== "running") {
+        toast(detail.status === "succeeded" ? `${detail.label}: hotovo.` : `${detail.label}: skončila s chybou, pozrite si záznam.`, detail.status !== "succeeded");
+        refresh();
+        return;
+      }
+    } catch (exc) {
+      return;
+    }
+    state.pollTimer = setTimeout(poll, 1500);
+  };
+  poll();
+}
+
+function pipelineShell(title, subtitle, actions, content) {
+  return shell({ title, kicker: PIPELINE_GROUP, line: lineOf(PIPELINE_GROUP), subtitle, active: "data", actions, content });
+}
+
+function backLink() {
+  return el("a", { class: "btn ghost", href: "#/data" }, [icon("back", 17), "Kontrola dát"]);
+}
+
+const POI_FILTERS = [
+  ["all", "Všetky"],
+  ["errors", "S chybou"],
+  ["warnings", "Upozornenia"],
+  ["excluded", "Vyradené"],
+  ["edited", "Upravené"],
+  ["accepted", "Ponechané napriek chybe"],
+  ["clean", "Bez problémov"],
+];
+const POI_FIELD_LABELS = {
+  name: "Názov", category: "Kategória", subcategory: "Podkategória", lat: "Zemepisná šírka", lon: "Zemepisná dĺžka",
+  address: "Adresa", visit_duration_min: "Dĺžka návštevy [min]", base_score: "Základné skóre (0 – 1)",
+  short_description: "Krátky opis", website: "Webová stránka", image_url: "Obrázok (URL)", wikidata_id: "Wikidata",
+  wikipedia_title: "Článok vo Wikipédii", wikipedia_url: "Odkaz na Wikipédiu",
+};
+
+function issueTag(issue) {
+  const label = ISSUE_LABELS[issue.code] || issue.code;
+  if (issue.level === "error") return el("span", { class: "tag tone-red", title: issue.message || "", text: label });
+  if (issue.level === "accepted") return el("span", { class: "tag tone-green", title: issue.message || "", text: `${label} – ponechané` });
+  return el("span", { class: "tag tone-ochre", title: issue.message || "", text: label });
+}
+
+function matchesFilter(item, filter) {
+  const action = item.decision ? item.decision.action : "include";
+  const edited = Boolean(item.decision && item.decision.edits && Object.keys(item.decision.edits).length);
+  if (filter === "errors") return item.issues.some((issue) => issue.level === "error");
+  if (filter === "warnings") return item.issues.some((issue) => issue.level === "warning");
+  if (filter === "excluded") return action === "exclude";
+  if (filter === "edited") return edited;
+  if (filter === "accepted") return action === "accept";
+  if (filter === "clean") return !item.issues.length && action === "include";
+  return true;
+}
+
+async function renderPoiBrowser(slug) {
+  pipelineShell("Body záujmu", null, [backLink()], loading());
+  let data = await api("GET", `/admin/api/pipeline/${slug}/pois/items`);
+  const view = { filter: data.summary.error_count ? "errors" : "all", query: "", open: null };
+  const categories = choiceLabelsOf("pois", "category");
+  const tbody = el("tbody");
+  const counts = el("div", { class: "filter-tabs" });
+  const summaryLine = el("span");
+  const search = el("input", { type: "search", placeholder: "Hľadať podľa názvu…", "aria-label": "Hľadať" });
+  search.addEventListener("input", () => { view.query = search.value.trim().toLowerCase(); draw(); });
+  const fileInput = el("input", { type: "file", accept: "application/json,.json", hidden: true });
+  fileInput.addEventListener("change", async () => {
+    const file = fileInput.files[0];
+    fileInput.value = "";
+    if (!file) return;
+    let items;
+    try {
+      items = JSON.parse(await file.text());
+    } catch (exc) {
+      toast("Súbor nie je platný JSON.", true);
+      return;
+    }
+    const count = Array.isArray(items) ? items.length : 0;
+    const accepted = await confirmDialog("Nahradiť spracované body?", `Spracované body mesta ${data.city.name} sa nahradia obsahom súboru (${count} bodov). Pôvodný súbor sa uloží ako záloha a rozhodnutia správcu zostanú zachované.`, "Nahradiť", { tone: "primary", iconName: "upload" });
+    if (!accepted) return;
+    try {
+      const result = await api("POST", `/admin/api/pipeline/${slug}/pois/upload`, items);
+      toast(`Nahraných ${result.count} bodov. Dáta treba znova schváliť.`);
+      renderPoiBrowser(slug);
+    } catch (exc) {
+      toast(exc.message, true);
+    }
+  });
+
+  const decide = async (item, action, edits, note) => {
+    try {
+      data = await api("PUT", `/admin/api/pipeline/${slug}/pois/decisions/${item.key}`, {
+        action,
+        edits: edits === undefined ? (item.decision && item.decision.edits) || {} : edits,
+        note: note === undefined ? (item.decision && item.decision.note) || null : note,
+      });
+      toast("Rozhodnutie je uložené. Pred načítaním treba dáta znova schváliť.");
+      draw();
+    } catch (exc) {
+      toast(exc.message, true);
+    }
+  };
+
+  const editorRow = (item) => {
+    const edits = (item.decision && item.decision.edits) || {};
+    const inputs = {};
+    const fields = data.editable_fields.map((field) => {
+      const original = item.values[field];
+      const current = field in edits ? edits[field] : original;
+      let input;
+      if (field === "category") {
+        input = el("select", {}, data.categories.map((value) => el("option", { value, text: categories[value] || value })));
+        input.value = current || "";
+      } else if (field === "short_description") {
+        input = el("textarea", { value: current === null || current === undefined ? "" : String(current) });
+      } else {
+        input = el("input", { type: ["lat", "lon", "base_score", "visit_duration_min"].includes(field) ? "number" : "text", step: "any", value: current === null || current === undefined ? "" : String(current) });
+      }
+      inputs[field] = input;
+      return el("div", { class: `field${field === "short_description" ? " wide" : ""}` }, [
+        el("label", { text: POI_FIELD_LABELS[field] || field }),
+        input,
+        field in edits ? el("p", { class: "help", text: `Pôvodne: ${original === null || original === undefined || original === "" ? "—" : original}` }) : null,
+      ]);
+    });
+    const note = el("textarea", { value: (item.decision && item.decision.note) || "", placeholder: "Prečo ste bod upravili, vyradili alebo ponechali" });
+    const save = el("button", { class: "btn primary small", type: "button" }, [icon("check", 16), "Uložiť úpravy"]);
+    save.addEventListener("click", () => {
+      const changed = {};
+      for (const [field, input] of Object.entries(inputs)) {
+        const original = item.values[field];
+        const value = input.value.trim();
+        const originalText = original === null || original === undefined ? "" : String(original);
+        if (value !== originalText) changed[field] = value;
+      }
+      view.open = null;
+      decide(item, item.decision ? item.decision.action : "include", changed, note.value);
+    });
+    const reset = el("button", { class: "btn small ghost", type: "button", text: "Vrátiť pôvodné hodnoty", onclick: () => { view.open = null; decide(item, item.decision ? item.decision.action : "include", {}, note.value); } });
+    const close = el("button", { class: "btn small ghost", type: "button", text: "Zavrieť", onclick: () => { view.open = null; draw(); } });
+    return el("tr", { class: "editor-row" }, el("td", { colspan: "4" }, [
+      el("div", { class: "fields" }, [...fields, el("div", { class: "field wide" }, [el("label", { text: "Poznámka" }), note])]),
+      el("div", { class: "editor-actions" }, [save, Object.keys(edits).length ? reset : null, close]),
+    ]));
+  };
+
+  const draw = () => {
+    const items = data.items;
+    const summary = data.summary;
+    summaryLine.textContent = `Bodov v súbore: ${numberFormat.format(items.length)} · Chyby: ${summary.error_count} · Ponechané napriek chybe: ${summary.accepted_count || 0} · Vyradené: ${summary.excluded_count || 0} · Upravené: ${summary.edited_count || 0}`;
+    counts.replaceChildren(...POI_FILTERS.map(([key, label]) => el("button", {
+      type: "button",
+      class: view.filter === key ? "active" : null,
+      onclick: () => { view.filter = key; view.open = null; draw(); },
+    }, [label, el("b", { text: String(items.filter((item) => matchesFilter(item, key)).length) })])));
+    const visible = items.filter((item) => matchesFilter(item, view.filter) && (!view.query || String(item.values.name || "").toLowerCase().includes(view.query)));
+    if (!visible.length) {
+      tbody.replaceChildren(el("tr", {}, el("td", { colspan: "4" }, el("div", { class: "empty-state" }, [icon("inbox", 40), "V tomto výbere nie sú žiadne body."]))));
+      return;
+    }
+    const rows = [];
+    for (const item of visible) {
+      const action = item.decision ? item.decision.action : "include";
+      const edits = (item.decision && item.decision.edits) || {};
+      const name = edits.name || item.values.name;
+      const hasError = item.issues.some((issue) => issue.level === "error");
+      const canAccept = item.issues.some((issue) => issue.level !== "warning");
+      const options = [["include", "Zaradiť"], ["exclude", "Vyradiť"], ...(canAccept ? [["accept", "Ponechať napriek chybe"]] : [])];
+      const [osmType, osmId] = item.key.split("/");
+      rows.push(el("tr", { class: [hasError ? "has-error" : "", action === "exclude" ? "excluded" : ""].join(" ").trim() || null }, [
+        el("td", {}, [
+          el("div", { class: "poi-name", text: name }),
+          el("div", { class: "poi-meta", text: `${categories[edits.category || item.values.category] || item.values.category} · ${item.key}${Object.keys(edits).length ? " · upravené" : ""}` }),
+          item.decision && item.decision.note ? el("div", { class: "poi-note", text: item.decision.note }) : null,
+        ]),
+        el("td", {}, el("div", { class: "issue-tags" }, item.issues.length ? item.issues.map(issueTag) : [el("span", { class: "nil", text: "—" })])),
+        el("td", {}, el("div", { class: "segmented" }, options.map(([value, label]) => el("button", {
+          type: "button",
+          class: value === action ? "active" : null,
+          onclick: () => { if (value !== action) decide(item, value); },
+        }, label)))),
+        el("td", { class: "row-tools" }, [
+          el("button", { class: "btn small ghost", type: "button", onclick: () => { view.open = view.open === item.key ? null : item.key; draw(); } }, [icon("settings", 15), "Upraviť"]),
+          el("a", { class: "btn small ghost icon-only", href: `https://www.openstreetmap.org/${osmType}/${osmId}`, target: "_blank", rel: "noopener", title: "Otvoriť v OpenStreetMap" }, icon("external", 15)),
+        ]),
+      ]));
+      if (view.open === item.key) rows.push(editorRow(item));
+    }
+    tbody.replaceChildren(...rows);
+  };
+
+  pipelineShell(`Body záujmu – ${data.city.name}`, summaryLine, [backLink()], el("div", { class: "sheet" }, [
+    el("div", { class: "toolbar" }, [
+      el("label", { class: "search" }, [icon("search", 17), search]),
+      el("span", { class: "spacer" }),
+      downloadLink(slug, "pois_normalized", "Spracované"),
+      downloadLink(slug, "pois_reviewed", "Schvaľované"),
+      el("button", { class: "btn small", type: "button", onclick: () => fileInput.click() }, [icon("upload", 16), "Nahrať JSON"]),
+      fileInput,
+      el("span", { class: "toolbar-break" }),
+      counts,
+    ]),
+    el("p", { class: "browser-help", text: "Bod s chybou môžete vyradiť (nenačíta sa), ponechať napriek chybe (napríklad park tesne za hranicou mesta) alebo opraviť jeho údaje. Rozhodnutia platia aj pri ďalšom stiahnutí dát." }),
+    el("div", { class: "table-wrap" }, el("table", { class: "grid poi-table" }, [
+      el("thead", {}, el("tr", {}, ["Bod záujmu", "Kontrola", "Rozhodnutie", ""].map((label) => el("th", { text: label })))),
+      tbody,
+    ])),
+  ]));
+  draw();
+}
+
+async function renderLines(slug) {
+  pipelineShell("Linky MHD", null, [backLink()], loading());
+  const data = await api("GET", `/admin/api/pipeline/${slug}/transport/lines`);
+  const labels = choiceLabelsOf("transport_trips", "service_bucket");
+  const view = { query: "", bucket: "" };
+  const tbody = el("tbody");
+  const search = el("input", { type: "search", placeholder: "Hľadať linku alebo smer…", "aria-label": "Hľadať" });
+  search.addEventListener("input", () => { view.query = search.value.trim().toLowerCase(); draw(); });
+  const buckets = [...new Set(data.lines.map((line) => line.service_bucket))];
+  const bucketSelect = el("select", { "aria-label": "Typ dní", onchange: (event) => { view.bucket = event.target.value; draw(); } }, [
+    el("option", { value: "", text: "Typ dní: všetky" }),
+    ...buckets.map((bucket) => el("option", { value: bucket, text: labels[bucket] || bucket })),
+  ]);
+  const count = el("span");
+  const draw = () => {
+    const visible = data.lines.filter((line) => (!view.bucket || line.service_bucket === view.bucket)
+      && (!view.query || `${line.name} ${line.direction || ""}`.toLowerCase().includes(view.query)));
+    count.textContent = `${data.city.name}: ${visible.length} z ${data.lines.length} variantov liniek v spracovanom súbore`;
+    tbody.replaceChildren(...visible.map((line) => el("tr", { class: "static" }, [
+      el("td", { class: "cell-title", text: line.name }),
+      el("td", { text: line.direction || "—" }),
+      el("td", {}, el("span", { class: "tag tone-blue", text: labels[line.service_bucket] || line.service_bucket })),
+      el("td", { class: "num", text: String(line.trips) }),
+      el("td", { class: "num", text: String(line.stops) }),
+      el("td", { class: "nowrap", text: line.valid_from ? formatDate(line.valid_from) : "—" }),
+      el("td", {}, line.source_url ? el("a", { class: "btn small ghost icon-only", href: line.source_url, target: "_blank", rel: "noopener", title: "Cestovný poriadok na imhd.sk" }, icon("external", 15)) : null),
+    ])));
+  };
+  pipelineShell(`Linky MHD – ${data.city.name}`, count, [backLink()], el("div", { class: "sheet" }, [
+    el("div", { class: "toolbar" }, [
+      el("label", { class: "search" }, [icon("search", 17), search]),
+      bucketSelect,
+      el("span", { class: "spacer" }),
+      downloadLink(slug, "transport_graph", "Graf"),
+      downloadLink(slug, "transport_report", "Report"),
+    ]),
+    el("div", { class: "table-wrap" }, el("table", { class: "grid" }, [
+      el("thead", {}, el("tr", {}, ["Linka", "Smer", "Typ dní", "Spoje", "Zastávky", "Platí od", ""].map((label, index) => el("th", { class: [3, 4].includes(index) ? "num" : null, text: label })))),
+      tbody,
+    ])),
+  ]));
+  draw();
+}
+
+async function renderCitySettings(slug) {
+  pipelineShell("Nastavenia mesta", null, [backLink()], loading());
+  const config = await api("GET", "/admin/api/pipeline/config");
+  const city = config.cities.find((item) => item.slug === slug);
+  if (!city) { navigate("#/data"); return; }
+  const categoryLabels = choiceLabelsOf("pois", "category");
+  const numberInput = (value) => el("input", { type: "number", step: "any", value: value === null || value === undefined ? "" : String(value) });
+  const inputs = {
+    lat: numberInput(city.center.lat), lon: numberInput(city.center.lon),
+    south: numberInput(city.bbox.south), west: numberInput(city.bbox.west), north: numberInput(city.bbox.north), east: numberInput(city.bbox.east),
+    zoom: numberInput(city.default_zoom),
+    minutes: numberInput(city.routing_limits.max_available_minutes), candidates: numberInput(city.routing_limits.max_poi_candidates),
+  };
+  const mhd = el("input", { type: "checkbox", class: "switch", checked: city.transport.mhd_enabled });
+  const categoryBoxes = Object.keys(categoryLabels).map((key) => {
+    const box = el("input", { type: "checkbox", value: key, checked: city.available_categories.includes(key) });
+    return { key, box, node: el("label", { class: "check-chip" }, [box, categoryLabels[key]]) };
+  });
+  const field = (label, control, help, wide) => el("div", { class: `field${wide ? " wide" : ""}` }, [el("label", { text: label }), control, help ? el("p", { class: "help", text: help }) : null]);
+  const readonly = (label, value) => field(label, el("div", { class: "readonly-value", text: value || "—" }));
+  const mapLink = () => {
+    const values = ["south", "west", "north", "east"].map((key) => inputs[key].value);
+    return `https://www.openstreetmap.org/?minlon=${values[1]}&minlat=${values[0]}&maxlon=${values[3]}&maxlat=${values[2]}&box=yes`;
+  };
+  const bboxLink = el("a", { href: mapLink(), target: "_blank", rel: "noopener" }, [icon("map", 15), "Zobraziť hranice na mape"]);
+  ["south", "west", "north", "east"].forEach((key) => inputs[key].addEventListener("input", () => { bboxLink.href = mapLink(); }));
+  const save = el("button", { class: "btn primary", type: "button" }, [icon("check", 18), "Uložiť nastavenia"]);
+  save.addEventListener("click", async () => {
+    save.disabled = true;
+    try {
+      await api("PUT", `/admin/api/pipeline/config/cities/${slug}`, {
+        center: { lat: inputs.lat.value, lon: inputs.lon.value },
+        bbox: { south: inputs.south.value, west: inputs.west.value, north: inputs.north.value, east: inputs.east.value },
+        available_categories: categoryBoxes.filter((item) => item.box.checked).map((item) => item.key),
+        default_zoom: inputs.zoom.value,
+        routing_limits: { max_available_minutes: inputs.minutes.value, max_poi_candidates: inputs.candidates.value },
+        transport: { mhd_enabled: mhd.checked },
+      });
+      toast("Nastavenia sú uložené a kontrola bodov záujmu sa obnovila.");
+      renderCitySettings(slug);
+    } catch (exc) {
+      toast(exc.message, true);
+      save.disabled = false;
+    }
+  });
+  pipelineShell(`Nastavenia mesta – ${city.name}`, "Zmeny sa uložia do konfigurácie pipeline a server ich začne používať hneď, bez reštartu.", [backLink()], el("div", { class: "form" }, [
+    el("section", { class: "section" }, [sectionHead("Mesto"), el("div", { class: "fields" }, [
+      readonly("Názov", city.name), readonly("Krajina", city.country), readonly("Skratka", city.slug),
+      field("Priblíženie mapy", inputs.zoom, "Úroveň priblíženia mapy v aplikácii pri výbere mesta."),
+    ])]),
+    el("section", { class: "section" }, [sectionHead("Stred a hranice mesta", bboxLink), el("div", { class: "fields" }, [
+      field("Stred – zemepisná šírka", inputs.lat), field("Stred – zemepisná dĺžka", inputs.lon),
+      field("Hranica – juh (min. šírka)", inputs.south), field("Hranica – sever (max. šírka)", inputs.north),
+      field("Hranica – západ (min. dĺžka)", inputs.west), field("Hranica – východ (max. dĺžka)", inputs.east),
+      el("p", { class: "help wide-help", text: "Body záujmu mimo týchto hraníc kontrola označí ako chybu. Ak sa mesto rozšírilo, posuňte hranicu a kontrola sa po uložení zopakuje." }),
+    ])]),
+    el("section", { class: "section" }, [sectionHead("Kategórie bodov záujmu"), el("div", { class: "check-chips" }, categoryBoxes.map((item) => item.node))]),
+    el("section", { class: "section" }, [sectionHead("Plánovanie a MHD"), el("div", { class: "fields" }, [
+      field("Najdlhšia trasa [min]", inputs.minutes), field("Počet kandidátov pri plánovaní", inputs.candidates),
+      field("MHD v plánovaní", el("label", { class: "switch-row" }, [mhd, "zapnuté"])),
+      readonly("Zdroj cestovných poriadkov", city.transport.source_index_url),
+    ])]),
+    el("div", { class: "actionbar" }, [backLink(), save]),
+  ]));
+}
+
+async function renderConfigEditor() {
+  pipelineShell("Konfigurácia miest", null, [backLink()], loading());
+  const config = await api("GET", "/admin/api/pipeline/config");
+  const area = el("textarea", { class: "code-editor", spellcheck: "false", value: config.yaml });
+  const save = el("button", { class: "btn primary", type: "button" }, [icon("check", 18), "Uložiť súbor"]);
+  save.addEventListener("click", async () => {
+    const accepted = await confirmDialog("Uložiť konfiguráciu?", "Súbor sa pred uložením skontroluje. Predchádzajúca verzia sa uloží ako cities.backup.yaml.", "Uložiť", { tone: "primary", iconName: "check" });
+    if (!accepted) return;
+    save.disabled = true;
+    try {
+      await api("PUT", "/admin/api/pipeline/config", { yaml: area.value });
+      toast("Konfigurácia je uložená.");
+      renderConfigEditor();
+    } catch (exc) {
+      toast(exc.message, true);
+      save.disabled = false;
+    }
+  });
+  pipelineShell("Konfigurácia miest (cities.yaml)", "Pokročilé nastavenia: nové mesto, zdroje cestovných poriadkov a pravidlá spracovania. Bežné úpravy robte v nastaveniach mesta.", [backLink()], el("div", { class: "form" }, [
+    el("section", { class: "section" }, [area]),
+    el("div", { class: "actionbar" }, [backLink(), save]),
+  ]));
 }
 
 async function route() {
@@ -1035,6 +1512,10 @@ async function route() {
   try {
     if (parts[0] === "r" && parts.length === 2) await renderList(parts[1], params);
     else if (parts[0] === "r" && parts.length === 3) await renderForm(parts[1], decodeURIComponent(parts[2]));
+    else if (parts[0] === "data" && parts[1] === "config") await renderConfigEditor();
+    else if (parts[0] === "data" && parts.length === 3 && parts[2] === "pois") await renderPoiBrowser(parts[1]);
+    else if (parts[0] === "data" && parts.length === 3 && parts[2] === "transport") await renderLines(parts[1]);
+    else if (parts[0] === "data" && parts.length === 3 && parts[2] === "settings") await renderCitySettings(parts[1]);
     else if (parts[0] === "data") await renderData();
     else await renderDashboard();
   } catch (exc) {

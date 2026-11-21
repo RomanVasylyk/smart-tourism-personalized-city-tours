@@ -10,8 +10,8 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from etl.poi.review import review_pois, snapshot_of
-from utils.approval import load_approval, write_approval
+from etl.poi.review import apply_decisions, review_pois, snapshot_of
+from utils.approval import approval_path, file_sha256, load_approval, write_approval
 from utils.cities import load_city, load_city_profiles
 
 EXAMPLES_PER_CODE = 5
@@ -71,15 +71,50 @@ def review_file(city: dict) -> Path:
     return processed_file(city).with_name(f"{city['slug']}_pois_review.json")
 
 
+def decisions_file(city: dict) -> Path:
+    return processed_file(city).with_name(f"{city['slug']}_pois_decisions.json")
+
+
+def reviewed_file(city: dict) -> Path:
+    return processed_file(city).with_name(f"{city['slug']}_pois_reviewed.json")
+
+
+def load_decisions(city: dict) -> dict:
+    path = decisions_file(city)
+    if not path.exists():
+        return {}
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def save_decisions(city: dict, decisions: dict) -> None:
+    decisions_file(city).write_text(json.dumps(decisions, ensure_ascii=False, indent=2), encoding="utf-8")
+
+
+def carry_over_approval(source: Path, target: Path) -> None:
+    if load_approval(target) is not None:
+        return
+    original = load_approval(source)
+    if original is None or original.get("sha256") != file_sha256(target):
+        return
+    payload = {**original, "file": target.name, "carried_over_from": source.name}
+    approval_path(target).write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+
+
 def review_city_data(city: dict) -> tuple[Path, list[dict], dict]:
     data_file = processed_file(city)
     if not data_file.exists():
         raise FileNotFoundError(f"Processed POI file not found: {data_file}")
-    pois = json.loads(data_file.read_text(encoding="utf-8"))
-    previous = load_approval(data_file)
-    report = review_pois(pois, city, (previous or {}).get("snapshot"))
+    decisions = load_decisions(city)
+    pois = apply_decisions(json.loads(data_file.read_text(encoding="utf-8")), decisions)
+    target = reviewed_file(city)
+    content = json.dumps(pois, ensure_ascii=False, indent=2)
+    if not target.exists() or target.read_text(encoding="utf-8") != content:
+        target.write_text(content, encoding="utf-8")
+    carry_over_approval(data_file, target)
+    previous = load_approval(target)
+    report = review_pois(pois, city, (previous or {}).get("snapshot"), decisions)
     review_file(city).write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
-    return data_file, pois, report
+    return target, pois, report
 
 
 def approve_reviewed(

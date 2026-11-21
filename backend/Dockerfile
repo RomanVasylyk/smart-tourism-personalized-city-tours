@@ -4,6 +4,8 @@ WORKDIR /app
 
 COPY backend/requirements.txt ./requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
+COPY pipeline/requirements.txt ./pipeline-requirements.txt
+RUN pip install --no-cache-dir -r pipeline-requirements.txt
 
 COPY backend/app ./app
 COPY backend/migrations ./backend/migrations
