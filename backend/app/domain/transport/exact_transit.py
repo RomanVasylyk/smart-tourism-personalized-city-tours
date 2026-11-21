@@ -12,6 +12,7 @@ from app.domain.transport.models import (
     TravelSegment,
 )
 from app.domain.transport.segments import build_exact_transit_segments, refine_walk_segment
+from app.services.holidays import service_weekday
 from app.services.routing_service import RoutePoint, RoutingLeg, RoutingService
 from app.services.transport_graph import GraphStop, GraphTrip, TransportGraph
 
@@ -232,4 +233,4 @@ def trip_operates_on_date(trip: GraphTrip, service_date: date) -> bool:
         return False
 
     allowed_weekdays = SERVICE_BUCKET_WEEKDAYS.get(trip.service_bucket, SERVICE_BUCKET_WEEKDAYS["all_days"])
-    return service_date.weekday() in allowed_weekdays
+    return service_weekday(service_date) in allowed_weekdays

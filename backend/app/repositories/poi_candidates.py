@@ -1,22 +1,23 @@
+from app.repositories.sql_fragments import EFFECTIVE_OPENING_HOURS, EFFECTIVE_OPENING_HOURS_SOURCE
 from app.db.database import get_connection
 from app.schemas.route import RouteGenerateRequest
 from app.services.city_lookup import find_city_row
 from app.services.city_profiles import city_profile_by_token
 from psycopg import Error as PsycopgError
 
-CANDIDATE_COLUMNS = """
+CANDIDATE_COLUMNS = f"""
     p.id,
     p.name,
     p.category,
     p.lat,
     p.lon,
-    p.opening_hours_raw,
+    {EFFECTIVE_OPENING_HOURS},
     p.visit_duration_min,
     p.base_score,
     p.short_description,
     p.wikipedia_url,
     p.address,
-    p.opening_hours_source,
+    {EFFECTIVE_OPENING_HOURS_SOURCE},
     p.website,
     p.image_url
 """
@@ -87,8 +88,8 @@ def get_poi_opening_hours(city: str, poi_ids: list[int]) -> list[dict]:
                 return []
 
             cur.execute(
-                """
-                SELECT p.id, p.opening_hours_raw, p.opening_hours_source
+                f"""
+                SELECT p.id, {EFFECTIVE_OPENING_HOURS}, {EFFECTIVE_OPENING_HOURS_SOURCE}
                 FROM pois p
                 WHERE p.city_id = %s
                   AND p.id = ANY(%s)
