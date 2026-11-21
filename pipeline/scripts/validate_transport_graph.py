@@ -175,6 +175,38 @@ def validate_graph(graph: dict[str, Any]) -> list[dict[str, Any]]:
     return warnings
 
 
+APPROVAL_SUMMARY_KEYS = (
+    "warnings_count",
+    "validation_warning_count",
+    "invalid_trip_count",
+    "unmatched_stop_count",
+    "coverage_ratio",
+)
+
+
+def build_report(city: dict) -> tuple[Path, Path, dict[str, Any]]:
+    _, graph_file = transport_paths(city)
+    if not graph_file.exists():
+        raise FileNotFoundError(f"Transport graph file not found: {graph_file}")
+
+    graph = json.loads(graph_file.read_text(encoding="utf-8"))
+    validation_warnings = validate_graph(graph)
+    report = compute_quality_report(graph, base_metrics=graph.get("quality_report") or {})
+    report["validation_warning_count"] = len(validation_warnings)
+    report["validation_warnings"] = validation_warnings
+    report_file, _ = report_paths(graph_file)
+    return graph_file, report_file, report
+
+
+def write_report(report_file: Path, report: dict[str, Any]) -> None:
+    report_file.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
+
+
+def approve_graph(graph_file: Path, report: dict[str, Any], reviewer: str) -> Path:
+    summary = {key: report.get(key) for key in APPROVAL_SUMMARY_KEYS}
+    return write_approval(graph_file, reviewer, summary)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Validate a normalized transport graph and write a quality report.")
     parser.add_argument("city", nargs="?", default="nitra")
@@ -188,19 +220,9 @@ def main() -> None:
     args = parser.parse_args()
 
     city = load_city(args.city)
-    _, graph_file = transport_paths(city)
-    if not graph_file.exists():
-        raise FileNotFoundError(f"Transport graph file not found: {graph_file}")
-
-    graph = json.loads(graph_file.read_text(encoding="utf-8"))
-    validation_warnings = validate_graph(graph)
-    report = compute_quality_report(graph, base_metrics=graph.get("quality_report") or {})
-    report["validation_warning_count"] = len(validation_warnings)
-    report["validation_warnings"] = validation_warnings
-
-    report_file, _ = report_paths(graph_file)
+    graph_file, report_file, report = build_report(city)
     if args.write:
-        report_file.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
+        write_report(report_file, report)
 
     print(
         f"Validation summary for {args.city}: "
@@ -214,17 +236,7 @@ def main() -> None:
         if not args.reviewer:
             print("Not approved: pass --reviewer with the name of the data administrator.")
             sys.exit(1)
-        summary = {
-            key: report.get(key)
-            for key in (
-                "warnings_count",
-                "validation_warning_count",
-                "invalid_trip_count",
-                "unmatched_stop_count",
-                "coverage_ratio",
-            )
-        }
-        approval_file = write_approval(graph_file, args.reviewer, summary)
+        approval_file = approve_graph(graph_file, report, args.reviewer)
         print(f"Approved by {args.reviewer}: {approval_file}")
 
 

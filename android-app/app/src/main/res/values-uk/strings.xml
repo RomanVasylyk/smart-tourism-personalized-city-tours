@@ -337,4 +337,33 @@
     <string name="action_open_website">Сайт</string>
     <string name="status_public_transport_not_used">Громадський транспорт не використано</string>
     <string name="status_public_transport_not_used_body">Громадський транспорт для цього маршруту невигідний — пішки кожен відрізок швидший.</string>
+
+    <string name="account_title">Обліковий запис</string>
+    <string name="account_intro">Обліковий запис не обов\'язковий. Після входу ваші маршрути зберігаються в обліковому записі, і ви побачите їх в історії на кожному пристрої, де ввійдете.</string>
+    <string name="account_sign_in">Увійти</string>
+    <string name="account_register">Створити обліковий запис</string>
+    <string name="account_email">Електронна пошта</string>
+    <string name="account_password">Пароль</string>
+    <string name="account_password_hint">Щонайменше 8 символів</string>
+    <string name="account_display_name">Ім\'я (необов\'язково)</string>
+    <string name="account_signed_in_as">Ви ввійшли як %1$s</string>
+    <string name="account_signed_in_body">Маршрути, які ви запускаєте після входу, зберігаються в цьому обліковому записі.</string>
+    <string name="account_linked_sessions">Маршрути з цього пристрою, прив\'язані до облікового запису: %1$d</string>
+    <string name="account_sign_out">Вийти</string>
+    <string name="account_delete">Видалити обліковий запис</string>
+    <string name="account_delete_confirm_title">Видалити обліковий запис?</string>
+    <string name="account_delete_confirm_body">Обліковий запис і дані для входу буде видалено назавжди. Маршрути залишаться в історії цього пристрою, але більше не будуть прив\'язані до вас.</string>
+    <string name="account_delete_confirm_action">Видалити</string>
+    <string name="account_keep">Залишити обліковий запис</string>
+    <string name="account_error_invalid_email">Введіть дійсну адресу електронної пошти.</string>
+    <string name="account_error_missing_password">Введіть пароль.</string>
+    <string name="account_error_short_password">Пароль має містити щонайменше 8 символів.</string>
+    <string name="account_error_invalid_credentials">Неправильна електронна пошта або пароль.</string>
+    <string name="account_error_email_taken">Обліковий запис із цією адресою вже існує. Увійдіть.</string>
+    <string name="account_error_invalid_input">Сервер не прийняв дані. Перевірте електронну пошту й пароль.</string>
+    <string name="account_error_disabled">Цей обліковий запис вимкнено.</string>
+    <string name="account_error_too_many_attempts">Забагато спроб. Спробуйте ще раз за хвилину.</string>
+    <string name="account_error_session_expired">Термін дії входу минув. Увійдіть знову.</string>
+    <string name="account_error_network">Сервер недоступний. Перевірте підключення до інтернету.</string>
+    <string name="account_error_unknown">Щось пішло не так. Спробуйте ще раз.</string>
 </resources>

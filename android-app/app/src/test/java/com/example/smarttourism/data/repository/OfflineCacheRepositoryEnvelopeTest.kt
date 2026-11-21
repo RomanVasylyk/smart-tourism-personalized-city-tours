@@ -12,10 +12,15 @@ import com.example.smarttourism.data.local.PendingRouteSessionSyncEntity
 import com.example.smarttourism.data.local.RouteHistoryEntryEntity
 import com.example.smarttourism.data.model.CacheEnvelopeType
 import com.example.smarttourism.data.remote.api.PoiApi
+import com.example.smarttourism.data.remote.dto.AccountUserDto
+import com.example.smarttourism.data.remote.dto.AuthResponseDto
 import com.example.smarttourism.data.remote.dto.CityDto
 import com.example.smarttourism.data.remote.dto.CuratedRouteDetailDto
 import com.example.smarttourism.data.remote.dto.CuratedRouteSummaryDto
+import com.example.smarttourism.data.remote.dto.LinkDeviceResponseDto
+import com.example.smarttourism.data.remote.dto.LoginRequest
 import com.example.smarttourism.data.remote.dto.PoiDto
+import com.example.smarttourism.data.remote.dto.RegisterRequest
 import com.example.smarttourism.data.remote.dto.RouteCheckRequest
 import com.example.smarttourism.data.remote.dto.RouteCheckResponse
 import com.example.smarttourism.data.remote.dto.RouteFeedbackDto
@@ -29,6 +34,7 @@ import com.example.smarttourism.data.remote.dto.RouteSessionDto
 import com.example.smarttourism.data.remote.dto.RouteSessionPoiDto
 import com.example.smarttourism.data.remote.dto.RouteSessionPoiVisitRequest
 import com.example.smarttourism.data.remote.dto.RouteSessionUpdateRequest
+import com.example.smarttourism.data.remote.dto.StatusResponseDto
 import com.example.smarttourism.features.planner.data.mapper.toDto
 import com.example.smarttourism.features.planner.sampleSnapshot
 import com.google.gson.Gson
@@ -369,6 +375,27 @@ class OfflineCacheRepositoryEnvelopeTest {
             error("Unused in offline sync tests")
 
         override suspend fun getRouteSessions(deviceId: String): List<RouteSessionDto> =
+            error("Unused in offline sync tests")
+
+        override suspend fun register(request: RegisterRequest): AuthResponseDto =
+            error("Unused in offline sync tests")
+
+        override suspend fun login(request: LoginRequest): AuthResponseDto =
+            error("Unused in offline sync tests")
+
+        override suspend fun logout(): StatusResponseDto =
+            error("Unused in offline sync tests")
+
+        override suspend fun getCurrentUser(): AccountUserDto =
+            error("Unused in offline sync tests")
+
+        override suspend fun deleteCurrentUser(): StatusResponseDto =
+            error("Unused in offline sync tests")
+
+        override suspend fun linkDevice(): LinkDeviceResponseDto =
+            error("Unused in offline sync tests")
+
+        override suspend fun getAccountRouteSessions(): List<RouteSessionDto> =
             error("Unused in offline sync tests")
     }
 }

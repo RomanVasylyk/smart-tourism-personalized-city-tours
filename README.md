@@ -49,6 +49,44 @@ Swagger UI: http://localhost:8000/docs
 | Backend | `smart-tourism-backend` | 8000 |
 | Scheduler | `smart-tourism-scheduler` | — |
 
+## Administration
+
+The admin panel runs at http://localhost:8000/admin. Create the first administrator
+(the command asks for the password twice; running it for an existing e-mail resets the password and grants admin rights):
+
+```bash
+docker compose exec backend python scripts/create_admin.py admin@example.com --name "Admin"
+```
+
+From the panel the administrator can edit cities, points of interest, curated routes, public holidays,
+public-transport lines, stops and trips, users and their sign-ins, visitor routes and feedback.
+An opening-hours override entered for a POI takes precedence over the OSM value. A POI without any opening hours
+is treated as open all day. On an active public holiday, the planner uses the weekend-and-holiday
+public-transport timetable. Statutory Slovak holidays for the current and the next year are added
+automatically; uncheck *Platí* instead of deleting a day that should not apply.
+
+Public-transport trips keep the day type of their imhd.sk timetable: workdays, school-year workdays,
+school-holiday workdays, summer-holiday variants, days off, Saturdays, Sundays and holidays, seasonal
+weekends and night services. On a workday inside a school holiday of the trip's city the planner uses
+the school-holiday timetable. School holidays for 2026/2027 and 2027/2028 are added from the Ministry
+of Education calendar (spring holidays per region) and can be edited under *Kalendár → Školské prázdniny*.
+
+| Variable | Default | Meaning |
+|---|---|---|
+| `RATE_LIMIT_AUTH` | `10/minute` | Limit for registration, sign-in and admin sign-in per client |
+| `ADMIN_COOKIE_SECURE` | `false` | Set to `true` when the panel is served over HTTPS |
+
+Processed pipeline data reaches the database only after an administrator approves it. In the panel,
+*Dátová pipeline → Kontrola a schválenie* shows for every city the validation report of the transport graph
+and the POI review, a comparison of trips per day type with the database, and who approved and loaded which
+version. *Schváliť* signs the current file with the administrator's name (the approval is tied to the file
+checksum), *Načítať do databázy* loads it and refreshes the planner. Every load is recorded in
+*História importov*. POIs edited by hand in the panel are marked *Chrániť pred importom* and a later import
+does not overwrite them. The backend reads the pipeline folder through the `./pipeline:/pipeline` volume.
+
+Visitors can register and sign in from the app (account icon in the top bar). No e-mail confirmation is needed.
+Signing in links the routes already recorded on that device to the account.
+
 ## Android app
 
 Requires JDK 17 and the Android SDK (set `sdk.dir` in `android-app/local.properties`).

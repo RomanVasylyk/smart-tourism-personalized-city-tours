@@ -114,6 +114,10 @@ python3 pipeline/scripts/load_transport_to_db.py nitra
 The transport graph is approved the same way: `load_transport_to_db.py` refuses a graph
 that was not approved after validation or that changed after approval.
 
+The usual way to approve and load data is the admin panel (*Dátová pipeline → Kontrola a schválenie*),
+which runs the same validation, review, approval and load functions and records the administrator's name.
+The commands above remain for scripted runs.
+
 Run it for every configured city:
 
 ```bash

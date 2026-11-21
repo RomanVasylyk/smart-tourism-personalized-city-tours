@@ -21,6 +21,7 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Place
@@ -33,6 +34,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.NavigationBar
@@ -113,7 +115,9 @@ internal fun PlannerTopBar(
     routeBookmarkCount: Int,
     isCitySelectionEnabled: Boolean,
     onCitySelected: (City) -> Unit,
-    onLanguageSelected: (AppLanguage) -> Unit
+    onLanguageSelected: (AppLanguage) -> Unit,
+    isSignedIn: Boolean,
+    onAccountClick: () -> Unit
 ) {
     var isCityMenuOpen by remember { mutableStateOf(false) }
     var isLanguageMenuOpen by remember { mutableStateOf(false) }
@@ -193,6 +197,18 @@ internal fun PlannerTopBar(
                         )
                     }
                 }
+            }
+
+            IconButton(onClick = onAccountClick) {
+                Icon(
+                    imageVector = Icons.Filled.AccountCircle,
+                    contentDescription = stringResource(R.string.account_title),
+                    tint = if (isSignedIn) {
+                        MaterialTheme.colorScheme.primary
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    }
+                )
             }
         }
     }

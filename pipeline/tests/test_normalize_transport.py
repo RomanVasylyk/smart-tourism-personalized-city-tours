@@ -127,7 +127,7 @@ def test_parse_imhd_html_variants_handles_service_buckets_and_continuations(tmp_
     )
 
     assert len(variants) == 2
-    workday_variant = next(variant for variant in variants if variant.service_bucket == "workdays")
+    workday_variant = next(variant for variant in variants if variant.service_bucket == "school_days")
     weekend_variant = next(variant for variant in variants if variant.service_bucket == "weekends_holidays")
     assert workday_variant.line_number == "1"
     assert workday_variant.valid_from == "2026-03-09"
@@ -581,3 +581,28 @@ def test_collapse_zero_delta_duplicate_name_rows_removes_arrival_departure_dupli
         "Rázcestie Autobusová stanica",
         "CENTRUM , Mlyny",
     ]
+
+
+def test_imhd_headings_map_to_school_and_special_service_buckets():
+    from etl.transport.parser import map_imhd_service_bucket
+
+    expected = {
+        "Pracovné dni": "workdays",
+        "Pracovné dni, školský rok": "school_days",
+        "Pracovné dni, školské prázdniny": "school_holidays",
+        "Pracovné dni, letné prázdniny": "summer_holidays",
+        "Pracovné dni okrem letných prázdnin": "workdays_except_summer",
+        "Pracovné dni okrem zimných prázdnin": "workdays_except_winter",
+        "Pracovné dni okrem letných a zimných prázdnin": "workdays_except_summer_winter",
+        "Voľné dni": "weekends_holidays",
+        "Voľné dni, apríl - september": "weekends_holidays_apr_sep",
+        "Voľné dni, október - marec": "weekends_holidays_oct_mar",
+        "Sobota": "saturdays",
+        "Nedeľa a sviatok": "sundays_holidays",
+        "Noc pred voľným dňom": "nights_before_rest_day",
+        "Noc pred pracovným dňom": "nights_before_workday",
+        "Denne": "all_days",
+    }
+
+    for heading, service_bucket in expected.items():
+        assert map_imhd_service_bucket(heading) == service_bucket, heading

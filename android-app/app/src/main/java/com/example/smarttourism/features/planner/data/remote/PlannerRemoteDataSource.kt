@@ -1,6 +1,7 @@
 package com.example.smarttourism.features.planner.data.remote
 
 import com.example.smarttourism.data.remote.api.PoiApi
+import com.example.smarttourism.features.account.AuthSessionStore
 import com.example.smarttourism.features.planner.data.mapper.toDomain
 import com.example.smarttourism.features.planner.data.mapper.toDto
 import com.example.smarttourism.features.planner.domain.model.City
@@ -14,6 +15,7 @@ import com.example.smarttourism.features.planner.domain.model.RouteLegQuery
 import com.example.smarttourism.features.planner.domain.model.RoutePlan
 import com.example.smarttourism.features.planner.domain.model.RouteSession
 import javax.inject.Inject
+import kotlin.coroutines.cancellation.CancellationException
 
 internal interface PlannerRemoteDataSource {
     suspend fun fetchCities(): List<City>
@@ -33,10 +35,13 @@ internal interface PlannerRemoteDataSource {
     suspend fun getRouteSession(routeId: String): RouteSession
 
     suspend fun getRouteSessions(deviceId: String): List<RouteSession>
+
+    suspend fun getAccountRouteSessions(): List<RouteSession> = emptyList()
 }
 
 internal class ApiPlannerRemoteDataSource @Inject constructor(
-    private val api: PoiApi
+    private val api: PoiApi,
+    private val authSessionStore: AuthSessionStore
 ) : PlannerRemoteDataSource {
     override suspend fun fetchCities(): List<City> =
         api.getCities().map { city -> city.toDomain() }
@@ -64,4 +69,17 @@ internal class ApiPlannerRemoteDataSource @Inject constructor(
 
     override suspend fun getRouteSessions(deviceId: String): List<RouteSession> =
         api.getRouteSessions(deviceId).map { session -> session.toDomain() }
+
+    override suspend fun getAccountRouteSessions(): List<RouteSession> {
+        if (!authSessionStore.isSignedIn()) {
+            return emptyList()
+        }
+        return try {
+            api.getAccountRouteSessions().map { session -> session.toDomain() }
+        } catch (error: CancellationException) {
+            throw error
+        } catch (error: Exception) {
+            emptyList()
+        }
+    }
 }

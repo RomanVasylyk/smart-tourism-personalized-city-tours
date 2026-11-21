@@ -337,4 +337,33 @@
     <string name="action_open_website">Weboldal</string>
     <string name="status_public_transport_not_used">Tömegközlekedés nem használva</string>
     <string name="status_public_transport_not_used_body">A tömegközlekedés nem előnyös ezen az útvonalon – gyalog minden szakasz gyorsabb.</string>
+
+    <string name="account_title">Fiók</string>
+    <string name="account_intro">A fiók nem kötelező. Bejelentkezés után az útvonalaid a fiókba kerülnek, és minden eszközön látod őket az előzményekben, ahol bejelentkezel.</string>
+    <string name="account_sign_in">Bejelentkezés</string>
+    <string name="account_register">Fiók létrehozása</string>
+    <string name="account_email">E-mail-cím</string>
+    <string name="account_password">Jelszó</string>
+    <string name="account_password_hint">Legalább 8 karakter</string>
+    <string name="account_display_name">Név (nem kötelező)</string>
+    <string name="account_signed_in_as">Bejelentkezve: %1$s</string>
+    <string name="account_signed_in_body">A bejelentkezés után indított útvonalaid ebbe a fiókba kerülnek.</string>
+    <string name="account_linked_sessions">Erről az eszközről a fiókhoz rendelt útvonalak: %1$d</string>
+    <string name="account_sign_out">Kijelentkezés</string>
+    <string name="account_delete">Fiók törlése</string>
+    <string name="account_delete_confirm_title">Törlöd a fiókot?</string>
+    <string name="account_delete_confirm_body">A fiók és a bejelentkezési adatok véglegesen törlődnek. Az útvonalak megmaradnak az eszköz előzményeiben, de már nem kapcsolódnak hozzád.</string>
+    <string name="account_delete_confirm_action">Törlés</string>
+    <string name="account_keep">Fiók megtartása</string>
+    <string name="account_error_invalid_email">Adj meg érvényes e-mail-címet.</string>
+    <string name="account_error_missing_password">Add meg a jelszót.</string>
+    <string name="account_error_short_password">A jelszónak legalább 8 karakterből kell állnia.</string>
+    <string name="account_error_invalid_credentials">Hibás e-mail-cím vagy jelszó.</string>
+    <string name="account_error_email_taken">Ezzel az e-mail-címmel már létezik fiók. Jelentkezz be.</string>
+    <string name="account_error_invalid_input">A szerver nem fogadta el az adatokat. Ellenőrizd az e-mail-címet és a jelszót.</string>
+    <string name="account_error_disabled">Ez a fiók le van tiltva.</string>
+    <string name="account_error_too_many_attempts">Túl sok próbálkozás. Próbáld újra egy perc múlva.</string>
+    <string name="account_error_session_expired">A bejelentkezés lejárt. Jelentkezz be újra.</string>
+    <string name="account_error_network">A szerver nem érhető el. Ellenőrizd az internetkapcsolatot.</string>
+    <string name="account_error_unknown">Valami hiba történt. Próbáld újra.</string>
 </resources>

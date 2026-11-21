@@ -23,6 +23,8 @@ class Settings(BaseSettings):
     rate_limit_route_leg: str = Field(default="60/minute", validation_alias="RATE_LIMIT_ROUTE_LEG")
     rate_limit_catalog: str = Field(default="120/minute", validation_alias="RATE_LIMIT_CATALOG")
     rate_limit_sessions: str = Field(default="120/minute", validation_alias="RATE_LIMIT_SESSIONS")
+    rate_limit_auth: str = Field(default="10/minute", validation_alias="RATE_LIMIT_AUTH")
+    admin_cookie_secure: bool = Field(default=False, validation_alias="ADMIN_COOKIE_SECURE")
     rate_limit_trust_proxy_headers: bool = Field(default=False, validation_alias="RATE_LIMIT_TRUST_PROXY_HEADERS")
     rate_limit_trusted_proxy_hops: int = Field(default=1, validation_alias="RATE_LIMIT_TRUSTED_PROXY_HOPS")
     log_level: str = Field(default="INFO", validation_alias="LOG_LEVEL")

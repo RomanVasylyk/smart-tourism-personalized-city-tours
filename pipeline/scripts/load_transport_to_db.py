@@ -15,6 +15,7 @@ if str(ROOT) not in sys.path:
 from utils.approval import ApprovalError, require_approval
 from utils.cities import load_city  # noqa: E402
 from utils.db import get_connection  # noqa: E402
+from utils.loads import record_load  # noqa: E402
 
 REPO_ROOT = ROOT.parent
 
@@ -131,20 +132,11 @@ def delete_existing_transport(conn, city_id: int) -> None:
         cur.execute("DELETE FROM transport_stops WHERE city_id = %s;", (city_id,))
 
 
-def main() -> None:
-    city_slug = sys.argv[1] if len(sys.argv) > 1 else "nitra"
-    city = load_city(city_slug)
+def load_transport(city: dict, *, migrate: bool = True, loaded_by: str | None = None) -> dict[str, int]:
     graph_file = transport_graph_path(city)
     if not graph_file.exists():
         raise FileNotFoundError(f"Transport graph file not found: {graph_file}")
-    try:
-        require_approval(graph_file)
-    except ApprovalError as exc:
-        print(
-            f"{city_slug}: not loaded. {exc} Review it with "
-            f"python3 pipeline/scripts/validate_transport_graph.py {city_slug} --write --approve --reviewer NAME"
-        )
-        sys.exit(1)
+    require_approval(graph_file)
 
     graph = json.loads(graph_file.read_text(encoding="utf-8"))
     provider = str(graph.get("provider") or (city.get("transport") or {}).get("provider") or "transport_provider")
@@ -155,7 +147,8 @@ def main() -> None:
     inserted_stop_times = 0
     inserted_connections = 0
 
-    ensure_transport_schema()
+    if migrate:
+        ensure_transport_schema()
     with get_connection() as conn:
         city_id = ensure_city(conn, city)
         delete_existing_transport(conn, city_id)
@@ -346,11 +339,32 @@ def main() -> None:
                 )
                 inserted_connections += 1
 
+        record_load(conn, "transport", city["slug"], graph_file, loaded_by)
         conn.commit()
 
+    return {
+        "stops": inserted_stops,
+        "lines": inserted_lines,
+        "trips": inserted_trips,
+        "stop_times": inserted_stop_times,
+        "connections": inserted_connections,
+    }
+
+
+def main() -> None:
+    city_slug = sys.argv[1] if len(sys.argv) > 1 else "nitra"
+    city = load_city(city_slug)
+    try:
+        counts = load_transport(city)
+    except ApprovalError as exc:
+        print(
+            f"{city_slug}: not loaded. {exc} Review it with "
+            f"python3 pipeline/scripts/validate_transport_graph.py {city_slug} --write --approve --reviewer NAME"
+        )
+        sys.exit(1)
     print(
-        f"Loaded {inserted_stops} stops, {inserted_lines} lines, {inserted_trips} trips, "
-        f"{inserted_stop_times} stop-times and {inserted_connections} connections into transport tables"
+        f"Loaded {counts['stops']} stops, {counts['lines']} lines, {counts['trips']} trips, "
+        f"{counts['stop_times']} stop-times and {counts['connections']} connections into transport tables"
     )
 
 

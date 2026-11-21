@@ -8,6 +8,7 @@ from typing import Any
 from bs4 import BeautifulSoup
 from pypdf import PdfReader
 
+from .constants import IMHD_SERVICE_RULES
 from .matching import haversine_km
 from .models import StopRow, TransportIssue, VariantAccumulator
 from .text import (
@@ -381,11 +382,10 @@ def parse_imhd_trip_columns(
 
 
 def map_imhd_service_bucket(heading_text: str) -> str:
-    normalized_heading = strip_accents(normalize_display_text(heading_text)).upper()
-    if "VOLNE DNI" in normalized_heading:
-        return "weekends_holidays"
-    if "PRACOVNE DNI" in normalized_heading:
-        return "workdays"
+    normalized_heading = " ".join(strip_accents(normalize_display_text(heading_text)).upper().split())
+    for markers, service_bucket in IMHD_SERVICE_RULES:
+        if all(marker in normalized_heading for marker in markers):
+            return service_bucket
     return "all_days"
 
 

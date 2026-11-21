@@ -14,6 +14,8 @@ internal interface RouteSessionRepository {
 
     suspend fun getRouteSessions(deviceId: String): List<RouteSession>
 
+    suspend fun getAccountRouteSessions(): List<RouteSession> = emptyList()
+
     suspend fun saveActiveSession(session: ActiveRouteSession)
 
     suspend fun loadActiveSession(): ActiveRouteSession?
@@ -39,6 +41,9 @@ internal class DefaultRouteSessionRepository @Inject constructor(
 
     override suspend fun getRouteSessions(deviceId: String): List<RouteSession> =
         remoteDataSource.getRouteSessions(deviceId)
+
+    override suspend fun getAccountRouteSessions(): List<RouteSession> =
+        remoteDataSource.getAccountRouteSessions()
 
     override suspend fun saveActiveSession(session: ActiveRouteSession) {
         localDataSource.saveActiveSession(session)

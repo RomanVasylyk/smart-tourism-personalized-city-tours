@@ -39,7 +39,40 @@ STOP_NOTE_TAIL_PATTERN = re.compile(
     r"\s+\+\s+premava\b.*$|\s+[a-z]{1,3}\s+(?:premava|nepremava)\b.*$|\s+p\s+spoj\b.*$",
     re.IGNORECASE,
 )
-SERVICE_BUCKETS = {"workdays", "weekends_holidays", "all_days"}
+SERVICE_BUCKETS = {
+    "all_days",
+    "workdays",
+    "school_days",
+    "school_holidays",
+    "summer_holidays",
+    "workdays_except_summer",
+    "workdays_except_winter",
+    "workdays_except_summer_winter",
+    "weekends_holidays",
+    "weekends_holidays_apr_sep",
+    "weekends_holidays_oct_mar",
+    "saturdays",
+    "sundays_holidays",
+    "nights_before_rest_day",
+    "nights_before_workday",
+}
+IMHD_SERVICE_RULES: tuple[tuple[tuple[str, ...], str], ...] = (
+    (("NOC PRED VOLNYM",), "nights_before_rest_day"),
+    (("NOC PRED PRACOVNYM",), "nights_before_workday"),
+    (("VOLNE DNI", "APRIL - SEPTEMBER"), "weekends_holidays_apr_sep"),
+    (("VOLNE DNI", "OKTOBER - MAREC"), "weekends_holidays_oct_mar"),
+    (("VOLNE DNI",), "weekends_holidays"),
+    (("NEDELA",), "sundays_holidays"),
+    (("SOBOTA",), "saturdays"),
+    (("PRACOVNE DNI", "SKOLSKY ROK"), "school_days"),
+    (("PRACOVNE DNI", "SKOLSKE PRAZDNINY"), "school_holidays"),
+    (("PRACOVNE DNI", "OKREM LETNYCH A ZIMNYCH"), "workdays_except_summer_winter"),
+    (("PRACOVNE DNI", "OKREM LETNYCH"), "workdays_except_summer"),
+    (("PRACOVNE DNI", "OKREM ZIMNYCH"), "workdays_except_winter"),
+    (("PRACOVNE DNI", "LETNE PRAZDNINY"), "summer_holidays"),
+    (("PRACOVNE DNI",), "workdays"),
+    (("DENNE",), "all_days"),
+)
 FULL_KEY_FUZZY_CUTOFF = 0.88
 BASE_KEY_FUZZY_CUTOFF = 0.92
 STOP_NAME_ABBREVIATIONS: tuple[tuple[re.Pattern[str], str], ...] = (

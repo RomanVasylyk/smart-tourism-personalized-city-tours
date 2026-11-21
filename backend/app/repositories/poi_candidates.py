@@ -1,5 +1,5 @@
-from app.repositories.sql_fragments import EFFECTIVE_OPENING_HOURS, EFFECTIVE_OPENING_HOURS_SOURCE
 from app.db.database import get_connection
+from app.repositories.sql_fragments import EFFECTIVE_OPENING_HOURS, EFFECTIVE_OPENING_HOURS_SOURCE
 from app.schemas.route import RouteGenerateRequest
 from app.services.city_lookup import find_city_row
 from app.services.city_profiles import city_profile_by_token

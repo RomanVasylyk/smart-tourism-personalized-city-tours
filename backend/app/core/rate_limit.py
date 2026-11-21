@@ -22,3 +22,4 @@ ROUTE_GENERATE_RATE_LIMIT = _settings.rate_limit_route_generate
 ROUTE_LEG_RATE_LIMIT = _settings.rate_limit_route_leg
 CATALOG_RATE_LIMIT = _settings.rate_limit_catalog
 SESSION_RATE_LIMIT = _settings.rate_limit_sessions
+AUTH_RATE_LIMIT = _settings.rate_limit_auth

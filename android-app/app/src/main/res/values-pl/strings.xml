@@ -337,4 +337,33 @@
     <string name="action_open_website">Strona internetowa</string>
     <string name="status_public_transport_not_used">Nie użyto komunikacji miejskiej</string>
     <string name="status_public_transport_not_used_body">Komunikacja miejska nie jest korzystna na tej trasie — pieszo każdy odcinek jest szybszy.</string>
+
+    <string name="account_title">Konto</string>
+    <string name="account_intro">Konto nie jest wymagane. Po zalogowaniu Twoje trasy zapisują się na koncie i zobaczysz je w historii na każdym urządzeniu, na którym się zalogujesz.</string>
+    <string name="account_sign_in">Zaloguj się</string>
+    <string name="account_register">Załóż konto</string>
+    <string name="account_email">E-mail</string>
+    <string name="account_password">Hasło</string>
+    <string name="account_password_hint">Co najmniej 8 znaków</string>
+    <string name="account_display_name">Imię (opcjonalnie)</string>
+    <string name="account_signed_in_as">Zalogowano jako %1$s</string>
+    <string name="account_signed_in_body">Trasy rozpoczęte po zalogowaniu zapisują się na tym koncie.</string>
+    <string name="account_linked_sessions">Trasy z tego urządzenia przypisane do konta: %1$d</string>
+    <string name="account_sign_out">Wyloguj się</string>
+    <string name="account_delete">Usuń konto</string>
+    <string name="account_delete_confirm_title">Usunąć konto?</string>
+    <string name="account_delete_confirm_body">Konto i dane logowania zostaną trwale usunięte. Trasy pozostaną w historii tego urządzenia, ale nie będą już przypisane do Ciebie.</string>
+    <string name="account_delete_confirm_action">Usuń</string>
+    <string name="account_keep">Zachowaj konto</string>
+    <string name="account_error_invalid_email">Podaj prawidłowy adres e-mail.</string>
+    <string name="account_error_missing_password">Podaj hasło.</string>
+    <string name="account_error_short_password">Hasło musi mieć co najmniej 8 znaków.</string>
+    <string name="account_error_invalid_credentials">Nieprawidłowy e-mail lub hasło.</string>
+    <string name="account_error_email_taken">Konto z tym adresem e-mail już istnieje. Zaloguj się.</string>
+    <string name="account_error_invalid_input">Serwer nie przyjął danych. Sprawdź adres e-mail i hasło.</string>
+    <string name="account_error_disabled">To konto jest dezaktywowane.</string>
+    <string name="account_error_too_many_attempts">Zbyt wiele prób. Spróbuj ponownie za minutę.</string>
+    <string name="account_error_session_expired">Sesja logowania wygasła. Zaloguj się ponownie.</string>
+    <string name="account_error_network">Serwer jest niedostępny. Sprawdź połączenie z internetem.</string>
+    <string name="account_error_unknown">Coś poszło nie tak. Spróbuj ponownie.</string>
 </resources>

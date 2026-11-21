@@ -342,46 +342,69 @@ def get_route_sessions_for_device(
                 """,
                 (device_id, device_token_hash, limit, offset),
             )
-            sessions = cur.fetchall()
-            if not sessions:
-                return []
+            return sessions_with_children(cur, cur.fetchall())
 
-            session_ids = [session["id"] for session in sessions]
 
+def sessions_with_children(cur, sessions: list[dict]) -> list[dict]:
+    if not sessions:
+        return []
+
+    session_ids = [session["id"] for session in sessions]
+
+    cur.execute(
+        """
+        SELECT *
+        FROM route_session_pois
+        WHERE session_id = ANY(%s)
+        ORDER BY session_id, visit_order
+        """,
+        (session_ids,),
+    )
+    pois_by_session: dict[Any, list[dict]] = {}
+    for row in cur.fetchall():
+        pois_by_session.setdefault(row["session_id"], []).append(row)
+
+    cur.execute(
+        """
+        SELECT *
+        FROM route_feedback
+        WHERE session_id = ANY(%s)
+        ORDER BY session_id, created_at DESC
+        """,
+        (session_ids,),
+    )
+    feedback_by_session: dict[Any, list[dict]] = {}
+    for row in cur.fetchall():
+        feedback_by_session.setdefault(row["session_id"], []).append(row)
+
+    return [
+        {
+            **session,
+            "pois": pois_by_session.get(session["id"], []),
+            "feedback": feedback_by_session.get(session["id"], []),
+        }
+        for session in sessions
+    ]
+
+
+def get_route_sessions_for_user(*, user_id: int, limit: int, offset: int) -> list[dict]:
+    with get_connection() as conn:
+        with conn.cursor() as cur:
             cur.execute(
                 """
-                SELECT *
-                FROM route_session_pois
-                WHERE session_id = ANY(%s)
-                ORDER BY session_id, visit_order
+                SELECT
+                    rs.*,
+                    c.name AS city_name,
+                    c.country AS city_country
+                FROM route_sessions rs
+                         JOIN cities c ON c.id = rs.city_id
+                WHERE rs.user_id = %s
+                ORDER BY rs.started_at DESC, rs.created_at DESC
+                LIMIT %s OFFSET %s
                 """,
-                (session_ids,),
+                (user_id, limit, offset),
             )
-            pois_by_session: dict[Any, list[dict]] = {}
-            for row in cur.fetchall():
-                pois_by_session.setdefault(row["session_id"], []).append(row)
-
-            cur.execute(
-                """
-                SELECT *
-                FROM route_feedback
-                WHERE session_id = ANY(%s)
-                ORDER BY session_id, created_at DESC
-                """,
-                (session_ids,),
-            )
-            feedback_by_session: dict[Any, list[dict]] = {}
-            for row in cur.fetchall():
-                feedback_by_session.setdefault(row["session_id"], []).append(row)
-
-            return [
-                {
-                    **session,
-                    "pois": pois_by_session.get(session["id"], []),
-                    "feedback": feedback_by_session.get(session["id"], []),
-                }
-                for session in sessions
-            ]
+            return sessions_with_children(cur, cur.fetchall())
 
 
 def session_with_children(cur, session: dict) -> dict:

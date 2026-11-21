@@ -5,12 +5,6 @@ TRANSPORT_MODE_WALK = "walk"
 TRANSPORT_MODE_WALK_OR_MHD = "walk_or_mhd"
 STOP_CANDIDATE_LIMIT = 12
 
-SERVICE_BUCKET_WEEKDAYS = {
-    "workdays": {0, 1, 2, 3, 4},
-    "weekends_holidays": {5, 6},
-    "all_days": {0, 1, 2, 3, 4, 5, 6},
-}
-
 
 @dataclass(frozen=True)
 class TravelSegment:

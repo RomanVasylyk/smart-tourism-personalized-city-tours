@@ -67,6 +67,7 @@ class TransportGraph:
     outgoing_edges: dict[int, list[GraphEdge]]
     trips_by_id: dict[int, GraphTrip]
     board_options_by_stop: dict[int, list[TripBoardOption]]
+    city_id: int | None = None
 
 
 _TRANSPORT_GRAPH_CACHE: dict[str, TransportGraph | None] = {}
@@ -86,6 +87,10 @@ def stop_display_name(name: str, platform_ref: str | None) -> str:
     if platform_ref:
         return f"{name} ({platform_ref})"
     return name
+
+
+def clear_transport_graph_cache() -> None:
+    _TRANSPORT_GRAPH_CACHE.clear()
 
 
 def load_transport_graph(city_profile: dict) -> TransportGraph | None:
@@ -275,5 +280,6 @@ def _build_transport_graph(city_profile: dict) -> TransportGraph | None:
             outgoing_edges=outgoing_edges,
             trips_by_id=trips_by_id,
             board_options_by_stop=board_options_by_stop,
+            city_id=city_id,
         )
     return None

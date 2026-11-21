@@ -28,3 +28,6 @@ routing-data/
 # OS
 .DS_Store
 Thumbs.db
+
+# Thesis drafts and working documents
+docs/

@@ -63,16 +63,40 @@ def print_changes(changes: dict | None) -> None:
             print(f"    {label} {item['key']} {item['name']}{fields}")
 
 
-def review_city(city: dict, args: argparse.Namespace) -> bool:
+class ReviewBlockedError(ValueError):
+    pass
+
+
+def review_file(city: dict) -> Path:
+    return processed_file(city).with_name(f"{city['slug']}_pois_review.json")
+
+
+def review_city_data(city: dict) -> tuple[Path, list[dict], dict]:
     data_file = processed_file(city)
     if not data_file.exists():
-        print(f"{city['slug']}: processed file not found: {data_file}")
-        return False
+        raise FileNotFoundError(f"Processed POI file not found: {data_file}")
     pois = json.loads(data_file.read_text(encoding="utf-8"))
     previous = load_approval(data_file)
     report = review_pois(pois, city, (previous or {}).get("snapshot"))
-    report_file = data_file.with_name(f"{city['slug']}_pois_review.json")
-    report_file.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
+    review_file(city).write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
+    return data_file, pois, report
+
+
+def approve_reviewed(
+    data_file: Path, pois: list[dict], report: dict, reviewer: str, allow_errors: bool = False
+) -> Path:
+    if report["errors"] and not allow_errors:
+        raise ReviewBlockedError(f"The review found {len(report['errors'])} errors.")
+    return write_approval(data_file, reviewer, report["summary"], snapshot_of(pois))
+
+
+def review_city(city: dict, args: argparse.Namespace) -> bool:
+    try:
+        data_file, pois, report = review_city_data(city)
+    except FileNotFoundError as exc:
+        print(f"{city['slug']}: {exc}")
+        return False
+    report_file = review_file(city)
 
     summary = report["summary"]
     print(
@@ -89,10 +113,11 @@ def review_city(city: dict, args: argparse.Namespace) -> bool:
     if not args.reviewer:
         print("  not approved: pass --reviewer with the name of the data administrator")
         return False
-    if report["errors"] and not args.allow_errors:
+    try:
+        approval_file = approve_reviewed(data_file, pois, report, args.reviewer, args.allow_errors)
+    except ReviewBlockedError:
         print("  not approved: fix the errors first or pass --allow-errors")
         return False
-    approval_file = write_approval(data_file, args.reviewer, summary, snapshot_of(pois))
     print(f"  approved by {args.reviewer}: {approval_file}")
     return True
 

@@ -40,7 +40,10 @@ internal class RouteHistoryController @Inject constructor(
         }
 
         return runCatching {
-            val remoteEntries = routeSessionRepository.getRouteSessions(deviceId)
+            val remoteSessions = routeSessionRepository.getRouteSessions(deviceId) +
+                routeSessionRepository.getAccountRouteSessions()
+            val remoteEntries = remoteSessions
+                .distinctBy { session -> session.id }
                 .mapNotNull { session ->
                     runCatching { session.toRouteHistoryEntry() }.getOrNull()
                 }

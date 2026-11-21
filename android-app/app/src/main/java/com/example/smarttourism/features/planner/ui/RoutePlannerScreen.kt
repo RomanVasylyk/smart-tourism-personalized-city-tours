@@ -24,6 +24,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -36,6 +37,9 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.smarttourism.features.account.AccountSheet
+import com.example.smarttourism.features.account.AccountSheetActions
+import com.example.smarttourism.features.account.AccountViewModel
 import com.example.smarttourism.R
 import com.example.smarttourism.core.i18n.AppLanguage
 import com.example.smarttourism.core.platform.NetworkMonitor
@@ -70,6 +74,9 @@ fun RoutePlannerScreen(
     val plannerViewModel: RoutePlannerViewModel = viewModel()
     val uiState by plannerViewModel.uiState.collectAsStateWithLifecycle()
     val onPlannerEvent = plannerViewModel::onEvent
+    val accountViewModel: AccountViewModel = viewModel()
+    val accountState by accountViewModel.uiState.collectAsStateWithLifecycle()
+    var isAccountSheetOpen by rememberSaveable { mutableStateOf(false) }
     val locationPermissionDeniedMessage = stringResource(R.string.error_location_permission_denied)
 
     val cities = uiState.cities
@@ -201,6 +208,12 @@ fun RoutePlannerScreen(
             isUnmetered
         ) {
             onPlannerEvent(PlannerEvent.DownloadOfflineMap)
+        }
+    }
+
+    LaunchedEffect(accountViewModel) {
+        accountViewModel.accountChanges.collect {
+            onPlannerEvent(PlannerEvent.LoadRouteHistory(forceRefresh = true))
         }
     }
 
@@ -504,8 +517,29 @@ fun RoutePlannerScreen(
                         onPlannerEvent(PlannerEvent.SelectCity(city))
                     }
                 },
-                onLanguageSelected = onLanguageSelected
+                onLanguageSelected = onLanguageSelected,
+                isSignedIn = accountState.user != null,
+                onAccountClick = {
+                    accountViewModel.onOpened()
+                    isAccountSheetOpen = true
+                }
             )
+
+            if (isAccountSheetOpen) {
+                AccountSheet(
+                    state = accountState,
+                    actions = AccountSheetActions(
+                        onModeSelected = accountViewModel::selectMode,
+                        onEmailChange = accountViewModel::updateEmail,
+                        onPasswordChange = accountViewModel::updatePassword,
+                        onDisplayNameChange = accountViewModel::updateDisplayName,
+                        onSubmit = accountViewModel::submit,
+                        onSignOut = accountViewModel::signOut,
+                        onDeleteAccount = accountViewModel::deleteAccount,
+                        onDismiss = { isAccountSheetOpen = false }
+                    )
+                )
+            }
 
             if (!isOnline) {
                 OfflineBanner()

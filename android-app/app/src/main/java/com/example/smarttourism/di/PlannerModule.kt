@@ -3,6 +3,7 @@ package com.example.smarttourism.di
 import com.example.smarttourism.core.network.ApiModule
 import com.example.smarttourism.data.repository.DeviceIdStore
 import com.example.smarttourism.data.remote.api.PoiApi
+import com.example.smarttourism.features.account.AuthSessionStore
 import com.example.smarttourism.features.planner.data.bookmark.DefaultRouteBookmarkRepository
 import com.example.smarttourism.features.planner.data.bookmark.RouteBookmarkRepository
 import com.example.smarttourism.features.planner.data.city.CityRepository
@@ -91,9 +92,10 @@ internal abstract class PlannerBindingsModule {
 internal object PlannerNetworkModule {
     @Provides
     @Singleton
-    fun providePoiApi(deviceIdStore: DeviceIdStore): PoiApi =
+    fun providePoiApi(deviceIdStore: DeviceIdStore, authSessionStore: AuthSessionStore): PoiApi =
         ApiModule.createPoiApi(
             deviceIdProvider = deviceIdStore::getOrCreateDeviceId,
-            deviceTokenProvider = deviceIdStore::getOrCreateDeviceToken
+            deviceTokenProvider = deviceIdStore::getOrCreateDeviceToken,
+            accountTokenProvider = authSessionStore::token
         )
 }

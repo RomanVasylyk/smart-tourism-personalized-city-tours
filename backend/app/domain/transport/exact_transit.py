@@ -5,15 +5,15 @@ from itertools import count
 
 from app.domain.transport.geometry import merged_geometry, service_datetime
 from app.domain.transport.models import (
-    SERVICE_BUCKET_WEEKDAYS,
     ExactTransitSolution,
     ScheduledRide,
     TravelPlan,
     TravelSegment,
 )
 from app.domain.transport.segments import build_exact_transit_segments, refine_walk_segment
-from app.services.holidays import service_weekday
+from app.domain.transport.service_days import NIGHT_BUCKETS, runs_on
 from app.services.routing_service import RoutePoint, RoutingLeg, RoutingService
+from app.services.service_calendar import service_day
 from app.services.transport_graph import GraphStop, GraphTrip, TransportGraph
 
 
@@ -173,7 +173,7 @@ def find_exact_transit_solution(
             trip = graph.trips_by_id.get(board_option.trip_id)
             if trip is None or board_option.stop_index >= len(trip.stop_times):
                 continue
-            if not trip_operates_on_date(trip, current_arrival_dt.date()):
+            if not trip_operates_on_date(trip, current_arrival_dt.date(), graph.city_id):
                 continue
 
             board_stop_time = trip.stop_times[board_option.stop_index]
@@ -226,11 +226,13 @@ def find_exact_transit_solution(
     )
 
 
-def trip_operates_on_date(trip: GraphTrip, service_date: date) -> bool:
+def trip_operates_on_date(trip: GraphTrip, service_date: date, city_id: int | None = None) -> bool:
     if trip.valid_from is not None and service_date < trip.valid_from:
         return False
     if trip.valid_to is not None and service_date > trip.valid_to:
         return False
 
-    allowed_weekdays = SERVICE_BUCKET_WEEKDAYS.get(trip.service_bucket, SERVICE_BUCKET_WEEKDAYS["all_days"])
-    return service_weekday(service_date) in allowed_weekdays
+    next_day = None
+    if trip.service_bucket in NIGHT_BUCKETS:
+        next_day = service_day(service_date + timedelta(days=1), city_id)
+    return runs_on(trip.service_bucket, service_day(service_date, city_id), next_day)

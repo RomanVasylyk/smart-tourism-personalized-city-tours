@@ -14,6 +14,7 @@ if str(ROOT) not in sys.path:
 from utils.approval import ApprovalError, require_approval
 from utils.cities import load_city, load_city_profiles
 from utils.db import get_connection
+from utils.loads import record_load
 
 
 def get_center(city: dict) -> tuple[float, float]:
@@ -84,13 +85,14 @@ def processed_file(city: dict) -> Path:
     return ROOT / "data" / "processed" / f"{city['slug']}_pois_normalized.json"
 
 
-def load_pois_for_city(city: dict) -> tuple[int, int]:
+def load_pois_for_city(city: dict, loaded_by: str | None = None) -> tuple[int, int, int]:
     in_file = processed_file(city)
     require_approval(in_file)
     pois = json.loads(in_file.read_text(encoding="utf-8"))
 
     inserted_count = 0
     updated_count = 0
+    skipped_count = 0
     with get_connection() as conn:
         city_id = ensure_city(conn, city)
 
@@ -133,6 +135,7 @@ def load_pois_for_city(city: dict) -> tuple[int, int]:
                         opening_hours_source = EXCLUDED.opening_hours_source,
                         source = EXCLUDED.source,
                         is_active = EXCLUDED.is_active
+                    WHERE pois.admin_locked = FALSE
                     RETURNING (xmax = 0) AS was_inserted
                     """,
                     {
@@ -160,14 +163,17 @@ def load_pois_for_city(city: dict) -> tuple[int, int]:
                     },
                 )
                 row = cur.fetchone()
-                if row is not None and row[0]:
+                if row is None:
+                    skipped_count += 1
+                elif row[0]:
                     inserted_count += 1
                 else:
                     updated_count += 1
 
+        record_load(conn, "pois", city["slug"], in_file, loaded_by)
         conn.commit()
 
-    return inserted_count, updated_count
+    return inserted_count, updated_count, skipped_count
 
 
 def main() -> None:
@@ -177,7 +183,7 @@ def main() -> None:
     rejected = []
     for city in cities:
         try:
-            inserted_count, updated_count = load_pois_for_city(city)
+            inserted_count, updated_count, skipped_count = load_pois_for_city(city)
         except ApprovalError as exc:
             print(
                 f"{city['slug']}: not loaded. {exc} Review it with "
@@ -186,7 +192,8 @@ def main() -> None:
             rejected.append(city["slug"])
             continue
         print(
-            f"{city['slug']}: inserted {inserted_count} POIs and updated {updated_count} POIs in database",
+            f"{city['slug']}: inserted {inserted_count} POIs, updated {updated_count} POIs and kept "
+            f"{skipped_count} POIs edited by an administrator",
         )
     if rejected:
         sys.exit(1)

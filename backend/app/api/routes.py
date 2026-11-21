@@ -30,6 +30,7 @@ from app.schemas.route_sessions import (
     RouteSessionPoiVisitRequest,
     RouteSessionUpdateRequest,
 )
+from app.services.auth import attach_session_to_user
 from app.services.curated_routes import get_curated_route, list_curated_routes
 from app.services.route_planner import check_route, generate_route, generate_route_leg
 from app.services.route_sessions import (
@@ -113,8 +114,11 @@ def create_route_session_endpoint(
     payload: RouteSessionCreateRequest,
     x_device_id: str = Header(..., alias="X-Device-Id"),
     x_device_token: str = Header(..., alias="X-Device-Token"),
+    authorization: str | None = Header(default=None),
 ):
-    return create_route_session(payload, x_device_id, x_device_token)
+    session = create_route_session(payload, x_device_id, x_device_token)
+    attach_session_to_user(authorization, session["id"], x_device_id, x_device_token)
+    return session
 
 
 @router.patch("/route-sessions/{session_id}", response_model=RouteSessionResponse)
@@ -125,8 +129,11 @@ def update_route_session_endpoint(
     payload: RouteSessionUpdateRequest,
     x_device_id: str = Header(..., alias="X-Device-Id"),
     x_device_token: str = Header(..., alias="X-Device-Token"),
+    authorization: str | None = Header(default=None),
 ):
-    return update_route_session(session_id, payload, x_device_id, x_device_token)
+    session = update_route_session(session_id, payload, x_device_id, x_device_token)
+    attach_session_to_user(authorization, session_id, x_device_id, x_device_token)
+    return session
 
 
 @router.post("/route-sessions/{session_id}/pois/{poi_id}/visit", response_model=RouteSessionPoiResponse)

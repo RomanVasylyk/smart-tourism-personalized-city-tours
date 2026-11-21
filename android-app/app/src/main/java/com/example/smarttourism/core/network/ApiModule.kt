@@ -10,7 +10,8 @@ import java.util.concurrent.TimeUnit
 object ApiModule {
     fun createPoiApi(
         deviceIdProvider: () -> String,
-        deviceTokenProvider: () -> String
+        deviceTokenProvider: () -> String,
+        accountTokenProvider: () -> String
     ): PoiApi {
         val httpClient = OkHttpClient.Builder()
             .addInterceptor { chain ->
@@ -22,6 +23,10 @@ object ApiModule {
                 }
                 if (deviceToken.isNotEmpty()) {
                     requestBuilder.header("X-Device-Token", deviceToken)
+                }
+                val accountToken = accountTokenProvider().trim()
+                if (accountToken.isNotEmpty()) {
+                    requestBuilder.header("Authorization", "Bearer $accountToken")
                 }
                 chain.proceed(requestBuilder.build())
             }

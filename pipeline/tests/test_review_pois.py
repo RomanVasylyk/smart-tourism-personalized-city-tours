@@ -100,3 +100,17 @@ def test_loading_requires_approval_of_the_exact_file(tmp_path: Path):
     data_file.write_text(json.dumps([poi(1), poi(2)]), encoding="utf-8")
     with pytest.raises(ApprovalError):
         require_approval(data_file)
+
+
+def test_approval_is_blocked_by_errors_unless_explicitly_allowed(tmp_path):
+    from scripts.review_pois import ReviewBlockedError, approve_reviewed
+
+    data_file = tmp_path / "nitra_pois_normalized.json"
+    pois = [{"osm_type": "node", "osm_id": 1, "name": "Hrad", "lat": 48.31, "lon": 18.08}]
+    data_file.write_text(json.dumps(pois))
+    report = {"errors": [{"code": "outside_city"}], "summary": {"active": 1}}
+
+    with pytest.raises(ReviewBlockedError):
+        approve_reviewed(data_file, pois, report, "Správca")
+    approval_file = approve_reviewed(data_file, pois, report, "Správca", allow_errors=True)
+    assert json.loads(approval_file.read_text())["reviewer"] == "Správca"

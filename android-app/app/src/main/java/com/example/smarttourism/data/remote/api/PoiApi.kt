@@ -1,9 +1,14 @@
 package com.example.smarttourism.data.remote.api
 
+import com.example.smarttourism.data.remote.dto.AccountUserDto
+import com.example.smarttourism.data.remote.dto.AuthResponseDto
 import com.example.smarttourism.data.remote.dto.CityDto
 import com.example.smarttourism.data.remote.dto.CuratedRouteDetailDto
 import com.example.smarttourism.data.remote.dto.CuratedRouteSummaryDto
+import com.example.smarttourism.data.remote.dto.LinkDeviceResponseDto
+import com.example.smarttourism.data.remote.dto.LoginRequest
 import com.example.smarttourism.data.remote.dto.PoiDto
+import com.example.smarttourism.data.remote.dto.RegisterRequest
 import com.example.smarttourism.data.remote.dto.RouteFeedbackDto
 import com.example.smarttourism.data.remote.dto.RouteFeedbackRequest
 import com.example.smarttourism.data.remote.dto.RouteCheckRequest
@@ -17,7 +22,9 @@ import com.example.smarttourism.data.remote.dto.RouteSessionDto
 import com.example.smarttourism.data.remote.dto.RouteSessionPoiDto
 import com.example.smarttourism.data.remote.dto.RouteSessionPoiVisitRequest
 import com.example.smarttourism.data.remote.dto.RouteSessionUpdateRequest
+import com.example.smarttourism.data.remote.dto.StatusResponseDto
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.PATCH
 import retrofit2.http.Path
@@ -92,4 +99,29 @@ interface PoiApi {
     suspend fun getRouteSessions(
         @Query("device_id") deviceId: String
     ): List<RouteSessionDto>
+
+    @POST("auth/register")
+    suspend fun register(
+        @Body request: RegisterRequest
+    ): AuthResponseDto
+
+    @POST("auth/login")
+    suspend fun login(
+        @Body request: LoginRequest
+    ): AuthResponseDto
+
+    @POST("auth/logout")
+    suspend fun logout(): StatusResponseDto
+
+    @GET("auth/me")
+    suspend fun getCurrentUser(): AccountUserDto
+
+    @DELETE("auth/me")
+    suspend fun deleteCurrentUser(): StatusResponseDto
+
+    @POST("auth/link-device")
+    suspend fun linkDevice(): LinkDeviceResponseDto
+
+    @GET("auth/me/route-sessions")
+    suspend fun getAccountRouteSessions(): List<RouteSessionDto>
 }

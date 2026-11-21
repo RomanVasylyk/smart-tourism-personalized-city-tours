@@ -337,4 +337,33 @@
     <string name="action_open_website">Webová stránka</string>
     <string name="status_public_transport_not_used">MHD nebola použitá</string>
     <string name="status_public_transport_not_used_body">MHD pre túto trasu nie je výhodná — každý úsek je rýchlejší pešo.</string>
+
+    <string name="account_title">Účet</string>
+    <string name="account_intro">Účet nie je povinný. Po prihlásení sa vaše trasy ukladajú do účtu a uvidíte ich v histórii na každom zariadení, kde sa prihlásite.</string>
+    <string name="account_sign_in">Prihlásiť sa</string>
+    <string name="account_register">Vytvoriť účet</string>
+    <string name="account_email">E-mail</string>
+    <string name="account_password">Heslo</string>
+    <string name="account_password_hint">Aspoň 8 znakov</string>
+    <string name="account_display_name">Meno (nepovinné)</string>
+    <string name="account_signed_in_as">Prihlásený účet: %1$s</string>
+    <string name="account_signed_in_body">Trasy, ktoré spustíte po prihlásení, sa ukladajú do tohto účtu.</string>
+    <string name="account_linked_sessions">Trasy z tohto zariadenia priradené k účtu: %1$d</string>
+    <string name="account_sign_out">Odhlásiť sa</string>
+    <string name="account_delete">Zrušiť účet</string>
+    <string name="account_delete_confirm_title">Zrušiť účet?</string>
+    <string name="account_delete_confirm_body">Účet a prihlasovacie údaje sa natrvalo vymažú. Trasy zostanú v histórii tohto zariadenia, ale už nebudú priradené k vám.</string>
+    <string name="account_delete_confirm_action">Zrušiť účet</string>
+    <string name="account_keep">Ponechať účet</string>
+    <string name="account_error_invalid_email">Zadajte platnú e-mailovú adresu.</string>
+    <string name="account_error_missing_password">Zadajte heslo.</string>
+    <string name="account_error_short_password">Heslo musí mať aspoň 8 znakov.</string>
+    <string name="account_error_invalid_credentials">Nesprávny e-mail alebo heslo.</string>
+    <string name="account_error_email_taken">Účet s týmto e-mailom už existuje. Prihláste sa.</string>
+    <string name="account_error_invalid_input">Server údaje neprijal. Skontrolujte e-mail a heslo.</string>
+    <string name="account_error_disabled">Tento účet je deaktivovaný.</string>
+    <string name="account_error_too_many_attempts">Príliš veľa pokusov. Skúste to znova o minútu.</string>
+    <string name="account_error_session_expired">Prihlásenie vypršalo. Prihláste sa znova.</string>
+    <string name="account_error_network">Server je nedostupný. Skontrolujte pripojenie na internet.</string>
+    <string name="account_error_unknown">Niečo sa pokazilo. Skúste to znova.</string>
 </resources>

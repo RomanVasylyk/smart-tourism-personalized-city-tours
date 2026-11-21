@@ -20,6 +20,15 @@ from app.services.routing_service import RoutingLeg
 limiter.enabled = False
 
 
+@pytest.fixture(autouse=True)
+def fresh_service_calendar():
+    from app.services import service_calendar
+
+    service_calendar._memo["expires"] = 0.0
+    yield
+    service_calendar._memo["expires"] = 0.0
+
+
 @pytest.fixture
 def client() -> TestClient:
     return TestClient(app)
