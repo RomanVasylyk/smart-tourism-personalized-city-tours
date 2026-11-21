@@ -8,6 +8,7 @@ import com.example.smarttourism.features.planner.domain.model.CuratedRoute
 import com.example.smarttourism.features.planner.domain.model.CuratedRouteDetail
 import com.example.smarttourism.features.planner.domain.model.PlannerPreferences
 import com.example.smarttourism.features.planner.domain.model.Poi
+import com.example.smarttourism.features.planner.domain.model.RouteCheckQuery
 import com.example.smarttourism.features.planner.domain.model.RouteLeg
 import com.example.smarttourism.features.planner.domain.model.RouteLegQuery
 import com.example.smarttourism.features.planner.domain.model.RoutePlan
@@ -26,6 +27,8 @@ internal interface PlannerRemoteDataSource {
     suspend fun generateRoute(request: PlannerPreferences): RoutePlan
 
     suspend fun generateRouteLeg(request: RouteLegQuery): RouteLeg
+
+    suspend fun findClosedStops(request: RouteCheckQuery): List<Int>
 
     suspend fun getRouteSession(routeId: String): RouteSession
 
@@ -52,6 +55,9 @@ internal class ApiPlannerRemoteDataSource @Inject constructor(
 
     override suspend fun generateRouteLeg(request: RouteLegQuery): RouteLeg =
         api.generateRouteLeg(request.toDto()).toDomain()
+
+    override suspend fun findClosedStops(request: RouteCheckQuery): List<Int> =
+        api.checkRoute(request.toDto()).closed_poi_ids.orEmpty()
 
     override suspend fun getRouteSession(routeId: String): RouteSession =
         api.getRouteSession(routeId).toDomain()

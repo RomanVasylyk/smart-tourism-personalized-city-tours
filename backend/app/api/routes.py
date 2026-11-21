@@ -16,13 +16,14 @@ from app.schemas.responses import (
     CuratedRouteSummaryResponse,
     HealthResponse,
     PoiResponse,
+    RouteCheckResponse,
     RouteFeedbackResponse,
     RouteLegResponse,
     RouteResponse,
     RouteSessionPoiResponse,
     RouteSessionResponse,
 )
-from app.schemas.route import RouteGenerateRequest, RouteLegRequest
+from app.schemas.route import RouteCheckRequest, RouteGenerateRequest, RouteLegRequest
 from app.schemas.route_sessions import (
     RouteFeedbackRequest,
     RouteSessionCreateRequest,
@@ -30,7 +31,7 @@ from app.schemas.route_sessions import (
     RouteSessionUpdateRequest,
 )
 from app.services.curated_routes import get_curated_route, list_curated_routes
-from app.services.route_planner import generate_route, generate_route_leg
+from app.services.route_planner import check_route, generate_route, generate_route_leg
 from app.services.route_sessions import (
     create_route_session,
     get_route_session,
@@ -97,6 +98,12 @@ def generate_route_endpoint(request: Request, payload: RouteGenerateRequest):
 @limiter.limit(ROUTE_LEG_RATE_LIMIT)
 def generate_route_leg_endpoint(request: Request, payload: RouteLegRequest):
     return generate_route_leg(payload)
+
+
+@router.post("/route/check", response_model=RouteCheckResponse)
+@limiter.limit(ROUTE_LEG_RATE_LIMIT)
+def check_route_endpoint(request: Request, payload: RouteCheckRequest):
+    return check_route(payload)
 
 
 @router.post("/route-sessions", response_model=RouteSessionResponse)

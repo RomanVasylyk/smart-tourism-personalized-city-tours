@@ -73,6 +73,31 @@ def get_route_candidates(request: RouteGenerateRequest) -> list[dict]:
             return rows + preferred_rows
 
 
+def get_poi_opening_hours(city: str, poi_ids: list[int]) -> list[dict]:
+    if not poi_ids:
+        return []
+
+    city_profile = city_profile_by_token(city) or {}
+    city_name = city_profile.get("name") or city
+
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            city_row = find_city_row(cur, city_name)
+            if city_row is None:
+                return []
+
+            cur.execute(
+                """
+                SELECT p.id, p.opening_hours_raw, p.opening_hours_source
+                FROM pois p
+                WHERE p.city_id = %s
+                  AND p.id = ANY(%s)
+                """,
+                (int(city_row["id"]), poi_ids),
+            )
+            return cur.fetchall()
+
+
 def candidate_limit(city_profile: dict) -> int:
     routing_limits = city_profile.get("routing_limits") or {}
     return int(routing_limits.get("max_poi_candidates") or 300)

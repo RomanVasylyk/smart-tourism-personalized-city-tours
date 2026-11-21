@@ -1,11 +1,12 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
-from app.repositories.poi_candidates import get_route_candidates
-from app.schemas.route import RouteGenerateRequest, RouteLegRequest
+from app.repositories.poi_candidates import get_poi_opening_hours, get_route_candidates
+from app.schemas.route import RouteCheckRequest, RouteGenerateRequest, RouteLegRequest
 from app.services.city_profiles import city_profile_by_token
 from app.services.feedback_stats import load_planner_feedback_profile
 from app.services.route_planning.engine import RoutePlannerEngine
-from app.services.route_planning.models import CandidatePoi
+from app.services.route_planning.models import SERVICE_TIMES_SOURCE, CandidatePoi
+from app.services.route_planning.opening_hours import DEFAULT_MAX_OPENING_WAIT_MIN, resolve_visit_wait
 from app.services.route_planning.response import leg_dict, point_dict, route_response_dict
 from app.services.route_planning.result import RoutePlanningResult
 from app.services.routing_service import RoutePoint, get_routing_service
@@ -62,6 +63,37 @@ def generate_route_leg(request: RouteLegRequest) -> dict:
         ),
         travel_plan=travel_plan,
     )
+
+
+def check_route(request: RouteCheckRequest) -> dict:
+    if not request.respect_opening_hours or not request.stops:
+        return {"closed_poi_ids": []}
+
+    start_dt = parse_start_datetime(request.start_datetime)
+    city_profile = city_profile_by_token(request.city) or {}
+    routing_limits = city_profile.get("routing_limits") or {}
+    max_wait_minutes = int(routing_limits.get("max_opening_wait_minutes", DEFAULT_MAX_OPENING_WAIT_MIN))
+    rows = get_poi_opening_hours(request.city, [stop.poi_id for stop in request.stops])
+    opening_hours_by_id = {
+        int(row["id"]): row["opening_hours_raw"]
+        for row in rows
+        if row.get("opening_hours_source") != SERVICE_TIMES_SOURCE
+    }
+
+    closed_poi_ids = []
+    for stop in request.stops:
+        wait_minutes = resolve_visit_wait(
+            opening_hours_by_id.get(stop.poi_id),
+            start_dt + timedelta(minutes=stop.arrival_after_min),
+            stop.visit_duration_min,
+            respect_opening_hours=True,
+            is_forced=False,
+            max_wait_minutes=max_wait_minutes,
+        )
+        if wait_minutes is None and stop.poi_id not in closed_poi_ids:
+            closed_poi_ids.append(stop.poi_id)
+
+    return {"closed_poi_ids": closed_poi_ids}
 
 
 def generate_route(request: RouteGenerateRequest) -> dict:

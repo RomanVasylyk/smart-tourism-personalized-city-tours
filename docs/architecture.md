@@ -243,7 +243,7 @@ Main endpoints:
 
 - `GET /health`, `GET /cities`, `GET /pois?city=`
 - `GET /cities/{slug}/curated-routes`, `GET /curated-routes/{id}`
-- `POST /route/generate`, `POST /route/leg` (rate-limited per client IP)
+- `POST /route/generate`, `POST /route/leg`, `POST /route/check` (rate-limited per client IP)
 - `route-sessions` CRUD, POI visit marking, and feedback (device-token
   authenticated via `X-Device-Id` / `X-Device-Token`, stored hashed)
 

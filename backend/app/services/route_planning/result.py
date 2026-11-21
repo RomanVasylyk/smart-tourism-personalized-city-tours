@@ -24,3 +24,4 @@ class RoutePlanningResult:
     total_wait_minutes: int = 0
     required_pois_over_budget: bool = False
     closed_required_poi_ids: list[int] = field(default_factory=list)
+    planning_method: str | None = None

@@ -39,8 +39,22 @@ Run the POI import, normalization, and database load for one city:
 python3 pipeline/scripts/import_osm.py nitra
 python3 pipeline/scripts/normalize_categories.py nitra
 python3 pipeline/scripts/enrich_pois.py nitra
+python3 pipeline/scripts/review_pois.py nitra
+python3 pipeline/scripts/review_pois.py nitra --approve --reviewer "Name Surname"
 python3 pipeline/scripts/load_to_db.py nitra
 ```
+
+`review_pois.py` checks the processed POIs before they reach the database. It reports
+errors (missing name or coordinates, a POI outside the city bounding box, a category
+the city does not enable, a base score outside 0 to 1, an invalid visit duration, the
+same OSM object twice) and warnings (a possible duplicate with the same name within
+150 m, a missing description). It also lists what changed since the last approval. The
+full report is written to `pipeline/data/processed/<city>_pois_review.json`.
+
+A data administrator approves the reviewed file with `--approve --reviewer`. Approval is
+refused while errors remain, unless `--allow-errors` is passed. The approval stores a
+SHA-256 checksum of the file, so `load_to_db.py` loads only data that was approved
+and has not changed since.
 
 Run it for every configured city:
 
@@ -52,6 +66,8 @@ done
 
 python3 pipeline/scripts/enrich_pois.py --all-cities
 
+python3 pipeline/scripts/review_pois.py --all-cities
+python3 pipeline/scripts/review_pois.py --all-cities --approve --reviewer "Name Surname"
 python3 pipeline/scripts/load_to_db.py --all-cities
 ```
 
@@ -90,9 +106,13 @@ one city:
 ```bash
 python3 pipeline/scripts/import_transport.py nitra
 python3 pipeline/scripts/normalize_transport.py nitra
-python3 pipeline/scripts/validate_transport_graph.py nitra
+python3 pipeline/scripts/validate_transport_graph.py nitra --write
+python3 pipeline/scripts/validate_transport_graph.py nitra --write --approve --reviewer "Name Surname"
 python3 pipeline/scripts/load_transport_to_db.py nitra
 ```
+
+The transport graph is approved the same way: `load_transport_to_db.py` refuses a graph
+that was not approved after validation or that changed after approval.
 
 Run it for every configured city:
 
@@ -100,7 +120,7 @@ Run it for every configured city:
 for city in nitra trnava nove-zamky trencin zilina; do
   python3 pipeline/scripts/import_transport.py "$city"
   python3 pipeline/scripts/normalize_transport.py "$city"
-  python3 pipeline/scripts/validate_transport_graph.py "$city"
+  python3 pipeline/scripts/validate_transport_graph.py "$city" --write --approve --reviewer "Name Surname"
   python3 pipeline/scripts/load_transport_to_db.py "$city"
 done
 ```
@@ -115,6 +135,8 @@ docker compose up -d db
 
 python3 pipeline/scripts/enrich_pois.py --all-cities
 
+python3 pipeline/scripts/review_pois.py --all-cities
+python3 pipeline/scripts/review_pois.py --all-cities --approve --reviewer "Name Surname"
 python3 pipeline/scripts/load_to_db.py --all-cities
 
 for city in nitra trnava nove-zamky trencin zilina; do

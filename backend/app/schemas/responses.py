@@ -187,9 +187,14 @@ class RouteResponse(BaseModel):
     routing_leg_count: int | None = None
     routing_fallback_leg_count: int | None = None
     routing_degraded: bool | None = None
+    planning_method: str | None = None
     route: list[RouteItemResponse]
     legs: list[RouteLegResponse] | None = None
     full_geometry: list[RouteCoordinateResponse] | None = None
+
+
+class RouteCheckResponse(BaseModel):
+    closed_poi_ids: list[int] = Field(default_factory=list)
 
 
 class CuratedRouteSummaryResponse(BaseModel):

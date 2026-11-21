@@ -5,6 +5,7 @@ from datetime import timedelta
 from app.schemas.route import RouteGenerateRequest
 from app.services.feedback_stats import PlannerFeedbackProfile
 from app.services.route_planning.candidate_evaluator import RouteCandidateEvaluator
+from app.services.route_planning.exact_search import ExactProblem, route_value, solve_exact
 from app.services.route_planning.local_search import improve_order
 from app.services.route_planning.models import CandidateEvaluation, CandidatePoi
 from app.services.route_planning.opening_hours import (
@@ -16,13 +17,18 @@ from app.services.route_planning.result import RoutePlanningResult
 from app.services.route_planning.scoring import score_candidate
 from app.services.route_planning.timeline import RouteTimelineBuilder
 from app.services.routing_service import RoutePoint, RoutingService
-from app.services.transport_planner import TRANSPORT_MODE_WALK, plan_travel
+from app.services.transport_planner import TRANSPORT_MODE_WALK, TravelPlan, plan_travel
 from fastapi import HTTPException
 
 DEFAULT_VISIT_DURATION_MIN = 20
 DEFAULT_LOCAL_SEARCH_MAX_PASSES = 6
 DEFAULT_LOCAL_SEARCH_MAX_EVALUATIONS = 600
 DEFAULT_LOCAL_SEARCH_MAX_EVALUATIONS_TRANSIT = 80
+DEFAULT_EXACT_SEARCH_MAX_CANDIDATES = 20
+DEFAULT_EXACT_SEARCH_TIME_LIMIT_SECONDS = 1.0
+PLANNING_METHOD_HEURISTIC = "greedy_local_search"
+PLANNING_METHOD_HEURISTIC_OPTIMAL = "greedy_local_search_optimal"
+PLANNING_METHOD_EXACT = "exact_search"
 
 
 class RoutePlannerEngine:
@@ -79,14 +85,94 @@ class RoutePlannerEngine:
         self.max_opening_wait_minutes = int(
             routing_limits.get("max_opening_wait_minutes", DEFAULT_MAX_OPENING_WAIT_MIN)
         )
+        self.exact_search_enabled = bool(routing_limits.get("exact_search_enabled", True))
+        self.exact_search_max_candidates = int(
+            routing_limits.get("exact_search_max_candidates", DEFAULT_EXACT_SEARCH_MAX_CANDIDATES)
+        )
+        self.exact_search_time_limit_seconds = float(
+            routing_limits.get("exact_search_time_limit_seconds", DEFAULT_EXACT_SEARCH_TIME_LIMIT_SECONDS)
+        )
+        self.planning_method = PLANNING_METHOD_HEURISTIC
+        self._static_values: dict[int, float] | None = None
 
     def plan(self) -> RoutePlanningResult:
         self.ensure_preferred_candidates_available()
         selected_pois = self.construct_greedy_route()
         optimized_pois = self.apply_local_search(selected_pois)
         self.timeline = self.build_within_budget(optimized_pois)
+        self.apply_exact_search()
         self.ensure_required_preferred_pois_were_planned()
         return self.result()
+
+    def exact_search_applicable(self) -> bool:
+        return (
+            self.exact_search_enabled
+            and self.effective_transport_mode == TRANSPORT_MODE_WALK
+            and 0 < len(self.candidates) <= self.exact_search_max_candidates
+            and hasattr(self.routing_service, "duration_matrix")
+        )
+
+    def static_values(self) -> dict[int, float]:
+        if self._static_values is None:
+            stationary_plan = TravelPlan(
+                mode="walk",
+                duration_seconds=0.0,
+                distance_meters=0.0,
+                geometry=[],
+                source="exact_search",
+                segments=[],
+            )
+            self._static_values = {
+                poi.id: score_candidate(
+                    poi=poi.raw,
+                    travel_plan=stationary_plan,
+                    category_counts={},
+                    feedback_profile=self.feedback_profile,
+                    effective_transport_mode=self.effective_transport_mode,
+                    preferred_poi_ids=self.preferred_poi_ids,
+                )[0]
+                for poi in self.candidates
+            }
+        return self._static_values
+
+    def timeline_value(self, timeline: RouteTimelineBuilder) -> float:
+        pois = [self.candidates_by_id[int(item["poi_id"])] for item in timeline.route_items]
+        return route_value(pois, self.static_values())
+
+    def apply_exact_search(self) -> None:
+        if not self.exact_search_applicable():
+            return
+        points = [self.start_point, *(poi.point for poi in self.candidates)]
+        matrix = self.routing_service.duration_matrix(points, points, self.request.pace)
+        if not matrix:
+            return
+
+        values = self.static_values()
+        heuristic_value = self.timeline_value(self.timeline)
+        outcome = solve_exact(
+            ExactProblem(
+                candidates=self.candidates,
+                values=[values[poi.id] for poi in self.candidates],
+                matrix_seconds=matrix,
+                start_dt=self.start_dt,
+                available_minutes=self.request.available_minutes,
+                return_to_start=self.request.return_to_start,
+                respect_opening_hours=self.request.respect_opening_hours,
+                max_wait_minutes=self.max_opening_wait_minutes,
+                preferred_ids=self.ordered_preferred_poi_ids,
+            ),
+            time_limit_seconds=self.exact_search_time_limit_seconds,
+            incumbent_value=heuristic_value,
+        )
+
+        if outcome.order is not None:
+            exact_timeline = self.build_within_budget(outcome.order)
+            if self.timeline_value(exact_timeline) > heuristic_value + 1e-9:
+                self.timeline = exact_timeline
+                self.planning_method = PLANNING_METHOD_EXACT
+                return
+        if outcome.optimal:
+            self.planning_method = PLANNING_METHOD_HEURISTIC_OPTIMAL
 
     def build_within_budget(self, order: list[CandidatePoi]) -> RouteTimelineBuilder:
         trimmed = list(order)
@@ -336,4 +422,5 @@ class RoutePlannerEngine:
             full_geometry=self.timeline.full_geometry,
             required_pois_over_budget=over_budget,
             closed_required_poi_ids=self.closed_required_poi_ids(),
+            planning_method=self.planning_method,
         )

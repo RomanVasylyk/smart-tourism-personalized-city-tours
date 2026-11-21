@@ -11,6 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+from utils.approval import ApprovalError, require_approval
 from utils.cities import load_city, load_city_profiles
 from utils.db import get_connection
 
@@ -79,8 +80,13 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def processed_file(city: dict) -> Path:
+    return ROOT / "data" / "processed" / f"{city['slug']}_pois_normalized.json"
+
+
 def load_pois_for_city(city: dict) -> tuple[int, int]:
-    in_file = ROOT / "data" / "processed" / f"{city['slug']}_pois_normalized.json"
+    in_file = processed_file(city)
+    require_approval(in_file)
     pois = json.loads(in_file.read_text(encoding="utf-8"))
 
     inserted_count = 0
@@ -168,11 +174,22 @@ def main() -> None:
     args = parse_args()
     cities = load_city_profiles() if args.all_cities else [load_city(args.city)]
 
+    rejected = []
     for city in cities:
-        inserted_count, updated_count = load_pois_for_city(city)
+        try:
+            inserted_count, updated_count = load_pois_for_city(city)
+        except ApprovalError as exc:
+            print(
+                f"{city['slug']}: not loaded. {exc} Review it with "
+                f"python3 pipeline/scripts/review_pois.py {city['slug']} --approve --reviewer NAME"
+            )
+            rejected.append(city["slug"])
+            continue
         print(
             f"{city['slug']}: inserted {inserted_count} POIs and updated {updated_count} POIs in database",
         )
+    if rejected:
+        sys.exit(1)
 
 
 if __name__ == "__main__":

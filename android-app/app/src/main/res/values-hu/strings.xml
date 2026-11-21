@@ -323,9 +323,9 @@
     <string name="route_quality_approximate_title">Hozzávetőleges útvonal</string>
     <string name="route_quality_approximate_body">Néhány szakasz légvonalbeli becslést használ, mert az útvonaltervezés átmenetileg nem volt elérhető; az idők kevésbé pontosak lehetnek.</string>
     <string name="route_quality_over_budget_title">Túllépett időkeret</string>
-    <string name="route_quality_over_budget_body">A kötelező megállók a rendelkezésre álló időt meghaladva is bekerültek.</string>
-    <string name="route_quality_closed_required_title">Kötelező megállók nyitvatartáson kívül</string>
-    <string name="route_quality_closed_required_body">Ezek a kötelező megállók a nyitvatartási idejükön kívül esnek: %1$s.</string>
+    <string name="route_quality_over_budget_body">Az útvonal tovább tart, mint a rendelkezésre álló idő.</string>
+    <string name="route_quality_closed_required_title">Megállók nyitvatartáson kívül</string>
+    <string name="route_quality_closed_required_body">Ezek a megállók a nyitvatartási idejükön kívül esnek: %1$s.</string>
 
     <string name="offline_status_no_network">Nincs internetkapcsolat — a mentett adatok láthatók.</string>
     <string name="offline_map_saving">A város térképének mentése offline használatra...</string>

@@ -204,6 +204,19 @@ data class RouteLegQuery(
     val transportMode: String
 )
 
+data class RouteCheckStop(
+    val poiId: Int,
+    val arrivalAfterMin: Int,
+    val visitDurationMin: Int
+)
+
+data class RouteCheckQuery(
+    val city: String,
+    val startDateTime: String?,
+    val respectOpeningHours: Boolean,
+    val stops: List<RouteCheckStop>
+)
+
 data class RouteSession(
     val id: String = "",
     val deviceId: String = "",

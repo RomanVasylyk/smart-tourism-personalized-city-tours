@@ -4,6 +4,7 @@ import com.example.smarttourism.data.model.SavedRouteSnapshot
 import com.example.smarttourism.features.planner.data.local.PlannerLocalDataSource
 import com.example.smarttourism.features.planner.data.remote.PlannerRemoteDataSource
 import com.example.smarttourism.features.planner.domain.model.PlannerPreferences
+import com.example.smarttourism.features.planner.domain.model.RouteCheckQuery
 import com.example.smarttourism.features.planner.domain.model.RouteLeg
 import com.example.smarttourism.features.planner.domain.model.RouteLegQuery
 import com.example.smarttourism.features.planner.domain.model.RoutePlan
@@ -13,6 +14,8 @@ internal interface RoutePlanningRepository {
     suspend fun generateRoute(request: PlannerPreferences): RoutePlan
 
     suspend fun generateRouteLeg(request: RouteLegQuery): RouteLeg
+
+    suspend fun findClosedStops(request: RouteCheckQuery): List<Int>
 
     suspend fun saveSnapshot(snapshot: SavedRouteSnapshot)
 
@@ -28,6 +31,9 @@ internal class DefaultRoutePlanningRepository @Inject constructor(
 
     override suspend fun generateRouteLeg(request: RouteLegQuery): RouteLeg =
         remoteDataSource.generateRouteLeg(request)
+
+    override suspend fun findClosedStops(request: RouteCheckQuery): List<Int> =
+        remoteDataSource.findClosedStops(request)
 
     override suspend fun saveSnapshot(snapshot: SavedRouteSnapshot) {
         localDataSource.saveSnapshot(snapshot)

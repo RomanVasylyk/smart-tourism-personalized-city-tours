@@ -49,12 +49,12 @@ import com.example.smarttourism.features.planner.components.RouteHistorySheetCon
 import com.example.smarttourism.features.planner.state.PlannerMode
 import com.example.smarttourism.features.planner.state.PlannerEvent
 import com.example.smarttourism.features.planner.state.RouteSessionStatus
-import com.example.smarttourism.features.planner.state.RouteTrackingMaxAccuracyMeters
 import com.example.smarttourism.features.planner.state.TrackingPermissionAction
 import com.example.smarttourism.features.planner.viewmodel.RoutePlannerViewModel
 import com.example.smarttourism.features.planner.location.fetchCurrentLocation
+import com.example.smarttourism.features.planner.location.RouteLocationFeed
 import com.example.smarttourism.features.planner.location.RouteTrackingService
-import com.example.smarttourism.features.planner.location.startRouteLocationTracking
+import com.example.smarttourism.features.planner.location.RouteTrackingUpdate
 
 @Composable
 fun RoutePlannerScreen(
@@ -334,43 +334,22 @@ fun RoutePlannerScreen(
         }
     }
 
-    DisposableEffect(context, routeSessionStatus) {
-        if (routeSessionStatus != RouteSessionStatus.IN_PROGRESS) {
-            onDispose { }
-        } else {
+    var wasRouteInProgress by remember { mutableStateOf(false) }
+    LaunchedEffect(context, routeSessionStatus) {
+        if (routeSessionStatus == RouteSessionStatus.IN_PROGRESS) {
+            wasRouteInProgress = true
             RouteTrackingService.start(context)
-            onDispose {
-                RouteTrackingService.stop(context)
-            }
-        }
-    }
-
-    DisposableEffect(context, routeItems, routeSessionStatus) {
-        if (routeSessionStatus != RouteSessionStatus.IN_PROGRESS) {
-            onDispose { }
-        } else {
-            val stopTracking = startRouteLocationTracking(
-                context = context,
-                onLocation = { location ->
-                    if (!location.hasAccuracy() || location.accuracy <= RouteTrackingMaxAccuracyMeters) {
-                        onPlannerEvent(
-                            PlannerEvent.TrackedLocation(
-                                RoutePoint(
-                                    lat = location.latitude,
-                                    lon = location.longitude
-                                )
-                            )
-                        )
-                    }
-                },
-                onError = { message ->
-                    onPlannerEvent(PlannerEvent.TrackingError(message))
+            for (update in RouteLocationFeed.updates) {
+                when (update) {
+                    is RouteTrackingUpdate.Location ->
+                        onPlannerEvent(PlannerEvent.TrackedLocation(update.point))
+                    is RouteTrackingUpdate.Error ->
+                        onPlannerEvent(PlannerEvent.TrackingError(update.message))
                 }
-            )
-
-            onDispose {
-                stopTracking()
             }
+        } else if (wasRouteInProgress || routeSessionStatus != RouteSessionStatus.NOT_STARTED) {
+            wasRouteInProgress = false
+            RouteTrackingService.stop(context)
         }
     }
 

@@ -12,6 +12,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+from utils.approval import ApprovalError, require_approval
 from utils.cities import load_city  # noqa: E402
 from utils.db import get_connection  # noqa: E402
 
@@ -136,6 +137,14 @@ def main() -> None:
     graph_file = transport_graph_path(city)
     if not graph_file.exists():
         raise FileNotFoundError(f"Transport graph file not found: {graph_file}")
+    try:
+        require_approval(graph_file)
+    except ApprovalError as exc:
+        print(
+            f"{city_slug}: not loaded. {exc} Review it with "
+            f"python3 pipeline/scripts/validate_transport_graph.py {city_slug} --write --approve --reviewer NAME"
+        )
+        sys.exit(1)
 
     graph = json.loads(graph_file.read_text(encoding="utf-8"))
     provider = str(graph.get("provider") or (city.get("transport") or {}).get("provider") or "transport_provider")

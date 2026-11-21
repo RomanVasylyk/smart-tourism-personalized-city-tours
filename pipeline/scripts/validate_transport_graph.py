@@ -11,6 +11,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from scripts.normalize_transport import SERVICE_BUCKETS, compute_quality_report, report_paths, transport_paths
+from utils.approval import write_approval
 from utils.cities import load_city
 
 
@@ -182,6 +183,8 @@ def main() -> None:
         action="store_true",
         help="Overwrite the transport_graph_report.json file with validation output.",
     )
+    parser.add_argument("--approve", action="store_true", help="Approve the graph for loading into the database.")
+    parser.add_argument("--reviewer", help="Name of the data administrator who approves the graph.")
     args = parser.parse_args()
 
     city = load_city(args.city)
@@ -206,6 +209,23 @@ def main() -> None:
         f"coverage_ratio={report['coverage_ratio']}"
     )
     print(f"Report target: {report_file}")
+
+    if args.approve:
+        if not args.reviewer:
+            print("Not approved: pass --reviewer with the name of the data administrator.")
+            sys.exit(1)
+        summary = {
+            key: report.get(key)
+            for key in (
+                "warnings_count",
+                "validation_warning_count",
+                "invalid_trip_count",
+                "unmatched_stop_count",
+                "coverage_ratio",
+            )
+        }
+        approval_file = write_approval(graph_file, args.reviewer, summary)
+        print(f"Approved by {args.reviewer}: {approval_file}")
 
 
 if __name__ == "__main__":

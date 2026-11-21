@@ -115,6 +115,7 @@ def route_response_dict(result: RoutePlanningResult) -> dict:
         "routing_leg_count": total_leg_count,
         "routing_fallback_leg_count": fallback_leg_count,
         "routing_degraded": fallback_leg_count > 0,
+        "planning_method": result.planning_method,
         "route": result.route_items,
         "legs": result.legs,
         "full_geometry": result.full_geometry,

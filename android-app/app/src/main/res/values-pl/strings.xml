@@ -323,9 +323,9 @@
     <string name="route_quality_approximate_title">Trasa przybliżona</string>
     <string name="route_quality_approximate_body">Niektóre odcinki używają szacunku w linii prostej, ponieważ wyznaczanie trasy było chwilowo niedostępne; czasy mogą być mniej dokładne.</string>
     <string name="route_quality_over_budget_title">Przekroczono budżet czasu</string>
-    <string name="route_quality_over_budget_body">Wymagane przystanki pozostawiono w trasie, mimo że przekraczają dostępny czas.</string>
-    <string name="route_quality_closed_required_title">Wymagane przystanki poza godzinami otwarcia</string>
-    <string name="route_quality_closed_required_body">Te wymagane przystanki są poza swoimi godzinami otwarcia: %1$s.</string>
+    <string name="route_quality_over_budget_body">Trasa trwa dłużej niż dostępny czas.</string>
+    <string name="route_quality_closed_required_title">Przystanki poza godzinami otwarcia</string>
+    <string name="route_quality_closed_required_body">Te przystanki są poza swoimi godzinami otwarcia: %1$s.</string>
 
     <string name="offline_status_no_network">Brak połączenia z internetem — pokazujemy zapisane dane.</string>
     <string name="offline_map_saving">Zapisywanie mapy miasta do użytku offline...</string>

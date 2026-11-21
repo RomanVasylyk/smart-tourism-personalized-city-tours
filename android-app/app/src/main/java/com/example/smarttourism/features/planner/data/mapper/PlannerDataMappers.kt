@@ -10,6 +10,8 @@ import com.example.smarttourism.data.remote.dto.RouteFeedbackDto
 import com.example.smarttourism.data.remote.dto.RouteItemDto
 import com.example.smarttourism.data.remote.dto.RouteLegDto
 import com.example.smarttourism.data.remote.dto.RouteLegEndpointDto
+import com.example.smarttourism.data.remote.dto.RouteCheckRequest
+import com.example.smarttourism.data.remote.dto.RouteCheckStopDto
 import com.example.smarttourism.data.remote.dto.RouteLegRequest
 import com.example.smarttourism.data.remote.dto.RouteRequest
 import com.example.smarttourism.data.remote.dto.RouteResponse
@@ -28,6 +30,7 @@ import com.example.smarttourism.features.planner.domain.model.Poi
 import com.example.smarttourism.features.planner.domain.model.RouteCoordinate
 import com.example.smarttourism.features.planner.domain.model.RouteLeg
 import com.example.smarttourism.features.planner.domain.model.RouteLegEndpoint
+import com.example.smarttourism.features.planner.domain.model.RouteCheckQuery
 import com.example.smarttourism.features.planner.domain.model.RouteLegQuery
 import com.example.smarttourism.features.planner.domain.model.RoutePlan
 import com.example.smarttourism.features.planner.domain.model.RoutePoint
@@ -395,6 +398,20 @@ private fun RouteSegment.toDto(): RouteSegmentDto =
         arrival_time = arrivalTime,
         wait_minutes_before_departure = waitMinutesBeforeDeparture,
         in_vehicle_minutes = inVehicleMinutes
+    )
+
+internal fun RouteCheckQuery.toDto(): RouteCheckRequest =
+    RouteCheckRequest(
+        city = city,
+        start_datetime = startDateTime,
+        respect_opening_hours = respectOpeningHours,
+        stops = stops.map { stop ->
+            RouteCheckStopDto(
+                poi_id = stop.poiId,
+                arrival_after_min = stop.arrivalAfterMin,
+                visit_duration_min = stop.visitDurationMin
+            )
+        }
     )
 
 internal fun RouteLegQuery.toDto(): RouteLegRequest =

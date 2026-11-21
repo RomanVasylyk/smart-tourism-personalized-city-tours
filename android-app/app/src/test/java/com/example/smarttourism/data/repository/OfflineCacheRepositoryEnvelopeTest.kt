@@ -16,6 +16,8 @@ import com.example.smarttourism.data.remote.dto.CityDto
 import com.example.smarttourism.data.remote.dto.CuratedRouteDetailDto
 import com.example.smarttourism.data.remote.dto.CuratedRouteSummaryDto
 import com.example.smarttourism.data.remote.dto.PoiDto
+import com.example.smarttourism.data.remote.dto.RouteCheckRequest
+import com.example.smarttourism.data.remote.dto.RouteCheckResponse
 import com.example.smarttourism.data.remote.dto.RouteFeedbackDto
 import com.example.smarttourism.data.remote.dto.RouteFeedbackRequest
 import com.example.smarttourism.data.remote.dto.RouteLegDto
@@ -297,6 +299,9 @@ class OfflineCacheRepositoryEnvelopeTest {
             error("Unused in offline sync tests")
 
         override suspend fun generateRouteLeg(request: RouteLegRequest): RouteLegDto =
+            error("Unused in offline sync tests")
+
+        override suspend fun checkRoute(request: RouteCheckRequest): RouteCheckResponse =
             error("Unused in offline sync tests")
 
         override suspend fun createRouteSession(request: RouteSessionCreateRequest): RouteSessionDto =

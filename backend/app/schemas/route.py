@@ -34,3 +34,16 @@ class RouteLegRequest(BaseModel):
     pace: Pace = "normal"
     start_datetime: str | None = None
     transport_mode: Literal["walk", "walk_or_mhd"] = "walk"
+
+
+class RouteCheckStop(BaseModel):
+    poi_id: int
+    arrival_after_min: int = Field(ge=0, le=2880)
+    visit_duration_min: int = Field(ge=0, le=720)
+
+
+class RouteCheckRequest(BaseModel):
+    city: str = Field(default="nitra", min_length=1, max_length=64)
+    start_datetime: str | None = None
+    respect_opening_hours: bool = True
+    stops: list[RouteCheckStop] = Field(default_factory=list, max_length=MAX_POI_ID_LIST)

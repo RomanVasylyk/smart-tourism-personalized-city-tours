@@ -13,6 +13,7 @@ import com.example.smarttourism.features.planner.domain.history.upsertRouteHisto
 import com.example.smarttourism.features.planner.domain.model.PlannerPreferences
 import com.example.smarttourism.features.planner.domain.model.Poi
 import com.example.smarttourism.features.planner.domain.model.RouteCoordinate
+import com.example.smarttourism.features.planner.domain.model.RouteCheckQuery
 import com.example.smarttourism.features.planner.domain.model.RouteLeg
 import com.example.smarttourism.features.planner.domain.model.RouteLegEndpoint
 import com.example.smarttourism.features.planner.domain.model.RouteLegQuery
@@ -445,6 +446,8 @@ class RoutePlannerDomainLogicTest {
         private val durationByEndPoiId: Map<Int, Int>
     ) : RoutePlanningRepository {
         override suspend fun generateRoute(request: PlannerPreferences): RoutePlan = unsupported()
+
+        override suspend fun findClosedStops(request: RouteCheckQuery): List<Int> = emptyList()
 
         override suspend fun generateRouteLeg(request: RouteLegQuery): RouteLeg {
             val toEndpoint = RouteLegEndpoint(

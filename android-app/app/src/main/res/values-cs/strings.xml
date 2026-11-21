@@ -323,9 +323,9 @@
     <string name="route_quality_approximate_title">Přibližná trasa</string>
     <string name="route_quality_approximate_body">Některé úseky používají odhad vzdušnou čarou, protože směrování bylo dočasně nedostupné; časy mohou být méně přesné.</string>
     <string name="route_quality_over_budget_title">Překročen časový rozpočet</string>
-    <string name="route_quality_over_budget_body">Povinné zastávky zůstaly v trase, i když přesahují dostupný čas.</string>
-    <string name="route_quality_closed_required_title">Povinné zastávky mimo otevírací dobu</string>
-    <string name="route_quality_closed_required_body">Tyto povinné zastávky jsou mimo svou otevírací dobu: %1$s.</string>
+    <string name="route_quality_over_budget_body">Trasa trvá déle, než je dostupný čas.</string>
+    <string name="route_quality_closed_required_title">Zastávky mimo otevírací dobu</string>
+    <string name="route_quality_closed_required_body">Tyto zastávky jsou mimo svou otevírací dobu: %1$s.</string>
 
     <string name="offline_status_no_network">Bez připojení k internetu — zobrazujeme uložená data.</string>
     <string name="offline_map_saving">Ukládání mapy města pro offline použití...</string>

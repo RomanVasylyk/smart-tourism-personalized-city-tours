@@ -2,6 +2,8 @@ package com.example.smarttourism.features.planner.application
 
 import com.example.smarttourism.features.planner.data.route.RoutePlanningRepository
 import com.example.smarttourism.features.planner.domain.model.Poi
+import com.example.smarttourism.features.planner.domain.model.RouteCheckQuery
+import com.example.smarttourism.features.planner.domain.model.RouteCheckStop
 import com.example.smarttourism.features.planner.domain.model.RouteLeg
 import com.example.smarttourism.features.planner.domain.model.RouteLegEndpoint
 import com.example.smarttourism.features.planner.domain.model.RouteLegQuery
@@ -72,7 +74,7 @@ internal class RoutePreviewMutationUseCase @Inject constructor(
             poiId = poiId,
             replacementLegToNext = replacementLegToNext,
             replacementReturnLeg = replacementReturnLeg
-        )
+        ).withQualityCheck(context)
     }
 
     suspend fun replaceStop(
@@ -130,7 +132,7 @@ internal class RoutePreviewMutationUseCase @Inject constructor(
             replacementLegToReplacement = replacementLegToReplacement,
             replacementLegToNext = replacementLegToNext,
             replacementReturnLeg = replacementReturnLeg
-        )
+        ).withQualityCheck(context)
     }
 
     suspend fun moveStop(
@@ -213,6 +215,32 @@ internal class RoutePreviewMutationUseCase @Inject constructor(
             route = renumberedItems,
             legs = renumberedLegs.ifEmpty { null },
             fullGeometry = mergeLegGeometries(renumberedLegs)
+        ).withQualityCheck(context)
+    }
+
+    private suspend fun RoutePlan.withQualityCheck(context: RoutePreviewMutationContext): RoutePlan {
+        val closedPoiIds = if (respectOpeningHours && route.isNotEmpty()) {
+            routePlanningRepository.findClosedStops(
+                RouteCheckQuery(
+                    city = context.city ?: city,
+                    startDateTime = context.startDateTime ?: startDateTime,
+                    respectOpeningHours = true,
+                    stops = route.map { stop ->
+                        RouteCheckStop(
+                            poiId = stop.poiId,
+                            arrivalAfterMin = stop.arrivalAfterMin,
+                            visitDurationMin = stop.visitDurationMin
+                        )
+                    }
+                )
+            )
+        } else {
+            emptyList()
+        }
+
+        return copy(
+            requiredPoisOverBudget = usedMinutes > availableMinutes,
+            closedRequiredPoiIds = closedPoiIds
         )
     }
 

@@ -3,6 +3,7 @@ package com.example.smarttourism.features.planner.application
 import com.example.smarttourism.data.model.SavedRouteSnapshot
 import com.example.smarttourism.features.planner.domain.model.PlannerPreferences
 import com.example.smarttourism.features.planner.domain.model.Poi
+import com.example.smarttourism.features.planner.domain.model.RouteCheckQuery
 import com.example.smarttourism.features.planner.domain.model.RouteLeg
 import com.example.smarttourism.features.planner.domain.model.RouteLegEndpoint
 import com.example.smarttourism.features.planner.domain.model.RouteLegQuery
@@ -74,6 +75,26 @@ class RoutePreviewMutationUseCaseTest {
         assertEquals(listOf(1, 2, 9, null), updated.legs.orEmpty().map { leg -> leg.to.poiId })
     }
 
+    @Test
+    fun editedRouteReportsClosedStopsAndBudgetOverrun() = runBlocking {
+        val useCase = RoutePreviewMutationUseCase(
+            routePlanningRepository = FakeRoutePlanningRepository(
+                durationByEndPoiId = mapOf(-1 to 4),
+                closedPoiIds = listOf(2, 3)
+            )
+        )
+
+        val updated = useCase.removeStop(
+            previousResponse = sampleRoutePlan().copy(availableMinutes = 30),
+            poiId = 3,
+            context = mutationContext()
+        )
+
+        assertEquals(listOf(2), updated.closedRequiredPoiIds)
+        assertEquals(36, updated.usedMinutes)
+        assertEquals(true, updated.requiredPoisOverBudget)
+    }
+
     private fun mutationContext(): RoutePreviewMutationContext =
         RoutePreviewMutationContext(
             city = "nitra",
@@ -83,8 +104,12 @@ class RoutePreviewMutationUseCaseTest {
         )
 
     private inner class FakeRoutePlanningRepository(
-        private val durationByEndPoiId: Map<Int, Int>
+        private val durationByEndPoiId: Map<Int, Int>,
+        private val closedPoiIds: List<Int> = emptyList()
     ) : RoutePlanningRepository {
+        override suspend fun findClosedStops(request: RouteCheckQuery): List<Int> =
+            closedPoiIds.filter { poiId -> request.stops.any { stop -> stop.poiId == poiId } }
+
         override suspend fun generateRoute(request: PlannerPreferences): RoutePlan =
             error("Not used by this test")
 
